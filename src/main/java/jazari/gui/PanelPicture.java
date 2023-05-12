@@ -83,6 +83,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private boolean activateRevert = false;
     private boolean activateBinarize = false;
     private boolean activateCrop = false;
+    private boolean activateCmd = false;
     private boolean isCropStarted = false;
     private boolean isMouseDraggedForImageMovement;
     public boolean activateBoundingBox = false;
@@ -418,6 +419,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Smooth",
             "Sharpen",
             "Crop", //"Generate Segmentation Masks",
+            "Command Interpreter"
         };
 
         ButtonGroup itemsGroup = new ButtonGroup();
@@ -1875,6 +1877,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     activateAutoSizeAspect = true;
                 } else if (obj.getText().equals("Crop")) {
                     activateCrop = true;
+                } else if (obj.getText().equals("Command Interpreter")) {
+                    activateCmd = true;
+                    FrameScriptEditor frm=new FrameScriptEditor();
+                    frm.setVisible(true);
+                    frm.setLocation(30, 200);
+                    frm.setAlwaysOnTop(true);
                 } else if (obj.getText().equals("Generate Segmentation Masks")) {
                     if (activatePolygon) {
                         FactoryUtils.generateSegmentationMasks(imageFiles);

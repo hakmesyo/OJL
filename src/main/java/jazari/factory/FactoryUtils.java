@@ -103,14 +103,10 @@ public final class FactoryUtils {
 
     public static boolean stopServer = false;
     public static boolean isConnectPythonServer = false;
-//    public static SocketServer server;
     public static WebSocketClient client;
     public static String currDir = System.getProperty("user.dir");
     public static final AtomicBoolean running = new AtomicBoolean(false);
-//    public static InterfaceCallBack icbf = null;
     public static int nAttempts = 0;
-    private static final String key = String.valueOf(new char[]{'2', '6', 'k', 'o', 'z', 'Q', 'a', 'K', 'w', 'R', 'u', 'N', 'J', '2', '4', 't'});
-    private static final String initVector = String.valueOf(new char[]{'8', 'C', '7', '7', 'E', 'E', 'F', 'E', '9', '8', '6', '8', 'F', '5', '4', '8'});
 
     public static String getMacAddress() {
         InetAddress ip;
@@ -126,9 +122,7 @@ public final class FactoryUtils {
             }
 //            System.out.println(sb.toString());
             return sb.toString();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (SocketException e) {
+        } catch (UnknownHostException | SocketException e) {
             e.printStackTrace();
         }
         return sb.toString();
@@ -145,16 +139,21 @@ public final class FactoryUtils {
     }
 
     /**
-     * deserialize to Object from given file. We use the general Object so as
-     * that it can work for any Java Class.
+     * deserialize to Object from given file.We use the general Object so as
+ that it can work for any Java Class.
+     * @param fileName
+     * @return 
+     * @throws java.io.IOException
+     * @throws java.lang.ClassNotFoundException
      */
     public static Object deserialize(String fileName) throws IOException,
             ClassNotFoundException {
         FileInputStream fis = new FileInputStream(fileName);
         BufferedInputStream bis = new BufferedInputStream(fis);
-        ObjectInputStream ois = new ObjectInputStream(bis);
-        Object obj = ois.readObject();
-        ois.close();
+        Object obj;
+        try (ObjectInputStream ois = new ObjectInputStream(bis)) {
+            obj = ois.readObject();
+        }
         return obj;
     }
 
