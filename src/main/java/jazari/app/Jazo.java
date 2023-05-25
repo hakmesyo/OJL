@@ -54,7 +54,7 @@ public class Jazo extends javax.swing.JFrame {
         setTitle("Jazari Annotation Tool V:10.05.2023");
 
         btn_open.setFont(new java.awt.Font("Tahoma", 1, 36)); // NOI18N
-        btn_open.setText("Open | Drage & Drop Image");
+        btn_open.setText("Open | Drag & Drop Image");
         btn_open.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_openActionPerformed(evt);

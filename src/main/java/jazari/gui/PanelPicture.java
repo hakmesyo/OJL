@@ -890,6 +890,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         isMouseDraggedForPolygonMovement = isMouseDraggedForBoundingBoxMovement = true;
                         mousePos = constraintMousePosition(e);
+                        //System.out.println("mousePos = " + mousePos);
                     }
                 } else if (activatePolygon && isPolygonPressed && selectedPolygon == null) {
                     //setDefaultCursor();
@@ -897,11 +898,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 }
 
                 if (selectedPolygon != null && selectedNodeIndexLeftMouse != -1) {
-                    mousePos = constraintMousePosition(e);
+                    //mousePos = constraintMousePosition(e);
                     setDefaultCursor();
                     mousePos = constraintMousePosition(e);
-                    selectedPolygon.polygon.xpoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorX(mousePos.x) - fromLeft;
-                    selectedPolygon.polygon.ypoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorY(mousePos.y) - fromTop;
+                    //selectedPolygon.polygon.xpoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorX(mousePos.x) - fromLeft;
+                    //selectedPolygon.polygon.ypoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorY(mousePos.y) - fromTop;
                     repaint();
                     return;
                 }
@@ -1030,7 +1031,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        zoom_factor -= e.getWheelRotation() / 32.0f;
+        float temp_zoom_factor = zoom_factor;
+        temp_zoom_factor -= e.getWheelRotation() / 32.0f;
+        if (temp_zoom_factor > 2.0) {
+            return;
+        }
+        zoom_factor=temp_zoom_factor;
         float w = (1.0f * originalBufferedImage.getWidth() * zoom_factor);
         float h = (1.0f * originalBufferedImage.getHeight() * zoom_factor);
         if (original_zoom_factor < 1) {
@@ -1043,8 +1049,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
         currBufferedImage = ImageProcess.resizeAspectRatio(originalBufferedImage, (int) w, (int) h);
         setZoomImage(currBufferedImage, imagePath, caption);
-//        frm.setFrameSize(currBufferedImage);
-//        
         e.consume();
     }
 
@@ -1212,9 +1216,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
             int w = scaleWithZoomFactor(poly.getWidth());
             int h = scaleWithZoomFactor(poly.getHeight());
-//            gr.setStroke(new BasicStroke(stroke));
-//            gr.setColor(col);
-//            gr.drawRect(p1.x, p1.y, w, h);
 
             int dx = p1.x - (scaleWithZoomFactor(selectedPolygon.getXMin()) + fromLeft);
             int dy = p1.y - (scaleWithZoomFactor(selectedPolygon.getYMin()) + fromTop);
@@ -1325,6 +1326,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             draggedSelectedPolygonOnScreen(gr, selectedPolygon, defaultStrokeWidth, lastPositionOfDraggedPolygon[0], lastPositionOfDraggedPolygon[1], Color.orange);
         }
         float[] cols = new float[4];
+        
         for (PascalVocObject pvo : listPascalVocObject) {
             if (pvo.polygonContainer == null) {
                 continue;
@@ -1380,6 +1382,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
 
         }
+
 
     }
 
@@ -1879,7 +1882,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     activateCrop = true;
                 } else if (obj.getText().equals("Command Interpreter")) {
                     activateCmd = true;
-                    FrameScriptEditor frm=new FrameScriptEditor();
+                    FrameScriptEditor frm = new FrameScriptEditor();
                     frm.setVisible(true);
                     frm.setLocation(30, 200);
                     frm.setAlwaysOnTop(true);

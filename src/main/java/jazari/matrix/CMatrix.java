@@ -6061,6 +6061,7 @@ public final class CMatrix implements Serializable {
      * perform Sobel Edge Detection operator
      *
      *
+     * @param thr
      * @return
      */
     public CMatrix edgeDetectionSobel(int thr) {
