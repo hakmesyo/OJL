@@ -235,7 +235,7 @@ public final class FactoryUtils {
         if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             file = chooser.getSelectedFile();
             if (file.getName().indexOf(".png") == -1) {
-                File file2 = new File(file.getParent() + "\\" + file.getName() + ".png");
+                File file2 = new File(file.getParent() + "/" + file.getName() + ".png");
                 file = file2;
             }
             return file;
@@ -7069,7 +7069,7 @@ public final class FactoryUtils {
                 + lst
                 + "</annotation>\n";
         File file = new File(imagePath);
-        FactoryUtils.writeToFile(file.getParent() + "\\" + FactoryUtils.getFileName(file.getName()) + ".xml", ret);
+        FactoryUtils.writeToFile(file.getParent() + "/" + FactoryUtils.getFileName(file.getName()) + ".xml", ret);
         return ret;
 
     }

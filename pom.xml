@@ -187,7 +187,7 @@
             <version>0.43.1</version>
         </dependency>
     </dependencies>
-    <!--
+    
     <build>
         <plugins>
             <plugin>
@@ -215,6 +215,6 @@
             </plugin>
         </plugins>
     </build>
-        -->
+    
         
 </project>

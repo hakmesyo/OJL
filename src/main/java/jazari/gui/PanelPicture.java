@@ -511,7 +511,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     } else {
                         currBufferedImage = ImageProcess.clone(originalBufferedImage);
                         adjustImageToPanel(currBufferedImage, false);
+                        polygon.reset();
+                        polygon = new Polygon();
                         repaint();
+                        return;
                     }
                 } else if (e.getClickCount() == 1 && !e.isConsumed()) {
                     e.consume();
@@ -601,8 +604,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         if (e.getButton() == MouseEvent.BUTTON1) {
                             selectedNodeIndexLeftMouse = -1;
                             for (int i = 0; i < n; i++) {
-                                if (p.x > scaleWithZoomFactor(poly.xpoints[i]) - t && p.x < scaleWithZoomFactor(poly.xpoints[i]) + t && p.y > scaleWithZoomFactor(poly.ypoints[i]) - t && p.y < scaleWithZoomFactor(poly.ypoints[i]) + t) {
+                                if (p.x > scaleWithZoomFactor(poly.xpoints[i]) - t && p.x < scaleWithZoomFactor(poly.xpoints[i]) +t && p.y > scaleWithZoomFactor(poly.ypoints[i]) - t && p.y < scaleWithZoomFactor(poly.ypoints[i]) + t) {
                                     selectedNodeIndexLeftMouse = i;
+                                    System.out.println(i+".nodu tuttu");
                                     isPolygonDragged = false;
                                     return;
                                 }
@@ -897,15 +901,15 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     mousePos = constraintMousePosition(e);
                 }
 
-                if (selectedPolygon != null && selectedNodeIndexLeftMouse != -1) {
-                    //mousePos = constraintMousePosition(e);
-                    setDefaultCursor();
-                    mousePos = constraintMousePosition(e);
-                    //selectedPolygon.polygon.xpoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorX(mousePos.x) - fromLeft;
-                    //selectedPolygon.polygon.ypoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorY(mousePos.y) - fromTop;
-                    repaint();
-                    return;
-                }
+//                if (selectedPolygon != null && selectedNodeIndexLeftMouse != -1) {
+//                    //mousePos = constraintMousePosition(e);
+//                    setDefaultCursor();
+//                    mousePos = constraintMousePosition(e);
+//                    //selectedPolygon.polygon.xpoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorX(mousePos.x) - fromLeft;
+//                    //selectedPolygon.polygon.ypoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorY(mousePos.y) - fromTop;
+//                    repaint();
+//                    return;
+//                }
 
                 if (SwingUtilities.isMiddleMouseButton(e)) {
                     if (currBufferedImage.getWidth() > getWidth() || currBufferedImage.getHeight() > getHeight()) {
@@ -996,16 +1000,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     private boolean isReleasedNearStartPolygon(Point p1, Polygon poly) {
-        if (poly == null || poly.npoints == 0) {
+        if (poly == null || poly.npoints <= 1) {
             return false;
         }
-        for (int i = 0; i < poly.npoints; i++) {
-            Point p = new Point(poly.xpoints[i], poly.ypoints[i]);
-            if (p1.equals(p) || (Math.abs(p1.x - p.x) < 5 && Math.abs(p1.y - p.y) < 5)) {
-                return true;
-            }
-        }
-        return false;
+        Point p = new Point(poly.xpoints[0], poly.ypoints[0]);
+        return p1.equals(p) || (Math.abs(p1.x - p.x) < 5 && Math.abs(p1.y - p.y) < 5);
     }
 
     private void cropImage() {
@@ -1036,7 +1035,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         if (temp_zoom_factor > 2.0) {
             return;
         }
-        zoom_factor=temp_zoom_factor;
+        zoom_factor = temp_zoom_factor;
         float w = (1.0f * originalBufferedImage.getWidth() * zoom_factor);
         float h = (1.0f * originalBufferedImage.getHeight() * zoom_factor);
         if (original_zoom_factor < 1) {
@@ -1326,7 +1325,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             draggedSelectedPolygonOnScreen(gr, selectedPolygon, defaultStrokeWidth, lastPositionOfDraggedPolygon[0], lastPositionOfDraggedPolygon[1], Color.orange);
         }
         float[] cols = new float[4];
-        
+
         for (PascalVocObject pvo : listPascalVocObject) {
             if (pvo.polygonContainer == null) {
                 continue;
@@ -1382,7 +1381,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
 
         }
-
 
     }
 

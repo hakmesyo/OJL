@@ -1,6 +1,6 @@
 kelebek:Color 255 51 51
 goz:Color 255 255 0
-red_pul:Color 255 51 51
+red_pul:Color 255 255 0
 yellow_pul:Color 255 255 102
 blue_pul:Color 51 51 255
 orange_pul:Color 255 153 51
