@@ -5,12 +5,14 @@
  */
 package jazari.gui;
 
+import jazari.utils.DataAnalytics;
 import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,19 +39,15 @@ public class FrameImage extends javax.swing.JFrame {
     public BufferedImage img;
     int pw = 100;
     int ph = 150;
-    int panWidth = 40;
-    //BufferedImage currBufferedImage = null;
     public String imagePath;
-    private Vector<String> listImageFile = new Vector<String>();
-    int listIndex = 0;
-    CMatrix cm = null;
+    public String imageFolderPath;
 
     /**
      * Creates new form FrameImage
      */
     public FrameImage() {
         initComponents();
-        isSequence.setVisible(false);
+        //isSequence.setVisible(false);
 
 //        getPicturePanel().setFrame(this);
     }
@@ -62,12 +60,14 @@ public class FrameImage extends javax.swing.JFrame {
      */
     public FrameImage(CMatrix cm, String imagePath, String caption) {
         initComponents();
+        imageFolderPath=FactoryUtils.getFolderPath(imagePath);
         loadImage(cm, imagePath, caption);
     }
 
     public void setImage(BufferedImage img, String imagePath, String caption) {
         this.img = img;
         this.imagePath = imagePath;
+        imageFolderPath=FactoryUtils.getFolderPath(imagePath);
         getPicturePanel().setImage(this.img, imagePath, caption);
         getPicturePanel().setFrame(this);
         this.setSize(img.getWidth() + 300, img.getHeight() + 183);
@@ -100,6 +100,8 @@ public class FrameImage extends javax.swing.JFrame {
         isPolygon = new javax.swing.JCheckBox();
         lbl_zoom_factor = new javax.swing.JLabel();
         btn_dashedLineColor = new javax.swing.JButton();
+        isLabelVisible = new javax.swing.JCheckBox();
+        btn_analytics = new javax.swing.JButton();
         scroll_pane = new javax.swing.JScrollPane();
         panelPicture = new jazari.gui.PanelPicture(this);
 
@@ -183,10 +185,39 @@ public class FrameImage extends javax.swing.JFrame {
 
         lbl_zoom_factor.setText("zoom factor:1");
 
-        btn_dashedLineColor.setText("dashed line color");
+        btn_dashedLineColor.setText("color");
+        btn_dashedLineColor.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                btn_dashedLineColorMouseMoved(evt);
+            }
+        });
         btn_dashedLineColor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_dashedLineColorActionPerformed(evt);
+            }
+        });
+
+        isLabelVisible.setText("show label");
+        isLabelVisible.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                isLabelVisibleİtemStateChanged(evt);
+            }
+        });
+        isLabelVisible.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                isLabelVisibleMouseMoved(evt);
+            }
+        });
+
+        btn_analytics.setText("analytics");
+        btn_analytics.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                btn_analyticsMouseMoved(evt);
+            }
+        });
+        btn_analytics.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_analyticsActionPerformed(evt);
             }
         });
 
@@ -205,11 +236,15 @@ public class FrameImage extends javax.swing.JFrame {
                 .addGap(42, 42, 42)
                 .addComponent(isBBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(isSequence)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(isPolygon)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(isSequence)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(isLabelVisible)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_dashedLineColor)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_analytics)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(lbl_zoom_factor)
                 .addContainerGap())
@@ -225,7 +260,9 @@ public class FrameImage extends javax.swing.JFrame {
                 .addComponent(isSequence)
                 .addComponent(isPolygon)
                 .addComponent(lbl_zoom_factor)
-                .addComponent(btn_dashedLineColor))
+                .addComponent(btn_dashedLineColor)
+                .addComponent(isLabelVisible)
+                .addComponent(btn_analytics))
         );
 
         scroll_pane.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -245,7 +282,7 @@ public class FrameImage extends javax.swing.JFrame {
         panelPicture.setLayout(panelPictureLayout);
         panelPictureLayout.setHorizontalGroup(
             panelPictureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 812, Short.MAX_VALUE)
+            .addGap(0, 1032, Short.MAX_VALUE)
         );
         panelPictureLayout.setVerticalGroup(
             panelPictureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -294,13 +331,13 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().activateBoundingBox = isBBox.isSelected();
         getPicturePanel().activatePolygon = isPolygon.isSelected();
         getPicturePanel().setImage(this.img, imagePath, this.getTitle());
-        isSequence.setVisible(isBBox.isSelected());
+        //isSequence.setVisible(isBBox.isSelected());
         getPicturePanel().requestFocus();
     }//GEN-LAST:event_isBBoxItemStateChanged
 
     private void isBBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isBBoxActionPerformed
         if (isBBox.isSelected()) {
-            FactoryUtils.showMessage("Use Arrow Keys to locate prev and next images.\nPress S to save bboxes and go to next image.\nDouble click on bbox to change attributes");
+            //FactoryUtils.showMessage("Use Arrow Keys to locate prev and next images.\nPress S to save bboxes and go to next image.\nDouble click on bbox to change attributes");
             isPolygon.setSelected(false);
         }
     }//GEN-LAST:event_isBBoxActionPerformed
@@ -315,11 +352,11 @@ public class FrameImage extends javax.swing.JFrame {
     }//GEN-LAST:event_isSequenceItemStateChanged
 
     private void isBBoxMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isBBoxMouseMoved
-        isBBox.setToolTipText("Activate BoundingBox annotation for object detection");
+        isBBox.setToolTipText("Activates BoundingBox annotation for object detection\nUse Arrow Keys to locate prev and next images.\nPress S to save bboxes and go to next image.\nDouble click on bbox to change attributes\nPress Delete key to delete");
     }//GEN-LAST:event_isBBoxMouseMoved
 
     private void isSequenceMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isSequenceMouseMoved
-        isSequence.setToolTipText("Check if your images are similar to the video sequences/frames.\nPreserves bboxs from previous image");
+        isSequence.setToolTipText("Check if your images are similar to the video sequences/frames.\nPreserves bboxes or polygons from previous image");
     }//GEN-LAST:event_isSequenceMouseMoved
 
     private void scroll_paneFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_scroll_paneFocusGained
@@ -333,7 +370,7 @@ public class FrameImage extends javax.swing.JFrame {
     }//GEN-LAST:event_isPolygonItemStateChanged
 
     private void isPolygonMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isPolygonMouseMoved
-        // TODO add your handling code here:
+        isPolygon.setToolTipText("Activates Polygon annotation for image segmentation\nUse Arrow Keys to locate prev and next images.\nPress S to save polygon and go to next image.\nDouble click on polygon to change attributes\nPress Delete key to delete");
     }//GEN-LAST:event_isPolygonMouseMoved
 
     private void isPolygonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isPolygonActionPerformed
@@ -345,6 +382,33 @@ public class FrameImage extends javax.swing.JFrame {
     private void btn_dashedLineColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dashedLineColorActionPerformed
         changeDashedLineColor();
     }//GEN-LAST:event_btn_dashedLineColorActionPerformed
+
+    private void isLabelVisibleMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isLabelVisibleMouseMoved
+        isLabelVisible.setToolTipText("Hide or show labels on annotations");
+    }//GEN-LAST:event_isLabelVisibleMouseMoved
+
+    private void isLabelVisibleİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_isLabelVisibleİtemStateChanged
+        getPicturePanel().activateLabelVisibility = isLabelVisible.isSelected();
+        getPicturePanel().repaint();
+        getPicturePanel().requestFocus();
+    }//GEN-LAST:event_isLabelVisibleİtemStateChanged
+
+    private void btn_dashedLineColorMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_dashedLineColorMouseMoved
+        btn_dashedLineColor.setToolTipText("Changes the dashed line color");
+    }//GEN-LAST:event_btn_dashedLineColorMouseMoved
+
+    private void btn_analyticsMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_analyticsMouseMoved
+        isPolygon.setToolTipText("show number of classes and percentages annotated so far");
+    }//GEN-LAST:event_btn_analyticsMouseMoved
+
+    private void btn_analyticsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_analyticsActionPerformed
+        if (FactoryUtils.isFileExist(imageFolderPath+"/class_labels.txt")) {
+            List<DataAnalytics> lst=FactoryUtils.getDataAnalytics(imageFolderPath);
+            FrameDataAnalytics frm=new FrameDataAnalytics(this,imageFolderPath, lst);
+            frm.setVisible(true);
+            
+        }
+    }//GEN-LAST:event_btn_analyticsActionPerformed
 
     public PanelPicture getPicturePanel() {
         return ((PanelPicture) panelPicture);
@@ -396,10 +460,12 @@ public class FrameImage extends javax.swing.JFrame {
 //    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btn_analytics;
     private javax.swing.JButton btn_dashedLineColor;
     private javax.swing.JButton btn_dataGrid;
     private javax.swing.JButton btn_save;
     private javax.swing.JCheckBox isBBox;
+    private javax.swing.JCheckBox isLabelVisible;
     private javax.swing.JCheckBox isPolygon;
     private javax.swing.JCheckBox isSequence;
     private javax.swing.JLabel jLabel2;
@@ -436,8 +502,6 @@ public class FrameImage extends javax.swing.JFrame {
         String[] s = FactoryUtils.splitPath(imagePath);
         this.setTitle(s[s.length - 1]);
 
-        //this.setTitle(caption);
-        this.cm = cm;
         this.img = cm.getImage();
         this.imagePath = imagePath;
         getPicturePanel().activateBoundingBox = isBBox.isSelected();
@@ -455,6 +519,6 @@ public class FrameImage extends javax.swing.JFrame {
         setFrameSize(img);
         getPicturePanel().setFocusable(true);
         getPicturePanel().requestFocusInWindow();
-        isSequence.setVisible(false);
+        //isSequence.setVisible(false);
     }
 }

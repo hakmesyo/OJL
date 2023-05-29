@@ -11,7 +11,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.JComboBox;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -25,7 +24,6 @@ import java.awt.event.MouseListener;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JColorChooser;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import jazari.factory.FactoryUtils;
@@ -49,7 +47,7 @@ public class MyDialog extends JDialog implements ActionListener {
         super(parent, "Enter class label", true);
         this.imageFolder = imageFolder;
         this.className = className;
-        setTitle("press 's' to save");
+        setTitle("choose appropriate class name and color or write new one");
         Point loc = parent.getLocation();
         setLocation(loc.x + 80, loc.y + 80);
         data = ""; // set to amount of data items

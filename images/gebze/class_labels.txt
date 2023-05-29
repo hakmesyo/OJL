@@ -1,0 +1,5 @@
+bariyer_red:Color 255 51 51
+sola_donulmez:Color 51 255 51
+bariyer_beyaz:Color 255 255 255
+trafik_light_empty:Color 255 255 0
+lane:Color 153 153 255

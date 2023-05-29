@@ -14,11 +14,8 @@ import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jazari.gui.FlatLaf;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -37,6 +34,7 @@ public class Jazo extends javax.swing.JFrame {
     public Jazo() {
         initComponents();
         btn_open.setTransferHandler(new ImageTransferHandler());
+        this.setTitle("Jazari Annotation Tool  [27.05.2023]");
     }
 
     /**
@@ -82,7 +80,7 @@ public class Jazo extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_openActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_openActionPerformed
-        File pathFile=FactoryUtils.browseFile();
+        File pathFile=FactoryUtils.browseFileForImage();
         if (pathFile!=null) {
             CMatrix cm = CMatrix.getInstance()
                 .imread(pathFile)
@@ -127,7 +125,9 @@ public class Jazo extends javax.swing.JFrame {
 ////        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Jazo().setVisible(true);
+                Jazo jazo=new Jazo();
+                //jazo.setLocationRelativeTo(null);
+                jazo.setVisible(true);
             }
         });
     }
@@ -173,11 +173,6 @@ public class Jazo extends javax.swing.JFrame {
                                 
                             }
                         }
-//                        ImageIcon icon = null;
-//                        if (image != null) {
-//                            icon = new ImageIcon(image);
-//                        }
-//                        ((JButton) component).setIcon(icon);
                         accept = true;
                     }
                 } catch (Exception exp) {

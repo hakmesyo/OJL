@@ -6,6 +6,7 @@ package jazari.factory;
 
 import au.com.bytecode.opencsv.CSVReader;
 import com.google.gson.Gson;
+import java.awt.AWTException;
 import jazari.interfaces.InterfaceCallBack;
 import jazari.utils.SerialType;
 import jazari.types.TDeviceState;
@@ -21,11 +22,14 @@ import jazari.utils.ReaderCSV;
 import jazari.utils.UniqueRandomNumbers;
 import jazari.websocket.SocketServer;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_INT_BGR;
@@ -74,6 +78,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import jazari.utils.DataAnalytics;
 import jazari.gui.FrameImage;
 import jazari.image_processing.ImageProcess;
 import jazari.matrix.CRectangle;
@@ -140,9 +145,10 @@ public final class FactoryUtils {
 
     /**
      * deserialize to Object from given file.We use the general Object so as
- that it can work for any Java Class.
+     * that it can work for any Java Class.
+     *
      * @param fileName
-     * @return 
+     * @return
      * @throws java.io.IOException
      * @throws java.lang.ClassNotFoundException
      */
@@ -283,6 +289,21 @@ public final class FactoryUtils {
         return file;
     }
 
+    public static File getFileFromChooserOpenFilterImageFiles() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new File(getCurrentDirectory()));
+        chooser.setDialogTitle("select file");
+        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "jpeg");
+        chooser.setFileFilter(filter);
+        File file = null;
+        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            file = chooser.getSelectedFile();
+            return file;
+        }
+        return file;
+    }
+
     public static File getFileFromChooserOpen(String folderPath) {
         JFileChooser chooser = new JFileChooser(folderPath);
         chooser.setDialogTitle("select file");
@@ -319,6 +340,10 @@ public final class FactoryUtils {
 
     public static File browseFile() {
         return getFileFromChooserOpen();
+    }
+
+    public static File browseFileForImage() {
+        return getFileFromChooserOpenFilterImageFiles();
     }
 
     public static File browseFile(String path) {
@@ -6517,6 +6542,75 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static List<DataAnalytics> getDataAnalytics(String imageFolderPath) {
+        List<String> classNames = getClassNamesFromClassLabelsTxtFile(imageFolderPath);
+        if (classNames == null) {
+            return null;
+        }
+        List<DataAnalytics> ret = new ArrayList<>();
+        for (String className : classNames) {
+            ret.add(new DataAnalytics(className));
+        }
+        
+        File[] files = getFileArrayInFolderByExtension(imageFolderPath, "xml");
+        if (files.length == 0) {
+            return null;
+        }
+        int total = 0;
+        for (File file : files) {
+            if (checkIntegrityOfXmlFileWithCorrespondingImages(file)) {
+                AnnotationPascalVOCFormat apv = FactoryUtils.deserializePascalVocXML(file.getAbsolutePath());
+                List<PascalVocObject> lst=apv.lstObjects;
+                for (PascalVocObject pvo : lst) {
+                    if (classNames.contains(pvo.name)) {
+                        DataAnalytics da=getDataAnalyticItem(ret,pvo.name);
+                        da.frequency++;
+                        total++;
+                    }
+                }
+            }            
+        }
+        for (DataAnalytics da : ret) {
+            da.ratio=Math.round(da.frequency/total*100);
+        }
+        return ret;
+    }
+
+    public static List<String> getClassNamesFromClassLabelsTxtFile(String folderPath) {
+        if (isFileExist(folderPath + "/class_labels.txt")) {
+            String[] str = readFile(folderPath + "/class_labels.txt").split("\n");
+            List<String> ret = new ArrayList();
+            for (int i = 0; i < str.length; i++) {
+                ret.add(str[i].split(":")[0]);
+            }
+            return ret;
+        } else {
+            System.err.println("class_labels.txt file does not exist...");
+            return null;
+        }
+    }
+
+    public static boolean checkIntegrityOfXmlFileWithCorrespondingImages(File file) {
+        String folderPath=file.getParent();
+        String imageFileJpg=folderPath+"/"+getFileName(file.getName())+".jpg";
+        String imageFilePng=folderPath+"/"+getFileName(file.getName())+".png";
+        String imageFileJPEG=folderPath+"/"+getFileName(file.getName())+".JPEG";
+        if (isFileExist(imageFileJpg) || isFileExist(imageFilePng) ||isFileExist(imageFileJPEG)) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public static DataAnalytics getDataAnalyticItem(List<DataAnalytics> ret, String name) {
+        for (DataAnalytics da : ret) {
+            if (da.dataName.equals(name)) {
+                return da;
+            }
+        }
+        return null;
+    }
+
 //    public static Rectangle getBoundingRectangle(Polygon polygon) {
 //        if (polygon.npoints <= 0) {
 //            return null;
@@ -6832,6 +6926,10 @@ public final class FactoryUtils {
             isConnectPythonServer = false;
         }
         return client;
+    }
+    
+    public static void bekle(int milliSeconds) {
+        delay(milliSeconds);
     }
 
     public static void delay(int milliSeconds) {
@@ -7624,8 +7722,7 @@ public final class FactoryUtils {
 
         getFileListRecursively(fileList, directory);
 
-        try (FileOutputStream fos = new FileOutputStream(zipFile);
-                ZipOutputStream zos = new ZipOutputStream(fos)) {
+        try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
 
             for (String filePath : fileList) {
                 System.out.println("Compressing: " + filePath);
@@ -7669,6 +7766,40 @@ public final class FactoryUtils {
             s = s.replace(".", ",");
         }
         return s;
+    }
+    
+    public static int getScreenWidth(){
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int width = (int)screenSize.getWidth();
+        return width;
+    }
+    
+    public static int getScreenHeight(){
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int height = (int)screenSize.getHeight();
+        return height;
+    }
+    
+    public static BufferedImage captureWholeScreenWithRobot(){
+        try {
+            Robot robot=new Robot();
+            int width=getScreenWidth();
+            int height=getScreenHeight();
+            return robot.createScreenCapture(new Rectangle(0, 0, width, height));
+        } catch (AWTException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    public static BufferedImage captureScreenWithRobot(Rectangle rect){
+        try {
+            Robot robot=new Robot();
+            return robot.createScreenCapture(rect);
+        } catch (AWTException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
 }

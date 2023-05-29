@@ -64,11 +64,15 @@
                   <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
                   <Component id="isBBox" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="isSequence" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="isPolygon" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
+                  <Component id="isSequence" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="isLabelVisible" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="btn_dashedLineColor" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="btn_analytics" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
                   <Component id="lbl_zoom_factor" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -87,6 +91,8 @@
                   <Component id="isPolygon" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="lbl_zoom_factor" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btn_dashedLineColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="isLabelVisible" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btn_analytics" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -155,10 +161,29 @@
         </Component>
         <Component class="javax.swing.JButton" name="btn_dashedLineColor">
           <Properties>
-            <Property name="text" type="java.lang.String" value="dashed line color"/>
+            <Property name="text" type="java.lang.String" value="color"/>
           </Properties>
           <Events>
+            <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="btn_dashedLineColorMouseMoved"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_dashedLineColorActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="isLabelVisible">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="show label"/>
+          </Properties>
+          <Events>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="isLabelVisible&#x130;temStateChanged"/>
+            <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="isLabelVisibleMouseMoved"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btn_analytics">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="analytics"/>
+          </Properties>
+          <Events>
+            <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="btn_analyticsMouseMoved"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_analyticsActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>
@@ -188,7 +213,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="812" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="1032" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
