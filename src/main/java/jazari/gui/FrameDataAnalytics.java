@@ -28,6 +28,7 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
     GridBagLayout layout;
     GridBagConstraints gbc;
     FrameImage frm;
+    float totalNumberOfObjects=0;
 
     /**
      * Creates new form FrameDataAnalytics
@@ -68,7 +69,7 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
 //        addobjects(button, container, layout, gbc, 0, 1, 1, 1);
 //        addobjects(button2, container, layout, gbc, 1, 1, 1, 1);
 
-        addobjects(new JLabel("Class Color"), container, layout, gbc, 0, 0, 1, 1);
+        addobjects(new JLabel("Color"), container, layout, gbc, 0, 0, 1, 1);
         addobjects(new JLabel("Class Name"), container, layout, gbc, 1, 0, 1, 1);
         addobjects(new JLabel("Count"), container, layout, gbc, 2, 0, 1, 1);
         addobjects(new JLabel("Ratio"), container, layout, gbc, 3, 0, 1, 1);
@@ -126,43 +127,58 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
 
 
     private String[] buildClassNameList(String[] cs) {
-        String[] ret = new String[cs.length];
-        for (int i = 0; i < cs.length; i++) {
+        String[] ret = new String[cs.length+1];
+        for (int i = 0; i < ret.length-1; i++) {
             ret[i] = cs[i].split(":")[0];
         }
+        ret[ret.length-1]="Total number of objects";
         return ret;
     }
 
 
     private String[] getCounts() {
-        String[] ret=new String[listDA.size()];
-        for (int i = 0; i < ret.length; i++) {
+        String[] ret=new String[listDA.size()+1];
+        for (int i = 0; i < ret.length-1; i++) {
             ret[i]=""+listDA.get(i).frequency;
         }
+        ret[ret.length-1]=""+totalNumberOfObjects;
         return ret;
     }
 
     private String[] getRatios() {
-        String[] ret=new String[listDA.size()];
-        for (int i = 0; i < ret.length; i++) {
+        String[] ret=new String[listDA.size()+1];
+        for (int i = 0; i < ret.length-1; i++) {
             ret[i]=listDA.get(i).ratio+" %";
         }
+        ret[ret.length-1]="100 %";
         return ret;
     }
 
     private Color[] buildUrgentColorList() {
-        Color[] ret=new Color[listDA.size()];
+        Color[] ret=new Color[listDA.size()+1];
         float max=0;
-        for (int i = 0; i < ret.length; i++) {
+        for (int i = 0; i < ret.length-1; i++) {
             if (max<listDA.get(i).ratio/100){
                 max=listDA.get(i).ratio/100;
             }
+            totalNumberOfObjects+=listDA.get(i).frequency;
         }
         float coef=1.0f/max;
-        for (int i = 0; i < ret.length; i++) {
-            ret[i]=new Color(coef*(max-listDA.get(i).ratio/100), coef*listDA.get(i).ratio/100, 0);
+        for (int i = 0; i < ret.length-1; i++) {
+            ret[i]=new Color(checkRange(coef*(max-listDA.get(i).ratio/100)), checkRange(coef*listDA.get(i).ratio/100), 0);
         }
+        //ret[ret.length-1]=new Color(0,255,0);
         return ret;
+    }
+    
+    private float checkRange(float val){
+        if (val>1.0f) {
+            return 1.0f;
+        }else if(val<0){
+            return 0;
+        }else{
+            return val;
+        }
     }
 
     public class ColorItem {

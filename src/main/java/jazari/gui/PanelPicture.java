@@ -137,7 +137,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private Point[] lastPositionOfDraggedPolygon;
     private Point referenceMousePositionForImageMovement;
     private Point currentMousePositionForImageMovement;
-    private int defaultStrokeWidth = 4;
+    private int defaultStrokeWidth = 2;
     private int indexOfCurrentImageFile = 0;
     private Color colorDashedLine = new Color(255, 255, 0);
     private Point lastPolygonPoint = new Point(0, 0);
@@ -575,7 +575,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         isBBoxResizeTopRight = false;
                         isBBoxResizeBottomLeft = false;
                         isBBoxResizeBottomRight = false;
-                        int t = 10;
+                        int t = 4;
                         if (p.x > scaleWithZoomFactor(selectedBBox.xmin) - t && p.x < scaleWithZoomFactor(selectedBBox.xmin) + t && p.y > scaleWithZoomFactor(selectedBBox.ymin) - t && p.y < scaleWithZoomFactor(selectedBBox.ymin) + t) {
                             isBBoxResizeTopLeft = true;
                         } else if (p.x > scaleWithZoomFactor(selectedBBox.xmax) - t && p.x < scaleWithZoomFactor(selectedBBox.xmax) + t && p.y > scaleWithZoomFactor(selectedBBox.ymin) - t && p.y < scaleWithZoomFactor(selectedBBox.ymin) + t) {
@@ -865,7 +865,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 isCropStarted = false;
                 if (activateBoundingBox && selectedBBox != null) {
                     Point p = new Point(e.getPoint().x - fromLeft, e.getPoint().y - fromTop);
-                    int t = 10;
+                    int t = 4;
                     if (p.x > scaleWithZoomFactor(selectedBBox.xmin) - t && p.x < scaleWithZoomFactor(selectedBBox.xmin) + t && p.y > scaleWithZoomFactor(selectedBBox.ymin) - t && p.y < scaleWithZoomFactor(selectedBBox.ymin) + t) {
                         setCursor(new Cursor(Cursor.NW_RESIZE_CURSOR));
                     } else if (p.x > scaleWithZoomFactor(selectedBBox.xmax) - t && p.x < scaleWithZoomFactor(selectedBBox.xmax) + t && p.y > scaleWithZoomFactor(selectedBBox.ymin) - t && p.y < scaleWithZoomFactor(selectedBBox.ymin) + t) {
@@ -1261,8 +1261,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
             if (bbox.equals(selectedBBox)) {
                 //draw corners rectangles
-                int wx = 12;
-                int ww = 6;
+                int wx = 8;
+                int ww = 4;
                 gr.setColor(Color.white);
                 gr.fillRect(sp1_x - ww, sp1_y - ww, wx, wx);
                 gr.fillRect(sp1_x - ww + w, sp1_y - ww, wx, wx);

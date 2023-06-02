@@ -138,6 +138,7 @@ import java.sql.SQLException;
 import java.util.stream.IntStream;
 import javax.swing.JPanel;
 import jazari.utils.DataAugmentationOpt;
+import jazari.utils.PerlinNoise2D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -8334,6 +8335,34 @@ public final class CMatrix implements Serializable {
     public CMatrix perlinNoise(float scale) {
         setArray(FactoryMatrix.perlinNoise(array.toFloatMatrix(), scale));
         name = this.name + "|perlinNoise";
+        return this;
+    }
+
+    /**
+     * 2D perlin noise generator with scale equals to 0.1 by default
+     *
+     * @return
+     */
+    public CMatrix perlinNoise2D(int frequency, int start_time) {
+        BufferedImage img=PerlinNoise2D.getNoiseImage(this.getColumnNumber(),this.getRowNumber(), frequency, start_time);
+        this.setImage(img);
+        name = this.name + "|perlinNoise2D";
+        return this;
+    }
+
+    /**
+     * 2D perlin noise generator with scale equals to 0.1 by default
+     *
+     * @param width
+     * @param height
+     * @param frequency
+     * @param start_time
+     * @return
+     */
+    public CMatrix perlinNoise2D(int width,int height,int frequency, int start_time) {
+        BufferedImage img=PerlinNoise2D.getNoiseImage(width,height, frequency, start_time);
+        this.setImage(img);
+        name = this.name + "|perlinNoise2D";
         return this;
     }
 
