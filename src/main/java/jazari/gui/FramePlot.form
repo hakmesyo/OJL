@@ -78,14 +78,14 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="btn_dataGrid" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btn_scatter" min="-2" pref="75" max="-2" attributes="0"/>
+                  <Component id="btn_scatter" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btn_save" min="-2" pref="70" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="txt_dpi" min="-2" pref="47" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="278" max="32767" attributes="0"/>
+                  <EmptySpace pref="263" max="32767" attributes="0"/>
                   <Component id="chk_trace" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="btn_refresh" min="-2" max="-2" attributes="0"/>

@@ -37,7 +37,7 @@ public final class FrameScatterPlot extends javax.swing.JFrame {
     }
     
     public FrameScatterPlot(CMatrix cm,TFigureAttribute attr) {
-        this.cm = cm;
+        this.cm = cm.clone();
         this.figureAttribute=attr;
         initComponents();
         getScatterPlotPanel().setMatrix(cm);

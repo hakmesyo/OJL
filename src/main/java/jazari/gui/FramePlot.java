@@ -7,19 +7,15 @@ package jazari.gui;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import jazari.types.TFigureAttribute;
-import jazari.image_processing.ImageProcess;
 import jazari.matrix.CMatrix;
 import jazari.factory.FactoryMatrix;
 import jazari.factory.FactoryUtils;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -45,10 +41,11 @@ public class FramePlot extends javax.swing.JFrame {
      * Creates new form CPlot
      */
     public FramePlot(CMatrix cm) {
-        this.cm = cm.clone().transpose();
+        this.cm = cm.clone();
         this.setTitle(cm.name + " :: Plot");
         initComponents();
         TFigureAttribute attr = new TFigureAttribute();
+        attr.items=cm.getColumnNamesArray();
         this.figureAttribute = attr;
         getPlotPanel().setFigureAttribute(attr);
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
@@ -68,7 +65,7 @@ public class FramePlot extends javax.swing.JFrame {
     }
 
     public FramePlot(CMatrix cm, float[] x) {
-        this.cm = cm.clone().transpose();
+        this.cm = cm.clone();
         this.setTitle(cm.name + " :: Plot");
         initComponents();
         TFigureAttribute attr = new TFigureAttribute();
@@ -92,7 +89,7 @@ public class FramePlot extends javax.swing.JFrame {
     }
 
     public FramePlot(CMatrix cm, TFigureAttribute attr) {
-        this.cm = cm.clone().transpose();
+        this.cm = cm.clone();
         this.figureAttribute = attr;
         this.setTitle((attr.figureCaption.isEmpty()) ? cm.name + " :: Plot" : attr.figureCaption);
         initComponents();
@@ -114,7 +111,7 @@ public class FramePlot extends javax.swing.JFrame {
     }
 
     public FramePlot(CMatrix cm, TFigureAttribute attr, float[] x) {
-        this.cm = cm.clone().transpose();
+        this.cm = cm.clone();
         this.figureAttribute = attr;
         this.setTitle((attr.figureCaption.isEmpty()) ? cm.name + " :: Plot" : attr.figureCaption);
         initComponents();
@@ -236,14 +233,14 @@ public class FramePlot extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(btn_dataGrid)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_scatter)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_save, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 278, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 263, Short.MAX_VALUE)
                 .addComponent(chk_trace)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btn_refresh)
@@ -288,6 +285,10 @@ public class FramePlot extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed
+        if (getPlotPanel().getMatrix().getColumnNumber()<2) {
+            System.err.println("number of columns should be at least 2");
+            return;
+        }
         TFigureAttribute attr = new TFigureAttribute();
         attr.figureCaption = this.getTitle();
         getPlotPanel().getMatrix().scatter(attr);

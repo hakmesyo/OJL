@@ -50,7 +50,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="jScrollPane2" pref="633" max="32767" attributes="0"/>
+              <Component id="jScrollPane2" max="32767" attributes="0"/>
               <Group type="102" alignment="0" attributes="0">
                   <Component id="lbl_size" min="-2" pref="91" max="-2" attributes="0"/>
                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -107,45 +107,55 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <Component id="btn_plot" min="-2" pref="89" max="-2" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Component id="btn_plot" min="-2" pref="103" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="btn_scatter" min="-2" pref="106" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="jButton_buildArtificialDS" max="32767" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btn_scatter" min="-2" pref="89" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btn_visualize" min="-2" pref="98" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btn_visualize1" min="-2" pref="98" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btn_convert_2_int" min="-2" pref="121" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
-              </Group>
-              <Group type="102" attributes="0">
-                  <Component id="jButton_buildArtificialDS" min="-2" pref="147" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="jLabel30" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jTextField_rowNumber" min="-2" pref="43" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="jLabel29" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="jTextField_colNumber" min="-2" pref="42" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jComboBox_randomType" min="-2" pref="80" max="-2" attributes="0"/>
-                  <EmptySpace min="0" pref="199" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="btn_bar_plot" pref="91" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="btn_visualize" min="-2" pref="98" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="btn_visualize1" min="-2" pref="120" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="btn_from_text" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="82" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <Component id="jLabel30" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jTextField_rowNumber" min="-2" pref="43" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="jLabel29" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jTextField_colNumber" min="-2" pref="42" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jComboBox_randomType" min="-2" pref="193" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="btn_convert_2_int" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="btn_convert_2_int" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="btn_plot" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
-                          <Component id="btn_scatter" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
-                          <Component id="btn_visualize" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
-                          <Component id="btn_visualize1" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
-                      </Group>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="btn_plot" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="btn_scatter" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="btn_visualize" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="btn_visualize1" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="btn_bar_plot" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="btn_from_text" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -155,6 +165,7 @@
                       <Component id="jTextField_colNumber" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jTextField_rowNumber" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jComboBox_randomType" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btn_convert_2_int" alignment="3" min="-2" pref="32" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -238,6 +249,22 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_convert_2_intActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btn_from_text">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="DataSet Text Editor"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_from_textActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btn_bar_plot">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Bar Plot"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_bar_plotActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

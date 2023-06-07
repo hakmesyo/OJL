@@ -25,8 +25,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -52,8 +50,6 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     private boolean isMousePressed = false;
     Graphics2D gr;
     CPoint[][] mp;
-    //int selectedLineIndex = -1;
-    //boolean isLineSelected = false;
     private boolean isTraced = true;
     private int fromRight = 150;
     private int fromLeft = 100;
@@ -73,11 +69,12 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
     public PanelPlot(CMatrix ff) {
         this.cm = ff;
-        items = new String[cm.getRowNumber()];
+        items = new String[cm.getColumnNumber()];
         for (int i = 0; i < items.length; i++) {
             items[i] = "Line - " + (i + 1);
         }
         this.figureAttribute = new TFigureAttribute();
+        this.figureAttribute.items=items;
         initialize();
         repaint();
     }
@@ -85,7 +82,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     public PanelPlot(CMatrix ff, float[] x) {
         this.xAxis = x;
         this.cm = ff;
-        items = new String[cm.getRowNumber()];
+        items = new String[cm.getColumnNumber()];
         for (int i = 0; i < items.length; i++) {
             items[i] = "Line - " + (i + 1);
         }
@@ -219,8 +216,8 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         float maxX = getMaxXValue(d);
         float cellWidth = w / maxX;
         float cellHeight = h / deltaY;
-        for (int r = 0; r < d.length; r++) {
-            for (int c = 0; c < d[0].length; c++) {
+        for (int r = 0; r < d[0].length; r++) {
+            for (int c = 0; c < d.length; c++) {
                 CPoint p = new CPoint();
                 if (c == 0) {
                     p.column = (int) Math.round(fromLeft + (c) * cellWidth);
@@ -228,8 +225,8 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                     p.column = (int) Math.round(fromLeft + (c + 1) * cellWidth);
                 }
 
-                p.row = (int) Math.round((fromTop + h) - (d[r][c] - minY) * cellHeight);
-                ret[r][c] = p;
+                p.row = (int) Math.round((fromTop + h) - (d[c][r] - minY) * cellHeight);
+                ret[c][r] = p;
             }
         }
         return ret;
@@ -244,7 +241,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     }
 
     public CMatrix getMatrix() {
-        return this.cm.transpose();
+        return this.cm;
     }
 
     private void initialize() {
@@ -302,7 +299,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                         && mp[i][j].row < mousePos.y + 5
                         && mp[i][j].column > mousePos.x - 5
                         && mp[i][j].column < mousePos.x + 5) {
-                    ret = i;
+                    ret = j;
                     return ret;
 
                 }
@@ -344,10 +341,10 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
     private void drawPolyLines(Graphics2D gr, CPoint[][] mp, int nr) {
         gr.setColor(color[nr]);
-        int[] xp = new int[cm.getColumnNumber()];
-        int[] yp = new int[cm.getColumnNumber()];
-        for (int j = 0; j < cm.getColumnNumber(); j++) {
-            CPoint p = mp[nr][j];
+        int[] xp = new int[cm.getRowNumber()];
+        int[] yp = new int[cm.getRowNumber()];
+        for (int j = 0; j < cm.getRowNumber(); j++) {
+            CPoint p = mp[j][nr];
             yp[j] = p.row;
             xp[j] = p.column;
         }
@@ -369,10 +366,10 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         if (pType.contains("-")) {
             if (figureAttribute.isStroke) {
                 gr.setStroke(figureAttribute.stroke.get(nr));
-                gr.drawPolyline(xp, yp, cm.getColumnNumber());
+                gr.drawPolyline(xp, yp, cm.getRowNumber());
             } else {
                 gr.setStroke(stroke);
-                gr.drawPolyline(xp, yp, cm.getColumnNumber());
+                gr.drawPolyline(xp, yp, cm.getRowNumber());
             }
         }
         if (isShowPoint) {
@@ -414,12 +411,12 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
             for (int j = 0; j < mp[0].length; j++) {
                 if (mp[i][j].column > mousePos.x - 5 && mp[i][j].column < mousePos.x + 5) {
                     gr.setColor(Color.red);
-                    //red rsquares on the lines
+                    //red squares on the lines
                     gr.fillRect(mp[i][j].column - 1, mp[i][j].row - 1, 5, 5);
 
                     gr.drawRect(fromLeft - 55, mp[i][j].row - 11, 50, 20);
                     gr.drawRect(fromLeft + canvas_width + 2, mp[i][j].row - 11, 50, 20);
-                    push(color[i]);
+                    push(color[j]);
                     gr.drawString("" + FactoryUtils.formatFloat(cm.toFloatArray2D()[i][j], 3), fromLeft - 50, mp[i][j].row + 6);
                     gr.drawString("" + FactoryUtils.formatFloat(cm.toFloatArray2D()[i][j], 3), fromLeft + canvas_width + 5, mp[i][j].row + 6);
                     gr.drawLine(fromLeft, mp[i][j].row+1, fromLeft + canvas_width, mp[i][j].row+1);
@@ -434,12 +431,12 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 //                    gr.drawRect(fromLeft+canvas_width, mousePos.y-10, 50, 20);
 
                     gr.setColor(Color.gray);
-                    gr.drawString("" + j, mp[i][j].column - 17, fromTop - 3);
-                    gr.drawString("" + j, mp[i][j].column - 17, fromTop + canvas_height + 20);
+                    gr.drawString("" + i, mp[i][j].column - 17, fromTop - 3);
+                    gr.drawString("" + i, mp[i][j].column - 17, fromTop + canvas_height + 20);
 
 //                    gr.drawString("" + FactoryUtils.formatDouble(cm.toDoubleArray2D()[i][j]), fromLeft-50, mousePos.y-10);
                     //lst.add(items[i] + ":" + cm.toDoubleArray2D()[i][j]);
-                    vals[i] = j;
+                    vals[j] = i;
                     break;
                 }
             }
@@ -573,14 +570,15 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     }
 
     private float getMaxXValue(float[][] d) {
-        float ret = 0;
-        ret = d[0].length;
-        for (int i = 0; i < d.length; i++) {
-            if (ret < d[i].length) {
-                ret = d[i].length;
-            }
-        }
-        return ret;
+//        float ret = 0;
+//        ret = d[0].length;
+//        for (int i = 0; i < d.length; i++) {
+//            if (ret < d[i].length) {
+//                ret = d[i].length;
+//            }
+//        }
+//        return ret;
+        return d.length;
     }
 
     /**
@@ -644,6 +642,9 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
     public void setFigureAttribute(TFigureAttribute figureAttribute) {
         this.figureAttribute = figureAttribute;
+        if (figureAttribute.items!=null || figureAttribute.items.length>0) {
+            this.items=figureAttribute.items;
+        }
         //this.items=figureAttribute.items;
         repaint();
     }

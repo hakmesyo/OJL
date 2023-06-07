@@ -9,12 +9,17 @@ import jazari.types.TPanelData;
 import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import jazari.factory.FactoryMatrix;
+import jazari.factory.FactoryNormalization;
 
 /**
  *
@@ -22,24 +27,30 @@ import java.awt.RenderingHints;
  */
 public class PanelBar extends TPanelData {
 
-    private int[][] hist;
+    private float[][] data;
+    private float[][] originalData;
     private float scale = 1;
     private Color[] color;
 
     public PanelBar(CMatrix cm) {
         super(cm);
-        this.hist = FactoryUtils.transpose(getMatrix().toIntArray2D());
-        color = FactoryUtils.generateColor(hist.length);
+        this.originalData = FactoryMatrix.transpose(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
+        this.data = FactoryNormalization.normalizeMinMax(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
+        this.data = FactoryMatrix.transpose(this.data);
+        color = FactoryUtils.generateColor(data.length);
         initialize();
         repaint();
     }
 
-    public int[][] getHistogramData() {
-        return this.hist;
+    public float[][] getData() {
+        return getMatrix().getArray2Dfloat();
     }
 
-    public void setHistogramData(CMatrix cm) {
-        this.hist = FactoryUtils.transpose(getMatrix().toIntArray2D());
+    public void setData(CMatrix cm) {
+        getMatrix().setArray(cm.array);
+        this.data = FactoryNormalization.normalizeMinMax(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
+        this.data = FactoryMatrix.transpose(this.data);
+        this.originalData = FactoryMatrix.transpose(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
         repaint();
 
     }
@@ -47,23 +58,31 @@ public class PanelBar extends TPanelData {
     private void initialize() {
         this.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         this.updateUI();
+        addMouseListener(new MouseAdapter() {
+        });
+
+        addMouseMotionListener(new MouseAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent e) {
+                mousePos = e.getPoint();
+                repaint();
+            }
+        });
     }
 
     @Override
     public void paint(Graphics gr1) {
-        //this.hist = FactoryUtils.transpose(getMatrix().to2DArrayInteger());
         Graphics2D gr = (Graphics2D) gr1;
         gr.setRenderingHint(
                 RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-         Font fnt = gr.getFont();
-//        gr.setFont(new Font(fnt.getFontName(), 1, 18));
+//        Font fnt = gr.getFont();
+//        gr.setFont(new Font(fnt.getFontName(), 1, 15));
         gr.setColor(Color.white);
         int w = getWidth();
         int h = getHeight();
         gr.fillRect(0, 0, w, h);
-        int px = 10;
-        int py = 10;
+        int px = 70;
+        int py = 70;
         int dx = w - 2 * px;
         int dy = h - 2 * py;
 
@@ -75,79 +94,88 @@ public class PanelBar extends TPanelData {
         }
 
         gr.setColor(Color.black);
-        gr.drawRect(px - 2, py, dx + 5, dy);
-        drawAxisX(gr, dx, dy, px, py);
-        drawAxisY(gr, dx, dy, px, py);
+        gr.drawRect(px, py, dx, dy);
+        drawAxisX(gr, px, py, dx, dy);
+        drawAxisY(gr, px, py, dx, dy);
         gr.setColor(Color.red);
         gr.drawRect(0, 0, w - 1, h - 1);
         gr.drawRect(1, 1, w - 3, h - 3);
-        this.paintComponents(gr);
+        //this.paintComponents(gr);
     }
 
-    private void drawAxisX(Graphics2D gr, int dx, int dy, int px, int py) {
-        float[] d = FactoryUtils.toFloatArray1D(hist[0]);
-        int n = d.length / 5;
-        int nd = FactoryUtils.getDigitNumber(n);
-        if (nd == 1) {
-            nd++;
-        } else {
-            int coeff = (nd - 1) * 10;
-            //biiznillah yuvarlıyor 0,50,100 mesela
-            n = (n / coeff) * coeff;
-        }
-        for (int i = 0; i <= 5; i++) {
-            int x = px + (int) (dx * n * 1.0 / d.length * i);
-            if (i * n != 0) {
-                gr.drawString(i * n + "", x - 5, dy + py + 20);
-            }
-//            gr.drawLine(x, py, x, py + 5);
-//            gr.drawLine(x, dy + py, x, dy + py + 5);
+    private void drawAxisX(Graphics2D gr, int px, int py, int dx, int dy) {
+        float[] d = data[0];
+        float n = 5;
+        float deltaValX = d.length / n;
+        float deltaX = dx / n;
+
+        for (int i = 0; i <= n; i++) {
+            int x = (int) (px + deltaX * i);
+            gr.drawString(FactoryUtils.formatFloat(i * deltaValX, 0) + "", x - 5, dy + py + 30);
+            gr.drawLine(x, dy + py + 2, x, dy + py + 12);
         }
     }
 
-    private void drawAxisY(Graphics2D gr, int dx, int dy, int px, int py) {
-        int maxY = FactoryUtils.getMaximum(hist);
-        float normY = (dy - 30) * 1.0f / maxY;
-        int qy = (int) (maxY * normY);
-        qy = ((qy / 10) + 1) * 10;
-        int deltaY = qy / 5;
-        int nd = FactoryUtils.getDigitNumber(maxY);
-        int coeff = (int) Math.pow(10, nd - 1);
-        //biiznillah yuvarlıyor 0,50,100 mesela
-//        int n = (maxY / coeff + 1) * coeff / 5;
-        int n = (maxY / (coeff + 1)) * coeff / 5;
-        int a = 50;
-        int enBuyukY = 0;
+    private void drawAxisY(Graphics2D gr, int px, int py, int dx, int dy) {
+        float maxY = FactoryUtils.getMaximum(data);
+        float minY = FactoryUtils.getMinimum(data);
+        float normY = dy;
 
-//        for (int i = 0; i <= 5; i++) {
-//            int y = py + deltaY * i;
-//            enBuyukY = n * i;
-//            gr.drawString(enBuyukY + "", px - 40, dy + py - y + a);
-//            gr.drawLine(px - 5, dy + py - y + a, px + 5, dy + py - y + a);
-//            gr.drawLine(px + dx - 5, dy + py - y + a, px + dx, dy + py - y + a);
-//        }
-        for (int k = 0; k < hist.length; k++) {
-            float normX = dx * 1.0f / hist[k].length;
+        int n = 5;
+        int deltaY = dy / n;
+        float originalMaxY = FactoryUtils.getMaximum(originalData);
+        float originalMinY = FactoryUtils.getMinimum(originalData);
+        float deltaValY = (originalMaxY - originalMinY) / n;
+
+        for (int i = 0; i <= n; i++) {
+            int distY = (py + dy) - (i * deltaY);
+            gr.drawString(FactoryUtils.formatFloat(originalMinY + i * deltaValY, 2) + "", 10, distY + 3);
+            gr.drawLine(px - 12, distY, px - 2, distY);
+        }
+
+        for (int k = 0; k < data.length; k++) {
+            float normX = dx * 1.0f / data[k].length;
             int x = 0;
             int x2 = 0;
             int y = 0;
-            for (int i = 0; i < hist[k].length; i++) {
+            for (int i = 0; i < data[k].length; i++) {
                 x = (int) (i * normX);
                 x2 = (int) ((i + 1) * normX);
-                y = (int) (hist[k][i] * normY);
-//                if (i > 255) {
-//                    continue;
-//                }
+                y = (int) (data[k][i] * normY);
                 float alpha = 0.5f;
                 AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
                 gr.setComposite(alcom);
                 gr.setColor(color[k]);
                 gr.fillRect(px + x, py + dy - y, (x2 - x), y);
                 gr.setColor(Color.black);
-                gr.drawString(hist[k][i] + "", px + x + 2, dy + py - y - 3);
+                //int titleWidth = FactoryUtils.getGraphicsTextWidth(gr, originalData[k][i] + "");
+                //gr.drawString(originalData[k][i] + "", px + x + (normX-titleWidth)/2, dy + py - y - 3);
                 gr.drawRect(px + x, py + dy - y, (x2 - x), y);
             }
         }
+        Rectangle rect = new Rectangle(px, py, dx, dy);
+        float delta_x = 1.0f * dx / data[0].length;
+        //BasicStroke stroke = new BasicStroke(3);
+        float alpha = 0.85f;
+        if (rect.contains(mousePos)) {
+            AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
+            gr.setComposite(alcom);
+            int nX = (int) ((mousePos.x - px) / delta_x);
+            int y = (int) (data[0][nX] * normY);
+            int x1 = (int) (px + nX * delta_x);
+            
+            gr.setColor(Color.red);
+            gr.fillRect(x1, py + dy - y, (int) (delta_x * 1f), (int) (y));
+            gr.setColor(Color.black);
+            //gr.setStroke(stroke);
+            gr.drawRect(x1, py + dy - y, (int) (delta_x * 1f), (int) (y));
+            int titleWidth = FactoryUtils.getGraphicsTextWidth(gr, originalData[0][nX] + "");
+            //gr.drawString(originalData[0][nX] + "", x1 + (((int)(delta_x * 2f)-titleWidth)/2) , dy + py - y - 3);
+            //gr.setColor(Color.black);
+            //gr.drawString(originalData[0][nX] + "", x1 + (((int)(delta_x * 2f)-titleWidth)/2) , dy + py - y + 20);
+            gr.drawString(originalData[0][nX] + "", x1 + (((int)(delta_x)-titleWidth)/2) , dy + py - y - 10);
+        }
+
     }
 
     /**

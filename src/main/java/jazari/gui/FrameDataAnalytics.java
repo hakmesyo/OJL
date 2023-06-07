@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import jazari.factory.FactoryUtils;
+import jazari.matrix.CMatrix;
 import jazari.utils.DataAnalytics;
 
 /**
@@ -181,6 +182,15 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
         }
     }
 
+    private float[][] getData() {
+        String[] cnt=getCounts();
+        float[][] ret=new float[cnt.length-1][1];
+        for (int i = 0; i < cnt.length-1; i++) {
+            ret[i][0]=Float.parseFloat(cnt[i]);
+        }
+        return ret;
+    }
+
     public class ColorItem {
 
         public String className;
@@ -207,6 +217,8 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
     private void initComponents() {
 
         container = new javax.swing.JPanel();
+        btn_bar_plot = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -221,22 +233,48 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
         container.setLayout(containerLayout);
         containerLayout.setHorizontalGroup(
             containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 689, Short.MAX_VALUE)
+            .addGap(0, 474, Short.MAX_VALUE)
         );
         containerLayout.setVerticalGroup(
             containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 452, Short.MAX_VALUE)
+            .addGap(0, 411, Short.MAX_VALUE)
         );
+
+        btn_bar_plot.setText("Bar Plot");
+        btn_bar_plot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_bar_plotActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("Close");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(container, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btn_bar_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(container, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_bar_plot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(container, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -245,6 +283,15 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         frm.getPicturePanel().requestFocus();
     }//GEN-LAST:event_formWindowClosed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        dispose();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void btn_bar_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_bar_plotActionPerformed
+        float[][] data = getData();
+        CMatrix cm = CMatrix.getInstance(data).showBar();        
+    }//GEN-LAST:event_btn_bar_plotActionPerformed
 
     /**
      * @param args the command line arguments
@@ -282,6 +329,8 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btn_bar_plot;
     private javax.swing.JPanel container;
+    private javax.swing.JButton jButton2;
     // End of variables declaration//GEN-END:variables
 }

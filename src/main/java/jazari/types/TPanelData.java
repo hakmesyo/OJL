@@ -31,7 +31,7 @@ public class TPanelData extends javax.swing.JPanel {
 
     private double scale = 1;
     private CMatrix dataMatrix;
-    private Point mousePos = new Point(0, 0);
+    public Point mousePos = new Point(0, 0);
     private boolean activateDataCursor = false;
     private JRadioButtonMenuItem items[];
     private final JPopupMenu popupMenu = new JPopupMenu();

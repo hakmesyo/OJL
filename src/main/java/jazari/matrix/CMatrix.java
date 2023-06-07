@@ -137,6 +137,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.stream.IntStream;
 import javax.swing.JPanel;
+import jazari.gui.FrameDataSetTextEditor;
 import jazari.utils.DataAugmentationOpt;
 import jazari.utils.PerlinNoise2D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -172,12 +173,12 @@ public final class CMatrix implements Serializable {
     private FrameHeatMap frameHeatMap = null;
     public String plotType = "-";
     private List<String> columnNames = new ArrayList();
-    private List classLabels = new ArrayList();
+    private List<String> classLabels = new ArrayList();
     private float[] xData4FX;
 //    private static Random random = new SecureRandom();
     private Random random = new SecureRandom();
     private List classLabelValues = new ArrayList();
-    private List classLabelNames = new ArrayList();
+    private List<String> classLabelNames = new ArrayList();
     public String[] combinationPairs;
     public String[] permutationPairs;
     public static CMatrix currentMatrix = null;
@@ -812,13 +813,11 @@ public final class CMatrix implements Serializable {
      *
      * @return CMatrix float type
      */
-    
     /*
     public static CMatrix getInstance(Mat m) {
         float[][] d = ImageProcess.imageToPixels2DFromOpenCV(m);
         return new CMatrix(d);
     }*/
-
     /**
      * generate a matrix from the text file choosen, assuming item separator is
      * ;
@@ -1996,16 +1995,20 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plot() {
         this.array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
+        TFigureAttribute attr = new TFigureAttribute();
+        attr.items = getColumnNamesArray();
+
         if (!hold_on) {
-            framePlot = new FramePlot(this);
+            framePlot = new FramePlot(this,attr);
         } else {
             if (framePlot == null) {
-                framePlot = new FramePlot(this);
+                framePlot = new FramePlot(this,attr);
             }
             framePlot.setMatrix(this);
         }
         TFigureAttribute fg = new TFigureAttribute();
         fg.pointType = plotType;
+        fg.items=getColumnNamesArray();
         framePlot.setFigureAttribute(fg);
         framePlot.setVisible(true);
         return this;
@@ -2129,6 +2132,22 @@ public final class CMatrix implements Serializable {
     public CMatrix bar() {
         FrameBar frm = new FrameBar(this);
         frm.setVisible(true);
+        return this;
+    }
+
+    /**
+     * plot the curves of each column in the matrix
+     *
+     * @return CMatrix
+     */
+    public CMatrix showBar() {
+        FrameBar frm = new FrameBar(this);
+        frm.setVisible(true);
+        return this;
+    }
+
+    public CMatrix showDataSetTextEditor() {
+        new FrameDataSetTextEditor().setVisible(true);
         return this;
     }
 
@@ -2519,8 +2538,7 @@ public final class CMatrix implements Serializable {
         frm.setVisible(true);
         return this;
     }
-    */
-
+     */
     /**
      * is used for revert or invert the image color
      *
@@ -4250,9 +4268,10 @@ public final class CMatrix implements Serializable {
         setArray(ret);
         return this;
     }
-    
+
     /**
-     * Matlab compatible command: Singular Value Decomposition (return S values in a column vector format)
+     * Matlab compatible command: Singular Value Decomposition (return S values
+     * in a column vector format)
      *
      * @return CMatrix
      */
@@ -4261,7 +4280,8 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * Singular Value Decomposition (return S values in a diagonal matrix format identical to svd)
+     * Singular Value Decomposition (return S values in a diagonal matrix format
+     * identical to svd)
      *
      * @return CMatrix
      */
@@ -4273,7 +4293,8 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * Singular Value Decomposition (return U values in a diagonal matrix format)
+     * Singular Value Decomposition (return U values in a diagonal matrix
+     * format)
      *
      * @return CMatrix
      */
@@ -4285,7 +4306,8 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * Singular Value Decomposition (return V values in a diagonal matrix format)
+     * Singular Value Decomposition (return V values in a diagonal matrix
+     * format)
      *
      * @return CMatrix
      */
@@ -4738,7 +4760,7 @@ public final class CMatrix implements Serializable {
         String ek;
         if (file.getName().indexOf(".") == -1) {
             //File[] files = FactoryUtils.getFileArrayInFolderForImages(path);
-            File[] files = FactoryUtils.getFileArrayInFolderByExtension(path,"png","jpg","bmp","jpeg","JPG","JPEG","PNG");
+            File[] files = FactoryUtils.getFileArrayInFolderByExtension(path, "png", "jpg", "bmp", "jpeg", "JPG", "JPEG", "PNG");
             if (files.length >= 0) {
                 path += "\\" + files[0].getName();
             }
@@ -6932,8 +6954,7 @@ public final class CMatrix implements Serializable {
         CRectangle[] ret = ImageProcess.getFacesRectanglesAsCRectangle(type, this.image);
         return ret;
     }
-    */
-
+     */
     public CMatrix imupdate() {
         if (image == null || image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
             image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
@@ -7421,8 +7442,20 @@ public final class CMatrix implements Serializable {
         return columnNames;
     }
 
+    public String[] getColumnNamesArray() {
+        String[] ret=new String[getColumnNumber()];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i]="f_"+i;
+        }
+        return ret;
+    }
+
     public List getClassLabels() {
         return classLabels;
+    }
+
+    public String[] getClassLabelsArray() {
+        return classLabels.toArray(new String[getClassLabels().size()]);
     }
 
     public CMatrix setClassLabels(List classLabels) {
@@ -8032,7 +8065,6 @@ public final class CMatrix implements Serializable {
      * @param to:end point
      * @return CMatrix
      */
-
     public CMatrix meshGridX(double from, double to) {
         setArray(FactoryMatrix.meshGridX(array.toFloatMatrix(), (float) from, (float) to));
         return this;
@@ -8344,7 +8376,7 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public CMatrix perlinNoise2D(int frequency, int start_time) {
-        BufferedImage img=PerlinNoise2D.getNoiseImage(this.getColumnNumber(),this.getRowNumber(), frequency, start_time);
+        BufferedImage img = PerlinNoise2D.getNoiseImage(this.getColumnNumber(), this.getRowNumber(), frequency, start_time);
         this.setImage(img);
         name = this.name + "|perlinNoise2D";
         return this;
@@ -8359,8 +8391,8 @@ public final class CMatrix implements Serializable {
      * @param start_time
      * @return
      */
-    public CMatrix perlinNoise2D(int width,int height,int frequency, int start_time) {
-        BufferedImage img=PerlinNoise2D.getNoiseImage(width,height, frequency, start_time);
+    public CMatrix perlinNoise2D(int width, int height, int frequency, int start_time) {
+        BufferedImage img = PerlinNoise2D.getNoiseImage(width, height, frequency, start_time);
         this.setImage(img);
         name = this.name + "|perlinNoise2D";
         return this;
@@ -8451,9 +8483,10 @@ public final class CMatrix implements Serializable {
         //CMatrix ret = CMatrix.getInstance().eye(n).multiplyScalar(n);
         return ret;
     }
-    
+
     /**
      * produces diagonal square matrix with specified size and scalar value
+     *
      * @param size
      * @param value
      * @return
@@ -8466,10 +8499,11 @@ public final class CMatrix implements Serializable {
 
     /**
      * get diagonal vector of current matrix
+     *
      * @return
      */
     public CMatrix diag() {
-        float[] d=FactoryUtils.getDiagonalVector(this.toFloatArray2D());
+        float[] d = FactoryUtils.getDiagonalVector(this.toFloatArray2D());
         return setArray(d);
     }
 
@@ -9340,7 +9374,8 @@ public final class CMatrix implements Serializable {
 
     /**
      *
-     * @param pathSource : source directory should contain image and pascalvoc formatted xml files
+     * @param pathSource : source directory should contain image and pascalvoc
+     * formatted xml files
      * @param pathTarget : target directory
      * @param trainRatio : ie 0.7f
      * @param valRatio : ie 0.1f

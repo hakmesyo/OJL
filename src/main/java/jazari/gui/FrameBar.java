@@ -8,7 +8,6 @@ package jazari.gui;
 import jazari.image_processing.ImageProcess;
 import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
-import java.awt.image.BufferedImage;
 import java.io.File;
 
 /**
@@ -21,9 +20,9 @@ public class FrameBar extends javax.swing.JFrame {
 
 
     public FrameBar(CMatrix cm) {
-        super(cm.name+"|Histogram");
-        cm.name+="|Histogram";
-        this.cm =cm.clone().transpose();
+        super(cm.name+"|Bar");
+        cm.name+="|Bar";
+        this.cm =cm.clone();
         initComponents();
     }
 
@@ -52,11 +51,11 @@ public class FrameBar extends javax.swing.JFrame {
         panel_plot.setLayout(panel_plotLayout);
         panel_plotLayout.setHorizontalGroup(
             panel_plotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 587, Short.MAX_VALUE)
+            .addGap(0, 872, Short.MAX_VALUE)
         );
         panel_plotLayout.setVerticalGroup(
             panel_plotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 444, Short.MAX_VALUE)
+            .addGap(0, 516, Short.MAX_VALUE)
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -91,7 +90,7 @@ public class FrameBar extends javax.swing.JFrame {
                 .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
-                .addContainerGap(363, Short.MAX_VALUE))
+                .addContainerGap(613, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -121,7 +120,7 @@ public class FrameBar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
-        CMatrix cm = getHistogramPanel().getMatrix();
+        CMatrix cm = getBarPanel().getMatrix();
         new FrameDataGrid(cm).setVisible(true);
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
@@ -129,13 +128,13 @@ public class FrameBar extends javax.swing.JFrame {
         savePanel();
     }//GEN-LAST:event_btn_saveActionPerformed
 
-    public PanelBar getHistogramPanel() {
+    public PanelBar getBarPanel() {
         return (PanelBar) panel_plot;
     }
     
-    public void setHistogramData(CMatrix cmx){
+    public void setBarData(CMatrix cmx){
         this.cm = cmx.getHistogram();
-        getHistogramPanel().setMatrix(cm);
+        getBarPanel().setMatrix(cm);
     }
 
     /**
@@ -151,13 +150,13 @@ public class FrameBar extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void savePanel() {
-        PanelBar cp = getHistogramPanel();
+        PanelBar cp = getBarPanel();
         int dpi = Integer.parseInt(txt_dpi.getText());
         double scale = dpi / 96.0;
         cp.setSize((int) (cp.getWidth() * scale), (int) (cp.getHeight() * scale));
         File file = FactoryUtils.getFileFromChooserSave();
         if (file != null) {
-            ImageProcess.saveGridImage(ImageProcess.getBufferedImage(getHistogramPanel()), file.getAbsolutePath());
+            ImageProcess.saveGridImage(ImageProcess.getBufferedImage(getBarPanel()), file.getAbsolutePath());
         } else {
             FactoryUtils.showMessage("kaydedilemedi CPlotFrame.savePanel()");
         }

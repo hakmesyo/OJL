@@ -14,6 +14,7 @@ import java.util.Vector;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import jazari.types.TFigureAttribute;
 //import org.ujmp.core.Matrix;
 //import org.ujmp.core.MatrixFactory;
 
@@ -47,7 +48,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
     public void setMatrix(CMatrix m) {
         this.cm = m;
-        jTable_artificialDS.setModel(getTableModelForArtificialData(cm,false));
+        jTable_artificialDS.setModel(getTableModelForArtificialData(cm, false));
     }
 
     public CMatrix getMatrix() {
@@ -79,6 +80,8 @@ public class FrameDataGrid extends javax.swing.JFrame {
         btn_scatter = new javax.swing.JButton();
         btn_visualize1 = new javax.swing.JButton();
         btn_convert_2_int = new javax.swing.JButton();
+        btn_from_text = new javax.swing.JButton();
+        btn_bar_plot = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -105,7 +108,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
         jPanel26.setLayout(jPanel26Layout);
         jPanel26Layout.setHorizontalGroup(
             jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
+            .addComponent(jScrollPane2)
             .addGroup(jPanel26Layout.createSequentialGroup()
                 .addComponent(lbl_size, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
@@ -172,45 +175,66 @@ public class FrameDataGrid extends javax.swing.JFrame {
             }
         });
 
+        btn_from_text.setText("DataSet Text Editor");
+        btn_from_text.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_from_textActionPerformed(evt);
+            }
+        });
+
+        btn_bar_plot.setText("Bar Plot");
+        btn_bar_plot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_bar_plotActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton_buildArtificialDS, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_visualize1, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_convert_2_int, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jButton_buildArtificialDS, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel30)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField_rowNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel29)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTextField_colNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBox_randomType, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 199, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btn_bar_plot, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_visualize1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_from_text)
+                        .addGap(82, 82, 82))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel30)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField_rowNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel29)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField_colNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jComboBox_randomType, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_convert_2_int)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btn_convert_2_int, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btn_visualize1, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_visualize1, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_bar_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_from_text, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton_buildArtificialDS, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -218,7 +242,8 @@ public class FrameDataGrid extends javax.swing.JFrame {
                     .addComponent(jLabel29)
                     .addComponent(jTextField_colNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jTextField_rowNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox_randomType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jComboBox_randomType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_convert_2_int, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -261,7 +286,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
                 TableModel model = new DefaultTableModel(data, columnNames) {
                 };
                 return model;
-            }else{
+            } else {
                 Object data[][] = m.toStringArray2DAsInt();
                 TableModel model = new DefaultTableModel(data, columnNames) {
                 };
@@ -320,17 +345,25 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
     private void btn_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_plotActionPerformed
         if (getMatrix() != null) {
+            //TFigureAttribute attr = new TFigureAttribute();
+            //attr.items = getMatrix().getColumnNamesArray();
             getMatrix().plot();
         } else {
             double[][] d = tableToArray(jTable_artificialDS);
             CMatrix cm = CMatrix.getInstance(d);
             setMatrix(cm);
+            //TFigureAttribute attr = new TFigureAttribute();
+            //attr.items = cm.getColumnNamesArray();
             cm.plot();
         }
 
     }//GEN-LAST:event_btn_plotActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed
+        if (getMatrix().getColumnNumber()<2) {
+            System.err.println("number of columns should be at least 2");
+            return;
+        }
         if (getMatrix() != null) {
             getMatrix().scatter();
         } else {
@@ -350,8 +383,23 @@ public class FrameDataGrid extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_visualize1ActionPerformed
 
     private void btn_convert_2_intActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_convert_2_intActionPerformed
-        jTable_artificialDS.setModel(getTableModelForArtificialData(cm,true));
+        jTable_artificialDS.setModel(getTableModelForArtificialData(cm, true));
     }//GEN-LAST:event_btn_convert_2_intActionPerformed
+
+    private void btn_from_textActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_from_textActionPerformed
+        new FrameDataSetTextEditor().setVisible(true);
+    }//GEN-LAST:event_btn_from_textActionPerformed
+
+    private void btn_bar_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_bar_plotActionPerformed
+        if (getMatrix() != null) {
+            getMatrix().bar();
+        } else {
+            double[][] d = tableToArray(jTable_artificialDS);
+            CMatrix cm = CMatrix.getInstance(d);
+            setMatrix(cm);
+            cm.bar();
+        }
+    }//GEN-LAST:event_btn_bar_plotActionPerformed
 
     public static void plotMatrix(JTable table) {
         double[][] d = tableToArray(table);
@@ -447,7 +495,9 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btn_bar_plot;
     private javax.swing.JButton btn_convert_2_int;
+    private javax.swing.JButton btn_from_text;
     private javax.swing.JButton btn_plot;
     private javax.swing.JButton btn_scatter;
     private javax.swing.JButton btn_visualize;

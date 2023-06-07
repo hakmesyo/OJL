@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -6551,7 +6552,7 @@ public final class FactoryUtils {
         for (String className : classNames) {
             ret.add(new DataAnalytics(className));
         }
-        
+
         File[] files = getFileArrayInFolderByExtension(imageFolderPath, "xml");
         if (files.length == 0) {
             return null;
@@ -6560,18 +6561,18 @@ public final class FactoryUtils {
         for (File file : files) {
             if (checkIntegrityOfXmlFileWithCorrespondingImages(file)) {
                 AnnotationPascalVOCFormat apv = FactoryUtils.deserializePascalVocXML(file.getAbsolutePath());
-                List<PascalVocObject> lst=apv.lstObjects;
+                List<PascalVocObject> lst = apv.lstObjects;
                 for (PascalVocObject pvo : lst) {
                     if (classNames.contains(pvo.name)) {
-                        DataAnalytics da=getDataAnalyticItem(ret,pvo.name);
+                        DataAnalytics da = getDataAnalyticItem(ret, pvo.name);
                         da.frequency++;
                         total++;
                     }
                 }
-            }            
+            }
         }
         for (DataAnalytics da : ret) {
-            da.ratio=Math.round(da.frequency/total*100);
+            da.ratio = Math.round(da.frequency / total * 100);
         }
         return ret;
     }
@@ -6591,13 +6592,13 @@ public final class FactoryUtils {
     }
 
     public static boolean checkIntegrityOfXmlFileWithCorrespondingImages(File file) {
-        String folderPath=file.getParent();
-        String imageFileJpg=folderPath+"/"+getFileName(file.getName())+".jpg";
-        String imageFilePng=folderPath+"/"+getFileName(file.getName())+".png";
-        String imageFileJPEG=folderPath+"/"+getFileName(file.getName())+".JPEG";
-        if (isFileExist(imageFileJpg) || isFileExist(imageFilePng) ||isFileExist(imageFileJPEG)) {
+        String folderPath = file.getParent();
+        String imageFileJpg = folderPath + "/" + getFileName(file.getName()) + ".jpg";
+        String imageFilePng = folderPath + "/" + getFileName(file.getName()) + ".png";
+        String imageFileJPEG = folderPath + "/" + getFileName(file.getName()) + ".JPEG";
+        if (isFileExist(imageFileJpg) || isFileExist(imageFilePng) || isFileExist(imageFileJPEG)) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -6609,6 +6610,94 @@ public final class FactoryUtils {
             }
         }
         return null;
+    }
+
+    public static String[] getStringTokens(String s) {
+        StringTokenizer st = new StringTokenizer(s);
+        int n = st.countTokens();
+        String[] ret = new String[n];
+        int i = 0;
+        while (st.hasMoreTokens()) {
+            ret[i++] = st.nextToken();
+        }
+        return ret;
+    }
+
+    public static float[][] parseData(String text) {
+        String[] s = text.split("\n");
+        String seperator = getSeperator(s);
+        if (s.length == 0) {
+            return null;
+        }
+        int nr = s.length;
+        int nc = s[0].split(seperator).length;
+        boolean isColumnNamesExist = checkColumnName(s[0], seperator);
+        float[][] data=null;
+        if (isColumnNamesExist) {
+            data = new float[nr-1][nc];
+            for (int i = 1; i < nr; i++) {
+                String[] row = s[i].split(seperator);
+                for (int j = 0; j < nc; j++) {
+                    data[i - 1][j] = Float.parseFloat(row[j]);
+                }
+            }
+        }else{
+            data = new float[nr][nc];
+            for (int i = 0; i < nr; i++) {
+                String[] row = s[i].split(seperator);
+                for (int j = 0; j < nc; j++) {
+                    data[i][j] = Float.parseFloat(row[j]);
+                }
+            }
+        }
+        return data;
+    }
+
+    public static String getSeperator(String[] s) {
+        int n = s.length;
+        int m = 0;
+        String seperator = "\t";
+        m = s[0].split("\t").length;
+
+        if (m > 1) {
+            seperator = "\t";
+        } else {
+            m = s[0].split(",").length;
+            if (m > 1) {
+                seperator = ",";
+            } else {
+                m = s[0].split(";").length;
+                if (m > 1) {
+                    seperator = ";";
+                } else {
+                    m = s[0].split(" ").length;
+                    if (m > 1) {
+                        seperator = " ";
+                    } else {
+                        System.err.println("Data should have csv format (ie: comma or blank seperated numeric values) \nOnly first row can be feature names with comma or blanks seperated String values..");
+                        return seperator;
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            int q = s[i].split(seperator).length;
+            if (m != q) {
+                System.err.println("Column number of Dataset is not consistent");
+                return null;
+            }
+        }
+        return seperator;
+    }
+
+    private static boolean checkColumnName(String str, String sep) {
+        String[] s = str.split(sep);
+        try {
+            float f = Float.parseFloat(s[0]);
+        } catch (Exception e) {
+            return true;
+        }
+        return false;
     }
 
 //    public static Rectangle getBoundingRectangle(Polygon polygon) {
@@ -6927,7 +7016,7 @@ public final class FactoryUtils {
         }
         return client;
     }
-    
+
     public static void bekle(int milliSeconds) {
         delay(milliSeconds);
     }
@@ -7767,34 +7856,34 @@ public final class FactoryUtils {
         }
         return s;
     }
-    
-    public static int getScreenWidth(){
+
+    public static int getScreenWidth() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int width = (int)screenSize.getWidth();
+        int width = (int) screenSize.getWidth();
         return width;
     }
-    
-    public static int getScreenHeight(){
+
+    public static int getScreenHeight() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int height = (int)screenSize.getHeight();
+        int height = (int) screenSize.getHeight();
         return height;
     }
-    
-    public static BufferedImage captureWholeScreenWithRobot(){
+
+    public static BufferedImage captureWholeScreenWithRobot() {
         try {
-            Robot robot=new Robot();
-            int width=getScreenWidth();
-            int height=getScreenHeight();
+            Robot robot = new Robot();
+            int width = getScreenWidth();
+            int height = getScreenHeight();
             return robot.createScreenCapture(new Rectangle(0, 0, width, height));
         } catch (AWTException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
-    
-    public static BufferedImage captureScreenWithRobot(Rectangle rect){
+
+    public static BufferedImage captureScreenWithRobot(Rectangle rect) {
         try {
-            Robot robot=new Robot();
+            Robot robot = new Robot();
             return robot.createScreenCapture(rect);
         } catch (AWTException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
