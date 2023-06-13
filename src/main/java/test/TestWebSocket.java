@@ -17,7 +17,8 @@ public class TestWebSocket {
 
     public static void main(String[] args) {
         CMatrix cm = CMatrix.getInstance()
-                .startWebSocket(new InterfaceCallBack() {
+                
+                .startWebSocket(8887,new InterfaceCallBack() {
                     @Override
                     public void onMessageReceived(String str) {
                         System.out.println("str = " + str);

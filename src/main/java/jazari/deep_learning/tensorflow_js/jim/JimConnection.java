@@ -6,6 +6,7 @@
 package jazari.deep_learning.tensorflow_js.jim;
 
 import java.awt.image.BufferedImage;
+import jazari.image_processing.ImageProcess;
 import jazari.interfaces.call_back_interface.CallBackString;
 import org.java_websocket.client.WebSocketClient;
 
@@ -39,13 +40,8 @@ public class JimConnection {
                         response = msg.split(":")[4];
                         System.err.println("thread no:" + thread_no + " detection response = " + response);
                     }
-//                    try {
-//                        Thread.sleep(ms_wait);
-//                    } catch (InterruptedException ex) {
-//                        Logger.getLogger(JimConnection.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
                     if (img != null) {
-                        System.out.println("thread_no:" + thread_no + " img:" + img.getWidth());
+                        //System.out.println("thread_no:" + thread_no + " img:" + img.getWidth());
                         jimUtils.sendByteBufferData(img, thread_no);
                     }
                 }
@@ -56,7 +52,11 @@ public class JimConnection {
     }
 
     public void setImage(BufferedImage img) {
-        this.img = img;
+        if (img.equals(this.img)) {
+            System.out.println("aynı imge olduğu için gönderilmedi");
+        } else {            
+            this.img = ImageProcess.resize(ImageProcess.convertToBufferedImageTypes(img, 5), 224, 224) ;
+        }
     }
 
 }

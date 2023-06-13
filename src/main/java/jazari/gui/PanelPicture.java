@@ -1543,7 +1543,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
         //setDefaultValues();
         setImage(bf, imagePath, caption, isClearBbox);
-        frm.setFrameSize(bf);
+        //frm.setFrameSize(bf);
         frm.img = bf;
         frm.imagePath = imagePath;
         return bf;
@@ -1923,7 +1923,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
         setImage(bf, imagePath, caption, true);
         frm.setTitle(imageFiles[imageIndex].getPath());
-        frm.setFrameSize(bf);
+        //frm.setFrameSize(bf);
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
     }
@@ -1945,7 +1945,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
         setImage(bf, imagePath, caption, true);
         frm.setTitle(imageFiles[imageIndex].getPath());
-        frm.setFrameSize(bf);
+        //frm.setFrameSize(bf);
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
     }

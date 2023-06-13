@@ -70,7 +70,7 @@ public class FrameImage extends javax.swing.JFrame {
         imageFolderPath=FactoryUtils.getFolderPath(imagePath);
         getPicturePanel().setImage(this.img, imagePath, caption);
         getPicturePanel().setFrame(this);
-        this.setSize(img.getWidth() + 300, img.getHeight() + 183);
+        //this.setSize(img.getWidth() + 300, img.getHeight() + 183);
         String[] s = FactoryUtils.splitPath(imagePath);
         this.setTitle(s[s.length - 1]);
         //this.setTitle(imagePath + "/" + caption);
@@ -476,23 +476,23 @@ public class FrameImage extends javax.swing.JFrame {
     private javax.swing.JTextField txt_dpi;
     // End of variables declaration//GEN-END:variables
 
-    public void setFrameSize(BufferedImage img) {
-        if (img.getWidth() * img.getHeight() < 550 * 550) {
-            return;
-        }
-        Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-        pw = 30;
-        //pw = 70;
-        int w = img.getWidth() + 2 * pw + 90;
-        int h = img.getHeight() + 190;
-        if (w < size.width && h < size.height) {
-            this.setSize(w, h);
-        } else {
-            setMaximumSize(size);
-            setExtendedState(JFrame.MAXIMIZED_BOTH);
-        }
-        //this.pack();
-    }
+//    public void setFrameSize(BufferedImage img) {
+//        if (img.getWidth() * img.getHeight() < 550 * 550) {
+//            return;
+//        }
+//        Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+//        pw = 30;
+//        //pw = 70;
+//        int w = img.getWidth() + 2 * pw + 90;
+//        int h = img.getHeight() + 190;
+//        if (w < size.width && h < size.height) {
+//            this.setSize(w, h);
+//        } else {
+//            setMaximumSize(size);
+//            setExtendedState(JFrame.MAXIMIZED_BOTH);
+//        }
+//        //this.pack();
+//    }
 
     private void changeDashedLineColor() {
         getPicturePanel().setDashedLineColor();
@@ -516,7 +516,7 @@ public class FrameImage extends javax.swing.JFrame {
         }
         getPicturePanel().setImage(img, imagePath, caption);
         getPicturePanel().setFrame(this);
-        setFrameSize(img);
+        //setFrameSize(img);
         getPicturePanel().setFocusable(true);
         getPicturePanel().requestFocusInWindow();
         //isSequence.setVisible(false);

@@ -7890,5 +7890,9 @@ public final class FactoryUtils {
         }
         return null;
     }
+    
+    public static boolean isFileExist(File file){
+        return file.exists();
+    }
 
 }
