@@ -7894,5 +7894,65 @@ public final class FactoryUtils {
     public static boolean isFileExist(File file){
         return file.exists();
     }
+    public static boolean isProcessRunning(String serviceName) {
+        boolean ret = false;
+        try {
+            Process p = Runtime.getRuntime().exec("tasklist");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    p.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+
+                System.out.println(line);
+                if (line.contains(serviceName)) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (IOException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+
+    public static void killProcess(String serviceName) {
+        if (isProcessRunning(serviceName)) {
+            try {
+                Runtime.getRuntime().exec("taskkill /F /IM " + serviceName);
+            } catch (IOException ex) {
+                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public static void killProcess(long pid) {
+        ProcessHandle.of(pid).ifPresent(ProcessHandle::destroyForcibly); // or ProcessHandle::destroy
+//        try {
+//            
+//            Runtime.getRuntime().exec("taskkill /F /PID "+pid);
+//        } catch (IOException ex) {
+//            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+    }
+
+    public static Process openHttpServer(String OS, String PATH, int HTTP_PORT) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Process ret = null;
+                try {
+                    if (OS.contains("WINDOWS")) {
+                        ret = Runtime.getRuntime().exec("cmd /c start cmd.exe /K http-server " + PATH + " -p " + HTTP_PORT + " -c1 --cors");
+                    } else if (OS.contains("LINUX")) {
+                        ret = Runtime.getRuntime().exec("/bin/bash -c http-server " + PATH + "-p " + HTTP_PORT);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Deneme.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }).start();
+        return null;
+    }
 
 }

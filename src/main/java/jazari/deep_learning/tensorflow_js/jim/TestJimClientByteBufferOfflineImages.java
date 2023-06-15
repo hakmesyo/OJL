@@ -45,6 +45,7 @@ public class TestJimClientByteBufferOfflineImages {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     System.out.println("You connected to Java server: " + getURI() + "\n");
+                    send("new consumer");
                 }
 
                 @Override
@@ -85,7 +86,7 @@ public class TestJimClientByteBufferOfflineImages {
                     if (msg.split(":").length < 4) {
                         client.send("CJ:THR:" + thread_no + ":" + "real time test image" + ":./temp.jpg");
                     }else{
-                        response = msg.split(":")[4];
+                        response = msg.split(":")[4].split("->")[1];
                     }
                     iterateImageFile(thread_no, response);
 
@@ -98,13 +99,20 @@ public class TestJimClientByteBufferOfflineImages {
     }
 
     private static void iterateImageFile(int thread_no, String response) {
-        System.out.println("thread no:" + thread_no + " detection response = " + response+" elapsed time:"+(System.currentTimeMillis()-t1));
+        System.out.println("thread no:" + thread_no + " detection response = " +files[index].getName()+"->"+ response+" elapsed time:"+(System.currentTimeMillis()-t1));
         t1=System.currentTimeMillis();        
         if (index < files.length - 1) {
             BufferedImage img = ImageProcess.imread(files[index++].getAbsolutePath());
             sendByteBufferData(img, thread_no);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(TestJimClientByteBufferOfflineImages.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else {
             System.out.println("finished");
+            client.close();
+            System.exit(0);
         }
     }
 
@@ -115,9 +123,7 @@ public class TestJimClientByteBufferOfflineImages {
             byte[] b = out.toByteArray();
             byte[] bb = new byte[b.length + 1];
             bb[0] = (byte) thread_id;
-            for (int i = 0; i < b.length; i++) {
-                bb[i + 1] = b[i];
-            }
+            System.arraycopy(b, 0, bb, 1, b.length);
             ByteBuffer byteBuffer = ByteBuffer.wrap(bb);
             client.send(byteBuffer);
             out.close();
@@ -128,8 +134,10 @@ public class TestJimClientByteBufferOfflineImages {
     }
 
     public static void main(String[] args) {
+        //ilk denemede çalışmıyor warm up gerekli sonraki denemede çalışıyor bittikten sonra jimi kapatmadan
+        //yeniden çalışıracaksanız bu denemede de çalışmıyor ama bir sonraki denemede çalışıyor ilginç :)
         t1=System.currentTimeMillis();
-        files = FactoryUtils.getFileArrayInFolderByExtension("C:\\Users\\dell_lab\\Desktop\\fsm_tfjs\\dataset\\closed", "jpg");
+        files = FactoryUtils.getFileArrayInFolderByExtension("C:\\Users\\cezerilab\\Desktop\\fsm_tfjs\\dataset\\closed", "jpg");
         client = startJimCommunication("localhost", "8887", 1);
     }
 }
