@@ -133,6 +133,15 @@ public class FactoryNormalization {
         return ret;
     }
     
+    public static float[][] normalizeMax(float[][] p) {
+        float[][] ret = FactoryUtils.transpose(FactoryMatrix.clone(p));
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = normalizeMax(ret[i]);
+        }
+        ret = FactoryUtils.transpose(ret);
+        return ret;
+    }
+    
 //    public static float[][] normalizeMinMax(float[][] p) {
 //        float[][] ret = FactoryUtils.transpose(FactoryMatrix.clone(p));
 //        for (int i = 0; i < ret.length; i++) {
@@ -156,6 +165,17 @@ public class FactoryNormalization {
     public static float[] normalizeMinMax(float[] v) {
         float[] ret = FactoryMatrix.clone(v);
         float min = FactoryUtils.getMinimum(v);
+        float max = FactoryUtils.getMaximum(v);
+        float delta = (max - min);
+        for (int i = 0; i < v.length; i++) {
+            ret[i] = FactoryUtils.formatFloat((v[i] - min) / delta);
+        }
+        return ret;
+    }
+    
+    public static float[] normalizeMax(float[] v) {
+        float[] ret = FactoryMatrix.clone(v);
+        float min = 0;
         float max = FactoryUtils.getMaximum(v);
         float delta = (max - min);
         for (int i = 0; i < v.length; i++) {

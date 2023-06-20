@@ -47,7 +47,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jazari.gui.PanelBar(cm)"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jazari.gui.PanelBar(cm,labels)"/>
       </AuxValues>
 
       <Layout>

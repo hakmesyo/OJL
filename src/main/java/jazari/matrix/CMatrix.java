@@ -2130,7 +2130,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix bar() {
-        FrameBar frm = new FrameBar(this);
+        FrameBar frm = new FrameBar(this,null);
         frm.setVisible(true);
         return this;
     }
@@ -2140,8 +2140,19 @@ public final class CMatrix implements Serializable {
      *
      * @return CMatrix
      */
-    public CMatrix showBar() {
-        FrameBar frm = new FrameBar(this);
+    public CMatrix showBar(String[] labels) {
+        FrameBar frm = new FrameBar(this,labels);
+        frm.setVisible(true);
+        return this;
+    }
+
+    /**
+     * plot the curves of each column in the matrix
+     *
+     * @return CMatrix
+     */
+    public CMatrix plotBar(String[] labels) {
+        FrameBar frm = new FrameBar(this,labels);
         frm.setVisible(true);
         return this;
     }

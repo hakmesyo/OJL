@@ -242,7 +242,7 @@ public class FrameDataSetTextEditor extends javax.swing.JFrame {
 
     private void performBarPlot() {
         float[][] data = FactoryUtils.parseData(txt_pane.getText());
-        CMatrix cm = CMatrix.getInstance(data).showBar();
+        CMatrix cm = CMatrix.getInstance(data).plotBar(null);
     }
 
 }

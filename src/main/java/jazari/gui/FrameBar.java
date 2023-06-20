@@ -17,13 +17,26 @@ import java.io.File;
 public class FrameBar extends javax.swing.JFrame {
 
     private CMatrix cm;
+    private String[] labels;
 
 
-    public FrameBar(CMatrix cm) {
+//    public FrameBar(CMatrix cm) {
+//        super(cm.name+"|Bar");
+//        cm.name+="|Bar";
+//        this.cm =cm.clone();
+//        initComponents();
+//    }
+    
+    public FrameBar(CMatrix cm, String[] labels) {
         super(cm.name+"|Bar");
         cm.name+="|Bar";
         this.cm =cm.clone();
+        this.labels=labels;
         initComponents();
+    }
+    
+    public void setLabels(String ... labels){
+        this.labels=labels;
     }
 
 
@@ -36,7 +49,7 @@ public class FrameBar extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel_plot = new jazari.gui.PanelBar(cm);
+        panel_plot = new jazari.gui.PanelBar(cm,labels);
         jPanel2 = new javax.swing.JPanel();
         btn_dataGrid = new javax.swing.JButton();
         btn_save = new javax.swing.JButton();
@@ -135,6 +148,11 @@ public class FrameBar extends javax.swing.JFrame {
     public void setBarData(CMatrix cmx){
         this.cm = cmx.getHistogram();
         getBarPanel().setMatrix(cm);
+    }
+
+    public void setBarData(CMatrix cmx, String[] labels){
+        this.cm = cmx.getHistogram();
+        getBarPanel().setMatrix(cm, labels);
     }
 
     /**

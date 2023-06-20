@@ -35,6 +35,7 @@ public class TPanelData extends javax.swing.JPanel {
     private boolean activateDataCursor = false;
     private JRadioButtonMenuItem items[];
     private final JPopupMenu popupMenu = new JPopupMenu();
+    private String[] labels;
 
     public TPanelData(CMatrix cm) {
         this.dataMatrix = cm;
@@ -148,6 +149,12 @@ public class TPanelData extends javax.swing.JPanel {
 
     public void setMatrix(CMatrix dataMatrix) {
         this.dataMatrix = dataMatrix;
+        repaint();
+    }
+
+    public void setMatrix(CMatrix dataMatrix, String[] labels) {
+        this.dataMatrix = dataMatrix;
+        this.labels=labels;
         repaint();
     }
 
