@@ -15,18 +15,24 @@ import java.awt.Color;
 public class TestAdaptiveThreshold {
     public static void main(String[] args) {
         CMatrix cm = CMatrix.getInstance()
-                .imread("images/pistachio/fst_36_3.jpg")
+                .imread("images/pullar.png")
+                //.imread("images/bird.jpg")
                 //.drawLine(0, 100, 300, 100, 3, Color.yellow)
                 .imshow("original")
-                .rgb2gray()
-                //.threshold(45)
-                //.threshold(45,110)
-                //.thresholdOtsu()
-                .binarizeOtsu()
-                .imshow("after threshold")
-                //.drawLine(0, 0, 300, 0, 3, Color.white)
-                
-                .imshow()
+//                .imthresholdColorRange(100,255,10,70,20,100)
+//                .imshow()
+//                .rgb2gray()
+//                //.threshold(45)
+//                //.threshold(45,110)
+//                //.thresholdOtsu()
+//                .binarizeOtsu()
+//                .imshow("after threshold")
+//                //.drawLine(0, 0, 300, 0, 3, Color.white)
+//                
+//                .imshow()
                 ;
+//        float[] ff=cm.getPixelColorARGB(11,11);
+//        float f=cm.clone().rgb2gray().getPixelColorGray(11,11);
+//        int a=3;
     }
 }

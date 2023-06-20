@@ -7,17 +7,14 @@ package jazari.gui;
 
 import jazari.utils.DataAnalytics;
 import com.formdev.flatlaf.FlatDarkLaf;
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jazari.image_processing.ImageProcess;
@@ -47,6 +44,7 @@ public class FrameImage extends javax.swing.JFrame {
      */
     public FrameImage() {
         initComponents();
+        eventListener();
         //isSequence.setVisible(false);
 
 //        getPicturePanel().setFrame(this);
@@ -60,14 +58,15 @@ public class FrameImage extends javax.swing.JFrame {
      */
     public FrameImage(CMatrix cm, String imagePath, String caption) {
         initComponents();
-        imageFolderPath=FactoryUtils.getFolderPath(imagePath);
+        imageFolderPath = FactoryUtils.getFolderPath(imagePath);
         loadImage(cm, imagePath, caption);
+        eventListener();
     }
 
     public void setImage(BufferedImage img, String imagePath, String caption) {
         this.img = img;
         this.imagePath = imagePath;
-        imageFolderPath=FactoryUtils.getFolderPath(imagePath);
+        imageFolderPath = FactoryUtils.getFolderPath(imagePath);
         getPicturePanel().setImage(this.img, imagePath, caption);
         getPicturePanel().setFrame(this);
         //this.setSize(img.getWidth() + 300, img.getHeight() + 183);
@@ -90,6 +89,8 @@ public class FrameImage extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        panelPicture = new jazari.gui.PanelPicture(this);
+        jScrollPane1 = new javax.swing.JScrollPane();
         jPanel2 = new javax.swing.JPanel();
         btn_dataGrid = new javax.swing.JButton();
         btn_save = new javax.swing.JButton();
@@ -102,8 +103,6 @@ public class FrameImage extends javax.swing.JFrame {
         btn_dashedLineColor = new javax.swing.JButton();
         isLabelVisible = new javax.swing.JCheckBox();
         btn_analytics = new javax.swing.JButton();
-        scroll_pane = new javax.swing.JScrollPane();
-        panelPicture = new jazari.gui.PanelPicture(this);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addKeyListener(new java.awt.event.KeyAdapter() {
@@ -111,6 +110,26 @@ public class FrameImage extends javax.swing.JFrame {
                 formKeyPressed(evt);
             }
         });
+
+        panelPicture.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        panelPicture.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                panelPictureKeyPressed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelPictureLayout = new javax.swing.GroupLayout(panelPicture);
+        panelPicture.setLayout(panelPictureLayout);
+        panelPictureLayout.setHorizontalGroup(
+            panelPictureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        panelPictureLayout.setVerticalGroup(
+            panelPictureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 564, Short.MAX_VALUE)
+        );
+
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -251,59 +270,37 @@ public class FrameImage extends javax.swing.JFrame {
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(btn_dataGrid)
-                .addComponent(btn_save)
-                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jLabel2)
-                .addComponent(isBBox)
-                .addComponent(isSequence)
-                .addComponent(isPolygon)
-                .addComponent(lbl_zoom_factor)
-                .addComponent(btn_dashedLineColor)
-                .addComponent(isLabelVisible)
-                .addComponent(btn_analytics))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_dataGrid)
+                    .addComponent(btn_save)
+                    .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(isBBox)
+                    .addComponent(isSequence)
+                    .addComponent(isPolygon)
+                    .addComponent(lbl_zoom_factor)
+                    .addComponent(btn_dashedLineColor)
+                    .addComponent(isLabelVisible)
+                    .addComponent(btn_analytics))
+                .addContainerGap(61, Short.MAX_VALUE))
         );
 
-        scroll_pane.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                scroll_paneFocusGained(evt);
-            }
-        });
-
-        panelPicture.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        panelPicture.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                panelPictureKeyPressed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout panelPictureLayout = new javax.swing.GroupLayout(panelPicture);
-        panelPicture.setLayout(panelPictureLayout);
-        panelPictureLayout.setHorizontalGroup(
-            panelPictureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1032, Short.MAX_VALUE)
-        );
-        panelPictureLayout.setVerticalGroup(
-            panelPictureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 603, Short.MAX_VALUE)
-        );
-
-        scroll_pane.setViewportView(panelPicture);
+        jScrollPane1.setViewportView(jPanel2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(scroll_pane)
+            .addComponent(panelPicture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 845, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scroll_pane))
+                .addComponent(panelPicture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -359,9 +356,6 @@ public class FrameImage extends javax.swing.JFrame {
         isSequence.setToolTipText("Check if your images are similar to the video sequences/frames.\nPreserves bboxes or polygons from previous image");
     }//GEN-LAST:event_isSequenceMouseMoved
 
-    private void scroll_paneFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_scroll_paneFocusGained
-    }//GEN-LAST:event_scroll_paneFocusGained
-
     private void isPolygonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_isPolygonItemStateChanged
         getPicturePanel().activatePolygon = isPolygon.isSelected();
         getPicturePanel().activateBoundingBox = isBBox.isSelected();
@@ -402,11 +396,11 @@ public class FrameImage extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_analyticsMouseMoved
 
     private void btn_analyticsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_analyticsActionPerformed
-        if (FactoryUtils.isFileExist(imageFolderPath+"/class_labels.txt")) {
-            List<DataAnalytics> lst=FactoryUtils.getDataAnalytics(imageFolderPath);
-            FrameDataAnalytics frm=new FrameDataAnalytics(this,imageFolderPath, lst);
+        if (FactoryUtils.isFileExist(imageFolderPath + "/class_labels.txt")) {
+            List<DataAnalytics> lst = FactoryUtils.getDataAnalytics(imageFolderPath);
+            FrameDataAnalytics frm = new FrameDataAnalytics(this, imageFolderPath, lst);
             frm.setVisible(true);
-            
+
         }
     }//GEN-LAST:event_btn_analyticsActionPerformed
 
@@ -470,9 +464,9 @@ public class FrameImage extends javax.swing.JFrame {
     private javax.swing.JCheckBox isSequence;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbl_zoom_factor;
     private javax.swing.JPanel panelPicture;
-    private javax.swing.JScrollPane scroll_pane;
     private javax.swing.JTextField txt_dpi;
     // End of variables declaration//GEN-END:variables
 
@@ -493,7 +487,6 @@ public class FrameImage extends javax.swing.JFrame {
 //        }
 //        //this.pack();
 //    }
-
     private void changeDashedLineColor() {
         getPicturePanel().setDashedLineColor();
     }
@@ -520,5 +513,13 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().setFocusable(true);
         getPicturePanel().requestFocusInWindow();
         //isSequence.setVisible(false);
+    }
+
+    private void eventListener() {
+        this.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent ev) {
+                getPicturePanel().updateImageLocation();
+            }
+        });
     }
 }

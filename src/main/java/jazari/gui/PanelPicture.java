@@ -19,6 +19,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
@@ -247,6 +248,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         originalBufferedImageTemp = ImageProcess.clone(image);
         imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
         lbl.setText(getImageSize() + "X:Y");
+        lbl.setOpaque(true);
+        lbl.setBackground(Color.BLACK);
         if (activateStatistics) {
             currBufferedImage = ImageProcess.toGrayLevel(originalBufferedImage);
             imgData = ImageProcess.imageToPixelsFloat(currBufferedImage);
@@ -291,6 +294,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         //updateImagePosition();
         imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
         lbl.setText(getImageSize() + "X:Y");
+        lbl.setOpaque(true);
+        lbl.setBackground(Color.BLACK);
         //setPreferredSize(new Dimension(originalBufferedImage.getWidth() + 100, originalBufferedImage.getHeight() + 100));
         repaint();
         if (!this.imagePath.equals(imagePath)) {
@@ -441,8 +446,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
         lbl = new JLabel("X:Y");
         this.add(lbl);
-        lbl.setBounds(new Rectangle(10, 0, 700, 30));
-        lbl.setBackground(Color.yellow);
+        lbl.setBounds(new Rectangle(10, 2, 700, 30));
+        lbl.setOpaque(true);
+        lbl.setBackground(Color.BLACK);
         lbl.setForeground(Color.GREEN);
         lbl.setVisible(true);
         this.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -1489,6 +1495,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 s = s.replace("java.awt.Color", "");
                 lbl.setText(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=" + currBufferedImage.getType());// + " RGB=" + "(" + r + "," + g + "," + b + ")");
             }
+            lbl.setBackground(Color.black);
         }
     }
 
@@ -1752,6 +1759,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             gr.setColor(Color.green);
             gr.drawOval(poly.xpoints[i] - r / 2, poly.ypoints[i] - r / 2, r, r);
         }
+    }
+
+    public void updateImageLocation() {
+        //System.out.println("burası tetiklendi");
+        updateImagePosition();
     }
 
     private class ItemHandler implements ActionListener {

@@ -90,7 +90,6 @@ public final class ImageProcess {
 //    static {
 //        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 //    }
-
     /**
      * Conversion from RGB space to LAB space (CIE)
      *
@@ -289,8 +288,7 @@ public final class ImageProcess {
         float[][] ret = imageToPixelsFloat(ocv_mat2Img(imageCanny));
         return ret;
     }
-    */
-
+     */
     /**
      * Musa Edge Detector
      *
@@ -1442,8 +1440,7 @@ public final class ImageProcess {
         mat.put(0, 0, pixels);
         return mat;
     }
-    */
-
+     */
     public static float[][] rgb2gray2D(BufferedImage img) {
 //        BufferedImage retImg = toNewColorSpace(img, BufferedImage.TYPE_BYTE_GRAY);
         BufferedImage retImg = toGrayLevel(img);
@@ -2645,8 +2642,7 @@ public final class ImageProcess {
         Mat imgM = Imgcodecs.imread(path);
         return ocv_mat2Img(imgM);
     }
-    */
-
+     */
     public static void saveGridImage(BufferedImage gridImage, String filePath) {
         File output = new File(filePath);
         output.delete();
@@ -2834,7 +2830,7 @@ public final class ImageProcess {
     }
 
     public static BufferedImage filterMedian(BufferedImage imgx) {
-        ImagePlus imagePlus=new ImagePlus("", imgx);
+        ImagePlus imagePlus = new ImagePlus("", imgx);
         ImageProcessor ip = imagePlus.getProcessor();
         ip.medianFilter();
         return ip.getBufferedImage();
@@ -3149,7 +3145,7 @@ public final class ImageProcess {
      * @return
      */
     public static BufferedImage binarizeColorImage(BufferedImage original) {
-        original=rgb2gray(original);
+        original = rgb2gray(original);
         int threshold = getOtsuTresholdValue(original);
         return binarizeColorImage(original, threshold);
     }
@@ -3297,8 +3293,7 @@ public final class ImageProcess {
         }
         return ret;
     }
-    */
-
+     */
 //    public static Rectangle[] detectFacesRectangles(String type, BufferedImage img) {
 //        
 //        String xml = "";
@@ -3601,8 +3596,7 @@ public final class ImageProcess {
         }
         return ret;
     }
-    */
-
+     */
     public static BufferedImage toARGB(BufferedImage image) {
         return toNewColorSpace(image, BufferedImage.TYPE_INT_ARGB);
     }
@@ -3965,8 +3959,7 @@ public final class ImageProcess {
         BufferedImage out = ocv_mat2Img(cloneImage);
         return out;
     }
-*/
-
+     */
     public static BufferedImage cropBoundingBox(BufferedImage img) {
         BufferedImage bf = clone(img);
         int[][] d = imageToPixelsInt(img);
@@ -4128,8 +4121,7 @@ public final class ImageProcess {
 //                - (n20 - n02) * (n30 + n12) * (n03 + n21);
         return FactoryUtils.toFloatArray1D(moments);
     }
-*/
-
+     */
     public static int[][] rgb2lab(int[][] img) {
         int r = img.length;
         int c = img[0].length;
@@ -4306,6 +4298,27 @@ public final class ImageProcess {
             ret.add(src);
         }
         return ret;
+    }
+
+    public static BufferedImage adaptiveThresholdColorLimits(int r1, int r2, int g1, int g2, int b1, int b2, float[][][] argb) {
+        int nr = argb[0].length;
+        int nc = argb[0][0].length;
+        float[][] ret = new float[nr][nc];
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                float red = argb[1][i][j];
+                float green = argb[2][i][j];
+                float blue = argb[3][i][j];
+                if (red > r1 && red < r2 && green > g1 && green < g2 && blue > b1 && blue < b2) {
+                    ret[i][j] = 255;
+                }
+            }
+        }
+        return ImageProcess.pixelsToImageGray(ret);
+    }
+
+    public static BufferedImage adaptiveThresholdColorAdaptive(int r, int dr, int g, int dg, int b, int db, float[][][] argb) {
+        return adaptiveThresholdColorLimits(r - dr, r + dr, g - dg, g + dg, b - db, b + db, argb);
     }
 
 }

@@ -7416,11 +7416,11 @@ public final class FactoryUtils {
 
                     x_index2 = s.indexOf("</x" + k + ">", x_index2 + 1);
 
-                    int x = Integer.parseInt(s.substring(x_index1 + ("<x" + k + ">").length(), x_index2));
+                    int x = Math.round(Float.parseFloat(s.substring(x_index1 + ("<x" + k + ">").length(), x_index2)));
 
                     y_index1 = s.indexOf("<y" + k + ">", y_index1 + 1);
                     y_index2 = s.indexOf("</y" + k + ">", y_index2 + 1);
-                    int y = Integer.parseInt(s.substring(y_index1 + ("<y" + k + ">").length(), y_index2));
+                    int y = Math.round(Float.parseFloat(s.substring(y_index1 + ("<y" + k + ">").length(), y_index2)));
 
                     poly.addPoint(x, y);
                     //System.out.println(p);

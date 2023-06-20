@@ -11,8 +11,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import javax.imageio.ImageIO;
 import jazari.factory.FactoryUtils;
 import jazari.image_processing.ImageProcess;
@@ -25,7 +27,7 @@ import org.java_websocket.handshake.ServerHandshake;
  *
  * @author dell_lab
  */
-public class TestJimClientByteBufferOfflineImages {
+public class TestJimClientStringImagePath {
 
     public static long t1 = System.currentTimeMillis();
     private static WebSocketClient client;
@@ -89,9 +91,7 @@ public class TestJimClientByteBufferOfflineImages {
                         response = msg.split(":")[4].split("->")[1];
                     }
                     iterateImageFile(thread_no, response);
-
                 }
-
             }
 
         });
@@ -100,37 +100,23 @@ public class TestJimClientByteBufferOfflineImages {
 
     private static void iterateImageFile(int thread_no, String response) {
         System.out.println("thread no:" + thread_no + " detection response = " +files[index].getName()+"->"+ response+" elapsed time:"+(System.currentTimeMillis()-t1));
-        t1=System.currentTimeMillis();        
+        t1=System.currentTimeMillis();
+        String imgPath=files[index].getAbsolutePath();
+        String[] sep=imgPath.split(Matcher.quoteReplacement(System.getProperty("file.separator")));
+        String classLabel=sep[sep.length-2];
         if (index < files.length - 1) {
-            BufferedImage img = ImageProcess.imread(files[index++].getAbsolutePath());
-            sendByteBufferData(img, thread_no);
+            client.send("CJ:THR:"+thread_no+":"+classLabel+":dataset/"+classLabel+"/"+files[index].getName());
             try {
                 Thread.sleep(10);
             } catch (InterruptedException ex) {
-                Logger.getLogger(TestJimClientByteBufferOfflineImages.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(TestJimClientStringImagePath.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             System.out.println("finished");
             client.close();
             System.exit(0);
         }
-    }
-
-    private static void sendByteBufferData(BufferedImage bi, int thread_id) {
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ImageIO.write(bi, "png", out);
-            byte[] b = out.toByteArray();
-            byte[] bb = new byte[b.length + 1];
-            bb[0] = (byte) thread_id;
-            System.arraycopy(b, 0, bb, 1, b.length);
-            ByteBuffer byteBuffer = ByteBuffer.wrap(bb);
-            client.send(byteBuffer);
-            out.close();
-            byteBuffer.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        index++;
     }
 
     public static void main(String[] args) {

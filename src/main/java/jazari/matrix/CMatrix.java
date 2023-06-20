@@ -1999,16 +1999,16 @@ public final class CMatrix implements Serializable {
         attr.items = getColumnNamesArray();
 
         if (!hold_on) {
-            framePlot = new FramePlot(this,attr);
+            framePlot = new FramePlot(this, attr);
         } else {
             if (framePlot == null) {
-                framePlot = new FramePlot(this,attr);
+                framePlot = new FramePlot(this, attr);
             }
             framePlot.setMatrix(this);
         }
         TFigureAttribute fg = new TFigureAttribute();
         fg.pointType = plotType;
-        fg.items=getColumnNamesArray();
+        fg.items = getColumnNamesArray();
         framePlot.setFigureAttribute(fg);
         framePlot.setVisible(true);
         return this;
@@ -2225,6 +2225,30 @@ public final class CMatrix implements Serializable {
         }
         FrameImage frm = new FrameImage(this, this.imagePath, "none");
         frm.setVisible(true);
+        return this;
+    }
+
+    /**
+     * Apply adaptive threshold to the gray image. Produce binarize image
+     * @param t1
+     * @param t2
+     * @return
+     */
+    public CMatrix imthresholdGray(int t1, int t2) {
+        image = ImageProcess.adaptiveThreshold(array.toFloatMatrix(), t1, t2);
+        setArray(ImageProcess.imageToPixelsFloat(image));
+        return this;
+    }
+
+    public CMatrix imthresholdColorRange(int r1, int r2, int g1, int g2, int b1, int b2) {
+        image = ImageProcess.adaptiveThresholdColorLimits(r1,r2,g1,g2,b1,b2,toFloatArray3D());
+        setArray(ImageProcess.imageToPixelsFloat(image));
+        return this;
+    }
+
+    public CMatrix imthresholdColorAdaptive(int r, int dr, int g, int dg, int b, int db) {
+        image = ImageProcess.adaptiveThresholdColorAdaptive(r,dr,g,dg,b,db,toFloatArray3D());
+        setArray(ImageProcess.imageToPixelsFloat(image));
         return this;
     }
 
@@ -6993,7 +7017,7 @@ public final class CMatrix implements Serializable {
         if (cm.image.getType() != BufferedImage.TYPE_BYTE_GRAY) {
             cm = cm.rgb2gray();
         }
-        cm = cm.imthreshold(t1, t2);
+        cm = cm.imthresholdGray(t1, t2);
 
         return cm;
     }
@@ -7020,12 +7044,6 @@ public final class CMatrix implements Serializable {
 
     public CMatrix binarizeImage(int thr) {
         return im2bw(thr);
-    }
-
-    private CMatrix imthreshold(int t1, int t2) {
-        image = ImageProcess.adaptiveThreshold(array.toFloatMatrix(), t1, t2);
-        setArray(ImageProcess.imageToPixelsFloat(image));
-        return this;
     }
 
     public CMatrix overlay(CMatrix cm, float alpha) {
@@ -7376,6 +7394,7 @@ public final class CMatrix implements Serializable {
     }
 
     public float[][][] getARGB() {
+        
         if (image != null) {
             return ImageProcess.imageToPixelsColorFloatFaster(image);
         } else {
@@ -7443,9 +7462,9 @@ public final class CMatrix implements Serializable {
     }
 
     public String[] getColumnNamesArray() {
-        String[] ret=new String[getColumnNumber()];
+        String[] ret = new String[getColumnNumber()];
         for (int i = 0; i < ret.length; i++) {
-            ret[i]="f_"+i;
+            ret[i] = "f_" + i;
         }
         return ret;
     }
@@ -9414,6 +9433,21 @@ public final class CMatrix implements Serializable {
 
     public CMatrix nonZeroValues() {
         return this.findItemsByIndex(findIndex(TMatrixOperator.NOT_EQUALS, 0));
+    }
+
+    public float[] getPixelColorARGB(int r, int c) {
+        float[][][] d=getARGB();
+        float[] ret=new float[4];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i]=d[i][r][c];
+        }
+        return ret;
+    }
+
+    public float getPixelColorGray(int r, int c) {
+        float[][] d=toFloatArray2D();
+        float ret=d[r][c];
+        return ret;
     }
 
 }
