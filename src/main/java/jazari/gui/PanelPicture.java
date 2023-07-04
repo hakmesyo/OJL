@@ -340,7 +340,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 //             RenderingHints.KEY_TEXT_ANTIALIASING,
 //             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 //        gr.setRenderingHints(rh);
-        
+
         if (flag_once == 0) {
             activateAutoSizeAspect = false;
             if (originalBufferedImage != null) {
@@ -361,7 +361,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         img_height = (int) (0.8 * currBufferedImage.getHeight());
 //        img_width = currBufferedImage.getWidth();
 //        img_height = currBufferedImage.getHeight();
-
 
         if (currBufferedImage != null) {
 
@@ -394,7 +393,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 paintPixelInfo(gr, currBufferedImage.getWidth(), currBufferedImage.getHeight());
                 paintMouseDashedLines(gr, wPanel, hPanel, colorDashedLine);
             }
-            
+
         }
         paintFrameRectangle(gr, wPanel, hPanel);
     }
@@ -1897,6 +1896,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else if (obj.getText().equals("Clone")) {
                     new FrameImage(CMatrix.getInstance(currBufferedImage), imagePath, caption).setVisible(true);
                     return;
+                } else if (obj.getText().equals("Capture Screen")) {
+                    newScreenCaptureInstance();
+                    return;
                 } else if (obj.getText().equals("Load Image")) {
                     activateStatistics = false;
                     File fl = ImageProcess.readImageFileFromFolderWithDirectoryPath(imagePath);
@@ -2035,6 +2037,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
         }
 
+    }
+
+    private void newScreenCaptureInstance() {
+        FrameScreenCapture frm=new FrameScreenCapture(this);
+        frm.setVisible(true);
+        frm.btn_capture_single_image.doClick();
     }
 
     private void loadNextImage() {
