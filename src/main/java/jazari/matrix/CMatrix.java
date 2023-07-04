@@ -1320,9 +1320,10 @@ public final class CMatrix implements Serializable {
         if (this.image != null) {
             if (this.image.getType() == 10) {
                 this.image = ImageProcess.pixelsToImageGray(d);
-            } else {
-                this.image = ImageProcess.pixelsToImageColor(d);
-            }
+            } 
+//            else {
+//                this.image = ImageProcess.pixelsToImageColor(d);
+//            }
         }
         return this;
     }

@@ -61,6 +61,8 @@ public class FrameImage extends javax.swing.JFrame {
         imageFolderPath = FactoryUtils.getFolderPath(imagePath);
         loadImage(cm, imagePath, caption);
         eventListener();
+        isPolygon.setSelected(true);
+        isLabelVisible.setSelected(true);
     }
 
     public void setImage(BufferedImage img, String imagePath, String caption) {
@@ -105,6 +107,11 @@ public class FrameImage extends javax.swing.JFrame {
         btn_analytics = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
         addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 formKeyPressed(evt);
@@ -403,6 +410,10 @@ public class FrameImage extends javax.swing.JFrame {
 
         }
     }//GEN-LAST:event_btn_analyticsActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        
+    }//GEN-LAST:event_formWindowClosing
 
     public PanelPicture getPicturePanel() {
         return ((PanelPicture) panelPicture);

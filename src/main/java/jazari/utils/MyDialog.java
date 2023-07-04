@@ -7,6 +7,7 @@ package jazari.utils;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
@@ -24,6 +25,7 @@ import java.awt.event.MouseListener;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JColorChooser;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import jazari.factory.FactoryUtils;
@@ -47,11 +49,14 @@ public class MyDialog extends JDialog implements ActionListener {
         super(parent, "Enter class label", true);
         this.imageFolder = imageFolder;
         this.className = className;
+        this.setPreferredSize(new Dimension(150, 600));
         setTitle("choose appropriate class name and color or write new one");
         Point loc = parent.getLocation();
         setLocation(loc.x + 80, loc.y + 80);
         data = ""; // set to amount of data items
         JPanel panel = new JPanel();
+        JScrollPane scrollPane=new JScrollPane();
+        scrollPane.setViewportView(panel);
         panel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 2, 2, 2);

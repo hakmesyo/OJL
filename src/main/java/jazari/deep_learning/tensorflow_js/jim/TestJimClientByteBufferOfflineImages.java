@@ -32,7 +32,7 @@ public class TestJimClientByteBufferOfflineImages {
     private static File[] files;
     private static int index = 0;
     private static boolean isConnected = false;
-    private static String response="";
+    private static String response = "";
 
     private static WebSocketClient connectToJavaServer(String ip, String port, CallBackString cb) {
         try {
@@ -73,7 +73,7 @@ public class TestJimClientByteBufferOfflineImages {
 
     private static WebSocketClient startJimCommunication(String hostIP, String socketServerPort, int ms_wait) {
         System.out.println(hostIP + " " + socketServerPort + " triggered");
-        
+
         client = connectToJavaServer(hostIP, socketServerPort, new CallBackString() {
             @Override
             public void onMessageReceived(String msg) {
@@ -85,8 +85,10 @@ public class TestJimClientByteBufferOfflineImages {
                     int thread_no = Integer.parseInt(msg.split(":")[2]);
                     if (msg.split(":").length < 4) {
                         client.send("CJ:THR:" + thread_no + ":" + "real time test image" + ":./temp.jpg");
-                    }else{
-                        response = msg.split(":")[4].split("->")[1];
+                    } else {
+                        //response = msg.split(":")[4].split("->")[1];
+                        response = msg;
+                        //System.out.println("gelen thread no:" + thread_no + " detection response = " + files[index].getName() + "->" + response + " elapsed time:" + (System.currentTimeMillis() - t1)+"\n");
                     }
                     iterateImageFile(thread_no, response);
 
@@ -99,10 +101,11 @@ public class TestJimClientByteBufferOfflineImages {
     }
 
     private static void iterateImageFile(int thread_no, String response) {
-        System.out.println("thread no:" + thread_no + " detection response = " +files[index].getName()+"->"+ response+" elapsed time:"+(System.currentTimeMillis()-t1));
-        t1=System.currentTimeMillis();        
+        t1 = System.currentTimeMillis();
         if (index < files.length - 1) {
-            BufferedImage img = ImageProcess.imread(files[index++].getAbsolutePath());
+            index++;
+            BufferedImage img = ImageProcess.imread(files[index].getAbsolutePath());
+            System.out.println("giden thread_no:"+thread_no+" dosya = "+files[index].getAbsolutePath()+" önceki response:"+response);
             sendByteBufferData(img, thread_no);
             try {
                 Thread.sleep(10);
@@ -134,8 +137,8 @@ public class TestJimClientByteBufferOfflineImages {
     }
 
     public static void main(String[] args) {
-        t1=System.currentTimeMillis();
-        files = FactoryUtils.getFileArrayInFolderByExtension("C:\\Users\\cezerilab\\Desktop\\fsm_tfjs\\dataset\\closed", "jpg");
+        t1 = System.currentTimeMillis();
+        files = FactoryUtils.getFileArrayInFolderByExtension("C:\\Users\\dell_lab\\Desktop\\fsm_tfjs\\dataset\\closed", "jpg");
         client = startJimCommunication("localhost", "8887", 1);
     }
 }
