@@ -174,7 +174,9 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_capture_single_imageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_single_imageActionPerformed
-        listImage.clear();
+        if (listImage!=null) {
+            listImage.clear();
+        }
         setState(Frame.ICONIFIED);
         new FrameCaptureImage(this);
 
@@ -194,9 +196,11 @@ public class FrameScreenCapture extends javax.swing.JFrame {
             }
             listImage.clear();
             screenshot=null;
+            FactoryUtils.showMessage("Captured Video Frames saved successfully");
         } else if (screenshot != null) {
             ImageProcess.saveImage(screenshot);
             screenshot=null;
+            FactoryUtils.showMessage("Captured Image saved successfully");
         } 
 
     }//GEN-LAST:event_btn_saveActionPerformed

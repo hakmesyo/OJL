@@ -65,6 +65,7 @@ import javax.imageio.stream.ImageOutputStream;
 import javax.swing.GrayFilter;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import static jazari.factory.FactoryUtils.getDefaultDirectory;
 //import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 //import org.opencv.core.Core;
 //import org.opencv.core.CvType;
@@ -2538,7 +2539,7 @@ public final class ImageProcess {
     }
 
     public static boolean saveImage(BufferedImage img) {
-        JFileChooser FC = new JFileChooser("C:/");
+        JFileChooser FC = new JFileChooser(getDefaultDirectory());
         int retrival = FC.showSaveDialog(null);
         if (retrival == FC.APPROVE_OPTION) {
             File fileToSave = FC.getSelectedFile();
