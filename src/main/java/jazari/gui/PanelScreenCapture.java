@@ -5,6 +5,7 @@
 package jazari.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -49,20 +50,22 @@ public class PanelScreenCapture extends javax.swing.JPanel {
 
     public void setImage(BufferedImage img) {
         this.img = img;
+        setPreferredSize(new Dimension(img.getWidth(), img.getHeight()));
+        invalidate();        
         repaint();
     }
 
     @Override
     public void paint(Graphics g) {
         Graphics2D gr = (Graphics2D) g;
-
         gr.setColor(Color.black);
         gr.fillRect(0, 0, getWidth(), getHeight());
         if (img != null) {
             gr.drawImage(img, 0, 0, null);
         }
-        gr.setColor(Color.red);
-        gr.drawRect(0, 0, getWidth() - 2, getHeight() - 2);
+        //gr.setColor(Color.red);
+        //gr.drawRect(0, 0, getWidth() - 2, getHeight() - 2);
+        paintComponents(g);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

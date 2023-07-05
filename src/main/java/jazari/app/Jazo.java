@@ -1,6 +1,5 @@
 package jazari.app;
 
-
 import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Component;
 import javax.swing.TransferHandler;
@@ -22,12 +21,12 @@ import javax.swing.UnsupportedLookAndFeelException;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author cezerilab
  */
 public class Jazo extends javax.swing.JFrame {
+
     /**
      * Creates new form JAnnotate
      */
@@ -80,12 +79,11 @@ public class Jazo extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_openActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_openActionPerformed
-        File pathFile=FactoryUtils.browseFileForImage();
-        if (pathFile!=null) {
+        File pathFile = FactoryUtils.browseFileForImage();
+        if (pathFile != null) {
             CMatrix cm = CMatrix.getInstance()
-                .imread(pathFile)
-                .imshow()
-                ;
+                    .imread(pathFile)
+                    .imshow();
         }
     }//GEN-LAST:event_btn_openActionPerformed
 
@@ -125,7 +123,9 @@ public class Jazo extends javax.swing.JFrame {
 ////        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                Jazo jazo=new Jazo();
+//                System.setProperty("awt.useSystemAAFontSettings", "on");
+//                System.setProperty("swing.aatext", "true");
+                Jazo jazo = new Jazo();
                 //jazo.setLocationRelativeTo(null);
                 jazo.setVisible(true);
             }
@@ -137,6 +137,7 @@ public class Jazo extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     public static class ImageTransferHandler extends TransferHandler {
+
         public static final DataFlavor[] SUPPORTED_DATA_FLAVORS = new DataFlavor[]{
             DataFlavor.javaFileListFlavor,
             DataFlavor.imageFlavor
@@ -170,7 +171,7 @@ public class Jazo extends javax.swing.JFrame {
                             if (files.size() > 0) {
                                 //image = ImageIO.read((File) files.get(0));
                                 CMatrix cm = CMatrix.getInstance().imread((File) files.get(0)).imshow();
-                                
+
                             }
                         }
                         accept = true;

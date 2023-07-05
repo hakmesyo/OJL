@@ -83,6 +83,7 @@ import jazari.utils.DataAnalytics;
 import jazari.gui.FrameImage;
 import jazari.image_processing.ImageProcess;
 import jazari.matrix.CRectangle;
+import jazari.utils.CopyImageToClipboard;
 import jazari.utils.YoloPolygonJson;
 import jazari.utils.pascalvoc.PascalVocBoundingBox;
 import jazari.utils.pascalvoc.PascalVocAttribute;
@@ -113,6 +114,15 @@ public final class FactoryUtils {
     public static String currDir = System.getProperty("user.dir");
     public static final AtomicBoolean running = new AtomicBoolean(false);
     public static int nAttempts = 0;
+    public static Robot robot;
+
+    static {
+        try {
+            robot = new Robot();
+        } catch (AWTException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     public static String getMacAddress() {
         InetAddress ip;
@@ -6632,16 +6642,16 @@ public final class FactoryUtils {
         int nr = s.length;
         int nc = s[0].split(seperator).length;
         boolean isColumnNamesExist = checkColumnName(s[0], seperator);
-        float[][] data=null;
+        float[][] data = null;
         if (isColumnNamesExist) {
-            data = new float[nr-1][nc];
+            data = new float[nr - 1][nc];
             for (int i = 1; i < nr; i++) {
                 String[] row = s[i].split(seperator);
                 for (int j = 0; j < nc; j++) {
                     data[i - 1][j] = Float.parseFloat(row[j]);
                 }
             }
-        }else{
+        } else {
             data = new float[nr][nc];
             for (int i = 0; i < nr; i++) {
                 String[] row = s[i].split(seperator);
@@ -7870,15 +7880,9 @@ public final class FactoryUtils {
     }
 
     public static BufferedImage captureWholeScreenWithRobot() {
-        try {
-            Robot robot = new Robot();
-            int width = getScreenWidth();
-            int height = getScreenHeight();
-            return robot.createScreenCapture(new Rectangle(0, 0, width, height));
-        } catch (AWTException ex) {
-            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+        int width = getScreenWidth();
+        int height = getScreenHeight();
+        return robot.createScreenCapture(new Rectangle(0, 0, width, height));
     }
 
     public static BufferedImage captureScreenWithRobot(Rectangle rect) {
@@ -7890,10 +7894,11 @@ public final class FactoryUtils {
         }
         return null;
     }
-    
-    public static boolean isFileExist(File file){
+
+    public static boolean isFileExist(File file) {
         return file.exists();
     }
+
     public static boolean isProcessRunning(String serviceName) {
         boolean ret = false;
         try {
@@ -7953,6 +7958,11 @@ public final class FactoryUtils {
             }
         }).start();
         return null;
+    }
+
+    public static BufferedImage copyImage2ClipBoard(BufferedImage img) {
+        new CopyImageToClipboard(img);
+        return img;
     }
 
 }

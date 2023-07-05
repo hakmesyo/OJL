@@ -8,11 +8,15 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jazari.app.Jazo;
+import jazari.factory.FactoryUtils;
+import jazari.image_processing.ImageProcess;
 
 /**
  *
@@ -22,15 +26,19 @@ public class FrameScreenCapture extends javax.swing.JFrame {
 
     private BufferedImage screenshot;
     private PanelPicture panel;
+    public List<BufferedImage> listImage;
+    public int fps = 10;
 
     /**
      * Creates new form FrameScreenCapture
+     *
      * @param panel
      */
     public FrameScreenCapture(PanelPicture panel) {
         initComponents();
-        this.panel=panel;
-        setAlwaysOnTop( true );
+        this.panel = panel;
+        //setAlwaysOnTop(true);
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -46,28 +54,48 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         btn_capture_single_image = new javax.swing.JButton();
         btn_save = new javax.swing.JButton();
         btn_use = new javax.swing.JButton();
+        btn_capture_video = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        txt_fps = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         canvas = new PanelScreenCapture();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("FrameScreenCapture");
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        btn_capture_single_image.setText("Capture");
+        btn_capture_single_image.setText("Capture Image");
         btn_capture_single_image.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_capture_single_imageActionPerformed(evt);
             }
         });
 
-        btn_save.setText("Save Image");
+        btn_save.setText("Save");
+        btn_save.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_saveActionPerformed(evt);
+            }
+        });
 
-        btn_use.setText("Use Captured Image");
+        btn_use.setText("Copy / Use");
         btn_use.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_useActionPerformed(evt);
             }
         });
+
+        btn_capture_video.setText("Capture Video");
+        btn_capture_video.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_capture_videoActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("fps:");
+
+        txt_fps.setText("10");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -77,19 +105,32 @@ public class FrameScreenCapture extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(btn_capture_single_image)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_use, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_capture_video)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_save, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txt_fps, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btn_use)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_save)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btn_use, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btn_capture_single_image, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btn_save, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btn_use, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel1)
+                        .addComponent(txt_fps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btn_capture_single_image, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btn_capture_video, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(btn_save, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -99,7 +140,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         canvas.setLayout(canvasLayout);
         canvasLayout.setHorizontalGroup(
             canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 457, Short.MAX_VALUE)
+            .addGap(0, 591, Short.MAX_VALUE)
         );
         canvasLayout.setVerticalGroup(
             canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -112,35 +153,62 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_capture_single_imageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_single_imageActionPerformed
+        listImage.clear();
         setState(Frame.ICONIFIED);
-        new FrameScreenCaptureHelper(this);
+        new FrameCaptureImage(this);
+
     }//GEN-LAST:event_btn_capture_single_imageActionPerformed
 
     private void btn_useActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_useActionPerformed
         panel.setImage(screenshot);
+        FactoryUtils.copyImage2ClipBoard(screenshot);
         dispose();
     }//GEN-LAST:event_btn_useActionPerformed
+
+    private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed
+        if (listImage != null && listImage.size() > 0) {
+            String path = FactoryUtils.browseDirectory().getAbsolutePath();
+            for (BufferedImage img : listImage) {
+                ImageProcess.saveImage(img, path + "/" + System.currentTimeMillis() + ".jpg");
+            }
+            listImage.clear();
+            screenshot=null;
+        } else if (screenshot != null) {
+            ImageProcess.saveImage(screenshot);
+            screenshot=null;
+        } 
+
+    }//GEN-LAST:event_btn_saveActionPerformed
+
+    private void btn_capture_videoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_videoActionPerformed
+        setState(Frame.ICONIFIED);
+        FactoryUtils.showMessage("For capturing with a specified fps\nselect a region with mouse\ntype esc if you want to stop");
+        listImage = new ArrayList<>();
+        fps = Integer.parseInt(txt_fps.getText());
+        new FrameCaptureVideo(this);
+        screenshot = null;
+    }//GEN-LAST:event_btn_capture_videoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -148,28 +216,35 @@ public class FrameScreenCapture extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton btn_capture_single_image;
+    private javax.swing.JButton btn_capture_video;
     private javax.swing.JButton btn_save;
     private javax.swing.JButton btn_use;
     private javax.swing.JPanel canvas;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField txt_fps;
     // End of variables declaration//GEN-END:variables
 
     public void setImage(BufferedImage screenshot) {
         setState(Frame.NORMAL);
-        this.screenshot=screenshot;
-        this.setPreferredSize(new Dimension(screenshot.getWidth()+30, screenshot.getHeight()+110));
+        this.screenshot = screenshot;
+        getPanel().setImage(screenshot);
+        if (screenshot.getWidth() > 480) {
+            this.setPreferredSize(new Dimension(screenshot.getWidth() + 30, screenshot.getHeight() + 110));
+        } else {
+            this.setPreferredSize(new Dimension(500, 250));
+        }
         this.invalidate();
         this.repaint();
         this.pack();
-        getPanel().setPreferredSize(new Dimension(screenshot.getWidth(), screenshot.getHeight()));
-        getPanel().setImage(screenshot);
+        setLocationRelativeTo(null);
     }
-    
-    public PanelScreenCapture getPanel(){
-        return (PanelScreenCapture)canvas;
+
+    public PanelScreenCapture getPanel() {
+        return (PanelScreenCapture) canvas;
     }
-    
+
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
@@ -182,6 +257,6 @@ public class FrameScreenCapture extends javax.swing.JFrame {
                 new FrameScreenCapture(null).setVisible(true);
             }
         });
-        
+
     }
 }

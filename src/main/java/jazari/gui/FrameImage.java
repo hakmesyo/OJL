@@ -61,7 +61,7 @@ public class FrameImage extends javax.swing.JFrame {
         imageFolderPath = FactoryUtils.getFolderPath(imagePath);
         loadImage(cm, imagePath, caption);
         eventListener();
-        isPolygon.setSelected(true);
+        //isPolygon.setSelected(true);
         isLabelVisible.setSelected(true);
     }
 

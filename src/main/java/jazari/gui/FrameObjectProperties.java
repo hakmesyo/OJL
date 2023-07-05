@@ -201,6 +201,11 @@ public class FrameObjectProperties extends javax.swing.JFrame {
         lbl_color.setBackground(new java.awt.Color(255, 255, 102));
         lbl_color.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         lbl_color.setOpaque(true);
+        lbl_color.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lbl_colorMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -358,6 +363,10 @@ public class FrameObjectProperties extends javax.swing.JFrame {
             FactoryUtils.showMessage("You have same class name in the list");
         }
     }//GEN-LAST:event_btn_add_newActionPerformed
+
+    private void lbl_colorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbl_colorMouseClicked
+        btn_color.doClick();
+    }//GEN-LAST:event_lbl_colorMouseClicked
 
     /**
      * @param args the command line arguments

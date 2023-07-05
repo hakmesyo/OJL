@@ -18,12 +18,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import jazari.factory.FactoryUtils;
 import jazari.image_processing.ImageProcess;
 
-public class FrameScreenCaptureHelper extends JFrame {
+public class FrameCaptureImage extends JFrame {
 
     private Robot robot;
     private BufferedImage screenshot;
@@ -33,10 +34,10 @@ public class FrameScreenCaptureHelper extends JFrame {
     private Point startPoint;
     private Point endPoint;
     private final FrameScreenCapture frm;
-    private boolean isMouseReleased=false;
-    private boolean latestProcess=false;
+    private boolean isMouseReleased = false;
+    private boolean isSelectionRemove = false;
 
-    public FrameScreenCaptureHelper(FrameScreenCapture frm) {
+    public FrameCaptureImage(FrameScreenCapture frm) {
         this.frm = frm;
         try {
             robot = new Robot();
@@ -53,13 +54,18 @@ public class FrameScreenCaptureHelper extends JFrame {
                     g.drawImage(originalImage, 0, 0, null);
                     if (frm != null && isMouseReleased) {
                         frm.setImage(screenshot);
+                        FactoryUtils.copyImage2ClipBoard(screenshot);
                         dispose();
                     }
                 }
-                if (selection != null) {
-                    g.setColor(Color.RED);
-                    g.drawRect(selection.x, selection.y, selection.width, selection.height);
-                    drawCorners(g);
+                if (isSelectionRemove) {
+                    g.drawImage(originalImage, 0, 0, null);
+                } else {
+                    if (selection != null) {
+                        g.setColor(Color.RED);
+                        g.drawRect(selection.x, selection.y, selection.width, selection.height);
+                        drawCorners(g);
+                    }
                 }
             }
 
@@ -72,10 +78,12 @@ public class FrameScreenCaptureHelper extends JFrame {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                isSelectionRemove = false;
                 startPoint = e.getPoint();
                 endPoint = startPoint;
                 selection = null;
-                isMouseReleased=false;
+                isMouseReleased = false;
+                originalImage = FactoryUtils.captureWholeScreenWithRobot();
                 panel.repaint();
             }
 
@@ -83,9 +91,12 @@ public class FrameScreenCaptureHelper extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 endPoint = e.getPoint();
                 selection = createSelectionRectangle(startPoint, endPoint);
+                isSelectionRemove = true;
+                panel.repaint();
+                FactoryUtils.bekle(100);
                 captureScreenshot(selection);
                 isMouseReleased = true;
-                panel.repaint();
+
             }
         });
 
@@ -128,9 +139,8 @@ public class FrameScreenCaptureHelper extends JFrame {
     private void captureScreenshot(Rectangle selection) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Rectangle screenRectangle = new Rectangle(screenSize);
-        BufferedImage screenImage = robot.createScreenCapture(screenRectangle);
-
-        screenshot = screenImage.getSubimage(selection.x, selection.y, selection.width, selection.height);
+        //originalImage = robot.createScreenCapture(screenRectangle);
+        screenshot = originalImage.getSubimage(selection.x, selection.y, selection.width, selection.height);
     }
 
     private void drawCorners(Graphics g) {
@@ -150,7 +160,7 @@ public class FrameScreenCaptureHelper extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new FrameScreenCaptureHelper(null);
+                new FrameCaptureImage(null);
             }
         });
     }

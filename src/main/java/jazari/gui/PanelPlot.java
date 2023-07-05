@@ -113,8 +113,8 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         repaint();
     }
 
-    public void paint(Graphics gr1) {
-        gr = (Graphics2D) gr1;
+    public void paint(Graphics g) {
+        gr = (Graphics2D) g;
         gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         Font fnt = gr.getFont();

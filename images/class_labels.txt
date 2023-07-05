@@ -10,3 +10,5 @@ dolgu:Color 255 255 0
 flower:Color 153 153 255
 kafa:Color 0 204 204
 alyuvar:Color 255 255 0
+kuyruk:Color 51 255 51
+kanat:Color 255 102 204

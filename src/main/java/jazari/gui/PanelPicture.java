@@ -16,6 +16,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -334,12 +335,13 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private int img_height;
 
     @Override
-    public void paint(Graphics grn) {
-        Graphics2D gr = (Graphics2D) grn;
-//        RenderingHints rh = new RenderingHints(
-//             RenderingHints.KEY_TEXT_ANTIALIASING,
-//             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-//        gr.setRenderingHints(rh);
+    public void paint(Graphics g) {
+        Graphics2D gr = (Graphics2D) g;
+
+        RenderingHints rh = new RenderingHints(
+                RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        gr.setRenderingHints(rh);
 
         if (flag_once == 0) {
             activateAutoSizeAspect = false;
@@ -396,6 +398,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
         }
         paintFrameRectangle(gr, wPanel, hPanel);
+        paintComponents(g);
     }
 
     public void updateObjectProperties(String ret, String objectType) {
@@ -496,6 +499,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     private void initialize() {
+
         addKeyListener(this);
         setFocusable(true);
         requestFocus();
@@ -542,6 +546,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         setComponentPopupMenu(null);
 
         lbl = new JLabel("X:Y");
+        lbl.setBackground(Color.black);
+
         this.add(lbl);
         lbl.setBounds(new Rectangle(10, 2, 700, 30));
         lbl.setOpaque(true);
@@ -1608,7 +1614,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 s = s.replace("java.awt.Color", "");
                 lbl.setText(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=" + currBufferedImage.getType());// + " RGB=" + "(" + r + "," + g + "," + b + ")");
             }
-            lbl.setBackground(Color.black);
         }
     }
 
@@ -1899,6 +1904,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else if (obj.getText().equals("Capture Screen")) {
                     newScreenCaptureInstance();
                     return;
+                } else if (obj.getText().equals("Capture Video")) {
+                    newScreenCaptureInstance();
+                    return;
                 } else if (obj.getText().equals("Load Image")) {
                     activateStatistics = false;
                     File fl = ImageProcess.readImageFileFromFolderWithDirectoryPath(imagePath);
@@ -2040,9 +2048,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     private void newScreenCaptureInstance() {
-        FrameScreenCapture frm=new FrameScreenCapture(this);
+        FrameScreenCapture frm = new FrameScreenCapture(this);
         frm.setVisible(true);
-        frm.btn_capture_single_image.doClick();
+        //frm.btn_capture_single_image.doClick();
     }
 
     private void loadNextImage() {

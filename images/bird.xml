@@ -1,7 +1,7 @@
 <annotation>
-	<folder>images</folder>
+	<folder>D:\Dropbox\NetbeansProjects\OJL\images</folder>
 	<filename>bird.jpg</filename>
-	<path>D:\Dropbox\NetbeansProjects\open-jazari-library\images\bird.jpg</path>
+	<path>D:\Dropbox\NetbeansProjects\OJL\images\bird.jpg</path>
 	<source>
 		<database>Unknown</database>
 		<annotation>Unknown</annotation>
@@ -251,10 +251,100 @@
 			<y46>119</y46>
 		</polygon>
 		<bndbox>
-			<xmin>182</xmin>
+			<xmin>180</xmin>
 			<ymin>78</ymin>
-			<xmax>434</xmax>
+			<xmax>432</xmax>
 			<ymax>342</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>kafa</name>
+		<occluded>0</occluded>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<polygon>
+		</polygon>
+		<bndbox>
+			<xmin>0</xmin>
+			<ymin>0</ymin>
+			<xmax>0</xmax>
+			<ymax>0</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>kuyruk</name>
+		<occluded>0</occluded>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<polygon>
+			<x1>14</x1>
+			<y1>300</y1>
+			<x2>57</x2>
+			<y2>293</y2>
+			<x3>31</x3>
+			<y3>332</y3>
+			<x4>27</x4>
+			<y4>367</y4>
+			<x5>2</x5>
+			<y5>336</y5>
+		</polygon>
+		<bndbox>
+			<xmin>2</xmin>
+			<ymin>293</ymin>
+			<xmax>57</xmax>
+			<ymax>367</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>kuyruk</name>
+		<occluded>0</occluded>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<polygon>
+			<x1>111</x1>
+			<y1>254</y1>
+			<x2>150</x2>
+			<y2>210</y2>
+			<x3>171</x3>
+			<y3>244</y3>
+			<x4>157</x4>
+			<y4>284</y4>
+			<x5>135</x5>
+			<y5>264</y5>
+		</polygon>
+		<bndbox>
+			<xmin>111</xmin>
+			<ymin>210</ymin>
+			<xmax>171</xmax>
+			<ymax>284</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>kanat</name>
+		<occluded>0</occluded>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<polygon>
+			<x1>94</x1>
+			<y1>325</y1>
+			<x2>129</x2>
+			<y2>308</y2>
+			<x3>161</x3>
+			<y3>338</y3>
+			<x4>139</x4>
+			<y4>357</y4>
+			<x5>114</x5>
+			<y5>336</y5>
+		</polygon>
+		<bndbox>
+			<xmin>94</xmin>
+			<ymin>308</ymin>
+			<xmax>161</xmax>
+			<ymax>357</ymax>
 		</bndbox>
 	</object>
 </annotation>
