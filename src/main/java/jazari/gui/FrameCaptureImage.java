@@ -7,6 +7,7 @@ package jazari.gui;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -17,14 +18,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import jazari.factory.FactoryUtils;
 import jazari.image_processing.ImageProcess;
 
-public class FrameCaptureImage extends JFrame {
+public class FrameCaptureImage extends Frame {
 
     private Robot robot;
     private BufferedImage screenshot;
@@ -52,11 +51,6 @@ public class FrameCaptureImage extends JFrame {
                 super.paintComponent(g);
                 if (originalImage != null) {
                     g.drawImage(originalImage, 0, 0, null);
-                    if (frm != null && isMouseReleased) {
-                        frm.setImage(screenshot);
-                        FactoryUtils.copyImage2ClipBoard(screenshot);
-                        dispose();
-                    }
                 }
                 if (isSelectionRemove) {
                     g.drawImage(originalImage, 0, 0, null);
@@ -96,6 +90,12 @@ public class FrameCaptureImage extends JFrame {
                 FactoryUtils.bekle(100);
                 captureScreenshot(selection);
                 isMouseReleased = true;
+                FactoryUtils.copyImage2ClipBoard(screenshot);
+                frm.setImage(screenshot);
+                frm.setState(Frame.NORMAL);
+                System.out.println("çıktı");
+                //FactoryUtils.bekle(1000);
+                dispose();
 
             }
         });
@@ -118,7 +118,7 @@ public class FrameCaptureImage extends JFrame {
             }
         });
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("Screenshot App");
         setResizable(false);
         add(panel);

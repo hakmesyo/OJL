@@ -12,35 +12,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jazari.app.Jazo;
 import jazari.factory.FactoryUtils;
 import jazari.image_processing.ImageProcess;
 
 /**
  *
- * @author dell_lab
+ * @author cezerilab
  */
 public class FrameScreenCapture extends javax.swing.JFrame {
-
     private BufferedImage screenshot;
     private PanelPicture panel;
     public List<BufferedImage> listImage;
     public int fps = 10;
 
     /**
-     * Creates new form FrameScreenCapture
-     *
+     * Creates new form FrameScreeCap
      * @param panel
      */
     public FrameScreenCapture(PanelPicture panel) {
-        initComponents();
+        this.fps = 10;
+        this.initComponents();
         this.panel = panel;
-        //setAlwaysOnTop(true);
-        setLocationRelativeTo(null);
+        this.setLocationRelativeTo(null);
     }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -166,7 +163,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -179,14 +176,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         }
         setState(Frame.ICONIFIED);
         new FrameCaptureImage(this);
-
     }//GEN-LAST:event_btn_capture_single_imageActionPerformed
-
-    private void btn_useActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_useActionPerformed
-        panel.setImage(screenshot);
-        FactoryUtils.copyImage2ClipBoard(screenshot);
-        dispose();
-    }//GEN-LAST:event_btn_useActionPerformed
 
     private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed
         if (listImage != null && listImage.size() > 0) {
@@ -201,22 +191,63 @@ public class FrameScreenCapture extends javax.swing.JFrame {
             ImageProcess.saveImage(screenshot);
             screenshot=null;
             FactoryUtils.showMessage("Captured Image saved successfully");
-        } 
-
+        }
     }//GEN-LAST:event_btn_saveActionPerformed
+
+    private void btn_useActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_useActionPerformed
+        panel.setImage(screenshot);
+        FactoryUtils.copyImage2ClipBoard(screenshot);
+        dispose();
+    }//GEN-LAST:event_btn_useActionPerformed
 
     private void btn_capture_videoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_videoActionPerformed
         setState(Frame.ICONIFIED);
-        FactoryUtils.showMessage("For capturing with a specified fps\nselect a region with mouse\ntype esc if you want to stop");
+        FactoryUtils.showMessage("For capturing with a specified fps\nselect a bounding box rectangle with mouse press --> drag --> release\ntype esc if you want to stop");
+        FactoryUtils.bekle(500);
         listImage = new ArrayList<>();
         fps = Integer.parseInt(txt_fps.getText());
         new FrameCaptureVideo(this);
         screenshot = null;
     }//GEN-LAST:event_btn_capture_videoActionPerformed
 
+    public void setImage(final BufferedImage screenshot) {
+        this.setState(0);
+        this.screenshot = screenshot;
+        this.getPanel().setImage(screenshot);
+        if (screenshot.getWidth() > 480) {
+            this.setPreferredSize(new Dimension(screenshot.getWidth() + 30, screenshot.getHeight() + 110));
+        }
+        else {
+            this.setPreferredSize(new Dimension(500, 250));
+        }
+        this.invalidate();
+        this.repaint();
+        this.pack();
+        this.setLocationRelativeTo(null);
+    }
+    
+    public PanelScreenCapture getPanel() {
+        return (PanelScreenCapture)this.canvas;
+    }
+
     /**
      * @param args the command line arguments
      */
+    public static void main(String args[]) {
+        try {
+            UIManager.setLookAndFeel((LookAndFeel)new FlatDarkLaf());
+        }
+        catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(FrameScreenCapture.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new FrameScreenCapture(null).setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton btn_capture_single_image;
@@ -229,38 +260,4 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField txt_fps;
     // End of variables declaration//GEN-END:variables
-
-    public void setImage(BufferedImage screenshot) {
-        setState(Frame.NORMAL);
-        this.screenshot = screenshot;
-        getPanel().setImage(screenshot);
-        if (screenshot.getWidth() > 480) {
-            this.setPreferredSize(new Dimension(screenshot.getWidth() + 30, screenshot.getHeight() + 110));
-        } else {
-            this.setPreferredSize(new Dimension(500, 250));
-        }
-        this.invalidate();
-        this.repaint();
-        this.pack();
-        setLocationRelativeTo(null);
-    }
-
-    public PanelScreenCapture getPanel() {
-        return (PanelScreenCapture) canvas;
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Jazo.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new FrameScreenCapture(null).setVisible(true);
-            }
-        });
-
-    }
 }

@@ -511,8 +511,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Clone",
             "Load Image",
             "Save Image",
-            "Capture Screen",
-            "Capture Video",
+            "Screen Capture",
             "Statistics",
             "Histogram",
             "Revert",
@@ -528,7 +527,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Smooth",
             "Sharpen",
             "Crop", //"Generate Segmentation Masks",
-            "Screen Capture"
         };
 
         ButtonGroup itemsGroup = new ButtonGroup();
@@ -1901,10 +1899,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else if (obj.getText().equals("Clone")) {
                     new FrameImage(CMatrix.getInstance(currBufferedImage), imagePath, caption).setVisible(true);
                     return;
-                } else if (obj.getText().equals("Capture Screen")) {
-                    newScreenCaptureInstance();
-                    return;
-                } else if (obj.getText().equals("Capture Video")) {
+                } else if (obj.getText().equals("Screen Capture")) {
                     newScreenCaptureInstance();
                     return;
                 } else if (obj.getText().equals("Load Image")) {

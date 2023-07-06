@@ -7878,6 +7878,11 @@ public final class FactoryUtils {
         int height = (int) screenSize.getHeight();
         return height;
     }
+    
+    public static Dimension getScreenSize() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        return screenSize;
+    }
 
     public static BufferedImage captureWholeScreenWithRobot() {
         int width = getScreenWidth();

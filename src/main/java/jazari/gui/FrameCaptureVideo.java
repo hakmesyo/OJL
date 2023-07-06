@@ -4,13 +4,15 @@
  */
 package jazari.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -18,54 +20,62 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import jazari.factory.FactoryUtils;
 import jazari.image_processing.ImageProcess;
 
-public class FrameCaptureVideo extends JFrame {
+public class FrameCaptureVideo extends Frame {
 
     private BufferedImage screenshot;
     private BufferedImage originalImage;
-    private JPanel panel;
+    private Panel panel;
     private Rectangle selection;
     private Point startPoint;
     private Point endPoint;
     private final FrameScreenCapture frm;
     private boolean isMouseReleased = false;
-    private boolean isSelectionRemove = false;
     private boolean videoCaptureStop = false;
 
     public FrameCaptureVideo(FrameScreenCapture frm) {
         this.frm = frm;
-        setAlwaysOnTop(true);
         screenshot = FactoryUtils.captureWholeScreenWithRobot();
         originalImage = ImageProcess.clone(screenshot);
-        panel = new JPanel() {
+
+        Dimension dim = FactoryUtils.getScreenSize();
+        setSize(dim);
+        setLocationRelativeTo(null);
+        setUndecorated(true);
+        setAlwaysOnTop(true);
+
+        panel = new Panel() {
             @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (originalImage != null) {
-                    g.drawImage(originalImage, 0, 0, null);
+            public void paint(Graphics g) {
+                Graphics2D gr=(Graphics2D)g;
+                super.paint(g);
+                if (!isMouseReleased) {
+                    gr.drawImage(originalImage, 0, 0, null);
                 }
                 if (selection != null) {
-                    g.setColor(Color.RED);
-                    g.drawRect(selection.x - 3, selection.y - 3, selection.width + 6, selection.height + 6);
-                    drawCorners(g);
+                    gr.setColor(Color.RED);
+                    gr.setStroke(new BasicStroke(3));
+                    gr.drawRect(selection.x - 3, selection.y - 3, selection.width + 6, selection.height + 6);
+                    gr.setColor(Color.black);
+                    gr.fillRect(selection.x-3, selection.y-25,200,20);
+                    gr.setColor(Color.green);
+                    gr.drawString("Press ESC to stop recording", selection.x-3, selection.y-10);
+                    //drawCorners(g);
                 }
+
             }
 
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(screenshot.getWidth(), screenshot.getHeight());
-            }
         };
+
+        panel.setFocusable(true);
+        panel.requestFocusInWindow();
 
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                isSelectionRemove = false;
                 startPoint = e.getPoint();
                 endPoint = startPoint;
                 selection = null;
@@ -78,10 +88,10 @@ public class FrameCaptureVideo extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 endPoint = e.getPoint();
                 selection = createSelectionRectangle(startPoint, endPoint);
-                isSelectionRemove = true;
-                //panel.repaint();
-                captureScreenshots(selection);
                 isMouseReleased = true;
+                setBackground(new Color(0, 0, 0, 0));
+                panel.repaint();
+                captureScreenshots(selection);
 
             }
         });
@@ -95,7 +105,7 @@ public class FrameCaptureVideo extends JFrame {
             }
         });
 
-        addKeyListener(new KeyAdapter() {
+        panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -104,13 +114,10 @@ public class FrameCaptureVideo extends JFrame {
             }
         });
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("Screenshot App");
         setResizable(false);
+        panel.setSize(dim);
         add(panel);
-        setUndecorated(true);
-        pack();
-        setLocationRelativeTo(null);
         setVisible(true);
     }
 
@@ -127,8 +134,6 @@ public class FrameCaptureVideo extends JFrame {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                setLocation(FactoryUtils.getScreenWidth()-1, FactoryUtils.getScreenHeight()-1);
-                //setState(Frame.ICONIFIED);
                 while (!videoCaptureStop) {
                     screenshot = FactoryUtils.captureScreenWithRobot(new Rectangle(selection.x, selection.y, selection.width, selection.height));
                     frm.listImage.add(screenshot);
@@ -139,10 +144,9 @@ public class FrameCaptureVideo extends JFrame {
                         Logger.getLogger(FrameCaptureVideo.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                setLocation(0, 0);
-                //setState(Frame.NORMAL);
-                frm.setImage(screenshot);
                 FactoryUtils.copyImage2ClipBoard(screenshot);
+                frm.setImage(screenshot);
+                frm.setState(Frame.NORMAL);
                 dispose();
             }
         }).start();
