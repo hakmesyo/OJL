@@ -48,7 +48,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
     private int selectedIndex = -1;
     List<DataAnalytics> listDA = null;
     float totalNumberOfObjects = 0;
-    private String objectType="bbox"; //or polygon
+    private String objectType = "bbox"; //or polygon
 
     /**
      * Creates new form FrameObjectProperties
@@ -58,7 +58,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
      * @param objectType
      */
     public FrameObjectProperties(FrameImage frame, String objName, String objectType) {
-        this.objectType=objectType;
+        this.objectType = objectType;
         this.frm = frame;
         this.folderPath = frame.imageFolderPath;
         this.listDA = FactoryUtils.getDataAnalytics(folderPath);
@@ -78,7 +78,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
             }
         }
         initComponents();
-        
+
         setTitle("Object Properties Frame");
         setAlwaysOnTop(true);
         setLocation(200, 80);
@@ -326,7 +326,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
             String[] s = objects[selectedIndex].split(":");
             objects[selectedIndex] = txt_obj_name.getText() + ":" + s[1];
             FactoryUtils.writeToFile(frm.imageFolderPath + "/class_labels.txt", objects);
-            frm.getPicturePanel().updateObjectProperties(txt_obj_name.getText() + ":" + objectColors[selectedIndex],this.objectType);
+            frm.getPicturePanel().updateObjectProperties(txt_obj_name.getText() + ":" + objectColors[selectedIndex], this.objectType);
         }
         dispose();
     }//GEN-LAST:event_btn_okActionPerformed
@@ -351,6 +351,9 @@ public class FrameObjectProperties extends javax.swing.JFrame {
     private void btn_add_newActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_add_newActionPerformed
         if (!checkSimilar(txt_obj_name.getText())) {
             List<String> list = getArrayList(objects);
+            if (list.contains("")){
+                list.remove("");
+            }
             list.add(txt_obj_name.getText() + ":" + selectedColorName);
             objects = list.toArray(objects);
             System.out.println(Arrays.asList(objects));
@@ -358,7 +361,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
             selectedIndex = objects.length - 1;
             colorList.setSelectedIndex(selectedIndex);
             classNameList.setSelectedIndex(selectedIndex);
-            jScrollPane1.getVerticalScrollBar().setValue(objects.length*15);
+            jScrollPane1.getVerticalScrollBar().setValue(objects.length * 15);
         } else {
             FactoryUtils.showMessage("You have same class name in the list");
         }
@@ -405,7 +408,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrameObjectProperties(null, "","bbox").setVisible(true);
+                new FrameObjectProperties(null, "", "bbox").setVisible(true);
             }
         });
     }
@@ -526,22 +529,24 @@ public class FrameObjectProperties extends javax.swing.JFrame {
 
         addobjects(classNameList, container, layout, gbc, 0, 1, 1, 1);
 
-        String[] counts = getCounts();
-        JList countList = new JList(counts);
-        addobjects(countList, container, layout, gbc, 2, 1, 1, 1);
+        if (listDA != null) {
+            String[] counts = getCounts();
+            JList countList = new JList(counts);
+            addobjects(countList, container, layout, gbc, 2, 1, 1, 1);
 
-        String[] ratios = getRatios();
-        JList ratioList = new JList(ratios);
-        addobjects(ratioList, container, layout, gbc, 3, 1, 1, 1);
+            String[] ratios = getRatios();
+            JList ratioList = new JList(ratios);
+            addobjects(ratioList, container, layout, gbc, 3, 1, 1, 1);
 
-        if (selectedIndex != -1) {
-            classNameList.setSelectedValue(objName, true);
-            colorList.setSelectedIndex(selectedIndex);
-            jScrollPane1.getVerticalScrollBar().setValue(selectedIndex * 15);
-            txt_obj_name.setText(objName);
-            selectedObjectName = objName;
-            selectedColorName = objectColors[selectedIndex];
-            lbl_color.setBackground(getColor(selectedColorName));
+            if (selectedIndex != -1) {
+                classNameList.setSelectedValue(objName, true);
+                colorList.setSelectedIndex(selectedIndex);
+                jScrollPane1.getVerticalScrollBar().setValue(selectedIndex * 15);
+                txt_obj_name.setText(objName);
+                selectedObjectName = objName;
+                selectedColorName = objectColors[selectedIndex];
+                lbl_color.setBackground(getColor(selectedColorName));
+            }
         }
         pack();
     }
@@ -564,6 +569,9 @@ public class FrameObjectProperties extends javax.swing.JFrame {
     }
 
     private float getTotalNumberOfObjects() {
+        if (listDA == null) {
+            return -1;
+        }
         float ret = 0;
         for (int i = 0; i < listDA.size(); i++) {
             ret += listDA.get(i).frequency;
@@ -572,7 +580,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
     }
 
     private boolean checkSimilar(String s) {
-        boolean ret=false;
+        boolean ret = false;
         for (String object : objects) {
             String str = object.split(":")[0];
             if (str.equals(s)) {
