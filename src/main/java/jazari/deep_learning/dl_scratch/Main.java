@@ -8,6 +8,7 @@ import jazari.deep_learning.dl_scratch.data.Image;
 import jazari.deep_learning.dl_scratch.network.NetworkBuilder;
 import jazari.deep_learning.dl_scratch.network.NeuralNetwork;
 
+
 public class Main {
 
     public static void main(String[] args) {
