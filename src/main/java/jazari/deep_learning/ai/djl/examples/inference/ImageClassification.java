@@ -29,13 +29,15 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import jazari.factory.FactoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * An example of inference using an image classification model.
  *
- * <p>See this <a
+ * <p>
+ * See this <a
  * href="https://github.com/awslabs/djl/blob/master/examples/docs/image_classification.md">doc</a>
  * for information about this example.
  */
@@ -43,7 +45,8 @@ public final class ImageClassification {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageClassification.class);
 
-    private ImageClassification() {}
+    private ImageClassification() {
+    }
 
     public static void main(String[] args) throws IOException, ModelException, TranslateException {
         Classifications classifications = ImageClassification.predict();
@@ -56,23 +59,30 @@ public final class ImageClassification {
 
         String modelName = "mlp";
         try (Model model = Model.newInstance(modelName)) {
-            model.setBlock(new Mlp(28 * 28, 10, new int[] {128, 64}));
+            model.setBlock(new Mlp(28 * 28, 10, new int[]{128, 64}));
 
             // Assume you have run TrainMnist.java example, and saved model in build/model folder.
             Path modelDir = Paths.get("build/model");
             model.load(modelDir);
 
-            List<String> classes =
-                    IntStream.range(0, 10).mapToObj(String::valueOf).collect(Collectors.toList());
-            Translator<Image, Classifications> translator =
-                    ImageClassificationTranslator.builder()
+            List<String> classes
+                    = IntStream.range(0, 10).mapToObj(String::valueOf).collect(Collectors.toList());
+            Translator<Image, Classifications> translator
+                    = ImageClassificationTranslator.builder()
                             .addTransform(new ToTensor())
                             .optSynset(classes)
                             .build();
 
-            try (Predictor<Image, Classifications> predictor = model.newPredictor(translator)) {
-                return predictor.predict(img);
+            Predictor<Image, Classifications> predictor = model.newPredictor(translator);
+            long t1 = FactoryUtils.tic();
+            for (int i = 0; i < 10; i++) {
+                predictor.predict(img);
+                t1 = FactoryUtils.toc(t1);
             }
+//            try (Predictor<Image, Classifications> predictor = model.newPredictor(translator)) {
+//                return predictor.predict(img);
+//            }
+            return predictor.predict(img);
         }
     }
 }

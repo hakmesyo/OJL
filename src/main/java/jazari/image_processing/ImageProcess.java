@@ -2501,6 +2501,10 @@ public final class ImageProcess {
         return readImageFromFile(fileName);
     }
 
+    public static BufferedImage imread(File file) {
+        return readImageFromFile(file.getAbsolutePath());
+    }
+
     public static BufferedImage readImageFromFile(String fileName) {
         File file = new File(fileName);
         if (!file.exists()) {
@@ -4320,6 +4324,12 @@ public final class ImageProcess {
 
     public static BufferedImage adaptiveThresholdColorAdaptive(int r, int dr, int g, int dg, int b, int db, float[][][] argb) {
         return adaptiveThresholdColorLimits(r - dr, r + dr, g - dg, g + dg, b - db, b + db, argb);
+    }
+
+    public static BufferedImage cropImageWithCentered224(BufferedImage img) {
+        int w=img.getWidth();
+        int h=img.getHeight();
+        return cropImage(img, (w-224)/2, (h-224)/2, 224, 224);
     }
 
 }

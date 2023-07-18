@@ -38,7 +38,7 @@ public final class Train {
     // represents number of training samples processed before the model is updated
 //    private static final int BATCH_SIZE = 8;
 //    private static final int BATCH_SIZE = 16;
-    private static final int BATCH_SIZE = 64;
+    private static final int BATCH_SIZE = 32;
 
     // the number of passes over the complete dataset
     private static final int EPOCHS = 10;
@@ -49,7 +49,8 @@ public final class Train {
         Path modelDir = Paths.get("models");
 
         // create ImageFolder dataset from directory
-        ImageFolder dataset = initDataset("c:/ai/djl/pistachio_train");
+        ImageFolder dataset = initDataset("c:/ai/djl/pistachio_binary");
+        //ImageFolder dataset = initDataset("c:/ai/djl/pistachio_train");
         // Split the dataset set into training dataset and validate dataset
         RandomAccessDataset[] datasets = dataset.randomSplit(10, 0);
 

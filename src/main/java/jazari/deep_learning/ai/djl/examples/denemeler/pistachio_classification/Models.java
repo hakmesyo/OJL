@@ -33,6 +33,9 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import static jazari.deep_learning.ai.djl.examples.denemeler.number_classificiation.Models.IMAGE_HEIGHT;
+import static jazari.deep_learning.ai.djl.examples.denemeler.number_classificiation.Models.IMAGE_WIDTH;
+import static jazari.deep_learning.ai.djl.examples.denemeler.number_classificiation.Models.NUM_OF_OUTPUT;
 
 /**
  * A helper class loads and saves model.
@@ -48,8 +51,8 @@ public final class Models {
 
     // the name of the model
     public static final String MODEL_NAME = "pistachio_open_closed";
-    public static TrainingConfig config=null;
-    public static Model model=null;
+    public static TrainingConfig config = null;
+    public static Model model = null;
 
     public static Trainer getTrainer() {
         return model.newTrainer(Models.config);
@@ -62,7 +65,6 @@ public final class Models {
         NUM_OF_OUTPUT = p_NUM_OF_OUTPUT;
         IMAGE_WIDTH = p_IMAGE_WIDTH;
         IMAGE_HEIGHT = p_IMAGE_HEIGHT;
-
 
         // Block is a composable unit that forms a neural network; combine them like Lego blocks
         // to form a complex network
@@ -79,10 +81,29 @@ public final class Models {
 //                        new int[] {128, 64});
         // create new instance of an empty model
         model = Model.newInstance(MODEL_NAME);
-        Block block = buildLeNetCNN();
-        model.setBlock(block);
-        config=setupTrainingConfig(model,block);
+
+        //lenet
+//        Block block = buildLeNetCNN();
+//        model.setBlock(block);
+        //simple mlp
+//        Block block
+//                = new Mlp(
+//                        3 * IMAGE_HEIGHT * IMAGE_WIDTH,
+//                        NUM_OF_OUTPUT,
+//                        new int[]{128, 64});
+        //ResNet
+        Block block
+                = ResNetV1.builder() // construct the network
+                        .setImageShape(new Shape(3, IMAGE_HEIGHT, IMAGE_WIDTH))
+                        .setNumLayers(50)
+                        .setOutSize(NUM_OF_OUTPUT)
+                        .build();
+
         // set the neural network to the model
+        model.setBlock(block);
+
+        // set the neural network to the model
+        config = setupTrainingConfig(model, block);
         return model;
     }
 
@@ -124,7 +145,7 @@ public final class Models {
         return block;
     }
 
-    public static TrainingConfig setupTrainingConfig(Model model,Block block) {
+    public static TrainingConfig setupTrainingConfig(Model model, Block block) {
         float lr = 0.9f;
         //Model model = Model.newInstance("cnn");
         //model.setBlock(block);
@@ -135,7 +156,7 @@ public final class Models {
         Optimizer sgd = Optimizer.sgd().setLearningRateTracker(lrt).build();
 
         DefaultTrainingConfig config = new DefaultTrainingConfig(loss).optOptimizer(sgd) // Optimizer (loss function)
-//                .optDevices(Device.getDevices(1)) // Single GPU
+                //                .optDevices(Device.getDevices(1)) // Single GPU
                 .addEvaluator(new Accuracy()) // Model Accuracy
                 .addTrainingListeners(TrainingListener.Defaults.logging()); // Logging
 
@@ -155,7 +176,7 @@ public final class Models {
         }
         return config;
     }
-    
+
     public static void saveSynset(Path modelDir, List<String> synset) throws IOException {
         Path synsetFile = modelDir.resolve("synset.txt");
         try (Writer writer = Files.newBufferedWriter(synsetFile)) {
