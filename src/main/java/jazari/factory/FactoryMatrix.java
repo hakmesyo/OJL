@@ -1222,7 +1222,7 @@ public final class FactoryMatrix implements Serializable {
                         .boxed() // <-- converts them to Integers
                         .collect(Collectors.toList());          // <-- collects the values to a list
 
-        Collections.shuffle(lst,new Random(123));
+        Collections.shuffle(lst, new Random(123));
 //        int[] m = new int[n];
 //        List<Integer> lst=Arrays.asList(IntStream.range(6, 10));
 //        Collections.shuffle(Arrays.asList(m));
@@ -3024,7 +3024,7 @@ public final class FactoryMatrix implements Serializable {
     }
 
     public static List<Integer> randList(int n, int scale, Random rnd) {
-        List<Integer> ret= new ArrayList();
+        List<Integer> ret = new ArrayList();
         for (int i = 0; i < n; i++) {
             ret.add(rnd.nextInt(scale));
         }
@@ -3357,12 +3357,12 @@ public final class FactoryMatrix implements Serializable {
         int nr = d.length;
         int nc = d[0].length;
         float[][] ret = new float[nr - 2 * mid][nc - 2 * mid];
-        for (int i = mid; i < nr- 2 * mid; i++) {
-            for (int j = mid; j < nc- 2 * mid; j++) {
+        for (int i = mid; i < nr - 2 * mid; i++) {
+            for (int j = mid; j < nc - 2 * mid; j++) {
                 String str = "";
                 for (int k = 0; k < size; k++) {
                     for (int l = 0; l < size; l++) {
-                        if (d[i][j] > d[i-mid + k][j-mid + l]) {
+                        if (d[i][j] > d[i - mid + k][j - mid + l]) {
                             str += "1";
                         } else {
                             str += "0";
@@ -3582,6 +3582,18 @@ public final class FactoryMatrix implements Serializable {
                     ret = columns(ret, new int[]{c});
                     return ret;
                 }
+            } else if (p2.split(":").length == 2) {
+                float[] p = FactoryUtils.resolveParam(p2, nc);
+                if (p[0] == p[1]) {
+                    if (p[0] < nc) {
+                        ret = columns(ret, new int[]{(int) p[0]});
+                        return ret;
+                    }
+                } else {
+                    ret = columns(ret, FactoryUtils.toIntArray1D(p));
+                    return ret;
+                }
+
             } else {
                 float[] p = FactoryUtils.resolveParam(p2, nc);
                 ret = columns(ret, FactoryUtils.toIntArray1D(p));

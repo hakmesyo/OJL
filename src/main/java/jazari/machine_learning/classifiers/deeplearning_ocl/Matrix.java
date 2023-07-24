@@ -104,7 +104,7 @@ public class Matrix implements Serializable {
 //    }
     
     public Matrix multiply(Matrix m2) {
-        data = data.timesElement(m2.data);
+        data = data.mmul(m2.data);
         return new Matrix(data);
     }
 
@@ -146,7 +146,8 @@ public class Matrix implements Serializable {
     }
 
     public Matrix trans2mult(Matrix m2) {
-        data = data.timesElement(m2.data.transpose());
+        //data = data.timesElement(m2.data.transpose());
+        data = data.mmul(m2.data.transpose());
         return this;
     }
 
@@ -183,8 +184,9 @@ public class Matrix implements Serializable {
     }
 
     public Matrix getColumns(int startCol, int endCol) {
-        endCol = endCol == -1 ? numColumns() - 1 : endCol;
-        CMatrix ret = data.cmd(":", startCol + ":" + endCol);
+        //endCol = endCol == -1 ? numColumns() - 1 : endCol;
+        endCol = endCol == -1 ? numColumns() : endCol;
+        CMatrix ret = data.clone().cmd(":", startCol + ":" + endCol);
         Matrix m2 = new Matrix(ret);
         return m2;
     }

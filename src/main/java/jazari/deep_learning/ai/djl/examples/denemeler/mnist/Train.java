@@ -18,19 +18,15 @@ import ai.djl.training.TrainingConfig;
 import ai.djl.training.TrainingResult;
 import ai.djl.training.dataset.RandomAccessDataset;
 import ai.djl.training.evaluator.Accuracy;
-import ai.djl.training.initializer.Initializer;
-import ai.djl.training.initializer.XavierInitializer;
 import ai.djl.training.listener.TrainingListener;
 import ai.djl.training.loss.Loss;
 import ai.djl.training.optimizer.Optimizer;
-import ai.djl.training.tracker.MultiFactorTracker;
 import ai.djl.training.tracker.Tracker;
 import ai.djl.translate.TranslateException;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 /**
  * In training, multiple passes (or epochs) are made over the training data
@@ -55,7 +51,7 @@ public final class Train {
 
         // create ImageFolder dataset from directory
 //        ImageFolder dataset = initDataset("c:/ai/djl/ut-zap50k-images-square");
-        ImageFolder dataset = initDataset("c:/ai/djl/mnist_train");
+        ImageFolder dataset = initDataset("c:/ai/djl/mnist/train");
 //        ImageFolder dataset = initDataset("c:/ai/djl/mnist_test");
         // Split the dataset set into training dataset and validate dataset
         RandomAccessDataset[] datasets = dataset.randomSplit(8, 2);

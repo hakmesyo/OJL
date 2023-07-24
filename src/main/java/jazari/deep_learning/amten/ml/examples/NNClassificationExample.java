@@ -1,15 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package jazari.machine_learning.classifiers.deeplearning_ocl;
+package jazari.deep_learning.amten.ml.examples;
+
+import jazari.deep_learning.amten.ml.NNParams;
+import jazari.deep_learning.amten.ml.NeuralNetwork;
+import jazari.deep_learning.amten.ml.matrix.Matrix;
+import jazari.deep_learning.amten.ml.matrix.MatrixUtils;
 
 /**
+ * Examples of using NeuralNetwork for classification.
  *
- * @author cezerilab
+ * @author Johannes Amtén
  */
-public class TestForClassification {
+public class NNClassificationExample {
 
     /**
      * Performs classification of Handwritten digits,
@@ -28,7 +29,7 @@ public class TestForClassification {
         // Read data from CSV-file
         int headerRows = 1;
         char separator = ',';
-        Matrix data = MatrixUtils.readCSV("dataset/Kaggle_Digits_1000.csv", separator, headerRows);
+        Matrix data = MatrixUtils.readCSV("example_data/Kaggle_Digits_1000.csv", separator, headerRows);
 
         // Split data into training set and crossvalidation set.
         float crossValidationPercent = 33;
@@ -47,11 +48,10 @@ public class TestForClassification {
         params.hiddenLayerParams = useConvolution ? new NNParams.NNLayerParams[]{ new NNParams.NNLayerParams(20, 5, 5, 2, 2) , new NNParams.NNLayerParams(100, 5, 5, 2, 2) } :
                                                     new NNParams.NNLayerParams[] { new NNParams.NNLayerParams(100) };
         params.maxIterations = useConvolution ? 10 : 200;
-        params.learningRate = useConvolution ? 1E-2f : 0;
-        params.numThreads=1;
+        params.learningRate = useConvolution ? 1E-2 : 0;
 
         long startTime = System.currentTimeMillis();
-        DeepNeuralNetwork nn = new DeepNeuralNetwork(params);
+        NeuralNetwork nn = new NeuralNetwork(params);
         nn.train(xTrain, yTrain);
         System.out.println("\nTraining time: " + String.format("%.3g", (System.currentTimeMillis() - startTime) / 1000.0) + "s");
 
@@ -91,7 +91,7 @@ public class TestForClassification {
         // Read data from CSV-file
         int headerRows = 1;
         char separator = ',';
-        Matrix data = MatrixUtils.readCSV("data/Kaggle_Titanic_Cleaned.csv", separator, headerRows);
+        Matrix data = MatrixUtils.readCSV("example_data/Kaggle_Titanic_Cleaned.csv", separator, headerRows);
 
         // Split data into training set and crossvalidation set.
         float crossValidationPercent = 33;
@@ -114,7 +114,7 @@ public class TestForClassification {
         params.numClasses = 2; // 2 classes, survived/not
 
         long startTime = System.currentTimeMillis();
-        DeepNeuralNetwork nn = new DeepNeuralNetwork(params);
+        NeuralNetwork nn = new NeuralNetwork(params);
         nn.train(xTrain, yTrain);
         System.out.println("\nTraining time: " + String.format("%.3g", (System.currentTimeMillis() - startTime) / 1000.0) + "s");
 
@@ -138,11 +138,10 @@ public class TestForClassification {
     }
 
     public static void main(String[] args) throws Exception {
-//        runKaggleDigitsClassification(false);
-//        System.out.println("\n\n\n");
+        runKaggleDigitsClassification(false);
+        System.out.println("\n\n\n");
         runKaggleDigitsClassification(true);
         System.out.println("\n\n\n");
-//        runKaggleTitanicClassification();
+        runKaggleTitanicClassification();
     }
-    
 }

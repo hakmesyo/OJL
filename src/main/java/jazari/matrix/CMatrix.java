@@ -3651,10 +3651,14 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix timesElement(CMatrix cm) {
-        if (this.getColumnNumber() != cm.getRowNumber()) {
+        if (this.getColumnNumber() != cm.getColumnNumber() || this.getRowNumber() != cm.getRowNumber()) {
             throw new InputMismatchException("can not multiply these two matrices please make sure both matrices obey the matrix multiplication rule i.e. column number of first matrix must equal to the colum number of the second matrix");
 //            return this;
         }
+//        if (this.getColumnNumber() != cm.getRowNumber()) {
+//            throw new InputMismatchException("can not multiply these two matrices please make sure both matrices obey the matrix multiplication rule i.e. column number of first matrix must equal to the colum number of the second matrix");
+////            return this;
+//        }
         array = array.mul(cm.array);
         return this;
     }

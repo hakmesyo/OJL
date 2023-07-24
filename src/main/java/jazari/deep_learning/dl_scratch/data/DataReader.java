@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import jazari.factory.FactoryUtils;
 
 public class DataReader {
 
@@ -13,33 +14,45 @@ public class DataReader {
     public List<Image> readData(String path){
 
         List<Image> images = new ArrayList<>();
-
-        try (BufferedReader dataReader = new BufferedReader(new FileReader(path))){
-
-            String line;
-
-            while((line = dataReader.readLine()) != null){
-                String[] lineItems = line.split(",");
-
-                double[][] data = new double[rows][cols];
-                int label = Integer.parseInt(lineItems[0]);
-
-                int i = 1;
-
-                for(int row = 0; row < rows; row++){
-                    for(int col = 0; col < cols; col++){
-                        data[row][col] = (double) Integer.parseInt(lineItems[i]);
-                        i++;
-                    }
+        float[][] ret=FactoryUtils.readCSV(path, ',', 1);
+        for (int i = 0; i < ret.length; i++) {
+            int z=1;
+            int label = (int)(ret[i][0]);
+            double[][] data = new double[rows][cols];
+            for (int j = 0; j < rows; j++) {
+                for (int k = 0; k < cols; k++) {
+                    data[j][k]=ret[i][z++];
                 }
-
-                images.add(new Image(data, label));
-
             }
-
-        } catch (Exception e){
-            throw new IllegalArgumentException("File not found " + path);
+            images.add(new Image(data, label));
         }
+
+//        try (BufferedReader dataReader = new BufferedReader(new FileReader(path))){
+//
+//            String line;
+//
+//            while((line = dataReader.readLine()) != null){
+//                String[] lineItems = line.split(",");
+//
+//                double[][] data = new double[rows][cols];
+//                int label = Integer.parseInt(lineItems[0]);
+//
+//                int i = 1;
+//
+//                for(int row = 0; row < rows; row++){
+//                    for(int col = 0; col < cols; col++){
+//                        data[row][col] = (double) Integer.parseInt(lineItems[i]);
+//                        i++;
+//                    }
+//                }
+//
+//                images.add(new Image(data, label));
+//
+//            }
+//
+//        } catch (Exception e){
+//            throw new IllegalArgumentException("File not found " + path);
+//        }
 
         return images;
 

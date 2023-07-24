@@ -78,7 +78,7 @@ public class Train {
 
         Loss loss = Loss.softmaxCrossEntropyLoss();
 
-        int numEpochs = Integer.getInteger("MAX_EPOCH", 1);
+        int numEpochs = Integer.getInteger("MAX_EPOCH", 3);
         float lr = 0.5f;
 
         double[] trainLoss;
@@ -153,6 +153,7 @@ public class Train {
                 DoubleColumn.create("loss", ArrayUtils.addAll(trainLoss, ArrayUtils.addAll(trainAccuracy, testAccuracy))),
                 StringColumn.create("lossLabel", lossLabel)
         );
+        System.out.println("data = " + data);
 
         //render(LinePlot.create("", data, "epochCount", "loss", "lossLabel"), "text/html");
     }

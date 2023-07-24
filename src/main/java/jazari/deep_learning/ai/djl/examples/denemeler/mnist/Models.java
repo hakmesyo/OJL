@@ -48,17 +48,17 @@ public final class Models {
 
         // Block is a composable unit that forms a neural network; combine them like Lego blocks
         // to form a complex network
-//        Block block =
-//                ResNetV1.builder() // construct the network
-//                        .setImageShape(new Shape(3, IMAGE_HEIGHT, IMAGE_WIDTH))
-//                        .setNumLayers(50)
-//                        .setOutSize(NUM_OF_OUTPUT)
-//                        .build();
         Block block =
-                new Mlp(
-                        3*IMAGE_HEIGHT * IMAGE_WIDTH,
-                        NUM_OF_OUTPUT,
-                        new int[] {128, 64});
+                ResNetV1.builder() // construct the network
+                        .setImageShape(new Shape(1, IMAGE_HEIGHT, IMAGE_WIDTH))
+                        .setNumLayers(50)
+                        .setOutSize(NUM_OF_OUTPUT)
+                        .build();
+//        Block block =
+//                new Mlp(
+//                        3*IMAGE_HEIGHT * IMAGE_WIDTH,
+//                        NUM_OF_OUTPUT,
+//                        new int[] {128, 64});
 //        SequentialBlock block = new SequentialBlock()
 //                .add(Blocks.batchFlattenBlock(3 * IMAGE_WIDTH * IMAGE_HEIGHT))
 //                .add(Linear.builder().setUnits(128).build())

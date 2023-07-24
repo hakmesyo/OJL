@@ -43,7 +43,7 @@ public class ConciseImplMLP {
         net.setInitializer(new NormalInitializer(), Parameter.Type.OTHER);
 
         int batchSize = 256;
-        int numEpochs = 10;
+        int numEpochs = 30;
         double[] trainLoss;
         double[] testAccuracy;
         double[] epochCount;

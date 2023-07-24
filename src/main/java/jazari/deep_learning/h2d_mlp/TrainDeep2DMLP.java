@@ -28,8 +28,8 @@ public class TrainDeep2DMLP {
 
     public static void main(String[] args) {
 //        prepareDataSet();
-        String path_train = "C:\\ai\\djl\\mnist\\train";
-        String path_test = "C:\\ai\\djl\\mnist\\test";
+        String path_train = "D:\\ai\\djl\\mnist\\train";
+        String path_test = "D:\\ai\\djl\\mnist\\test";
 
         
         LinkedHashMap<String, List<String>> tr = Datasets.loadData(path_train, IMG_WIDTH, IMG_HEIGHT, NUM_CHANNEL);

@@ -3,7 +3,7 @@ package jazari.deep_learning.dl_scratch.layers;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MaxPoolLayer extends Layer{
+public class MaxPoolLayer extends Layer {
 
     private int _stepSize;
     private int _windowSize;
@@ -14,7 +14,6 @@ public class MaxPoolLayer extends Layer{
 
     List<int[][]> _lastMaxRow;
     List<int[][]> _lastMaxCol;
-
 
     public MaxPoolLayer(int _stepSize, int _windowSize, int _inLength, int _inRows, int _inCols) {
         this._stepSize = _stepSize;
@@ -30,7 +29,7 @@ public class MaxPoolLayer extends Layer{
         _lastMaxRow = new ArrayList<>();
         _lastMaxCol = new ArrayList<>();
 
-        for(int l =0; l < input.size(); l++){
+        for (int l = 0; l < input.size(); l++) {
             output.add(pool(input.get(l)));
         }
 
@@ -38,26 +37,26 @@ public class MaxPoolLayer extends Layer{
 
     }
 
-    public double[][] pool(double[][] input){
+    public double[][] pool(double[][] input) {
 
         double[][] output = new double[getOutputRows()][getOutputCols()];
 
         int[][] maxRows = new int[getOutputRows()][getOutputCols()];
         int[][] maxCols = new int[getOutputRows()][getOutputCols()];
 
-        for(int r = 0; r < getOutputRows(); r+= _stepSize){
-            for(int c = 0; c < getOutputCols(); c+= _stepSize){
+        for (int r = 0; r < getOutputRows(); r += _stepSize) {
+            for (int c = 0; c < getOutputCols(); c += _stepSize) {
 
                 double max = 0.0;
                 maxRows[r][c] = -1;
                 maxCols[r][c] = -1;
 
-                for(int x = 0; x < _windowSize; x++){
-                    for(int y = 0; y < _windowSize; y++) {
-                        if(max < input[r+x][c+y]){
-                            max = input[r+x][c+y];
-                            maxRows[r][c] = r+x;
-                            maxCols[r][c] = c+y;
+                for (int x = 0; x < _windowSize; x++) {
+                    for (int y = 0; y < _windowSize; y++) {
+                        if (max < input[r + x][c + y]) {
+                            max = input[r + x][c + y];
+                            maxRows[r][c] = r + x;
+                            maxCols[r][c] = c + y;
                         }
                     }
                 }
@@ -67,13 +66,14 @@ public class MaxPoolLayer extends Layer{
             }
         }
 
-        _lastMaxRow.add(maxRows);
-        _lastMaxCol.add(maxCols);
+        synchronized (this) {
+            _lastMaxRow.add(maxRows);
+            _lastMaxCol.add(maxCols);
+        }
 
         return output;
 
     }
-
 
     @Override
     public double[] getOutput(List<double[][]> input) {
@@ -99,16 +99,16 @@ public class MaxPoolLayer extends Layer{
         List<double[][]> dXdL = new ArrayList<>();
 
         int l = 0;
-        for(double[][] array: dLdO){
+        for (double[][] array : dLdO) {
             double[][] error = new double[_inRows][_inCols];
 
-            for(int r = 0; r < getOutputRows(); r++){
-                for(int c = 0; c < getOutputCols(); c++){
-                    System.out.println("l:"+l+" r:"+r+" c:"+c);
+            for (int r = 0; r < getOutputRows(); r++) {
+                for (int c = 0; c < getOutputCols(); c++) {
+                    //System.out.println("l:"+l+" r:"+r+" c:"+c);
                     int max_i = _lastMaxRow.get(l)[r][c];
                     int max_j = _lastMaxCol.get(l)[r][c];
 
-                    if(max_i != -1){
+                    if (max_i != -1) {
                         error[max_i][max_j] += array[r][c];
                     }
                 }
@@ -118,7 +118,7 @@ public class MaxPoolLayer extends Layer{
             l++;
         }
 
-        if(_previousLayer!= null){
+        if (_previousLayer != null) {
             _previousLayer.backPropagation(dXdL);
         }
 
@@ -131,16 +131,16 @@ public class MaxPoolLayer extends Layer{
 
     @Override
     public int getOutputRows() {
-        return (_inRows-_windowSize)/_stepSize + 1;
+        return (_inRows - _windowSize) / _stepSize + 1;
     }
 
     @Override
     public int getOutputCols() {
-        return (_inCols-_windowSize)/_stepSize + 1;
+        return (_inCols - _windowSize) / _stepSize + 1;
     }
 
     @Override
     public int getOutputElements() {
-        return _inLength*getOutputCols()*getOutputRows();
+        return _inLength * getOutputCols() * getOutputRows();
     }
 }
