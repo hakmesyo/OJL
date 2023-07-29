@@ -6710,6 +6710,17 @@ public final class FactoryUtils {
         return false;
     }
 
+    public static float[][] timesScalar(float[][] d, float scale) {
+        int nr=d.length;
+        int nc=d[0].length;
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                d[i][j]*=scale;
+            }
+        }
+        return d;
+    }
+
 //    public static Rectangle getBoundingRectangle(Polygon polygon) {
 //        if (polygon.npoints <= 0) {
 //            return null;

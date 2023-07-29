@@ -51,7 +51,8 @@ public class Channel {
     public void feed(float[][] d) {
         for (int i = 0; i < nrows; i++) {
             for (int j = 0; j < ncols; j++) {
-                nodes[i][j].data = d[i][j] / 255.0f;
+                //nodes[i][j].data = d[i][j] / 255.0f;
+                nodes[i][j].data = d[i][j];
             }
         }
     }

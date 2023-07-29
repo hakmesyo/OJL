@@ -62,7 +62,7 @@ public class Datasets {
         double[][][] X = new double[150][1][4];
         double[][][] Y = new double[150][1][3];
         try {
-            Scanner scanner = new Scanner(new File("data/iris_1.txt"));
+            Scanner scanner = new Scanner(new File("dataset/iris_1.txt"));
             int i = 0;
             while(scanner.hasNextLine()){
                 String line = scanner.nextLine();
@@ -116,7 +116,7 @@ public class Datasets {
         String[] labels = new String[no_instances];
         LinkedHashSet<String> labelSet = new LinkedHashSet<>();
         try {
-            Scanner scanner = new Scanner(new File("data/data.txt"));
+            Scanner scanner = new Scanner(new File("dataset/data.txt"));
             int i = 0;
             while(scanner.hasNextLine()){
                 String line = scanner.nextLine();

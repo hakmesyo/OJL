@@ -6,7 +6,6 @@
 package jazari.deep_learning.h2d_mlp;
 
 import jazari.factory.FactoryUtils;
-import java.util.Arrays;
 
 /**
  *
@@ -35,6 +34,7 @@ public class Node {
         }
     }
 
+    @Override
     public String toString() {
         return "pos:" + px + "," + py + "; data:" + data+" ; weight:"+FactoryUtils.formatDouble(weight);
     }
@@ -56,6 +56,10 @@ public class Node {
         }
         temp = temp.dump().nextNode;
         return this;
+    }
+    
+    public boolean isOutput(){
+        return nextNode==null;
     }
 
 }

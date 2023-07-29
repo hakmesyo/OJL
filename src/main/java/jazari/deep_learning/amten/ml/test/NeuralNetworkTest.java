@@ -22,7 +22,7 @@ public class NeuralNetworkTest {
         // Read data from CSV-file
         int headerRows = 1;
         char separator = ',';
-        Matrix data = MatrixUtils.readCSV("example_data/Kaggle_Digits_1000.csv", separator, headerRows);
+        Matrix data = MatrixUtils.readCSV("dataset/Kaggle_Digits_1000.csv", separator, headerRows);
 //        Matrix data = MatrixUtils.readCSV("C:/Users/Glenn/Documents/Kaggle/Digit Recognizer/train.csv", separator, headerRows);
 
         // Split data into training set and crossvalidation set.
@@ -39,11 +39,13 @@ public class NeuralNetworkTest {
 
         NNParams params = new NNParams();
         params.numClasses = 10; // 10 digits to classify
-        params.hiddenLayerParams = new NNParams.NNLayerParams[]{new NNParams.NNLayerParams(5, 5, 5, 2, 2), new NNParams.NNLayerParams(20, 5, 5, 2, 2)};
+        params.hiddenLayerParams = new NNParams.NNLayerParams[]{
+            new NNParams.NNLayerParams(5, 5, 5, 2, 2), 
+            new NNParams.NNLayerParams(10, 5, 5, 2, 2)};
         //params.hiddenLayerParams = new NNParams.NNLayerParams[] { new NNParams.NNLayerParams(20, 5, 5, 2, 2) , new NNParams.NNLayerParams(100, 5, 5, 2, 2) };
         params.learningRate = 1E-2;
         params.maxIterations = 50;
-        params.numThreads=1;
+        //params.numThreads=1;
         
 
         long startTime = System.currentTimeMillis();

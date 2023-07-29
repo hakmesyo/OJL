@@ -18,8 +18,8 @@ import java.util.List;
 public class TestWithMNIST {
 
     public static void main(String[] args) {
-        DataSet train_ds = getDS("images/mnist/train");
-        DataSet test_ds = getDS("images/mnist/test");
+        DataSet train_ds = getDS("C:\\ai\\djl\\mnist/train");
+        DataSet test_ds = getDS("C:\\ai\\djl\\mnist/test");
         
         double[][] train_inp=train_ds.input;
         double[][] train_out=train_ds.output;

@@ -6,14 +6,12 @@ import au.com.bytecode.opencsv.CSVWriter;
 import java.io.*;
 import java.util.*;
 
-
 /**
  * Some helper methods for manipulating matrices.
  *
  * @author Johannes Amtén
  *
  */
-
 public class MatrixUtils {
 
     /**
@@ -25,25 +23,25 @@ public class MatrixUtils {
      * @return Matrix
      * @throws IOException
      */
-	public static Matrix readCSV(String filename, char separator, int headerLines) throws IOException {
-		BufferedReader br = new BufferedReader(new FileReader(filename));
-		CSVReader cr = new CSVReader(br, separator, '\"', '\\', headerLines);
-		List<String[]> values = cr.readAll();
-		cr.close();
-		br.close();
-		
-		int numRows = values.size();
-		int numCols = values.get(0).length;
-		Matrix m = new Matrix(numRows, numCols);
-		for (int row = 0; row < numRows; row++) {
-			String[] rowValues = values.get(row);
-			for (int col = 0; col < numCols; col++) {
-				Double v = Double.parseDouble(rowValues[col]);
-				m.set(row, col, v);
-			}
-		}
-		return m;
-	}
+    public static Matrix readCSV(String filename, char separator, int headerLines) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        CSVReader cr = new CSVReader(br, separator, '\"', '\\', headerLines);
+        List<String[]> values = cr.readAll();
+        cr.close();
+        br.close();
+
+        int numRows = values.size();
+        int numCols = values.get(0).length;
+        Matrix m = new Matrix(numRows, numCols);
+        for (int row = 0; row < numRows; row++) {
+            String[] rowValues = values.get(row);
+            for (int col = 0; col < numCols; col++) {
+                Double v = Double.parseDouble(rowValues[col]);
+                m.set(row, col, v);
+            }
+        }
+        return m;
+    }
 
     public static void writeCSV(Matrix m, String filename) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
@@ -64,19 +62,19 @@ public class MatrixUtils {
 
     public static Matrix random(int rows, int cols, int seed) {
         // Create own random generator instead of making calls to Math.random from each thread, which would block each other.
-        Random rnd = new Random(seed);
+        Random rnd = new Random();
         Matrix m = new Matrix(rows, cols);
-        for (MatrixElement me:m) {
+        for (MatrixElement me : m) {
             me.set(rnd.nextDouble());
         }
         return m;
     }
 
-	public static Matrix addBiasColumn(Matrix m) {
+    public static Matrix addBiasColumn(Matrix m) {
         Matrix bias = new Matrix(m.numRows(), 1);
         bias.fill(1.0);
         return bias.addColumns(m);
-	}
+    }
 
     public static Matrix expandNominalAttributes(Matrix mCompressed, int[] numCategories) {
         if (numCategories == null) {
@@ -86,7 +84,7 @@ public class MatrixUtils {
 
         int numExamples = mCompressed.numRows();
         int numColumnsExpanded = 0;
-        for (int numCat:numCategories) {
+        for (int numCat : numCategories) {
             numColumnsExpanded += numCat > 0 ? numCat : 1;
         }
 
@@ -124,7 +122,6 @@ public class MatrixUtils {
         int numExamples = mExpanded.numRows();
         int numColumnsCompressed = numCategories.length;
 
-
         // Get all nominal values and compress them from groups of booleans to numeric values.
         Matrix mCompressed = new Matrix(numExamples, numColumnsCompressed);
         int expandedCol = 0;
@@ -154,72 +151,65 @@ public class MatrixUtils {
         return mCompressed;
     }
 
-
-
-	/**
+    /**
      *
-	 */
-
+     */
     /**
      * Split a dataset into traingin, crossvalidation and testing data.
      *
- 	 * NOTE: If you normalize the input, normalize ONLY on the training data, NOT on the whole data set!
+     * NOTE: If you normalize the input, normalize ONLY on the training data,
+     * NOT on the whole data set!
      *
      * @param m
      * @param crossValidationPercent
      * @param testPercent
      * @return Matrix
      */
-	public static Matrix[] split(Matrix m, float crossValidationPercent, float testPercent)
-	{
-		ArrayList<Integer> rowIndexes = new ArrayList<>();
-		for (int ri = 0; ri < m.numRows(); ri++) {
-			rowIndexes.add(ri);
-		}
-		Collections.shuffle(rowIndexes);
+    public static Matrix[] split(Matrix m, float crossValidationPercent, float testPercent) {
+        ArrayList<Integer> rowIndexes = new ArrayList<>();
+        for (int ri = 0; ri < m.numRows(); ri++) {
+            rowIndexes.add(ri);
+        }
+        Collections.shuffle(rowIndexes);
 
-		int numCVRows = Math.round(m.numRows()*crossValidationPercent/100);
-		int numTestRows = Math.round(m.numRows()*testPercent/100);
-		int numTrainRows = m.numRows() - numCVRows - numTestRows;
+        int numCVRows = Math.round(m.numRows() * crossValidationPercent / 100);
+        int numTestRows = Math.round(m.numRows() * testPercent / 100);
+        int numTrainRows = m.numRows() - numCVRows - numTestRows;
 
-		Matrix trainMatrix = new Matrix(numTrainRows, m.numColumns());
-		Matrix cvMatrix = new Matrix(numCVRows, m.numColumns());
-		Matrix testMatrix = new Matrix(numTestRows, m.numColumns());
+        Matrix trainMatrix = new Matrix(numTrainRows, m.numColumns());
+        Matrix cvMatrix = new Matrix(numCVRows, m.numColumns());
+        Matrix testMatrix = new Matrix(numTestRows, m.numColumns());
 
-		Iterator<Integer> mRowsIter = rowIndexes.iterator();
+        Iterator<Integer> mRowsIter = rowIndexes.iterator();
 
-		for (int row = 0; row < trainMatrix.numRows(); row++) {
-			int mRow = mRowsIter.next().intValue();
-			for (int col = 0; col < trainMatrix.numColumns(); col++)
-			{
-				double value = m.get(mRow, col);
-				trainMatrix.set(row, col, value);
-			}
-		}
+        for (int row = 0; row < trainMatrix.numRows(); row++) {
+            int mRow = mRowsIter.next().intValue();
+            for (int col = 0; col < trainMatrix.numColumns(); col++) {
+                double value = m.get(mRow, col);
+                trainMatrix.set(row, col, value);
+            }
+        }
 
-		for (int row = 0; row < cvMatrix.numRows(); row++) {
-			int mRow = mRowsIter.next().intValue();
-			for (int col = 0; col < cvMatrix.numColumns(); col++)
-			{
-				double value = m.get(mRow, col);
-				cvMatrix.set(row, col, value);
-			}
-		}
+        for (int row = 0; row < cvMatrix.numRows(); row++) {
+            int mRow = mRowsIter.next().intValue();
+            for (int col = 0; col < cvMatrix.numColumns(); col++) {
+                double value = m.get(mRow, col);
+                cvMatrix.set(row, col, value);
+            }
+        }
 
-		for (int row = 0; row < testMatrix.numRows(); row++) {
-			int mRow = mRowsIter.next().intValue();
-			for (int col = 0; col < testMatrix.numColumns(); col++)
-			{
-				double value = m.get(mRow, col);
-				testMatrix.set(row, col, value);
-			}
-		}
+        for (int row = 0; row < testMatrix.numRows(); row++) {
+            int mRow = mRowsIter.next().intValue();
+            for (int col = 0; col < testMatrix.numColumns(); col++) {
+                double value = m.get(mRow, col);
+                testMatrix.set(row, col, value);
+            }
+        }
 
-		return new Matrix[] {trainMatrix, cvMatrix, testMatrix};
-	}
+        return new Matrix[]{trainMatrix, cvMatrix, testMatrix};
+    }
 
-    public static void split(Matrix x, Matrix y, int batchSize, List<Matrix> batchesX, List<Matrix> batchesY)
-    {
+    public static void split(Matrix x, Matrix y, int batchSize, List<Matrix> batchesX, List<Matrix> batchesY) {
         boolean createMatrices = batchesX.size() == 0;
         ArrayList<Integer> rowIndexes = new ArrayList<>();
         for (int ri = 0; ri < x.numRows(); ri++) {
@@ -240,7 +230,7 @@ public class MatrixUtils {
                 double value = y.get(row, col);
                 batchY.set(ri % batchSize, col, value);
             }
-            int rowsLeft = rowIndexes.size()-ri-1;
+            int rowsLeft = rowIndexes.size() - ri - 1;
             if ((ri + 1) % batchSize == 0 || rowsLeft == 0) {
                 if (createMatrices) {
                     batchesX.add(batchX);
@@ -258,26 +248,25 @@ public class MatrixUtils {
         }
     }
 
-	public static double sigmoid(double x) {
-		return 1/(1+Math.exp(-x));
-	}
+    public static double sigmoid(double x) {
+        return 1 / (1 + Math.exp(-x));
+    }
 
-
-	public static Matrix sigmoid(Matrix m) {
-		for (MatrixElement me: m) {
-			me.set(sigmoid(me.value()));
-		}
-		return m;
-	}
+    public static Matrix sigmoid(Matrix m) {
+        for (MatrixElement me : m) {
+            me.set(sigmoid(me.value()));
+        }
+        return m;
+    }
 
     public static Matrix softmax(Matrix m) {
         // Subtracting the max value from each value before taking the exponential.
         // This is a trick for preventing overflow.
         // http://stackoverflow.com/questions/9906136/implementation-of-a-softmax-activation-function-for-neural-networks
-        for (int row = 0 ; row < m.numRows() ; row++) {
+        for (int row = 0; row < m.numRows(); row++) {
             // Find max value
             double max = 0.0;
-            for (int col = 0; col < m.numColumns() ; col++) {
+            for (int col = 0; col < m.numColumns(); col++) {
                 double value = m.get(row, col);
                 if (value > max) {
                     max = value;
@@ -285,7 +274,7 @@ public class MatrixUtils {
             }
             // Take exponential of each element and also keep sum of all elements.
             double sum = 0.0;
-            for (int col = 0; col < m.numColumns() ; col++) {
+            for (int col = 0; col < m.numColumns(); col++) {
                 double value = m.get(row, col);
                 value -= max;
                 value = Math.exp(value);
@@ -293,8 +282,8 @@ public class MatrixUtils {
                 sum += value;
             }
             // Divide all elements by the sum
-            for (int col = 0; col < m.numColumns() ; col++) {
-                m.set(row, col, m.get(row, col)/sum);
+            for (int col = 0; col < m.numColumns(); col++) {
+                m.set(row, col, m.get(row, col) / sum);
             }
         }
         return m;
@@ -310,11 +299,11 @@ public class MatrixUtils {
             // Jacobian has:
             // One row for each (softmax) value whos gradient is taken.
             // One columns for each (softmax) value whos change the gradient is taken in respect to.
-            for (MatrixElement me:res) {
+            for (MatrixElement me : res) {
                 int row = me.row();
                 int col = me.col();
                 double delta = col == row ? 1.0 : 0.0;
-                me.set(h.get(example, row)*(delta-h.get(example, col)));
+                me.set(h.get(example, row) * (delta - h.get(example, col)));
             }
 
             results[example] = res;
@@ -322,17 +311,17 @@ public class MatrixUtils {
         return results;
     }
 
-	public static Matrix sigmoidGradient(Matrix m) {
-		// sigmoid(m).*(1-sigmoid(m))
-		Matrix t1 = sigmoid(m.copy());
-		Matrix t2 = t1.copy();
-		t2.scale(-1);
-		t2.add(1);
-		return t1.multElements(t2);
-	}
+    public static Matrix sigmoidGradient(Matrix m) {
+        // sigmoid(m).*(1-sigmoid(m))
+        Matrix t1 = sigmoid(m.copy());
+        Matrix t2 = t1.copy();
+        t2.scale(-1);
+        t2.add(1);
+        return t1.multElements(t2);
+    }
 
     public static Matrix rectify(Matrix m) {
-        for (MatrixElement me: m) {
+        for (MatrixElement me : m) {
             double value = me.value();
             value = Math.max(0, value);
             me.set(value);
@@ -342,30 +331,29 @@ public class MatrixUtils {
 
     public static Matrix rectifyGradient(Matrix m) {
         Matrix gradient = new Matrix(m.numRows(), m.numColumns());
-        for (MatrixElement me: m) {
+        for (MatrixElement me : m) {
             double g = me.value() >= 0 ? 1 : 0;
             gradient.set(me.row(), me.col(), g);
         }
         return gradient;
     }
 
-	public static Matrix log(Matrix m) {
-		for (MatrixElement me: m) {
-			me.set(Math.log(me.value()));
-		}
-		return m;
-	}
+    public static Matrix log(Matrix m) {
+        for (MatrixElement me : m) {
+            me.set(Math.log(me.value()));
+        }
+        return m;
+    }
 
-	public static double getAverage(Matrix m, int col) {
-		double sum = 0.0;
-        for (int row = 0; row < m.numRows() ; row++) {
+    public static double getAverage(Matrix m, int col) {
+        double sum = 0.0;
+        for (int row = 0; row < m.numRows(); row++) {
             sum += m.get(row, col);
         }
-		return sum / m.numRows();
-	}
-	
+        return sum / m.numRows();
+    }
 
-	public static double getStandardDeviation(Matrix m, int col) {
+    public static double getStandardDeviation(Matrix m, int col) {
         double largestValue = Double.NEGATIVE_INFINITY;
         double smallestValue = Double.POSITIVE_INFINITY;
         for (int row = 0; row < m.numRows(); row++) {
@@ -378,24 +366,24 @@ public class MatrixUtils {
             }
         }
 
-		return largestValue - smallestValue;
-	}
-	
-	public static double normalizeData(double x, double average, double standardDeviation) {
+        return largestValue - smallestValue;
+    }
+
+    public static double normalizeData(double x, double average, double standardDeviation) {
         if (standardDeviation == 0.0) {
             standardDeviation = 1.0;
         }
-		return (x-average)/standardDeviation;
-	}
-	
-	public static void normalizeData(Matrix x, int col, double average, double standardDeviation) {
+        return (x - average) / standardDeviation;
+    }
+
+    public static void normalizeData(Matrix x, int col, double average, double standardDeviation) {
         // Avoid division by zero if standard deviation is zero.
         if (standardDeviation == 0.0) {
             standardDeviation = 1.0;
         }
-        for (int row = 0; row < x.numRows(); row++)	{
-            x.set(row, col, (x.get(row, col)-average)/standardDeviation);
+        for (int row = 0; row < x.numRows(); row++) {
+            x.set(row, col, (x.get(row, col) - average) / standardDeviation);
         }
-	}
+    }
 
 }

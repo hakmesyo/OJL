@@ -56,6 +56,7 @@ public final class TrainMnist {
         }
 //        System.out.println("device count:"+Device.getDevices().length);
         // Construct neural network
+        
         Block block =
                 new Mlp(
                         Mnist.IMAGE_HEIGHT * Mnist.IMAGE_WIDTH,

@@ -5,8 +5,8 @@ import java.util.concurrent.TransferQueue;
 public class TestCharacters {
 
     public static int TRAINING_SAMPLES = 56;
-    public static int EPOCHS = 3000;
-    public static double LEARNING_RATE = 1E-4;
+    public static int EPOCHS = 10_000;
+    public static double LEARNING_RATE = 1E-2;
     public static int INPUT_NODES = 100;
     public static int OUTPUT_NODES = 14;
 

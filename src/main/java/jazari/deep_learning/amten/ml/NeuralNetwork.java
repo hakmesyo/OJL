@@ -45,6 +45,10 @@ public class NeuralNetwork implements Serializable {
     public NeuralNetwork(NNParams p) {
         myParams = p;
     }
+    
+    public void summary(){
+        System.out.println("nodes = " + numberOfNodes());
+    }
 
     /**
      * Train neural network
@@ -325,13 +329,13 @@ public class NeuralNetwork implements Serializable {
         }
 
         myThetas = thetas.toArray(new Matrix[thetas.size()]);
-        for (int i = 1; i < myThetas.length; i++) {
-            System.out.println(Arrays.toString(myThetas[i].getData()));
-            System.out.println("");
-
-        }
-        int q = 0;
-
+//        for (int i = 1; i < myThetas.length; i++) {
+//            System.out.println(Arrays.toString(myThetas[i].getData()));
+//            System.out.println("");
+//
+//        }
+//        int q = 0;
+        summary();
     }
 
     private FeedForwardResult[] feedForward(Matrix x, Matrix[] dropoutMasks) {
@@ -548,7 +552,7 @@ public class NeuralNetwork implements Serializable {
 
     private Matrix[] generateDropoutMasks(int numExamples, int seed) {
         // Create own random generator instead of making calls to Math.random from each thread, which would block each other.
-        Random rnd = new Random(seed);
+        Random rnd = new Random();
 
         int numLayers = myLayerParams.length;
         // Don't dropout output layer.

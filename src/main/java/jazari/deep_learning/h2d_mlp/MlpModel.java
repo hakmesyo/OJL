@@ -5,12 +5,15 @@
  */
 package jazari.deep_learning.h2d_mlp;
 
+import java.awt.image.BufferedImage;
 import jazari.factory.FactoryUtils;
 import jazari.matrix.CMatrix;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import jazari.factory.FactoryMatrix;
+import jazari.image_processing.ImageProcess;
 
 /**
  *
@@ -194,37 +197,61 @@ public class MlpModel {
         this.BATCH_SIZE = BATCH_SIZE;
         this.EPOCHS = EPOCHS;
         this.LEARNING_RATE = LEARNING_RATE;
-        int n = X_train.size() / BATCH_SIZE;
-        for (int k = 0; k < this.nchannels; k++) {
-            System.out.println("channel " + k + " epoch: " + 0 + " loss: " + calculateError(X_train, y_train, k));
-        }
+        int number_of_batch = X_train.size() / BATCH_SIZE;
+//        for (int k = 0; k < this.nchannels; k++) {
+//            System.out.println("channel " + k + " epoch: " + 0 + " loss: " + calculateError(X_train, y_train, k));
+//        }
         t1 = FactoryUtils.toc(t1);
+        BufferedImage img;
+        float[][] XX;
+        float[][] yy;
+        float scale = 1.0f / 255;
+        float[][] est_y;
+        float[][] log_y;
+        CMatrix cm = CMatrix.getInstance();
         for (int i = 0; i < EPOCHS; i++) {
-            t1 = FactoryUtils.toc("backward pass:", t1);
-            for (int j = 0; j < n; j++) {
+            //t1 = FactoryUtils.toc("backward pass:", t1);
+            float err = 0;
+            for (int j = 0; j < number_of_batch; j++) {
                 for (int l = 0; l < BATCH_SIZE; l++) {
                     for (int k = 0; k < this.nchannels; k++) {
-                        CMatrix cm = CMatrix.getInstance().imread(X_train.get(i)).rgb2gray().timesScalar(1.0f / 255.0f);
-                        float[][] XX = cm.toFloatArray2D();
-                        //t1 = FactoryUtils.toc("cmatrix :",t1);
+                        img = ImageProcess.rgb2gray(ImageProcess.imread(X_train.get(i)));
+                        XX = FactoryUtils.timesScalar(ImageProcess.imageToPixelsFloat(img), scale);
+
+                        t1 = FactoryUtils.toc("--------------------\ndata loading cost :",t1);
                         this.layers.get(0).channels.get(k).feed(XX);
-                        //t1 = FactoryUtils.toc("feed işlemleri:",t1);
+                        t1 = FactoryUtils.toc("feeding cost:",t1);
                         forwardPass(k);
-                        //t1 = FactoryUtils.toc("forward pass:",t1);
-                        float[][] yy = getArray(y_train.get(j * BATCH_SIZE + l));
+                        t1 = FactoryUtils.toc("forward pass cost:",t1);
+                        yy = getArray(y_train.get(j * BATCH_SIZE + l));
                         backwardPass(XX, yy, this.LEARNING_RATE, k);
-                        //t1 = FactoryUtils.toc("backward pass:",t1);
+                        t1 = FactoryUtils.toc("backward pass cost:",t1);
+
+                        //calculate error
+                        yy = FactoryUtils.timesScalar(getArray(y_train.get(i)), -1);
+                        //yy = cm.setArray(yy).timesScalar(-1).toFloatArray2D();
+
+                        est_y = this.layers.get(layers.size() - 1).channels.get(k).toArray2D();
+                        //log_y = FactoryUtils.log
+                        log_y = cm.setArray(est_y).logPlusScalar(1E-15f).transpose().toFloatArray2D();
+
+                        err += cm.setArray(yy).multiplyElement(CMatrix.getInstance(log_y)).sumTotal();
                     }
                 }
+                //t1 = FactoryUtils.toc(j+".chunk cost:", t1);
+                //System.out.println(j+".chunk error:"+err);
 
             }
-            if (i % 10 == 0 || i == EPOCHS) {
-                for (int j = 0; j < this.nchannels; j++) {
-                    float loss = calculateError(X_train, y_train, j);
-                    System.out.println("channel " + j + " epoch: " + i + "\tloss: " + loss + "\taccuracy:" + FactoryUtils.formatDouble(loss));
-                }
-            }
+            //t1 = FactoryUtils.toc(i + ".epoch cost:", t1);
+            //float loss = calculateError(X_train, y_train, 0);
+            System.out.println(i + ".epoch loss = " + err);
 
+//            if (i % 10 == 0 || i == EPOCHS) {
+//                for (int j = 0; j < this.nchannels; j++) {
+//                    float loss = calculateError(X_train, y_train, j);
+//                    System.out.println("channel " + j + " epoch: " + i + "\tloss: " + loss + "\taccuracy:" + FactoryUtils.formatDouble(loss));
+//                }
+//            }
         }
 
     }
@@ -232,19 +259,32 @@ public class MlpModel {
     //calculate cross-entropy loss Cross_Entropy= - Sum(y(i)*log(yy(i))
     private float calculateError(List<String> X, List<String> y, int ch) {
         float ret = 0;
+        BufferedImage img;
+        float[][] XX;
+        float[][] yy;
+        float[][] est_y;
+        float[][] log_y;
+        float scale = 1.0f / 255;
+        CMatrix cm = CMatrix.getInstance();
+        //long t1=FactoryUtils.tic();
         for (int i = 0; i < X.size(); i++) {
-            CMatrix cm = CMatrix.getInstance().imread(X.get(i)).rgb2gray().timesScalar(1.0f / 255.0f);
-            float[][] xx = cm.toFloatArray2D();
-            this.layers.get(0).channels.get(ch).feed(xx);
-            forwardPass(ch);
-            float[][] yy = getArray(y.get(i));
-            yy = cm.setArray(yy).timesScalar(-1).toFloatArray2D();
+//            CMatrix cm = CMatrix.getInstance().imread(X.get(i)).rgb2gray().timesScalar(1.0f / 255.0f);
+//            float[][] xx = cm.toFloatArray2D();
+            img = ImageProcess.rgb2gray(ImageProcess.imread(X.get(i)));
+            XX = FactoryUtils.timesScalar(ImageProcess.imageToPixelsFloat(img), scale);
 
-            float[][] est_y = this.layers.get(layers.size() - 1).channels.get(ch).toArray2D();
-            float[][] log_y = cm.setArray(est_y).logPlusScalar(1E-15f).transpose().toFloatArray2D();
+            this.layers.get(0).channels.get(ch).feed(XX);
+            forwardPass(ch);
+            yy = FactoryUtils.timesScalar(getArray(y.get(i)), -1);
+            //yy = cm.setArray(yy).timesScalar(-1).toFloatArray2D();
+
+            est_y = this.layers.get(layers.size() - 1).channels.get(ch).toArray2D();
+            //log_y = FactoryUtils.log
+            log_y = cm.setArray(est_y).logPlusScalar(1E-15f).transpose().toFloatArray2D();
 
             float err = cm.setArray(yy).multiplyElement(CMatrix.getInstance(log_y)).sumTotal();
             ret += err;
+            //t1 = FactoryUtils.toc(i + ".error process cost:", t1);
         }
         return FactoryUtils.formatFloat(ret);
     }
@@ -360,34 +400,38 @@ public class MlpModel {
     //this web site is very informative: https://stackabuse.com/creating-a-neural-network-from-scratch-in-python-multi-class-classification/
     //https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/ 
     //çok çok iyi anlatılmış https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
-    
+    //çok çok iyi video : https://www.youtube.com/watch?v=-zI1bldB8to Back Propagation in training neural networks step by step
     private void backwardPass(float[][] X, float[][] Y, float learning_rate, int ch) {
         float[][] output = CMatrix.getInstance(layers.get(layers.size() - 1).channels.get(ch).toArray2D()).transpose().toFloatArray2D();
         //calculate the derivative of cross entropy loss you can see at : https://deepnotes.io/softmax-crossentropy
         float[][] derivative_cross_entropy_loss = new float[Y.length][Y[0].length];
         int n = layers.size();
-        for (int t = n - 2; t > 0; t--) {
-            MlpLayer layer = layers.get(t);
-            if (layer.layerType == LayerType.output) {
+        for (int t = n - 1; t > 0; t--) {
+
+            if (layers.get(t).layerType == LayerType.output) {
+                MlpLayer layer = layers.get(t - 1);
                 for (int i = 0; i < Y[0].length; i++) {
-                    derivative_cross_entropy_loss[0][i] = output[0][i] - Y[0][i];
+                    derivative_cross_entropy_loss[0][i] = 2 * (output[0][i] - Y[0][i]);
                     for (int j = 0; j < 2; j++) {
                         for (int k = 0; k < 2; k++) {
                             Node node = layer.channels.get(ch).nodes[j][k];
                             float dw = derivative_cross_entropy_loss[0][i] * node.data;
                             node.weightsToOutputLayer[i] = node.weightsToOutputLayer[i] - learning_rate * dw;
-                            layer.channels.get(ch).bias.weight = layer.channels.get(ch).bias.weight - learning_rate * derivative_cross_entropy_loss[0][i];
                         }
                     }
+                    layer.channels.get(ch).bias.weight = layer.channels.get(ch).bias.weight - learning_rate * derivative_cross_entropy_loss[0][i];
                 }
-            } else if (layer.layerType == LayerType.hidden) {
-                //float derivative=
-                for (int j = 0; j < 2; j++) {
-                    for (int k = 0; k < 2; k++) {
-//                        Node node = layer.channels.get(ch).nodes[j][k];
+            } else if (layers.get(t).layerType == LayerType.hidden) {
+                MlpLayer layer = layers.get(t-1);
+                for (int i = 0; i < Y[0].length; i++) {
+                    derivative_cross_entropy_loss[0][i] = 2 * (output[0][i] - Y[0][i]);
+                    for (int j = 0; j < 2; j++) {
+                        for (int k = 0; k < 2; k++) {
+                            Node node = layer.channels.get(ch).nodes[j][k];
 //                        float dw = derivative_cross_entropy_loss[0][i] * node.data;
 //                        node.weightsToOutputLayer[i] = node.weightsToOutputLayer[i] - learning_rate * dw;
 //                        layer.channels.get(ch).bias.weight = layer.channels.get(ch).bias.weight - learning_rate * derivative_cross_entropy_loss[0][i];
+                        }
                     }
                 }
             }

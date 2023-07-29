@@ -168,6 +168,7 @@ public final class CMatrix implements Serializable {
     private boolean hold_on = false;
     private Instances wekaInstance = null;
     public FrameImage frameImage = null;
+    public static FrameImage frameImageRefresh = null;
     private FramePlot framePlot = null;
     private FramePloty framePloty = null;
     private FrameHeatMap frameHeatMap = null;
@@ -533,6 +534,17 @@ public final class CMatrix implements Serializable {
      */
     public static CMatrix getInstance() {
         CMatrix cm = new CMatrix();
+        return cm;
+    }
+    
+    /**
+     * read and load image file
+     *
+     * @return 1x1 CMatrix instance
+     */
+    public static CMatrix getInstance(File imageFile) {
+        CMatrix cm = new CMatrix();
+        cm=cm.imread(imageFile);
         return cm;
     }
 
@@ -2299,13 +2311,13 @@ public final class CMatrix implements Serializable {
 //        } else if (image.getType() != BufferedImage.TYPE_BYTE_GRAY) {
 //            image = ImageProcess.pixelsToImageColor(array.toFloatMatrix());
 //        }
-        if (frameImage == null) {
-            frameImage = new FrameImage();
-            frameImage.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        if (frameImageRefresh == null) {
+            frameImageRefresh = new FrameImage();
+            frameImageRefresh.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        frameImage.setImage(image, this.imagePath, title);
-        frameImage.setTitle(title);
-        frameImage.setVisible(true);
+        frameImageRefresh.setImage(image, this.imagePath, title);
+        frameImageRefresh.setTitle(title);
+        frameImageRefresh.setVisible(true);
         return this;
     }
 
@@ -2316,7 +2328,7 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public CMatrix imshowRefresh() {
-        return imshowRefresh("");
+        return imshowRefresh("Image Show Frame");
     }
 
     /**

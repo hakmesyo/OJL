@@ -63,7 +63,7 @@ public class Model {
         random.setSeed(seed);
         for (int i = 0; i < layer_weights.length; i++) {
             for (int j = 0; j < layer_weights[0].length; j++) {
-                layer_weights[i][j] = -1.0 + (random.nextDouble() * (1 - (-1)));//generate random numbers between [-1, 1]
+                layer_weights[i][j] = -1.0 + (random.nextDouble() * 2);//generate random numbers between [-1, 1]
             }
         }
     }
