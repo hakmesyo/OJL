@@ -77,6 +77,15 @@ public class Filter {
         }
         return ret;
     }
+    
+    public float[] toArray1D() {
+        int nr = nodes.length;
+        float[] ret = new float[nr];
+        for (int i = 0; i < nr; i++) {
+                ret[i] = nodes[i][0].data;
+        }
+        return ret;
+    }
 
     public int getNodeCount() {
         return nodes.length * nodes[0].length;
@@ -102,6 +111,16 @@ public class Filter {
             }
             System.out.println("");
         }
+    }
+
+    public Filter copy() {
+        Filter ret=new Filter(filterIndex, layer, activationType, patchSize, stride);
+        for (int i = 0; i < nrows; i++) {
+            for (int j = 0; j < ncols; j++) {
+                ret.nodes[i][j]=nodes[i][j].copy();
+            }
+        }
+        return ret;
     }
 
 }

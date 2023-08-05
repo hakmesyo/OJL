@@ -33,6 +33,7 @@ import ai.djl.training.loss.Loss;
 import ai.djl.training.util.ProgressBar;
 import ai.djl.translate.TranslateException;
 import java.io.IOException;
+import jazari.factory.FactoryUtils;
 
 /**
  * An example of training an image classification (MNIST) model.
@@ -61,10 +62,12 @@ public final class TrainMnist {
                 new Mlp(
                         Mnist.IMAGE_HEIGHT * Mnist.IMAGE_WIDTH,
                         Mnist.NUM_CLASSES,
+                        //new int[] {80});
                         new int[] {128, 64});
 
         try (Model model = Model.newInstance("mlp")) {
             model.setBlock(block);
+            
 
             // get training and validation dataset
             RandomAccessDataset trainingSet = getDataset(Dataset.Usage.TRAIN, arguments);
@@ -85,8 +88,9 @@ public final class TrainMnist {
                 // initialize trainer with proper input shape
                 trainer.initialize(inputShape);
 
+                long t1=FactoryUtils.tic();
                 EasyTrain.fit(trainer, arguments.getEpoch(), trainingSet, validateSet);
-
+                t1=FactoryUtils.toc("total time=",t1);
                 return trainer.getTrainingResult();
             }
         }

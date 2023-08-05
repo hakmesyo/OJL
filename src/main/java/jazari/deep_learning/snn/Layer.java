@@ -18,6 +18,7 @@ public class Layer {
     int ncols;
     LayerType layerType;
     Filter[] filters;
+    int nFilter;
     int patchSize;
     int stride;
     ActivationType activationType;
@@ -40,14 +41,15 @@ public class Layer {
         this.patchSize = patchSize;
         this.stride = stride;
         filters = new Filter[model.nFilters];
+        nFilter = filters.length;
         if (layerIndex > 0) {
             prevLayer = model.layers.get(layerIndex - 1);
         }
-        for (int i = 0; i < filters.length; i++) {
+        for (int i = 0; i < nFilter; i++) {
             filters[i] = new Filter(i, this, activationType, patchSize, stride);
         }
-        nrows=filters[0].nrows;
-        ncols=filters[0].ncols;
+        nrows = filters[0].nrows;
+        ncols = filters[0].ncols;
     }
 
     //constructor for output layer
@@ -64,38 +66,89 @@ public class Layer {
         this.activationType = activationType;
         this.nClasses = nClasses;
         filters = new Filter[1];
+        nFilter = 1;
         if (layerIndex > 0) {
             prevLayer = model.layers.get(layerIndex - 1);
         }
-        filters[0]=new Filter(0, this, activationType, patchSize, stride);
-        nrows=filters[0].nrows;
-        ncols=filters[0].ncols;
+        filters[0] = new Filter(0, this, activationType, patchSize, stride);
+        nrows = filters[0].nrows;
+        ncols = filters[0].ncols;
     }
 
     @Override
     public String toString() {
-        return "Layer{" + "layerIndex=" + layerIndex + ", layerType=" + layerType + ", activationType=" + activationType + ", nfilters=" + filters.length + ", patchSize=" + patchSize + ", stride=" + stride + ", nrows=" + nrows +", ncols=" + ncols +'}';
+        return "Layer{" + "layerIndex=" + layerIndex + ", layerType=" + layerType + ", activationType=" + activationType + ", nfilters=" + filters.length + ", patchSize=" + patchSize + ", stride=" + stride + ", nrows=" + nrows + ", ncols=" + ncols + '}';
     }
 
-    public int getSize() {
+//    public int getSize() {
+//        if (layerType == LayerType.input) {
+//            return nrows * ncols ;
+//        } else if (layerType == LayerType.hidden) {
+//            //return this.filters.length * this.filters[0].nodes.length * this.filters[0].nodes[0].length * (patchSize * patchSize+1);
+//            return nrows * ncols ;
+//        } else {
+//            return this.nClasses;
+//        }
+//    }
+    public int getTotalParams() {
         if (layerType == LayerType.input) {
             return 0;
-        }else if (layerType == LayerType.hidden) {
-            //return this.filters.length * this.filters[0].nodes.length * this.filters[0].nodes[0].length * (patchSize * patchSize+1);
-            return this.filters.length * this.filters[0].getNodeCount() * (patchSize * patchSize+1);
-        }else{
-            return this.nClasses*this.model.nFilters*this.prevLayer.ncols*this.prevLayer.nrows;
+        } else if (layerType == LayerType.hidden) {
+            return this.filters.length * this.filters[0].nodes.length * this.filters[0].nodes[0].length * (patchSize * patchSize + 1);
+        } else {
+            return this.filters.length * this.nClasses * this.prevLayer.nrows * this.prevLayer.ncols;
         }
     }
 
     public int getOutputLayerSize() {
         return this.filters.length * this.filters[0].nodes.length * this.filters[0].nodes[0].length;
     }
-    
-    public void dump(){
+
+    public void dump() {
         for (int i = 0; i < filters.length; i++) {
             filters[i].dump();
         }
+    }
+
+    public float[] forwardPass() {
+        //execute only on outputlayer then recursively update data of each layer by calling getOutput() method
+        float[] ret = null;
+        if (this.layerType == LayerType.output) {
+            ret = new float[nClasses];
+            for (int i = 0; i < nClasses; i++) {
+                //System.out.println("*******************************    "+i+".class  ******************");
+                filters[0].nodes[i][0].data = filters[0].nodes[i][0].getOutput();
+                ret[i] = filters[0].nodes[i][0].data;
+            }
+        }
+        return ret;
+    }
+
+    public float[] getOutputPredictedData() {
+        float[] ret = new float[nClasses];
+        for (int i = 0; i < this.nClasses; i++) {
+            ret[i] = this.filters[0].nodes[i][0].data;
+        }
+        return ret;
+    }
+
+    public void setOutputLayerSoftMaxValue(float[] predicted) {
+        for (int i = 0; i < this.nClasses; i++) {
+            filters[0].nodes[i][0].data = predicted[i];
+        }
+    }
+
+    public Layer copy() {
+        Layer ret = null;
+        if (layerType == LayerType.input || layerType == LayerType.hidden) {
+            ret = new Layer(model, layerIndex, layerType, activationType, patchSize, stride);
+        } else {
+            ret = new Layer(model, layerIndex, layerType, activationType, nClasses);
+        }
+        for (int i = 0; i < ret.nFilter; i++) {
+            ret.filters[i] = filters[i].copy();
+        }
+        return ret;
     }
 
 }

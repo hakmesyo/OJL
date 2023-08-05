@@ -66,6 +66,7 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.IIOImage;
@@ -779,6 +780,16 @@ public final class FactoryUtils {
         }
         return toFloatArray(lst);
     }
+    
+    /**
+     * get the unique/distinct values from the array provided
+     *
+     * @param d searching array
+     * @return distinct values array
+     */
+    public static float[] getUniqueValues(float[] d) {
+        return getDistinctValues(d);
+    }
 
     /**
      * get the distinct values from the array provided
@@ -794,6 +805,16 @@ public final class FactoryUtils {
             }
         }
         return toIntArray1D(lst);
+    }
+    
+    /**
+     * get the unique/distinct values from the array provided
+     *
+     * @param d searching array
+     * @return distinct values array
+     */
+    public static int[] getUniqueValues(int[] d) {
+        return getDistinctValues(d);
     }
 
     public static String readFromFileUTF8(String file_name) {
@@ -3559,6 +3580,23 @@ public final class FactoryUtils {
         return list;
     }
 
+    public static double[] getOneHotEncoding(int nClasses, String class_number) {
+        double[] ret = new double[nClasses];
+        double cln = Double.parseDouble(class_number);
+        if (cln == 0) {
+            ret[0] = 1;
+        } else {
+            ret[(int) cln] = 1;
+        }
+        return ret;
+    }
+    
+    public static float[] getOneHotEncoding(int nClasses, int class_number) {
+        float[] ret = new float[nClasses];
+        ret[class_number]=1;
+        return ret;
+    }
+
     /**
      * get File Array in folder
      *
@@ -6069,6 +6107,20 @@ public final class FactoryUtils {
         }
     }
 
+    public static void reduceDataSet(String path_source, String path_reduced, float reduceRatio) {
+        FactoryUtils.makeDirectory(path_reduced);
+        File[] dirs = FactoryUtils.getFolderListInFolder(path_source);
+        for (File dir : dirs) {
+            List<File> imgList = Arrays.asList(FactoryUtils.getFileArrayInFolderForImages(dir.getAbsolutePath()));
+            Collections.shuffle(imgList, new Random(123));
+            List<File> imgReducedList = imgList.subList(0, (int) (imgList.size() * reduceRatio));
+            FactoryUtils.makeDirectory(path_reduced+"/"+dir.getName());
+            for (File file : imgReducedList) {
+                copyFile(file, new File(path_reduced+"/"+dir.getName()+"/"+file.getName()));
+            }
+        }
+    }
+
     public static void generateObjectDetectionDataSetYolo(String pathSource, String pathTarget, float trainRatio, float valRatio, float testRatio, boolean shuffle, int seed, String extension, String[] classLabels) {
         //FactoryUtils.balanceDatasetBasedOnFileExt(pathSource,"txt","jpg","xml");
         FactoryUtils.convertPascalVoc2YoloFormatBndBox(pathSource, classLabels);
@@ -6711,14 +6763,52 @@ public final class FactoryUtils {
     }
 
     public static float[][] timesScalar(float[][] d, float scale) {
-        int nr=d.length;
-        int nc=d[0].length;
+        int nr = d.length;
+        int nc = d[0].length;
         for (int i = 0; i < nr; i++) {
             for (int j = 0; j < nc; j++) {
-                d[i][j]*=scale;
+                d[i][j] *= scale;
             }
         }
         return d;
+    }
+
+    public static float[] timesScalar(float[] d, float scale) {
+        int nr = d.length;
+        for (int i = 0; i < nr; i++) {
+            d[i] *= scale;
+        }
+        return d;
+    }
+
+    public static float[][] timesScalarParallel(float[][] d, float scale) {
+        int nr = d.length;
+        int nc = d[0].length;
+
+        // Convert the array to a parallel stream and modify elements in-place.
+        Arrays.parallelSetAll(d, i -> {
+            float[] row = new float[nc];
+            for (int j = 0; j < nc; j++) {
+                row[j] = d[i][j] * scale;
+            }
+            return row;
+        });
+
+        return d;
+    }
+
+    public static float[] logPlusScalar(float[] f, float val) {
+        int n = f.length;
+        for (int i = 0; i < n; i++) {
+            f[i] = (float) Math.log(f[i]) + val;
+        }
+        return f;
+    }
+
+    public static float[][][][] loadDataSetAs4DFloatFromImages(String path_train,int nChannel) {
+        float[][][][] ret=null;
+        
+        return ret;
     }
 
 //    public static Rectangle getBoundingRectangle(Polygon polygon) {
@@ -7889,7 +7979,7 @@ public final class FactoryUtils {
         int height = (int) screenSize.getHeight();
         return height;
     }
-    
+
     public static Dimension getScreenSize() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         return screenSize;

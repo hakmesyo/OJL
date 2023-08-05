@@ -11,5 +11,5 @@ package jazari.deep_learning.snn;
  * @author cezerilab
  */
 public enum ActivationType {
-    none,sigmoid,relu,tanh,softmax;
+    none,identity,sigmoid,relu,tanh,softmax;
 }
