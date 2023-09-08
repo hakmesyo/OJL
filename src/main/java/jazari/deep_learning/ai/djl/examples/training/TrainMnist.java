@@ -62,8 +62,8 @@ public final class TrainMnist {
                 new Mlp(
                         Mnist.IMAGE_HEIGHT * Mnist.IMAGE_WIDTH,
                         Mnist.NUM_CLASSES,
-                        //new int[] {80});
-                        new int[] {128, 64});
+                        new int[] {49});
+                        //new int[] {128, 64});
 
         try (Model model = Model.newInstance("mlp")) {
             model.setBlock(block);

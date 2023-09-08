@@ -40,6 +40,7 @@ public class Layer {
         this.activationType = activationType;
         this.patchSize = patchSize;
         this.stride = stride;
+        this.nClasses=model.NUMBER_OF_CLASSES;
         filters = new Filter[model.nFilters];
         nFilter = filters.length;
         if (layerIndex > 0) {
@@ -74,6 +75,18 @@ public class Layer {
         nrows = filters[0].nrows;
         ncols = filters[0].ncols;
     }
+    
+    public Layer getOutputLayer(){
+        return this.model.getOutputLayer();
+    }
+    
+    public Layer getInputLayer(){
+        return this.model.getInputLayer();
+    }
+
+    public Layer getFullyConnectedLayer(){
+        return this.model.getFullyConnectedLayer();
+    }
 
     @Override
     public String toString() {
@@ -96,7 +109,7 @@ public class Layer {
         } else if (layerType == LayerType.hidden) {
             return this.filters.length * this.filters[0].nodes.length * this.filters[0].nodes[0].length * (patchSize * patchSize + 1);
         } else {
-            return this.filters.length * this.nClasses * this.prevLayer.nrows * this.prevLayer.ncols;
+            return this.prevLayer.nFilter * this.nClasses * (this.prevLayer.nrows * this.prevLayer.ncols+1);
         }
     }
 
@@ -104,51 +117,79 @@ public class Layer {
         return this.filters.length * this.filters[0].nodes.length * this.filters[0].nodes[0].length;
     }
 
-    public void dump() {
-        for (int i = 0; i < filters.length; i++) {
-            filters[i].dump();
-        }
-    }
+//    public void dump() {
+//        for (int i = 0; i < filters.length; i++) {
+//            filters[i].dump();
+//        }
+//    }
 
-    public float[] forwardPass() {
-        //execute only on outputlayer then recursively update data of each layer by calling getOutput() method
-        float[] ret = null;
-        if (this.layerType == LayerType.output) {
-            ret = new float[nClasses];
-            for (int i = 0; i < nClasses; i++) {
-                //System.out.println("*******************************    "+i+".class  ******************");
-                filters[0].nodes[i][0].data = filters[0].nodes[i][0].getOutput();
-                ret[i] = filters[0].nodes[i][0].data;
-            }
+    public void forwardPass() {
+        for (Filter filter : filters) {
+            filter.forwardPass();
         }
-        return ret;
     }
 
     public float[] getOutputPredictedData() {
         float[] ret = new float[nClasses];
         for (int i = 0; i < this.nClasses; i++) {
-            ret[i] = this.filters[0].nodes[i][0].data;
+            ret[i] = this.filters[0].nodes[i][0].dataOut;
         }
         return ret;
     }
 
     public void setOutputLayerSoftMaxValue(float[] predicted) {
         for (int i = 0; i < this.nClasses; i++) {
-            filters[0].nodes[i][0].data = predicted[i];
+            filters[0].nodes[i][0].dataOut = predicted[i];
         }
     }
 
-    public Layer copy() {
-        Layer ret = null;
-        if (layerType == LayerType.input || layerType == LayerType.hidden) {
-            ret = new Layer(model, layerIndex, layerType, activationType, patchSize, stride);
-        } else {
-            ret = new Layer(model, layerIndex, layerType, activationType, nClasses);
+//    public Layer copy() {
+//        Layer ret = null;
+//        if (layerType == LayerType.input || layerType == LayerType.hidden) {
+//            ret = new Layer(model, layerIndex, layerType, activationType, patchSize, stride);
+//        } else {
+//            ret = new Layer(model, layerIndex, layerType, activationType, nClasses);
+//        }
+//        for (int i = 0; i < ret.nFilter; i++) {
+//            ret.filters[i] = filters[i].copy();
+//        }
+//        return ret;
+//    }
+
+    void feedInputData(float[][][] input) {
+        for (int k = 0; k < nFilter; k++) {
+            Filter filter=filters[k];
+            Node[][] node=filter.nodes;
+            for (int i = 0; i < filter.nrows; i++) {
+                for (int j = 0; j < filter.ncols; j++) {
+                    node[i][j].dataOut=input[k][i][j];
+                }
+            }
         }
-        for (int i = 0; i < ret.nFilter; i++) {
-            ret.filters[i] = filters[i].copy();
+    }
+
+    public void updateWeights() {
+        if (layerType!=LayerType.input) {
+            for (Filter filter : filters) {
+                filter.updateWeights();
+            }
         }
-        return ret;
+    }
+
+    public void printWeights() {
+        if (layerType!=LayerType.input) {
+            for (Filter filter : filters) {
+                filter.printWeights();
+            }
+        }
+    }
+
+    public void backwardPass(float[] yActual, float[] yPredicted) {
+        if (layerType!=LayerType.input) {
+            for (Filter filter : filters) {
+                filter.backwardPass(yActual,yPredicted);
+            }
+        }
     }
 
 }

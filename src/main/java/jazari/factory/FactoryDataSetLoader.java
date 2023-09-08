@@ -72,42 +72,69 @@ public class FactoryDataSetLoader {
 
     public static DataSet normalizeDataSetMinMax(DataSet ds, float min, float max) {
         if (ds.nChannel == 1) {
-            float[][][][] dat = ds.getTrainX();
+            float[][][][] dat = ds.getDataX();
             for (int i = 0; i < dat.length; i++) {
                 dat[i][0] = FactoryNormalization.normalizeWithRange(dat[i][0], min, max);
+            }
+        }else{
+            float[][][][] dat = ds.getDataX();
+            for (int i = 0; i < dat.length; i++) {
+                dat[i][0] = FactoryNormalization.normalizeWithRange(dat[i][0], min, max);
+                dat[i][1] = FactoryNormalization.normalizeWithRange(dat[i][1], min, max);
+                dat[i][2] = FactoryNormalization.normalizeWithRange(dat[i][2], min, max);
             }
         }
         return ds;
     }
 
-    public static DataSet loadDataSetFromCSV(String csvPath, int nClasses, int w, int h) {
+    public static DataSet loadDataSetFromCSV(String csvPath, int nChannel, int nClasses, int w, int h, int classLabelIndex) {
         DataSet ds = new DataSet();
         ds.nClasses = nClasses;
-        float[][] d = FactoryUtils.readCSV(csvPath, ',', 0);
+        float[][] d = FactoryUtils.readCSV_slow(csvPath, ',', 0);
         float[][] tr_d = FactoryMatrix.transpose(d);
-        float[] y = tr_d[0];
+        float[] y = (classLabelIndex == -1) ? tr_d[tr_d.length - 1] : tr_d[classLabelIndex];
         float[][] dataRows = new float[tr_d.length - 1][tr_d[0].length];
-        for (int i = 0; i < dataRows.length; i++) {
-            dataRows[i] = tr_d[i + 1];
+        if (classLabelIndex == -1) {
+            for (int i = 0; i < dataRows.length; i++) {
+                dataRows[i] = tr_d[i];
+            }
+        } else if (classLabelIndex == 0) {
+            for (int i = 0; i < dataRows.length; i++) {
+                dataRows[i] = tr_d[i + 1];
+            }
         }
         int nr = y.length;
         dataRows = FactoryMatrix.transpose(dataRows);
-        float[][][] data = new float[nr][w][h];
+        float[][][][] data = new float[nr][nChannel][w][h];
         for (int i = 0; i < nr; i++) {
-            for (int j = 0; j < w; j++) {
-                for (int k = 0; k < h; k++) {
-                    data[i][j][k] = dataRows[i][j * h + k];
+            for (int t = 0; t < nChannel; t++) {
+                for (int j = 0; j < w; j++) {
+                    for (int k = 0; k < h; k++) {
+                        data[i][t][j][k] = dataRows[i][t * w * h + j * h + k];
+                    }
                 }
             }
         }
         ds.classLabelIndex = FactoryUtils.getUniqueValues(y);
-        ds.nChannel = 1;
+        ds.classLabelIndex = FactoryUtils.sortArrayAscend(ds.classLabelIndex);
+        ds.nChannel = nChannel;
 
-        for (int i = 0; i < nr; i++) {
-            Data dt = new Data();
-            dt.classLabelIndex = (int) y[i];
-            dt.gray = data[i];
-            ds.data.add(dt);
+        if (nChannel == 1) {
+            for (int i = 0; i < nr; i++) {
+                Data dt = new Data();
+                dt.classLabelIndex = (int) y[i];
+                dt.gray = data[i][0];
+                ds.data.add(dt);
+            }
+        } else {
+            for (int i = 0; i < nr; i++) {
+                Data dt = new Data();
+                dt.classLabelIndex = (int) y[i];
+                dt.red = data[i][0];
+                dt.green = data[i][1];
+                dt.blue = data[i][2];
+                ds.data.add(dt);
+            }
         }
         return ds;
     }

@@ -658,12 +658,13 @@ public final class ImageProcess {
     }
 
     /**
-     * return Alpha, Red, Green and Blue values of original RGB image
+     * return ARGB format Alpha, Red, Green and Blue values of original RGB
+     * image
      *
      * @param image
      * @return
      */
-    public static int[][][] imageToPixelsColorIntV2(BufferedImage image) {
+    public static int[][][] imageToPixelsColorIntFaster(BufferedImage image) {
         // Java's peculiar way of extracting pixels is to give them
         // back as a one-dimensional array from which we will construct
         // our version.
@@ -681,9 +682,8 @@ public final class ImageProcess {
         } catch (InterruptedException e) {
             System.out.println(e);
         }
-
         // Now we make our array.
-        int[][][] pixels = new int[numRows][numCols][4];
+        int[][][] pixels = new int[4][numRows][numCols];
         for (int row = 0; row < numRows; row++) {
             // First extract a row of int's from the right place.
             int[] aRow = new int[numCols];
@@ -696,10 +696,10 @@ public final class ImageProcess {
             // followed by R, then G, then B. Thus, to extract the alpha
             // value, we shift by 24 and make sure we extract only that byte.
             for (int col = 0; col < numCols; col++) {
-                pixels[row][col][0] = (aRow[col] >> 24) & 0xFF;  // Alpha
-                pixels[row][col][1] = (aRow[col] >> 16) & 0xFF;  // Red
-                pixels[row][col][2] = (aRow[col] >> 8) & 0xFF;  // Green
-                pixels[row][col][3] = (aRow[col]) & 0xFF;        // Blue
+                pixels[0][row][col] = (aRow[col] >> 24) & 0xFF;  // Alpha
+                pixels[1][row][col] = (aRow[col] >> 16) & 0xFF;  // Red
+                pixels[2][row][col] = (aRow[col] >> 8) & 0xFF;  // Green
+                pixels[3][row][col] = (aRow[col]) & 0xFF;        // Blue
             }
         }
 
@@ -707,7 +707,8 @@ public final class ImageProcess {
     }
 
     /**
-     * return Alpha, Red, Green and Blue values of original RGB image
+     * return ARGB format Alpha, Red, Green and Blue values of original RGB
+     * image
      *
      * @param image
      * @return
@@ -4327,9 +4328,9 @@ public final class ImageProcess {
     }
 
     public static BufferedImage cropImageWithCentered224(BufferedImage img) {
-        int w=img.getWidth();
-        int h=img.getHeight();
-        return cropImage(img, (w-224)/2, (h-224)/2, 224, 224);
+        int w = img.getWidth();
+        int h = img.getHeight();
+        return cropImage(img, (w - 224) / 2, (h - 224) / 2, 224, 224);
     }
 
 }

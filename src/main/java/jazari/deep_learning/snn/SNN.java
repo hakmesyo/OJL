@@ -10,8 +10,10 @@ import jazari.factory.FactoryUtils;
 import jazari.matrix.CMatrix;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import jazari.factory.FactoryNormalization;
 import jazari.image_processing.ImageProcess;
 
 /**
@@ -23,6 +25,7 @@ public class SNN {
     String modelName = "";
     List<Layer> layers = new ArrayList();
     int layerIndex;
+    int NUMBER_OF_CLASSES;
     int BATCH_SIZE;
     float LEARNING_RATE;
     int EPOCHS;
@@ -58,6 +61,7 @@ public class SNN {
     }
 
     public SNN addOutputLayer(ActivationType activationType, int NUMBER_OF_CLASSES) {
+        this.NUMBER_OF_CLASSES = NUMBER_OF_CLASSES;
         layers.add(new Layer(this, layerIndex, LayerType.output, activationType, NUMBER_OF_CLASSES));
         layerIndex++;
         return this;
@@ -73,7 +77,7 @@ public class SNN {
         for (int i = 1; i < layers.size() - 1; i++) {
             System.out.println("Hidden Layer-" + i + "              [(None," + layers.get(i).filters.length + "," + layers.get(i).filters[0].nodes.length + "," + layers.get(i).filters[0].nodes[0].length + ")]\t\t" + decimalFormat(getLayerParams(layers.get(i))));
         }
-        System.out.println("Output Layer                [(None," + layers.get(layers.size() - 1).nClasses + ")]\t\t" + decimalFormat(getLayerParams(layers.get(layers.size() - 1))));
+        System.out.println("Output Layer                [(None," + layers.get(layers.size() - 1).nClasses + ")]\t\t" + decimalFormat(getLayerParams(getOutputLayer())));
         System.out.println("===============================================================");
         System.out.println("Total params        :" + decimalFormat(getTotalParams()));
         System.out.println("Trainable params    :" + decimalFormat(getTrainableParams()));
@@ -110,6 +114,50 @@ public class SNN {
     }
 
     public SNN compile() {
+        for (int i = 0; i < layers.size(); i++) {
+            layers.get(i).nClasses = NUMBER_OF_CLASSES;
+        }
+
+        Layer layerOut = getOutputLayer();
+        Node[][] nodex = layerOut.filters[0].nodes;
+
+        for (int i = 0; i < nodex.length; i++) {
+            for (int j = 0; j < nodex[0].length; j++) {
+                Node nd = nodex[i][j];
+                nd.partialDerivativeIn = new float[nFilters][layerOut.prevLayer.nrows][layerOut.prevLayer.ncols];
+            }
+        }
+
+        Layer layerFully = getFullyConnectedLayer();
+        for (int i = 0; i < layerFully.nFilter; i++) {
+            Node[][] nodes = layerFully.filters[i].nodes;
+            for (int j = 0; j < nodes.length; j++) {
+                for (int k = 0; k < nodes[0].length; k++) {
+                    nodes[j][k].onlyOutputLayerWeight = new float[NUMBER_OF_CLASSES];
+                    nodes[j][k].onlyOutputLayerWeightTemp = new float[NUMBER_OF_CLASSES];
+                    nodes[j][k].partialDerivativeIn = new float[nFilters][PATCH_SIZE][PATCH_SIZE];
+                    nodes[j][k].nextNode = new Node[NUMBER_OF_CLASSES];
+                    for (int q = 0; q < NUMBER_OF_CLASSES; q++) {
+                        nodes[j][k].nextNode[q] = getOutputLayer().filters[0].nodes[q][0];
+                    }
+                }
+            }
+        }
+        for (int q = 1; q < layers.size() - 1; q++) {
+            Layer ly = layers.get(q);
+            for (int i = 0; i < ly.nFilter; i++) {
+                Node[][] nodes = ly.filters[i].nodes;
+                for (int j = 0; j < nodes.length; j++) {
+                    for (int k = 0; k < nodes[0].length; k++) {
+                        //nodes[j][k].onlyOutputLayerWeight = null;
+                        //nodes[j][k].onlyOutputLayerWeightTemp = null;
+                        nodes[j][k].partialDerivativeIn = new float[nFilters][PATCH_SIZE][PATCH_SIZE];
+                        //nodes[j][k].nextNode = new Node[1];
+                        //nodes[j][k].nextNode[0]=layers.get(q+1).filters[i].nodes[j/2][k/2];
+                    }
+                }
+            }
+        }
         return this;
     }
 
@@ -117,21 +165,24 @@ public class SNN {
         return layers.get(layers.size() - 1);
     }
 
-    public Layer getInpuLayer() {
+    public Layer getInputLayer() {
         return layers.get(0);
     }
 
-    public Layer getHiddenLayer(int index) {
+    public Layer getLayer(int index) {
         return layers.get(index);
     }
 
-    public SNN dump() {
-        for (Layer layer : layers) {
-            layer.dump();
-        }
-        return this;
+    public Layer getFullyConnectedLayer() {
+        return layers.get(layers.size() - 2);
     }
 
+//    public SNN dump() {
+//        for (Layer layer : layers) {
+//            layer.dump();
+//        }
+//        return this;
+//    }
     public SNN fit(float[][][][] X_train, float[][] y_train, float LEARNING_RATE, int EPOCHS, int BATCH_SIZE) {
         long t1 = FactoryUtils.tic();
         this.BATCH_SIZE = BATCH_SIZE;
@@ -143,120 +194,245 @@ public class SNN {
         t1 = FactoryUtils.toc(t1);
         float e;
 
-        float[] predicted;// = forwardPass();
-        for (int i = 0; i < EPOCHS; i++) {
-            t1 = FactoryUtils.toc(i + ".epoch elapsed time:", t1);
+        float[] predicted;
+        //CMatrix cm = CMatrix.getInstance();
+        int incr = 0;
+        for (int i = 1; i < EPOCHS; i++) {
+            //LEARNING_RATE=(i%(EPOCHS/4)==0)?LEARNING_RATE*0.5f:LEARNING_RATE;
+            //t1 = FactoryUtils.toc(i + ".epoch elapsed time lr=" + LEARNING_RATE + " :", t1);
             float err = 0;
             int k = 0;
             for (int j = 0; j < number_of_batch; j++) {
                 for (int l = 0; l < BATCH_SIZE; l++) {
                     //t1 = FactoryUtils.toc(l+".loop cost:",t1);
                     feedInputLayerData(X_train[k]);
-                    //input=X_train[k];
-                    //t1 = FactoryUtils.toc("feed input data cost:",t1);
-                    //forwardPass();
+                    //cm.setArray(FactoryUtils.toARGB(X_train[k])).imshow();
+                    //t1 = FactoryUtils.toc("feedInputLayerData cost:", t1);
                     predicted = forwardPass();
-                    //t1 = FactoryUtils.toc("forwardpass cost:",t1);
+//                    System.out.println(j + ":" + l + " predicted = " + Arrays.toString(predicted));
+                    //t1 = FactoryUtils.toc("forwardpass cost:", t1);
+
                     e = getCrossEntropyLoss(y_train[k], predicted);
                     //t1 = FactoryUtils.toc("getCrossEntropyLoss cost:",t1);
-                    //System.out.println("error = " + e);
+                    //if (j==0 && l<5) System.out.println("class index:"+FactoryUtils.getMaximumIndex(y_train[k])+" error = " + e+" actual:"+Arrays.toString(y_train[k])+" predicted:"+Arrays.toString(predicted));
                     err += e;
-                    //t2=FactoryUtils.toc("forwardpass elapsed time:",t2);
+//                    System.out.println("current err:" + e + " total err:" + err);
+//                    t1=FactoryUtils.toc("forwardpass elapsed time:",t1);
+//                    System.out.println("-->*******--> backpropagation dan önceki weightler");
+//                    printWeights();
                     backwardPass(y_train[k], predicted);
+//                    System.out.println((incr++) + ".güncellenen weightler");
+//                    printWeights();
+//                    System.out.println("");
+
+//                    System.out.println("backpropagation dan sonraki weightler");
+//                    printWeights();
                     //t1 = FactoryUtils.toc("backwardPass cost:",t1);
+//                    if (incr>14 && l>=20) {
+//                        System.out.println("e:"+e+" err:"+err); 
+//                    }
                     k++;
                     //System.out.println("");
                 }
+//                System.out.println((incr++) + ".güncellenen weightler");
+//                printWeights();
+//                System.out.println("");
             }
-            System.out.println(i + ".epoch loss = " + err);
-//            if (i%100==0) {
-//                LEARNING_RATE*=0.1;
-//            }
+            System.out.println(i + ".epoch loss = " + err / y_train.length + " lr=" + LEARNING_RATE);
+            if (i % 10 == 0) {
+                //LEARNING_RATE*=0.1;
+                float acc=test(X_train, y_train, false);
+                System.out.println("**************"+i + ".epoch accuracy rate = " + acc);
+            }
+            if(i%50 == 0){
+                LEARNING_RATE*=0.1;
+            }
         }
         return this;
     }
 
-    public SNN fitV2(float[][][][] X_train, float[][] y_train, float LEARNING_RATE, int EPOCHS, int BATCH_SIZE) {
-//        long t1 = FactoryUtils.tic();
-//        this.BATCH_SIZE = BATCH_SIZE;
-//        this.EPOCHS = EPOCHS;
-//        this.LEARNING_RATE = LEARNING_RATE;
-//        int number_of_batch = X_train.length / BATCH_SIZE;
-//        System.out.println("initial loss: " + calculateError(X_train, y_train));
-//
-//        t1 = FactoryUtils.toc(t1);
-//        long t2 = FactoryUtils.tic();
-//        //BufferedImage img;
-//        //float[][] XX;
-//        //float[][] yy;
-//        //float scale = 1.0f / 255;
-//        //float[][] est_y;
-//        //float[][] log_y;
-//        //CMatrix cm = CMatrix.getInstance();
-//        float e;
-//        for (int i = 0; i < EPOCHS; i++) {
-//            t1 = FactoryUtils.toc(i + ".epoch elapsed time:", t1);
-//            float err = 0;
-//            int k = 0;
-//            for (int j = 0; j < number_of_batch; j++) {
-//                //t2=FactoryUtils.toc("--------------------\nbatch (100 images) elapsed time:",t2);
-//                for (int l = 0; l < BATCH_SIZE; l++) {
-//                    //img = ImageProcess.rgb2gray(ImageProcess.imread(X_train.get(i)));
-//                    //XX = FactoryUtils.timesScalar(ImageProcess.imageToPixelsFloat(img), scale);
-//                    //t2=FactoryUtils.toc("--------------------\nimage load elapsed time:",t2);
-//                    feedInputLayerData(X_train[k]);
-//                    //forwardPass();
-//                    float[] predicted = forwardPass();
-//                    //t2=FactoryUtils.toc("forwardpass elapsed time:",t2);
-//                    e = getCrossEntropyLoss(y_train[k]);
-//                    err += e;
-//                    backwardPass(X_train[k][0], y_train[k], predicted,getOutputLayer());
-//                    k++;
-//                    //t2=FactoryUtils.toc("error calculation elapsed time:",t2);
-//                    //System.out.println((j*l+l)+".input data error:"+err);
-//                    /*
-//                    for (int k = 0; k < this.nFilters; k++) {
-//                        img = ImageProcess.rgb2gray(ImageProcess.imread(X_train.get(i)));
-//                        XX = FactoryUtils.timesScalar(ImageProcess.imageToPixelsFloat(img), scale);
-//
-//                        t1 = FactoryUtils.toc("--------------------\ndata loading cost :", t1);
-//                        //this.layers.get(0).filters[k].feedInputData(XX);
-//                        t1 = FactoryUtils.toc("feeding cost:", t1);
-//                        forwardPass();
-//                        t1 = FactoryUtils.toc("forward pass cost:", t1);
-//                        yy = getArray(y_train.get(j * BATCH_SIZE + l));
-//                        backwardPass(XX, yy, this.LEARNING_RATE, k);
-//                        t1 = FactoryUtils.toc("backward pass cost:", t1);
-//
-//                        //calculate error
-//                        yy = FactoryUtils.timesScalar(getArray(y_train.get(i)), -1);
-//                        //yy = cm.setArray(yy).timesScalar(-1).toFloatArray2D();
-//
-//                        est_y = this.layers.get(layers.size() - 1).filters[k].toArray2D();
-//                        //log_y = FactoryUtils.log
-//                        log_y = cm.setArray(est_y).logPlusScalar(1E-15f).transpose().toFloatArray2D();
-//
-//                        err += cm.setArray(yy).multiplyElement(CMatrix.getInstance(log_y)).sumTotal();
-//                    }
-//                     */
-//                }
-//                //t1 = FactoryUtils.toc(j+".chunk cost:", t1);
-//                //System.out.println(j+".chunk error:"+err);
-//
-//            }
-//            //t1 = FactoryUtils.toc(i + ".epoch cost:", t1);
-//            //float loss = calculateError(X_train, y_train, 0);
-//            System.out.println(i + ".epoch loss = " + err);
-//
-////            if (i % 10 == 0 || i == EPOCHS) {
-////                for (int j = 0; j < this.nchannels; j++) {
-////                    float loss = calculateError(X_train, y_train, j);
-////                    System.out.println("channel " + j + " epoch: " + i + "\tloss: " + loss + "\taccuracy:" + FactoryUtils.formatDouble(loss));
-////                }
-////            }
-//        }
-        return this;
+    public void printWeights() {
+        for (Layer layer : layers) {
+            layer.printWeights();
+        }
 
+    }
+
+    long t1 = FactoryUtils.tic();
+
+//    private float[] forwardPassV1() {
+//        //System.out.println("");        
+//        //t1 = FactoryUtils.toc("coming cost:", t1);
+//        Layer output = getOutputLayer();
+//        float[] predicted = output.forwardPass();
+//        //t1 = FactoryUtils.toc("forward cost:", t1);
+//        predicted = UtilsSNN.softmax(predicted);
+////        float sum=0;
+////        for (int i = 0; i < predicted.length; i++) {
+////            sum+=predicted[i];
+////        }
+////        System.out.println("sum = " + sum);
+//        //t1 = FactoryUtils.toc("softmax cost:", t1);
+//        output.setOutputLayerSoftMaxValue(predicted);
+//        //t1 = FactoryUtils.toc("setOutputLayerSoftMaxValue cost:", t1);
+//        return predicted;
+//    }
+//    private float[] forwardPassV2() {
+//        //System.out.println("");        
+//        //t1 = FactoryUtils.toc("coming cost:", t1);
+//        //t1 = FactoryUtils.toc("forward cost:", t1);
+//        for (int i = 1; i < layers.size() - 1; i++) {
+//            Layer layer = layers.get(i);
+//            for (int j = 0; j < nFilters; j++) {
+//                Filter filter = layer.filters[j];
+//                Node[][] nodes = filter.nodes;
+//                for (int k = 0; k < nodes.length; k++) {
+//                    for (int t = 0; t < nodes[0].length; t++) {
+//                        Node[] prevNodes = nodes[k][t].prevNodes;
+//                        float sum = 0;
+//                        for (int m = 0; m < prevNodes.length; m++) {
+//                            sum += prevNodes[m].outputData * nodes[k][t].weight[m];
+//                        }
+//                        sum += nodes[k][t].biasWeight;
+//                        nodes[k][t].outputData = UtilsSNN.applyActivation(sum, layer.activationType);
+//                    }
+//                }
+//            }
+//        }
+//        Layer outputLayer = getOutputLayer();
+//        float[] predicted = outputLayer.filters[0].toArray1D();
+//        predicted = UtilsSNN.softmax(predicted);
+//        outputLayer.setOutputLayerSoftMaxValue(predicted);
+//        //t1 = FactoryUtils.toc("setOutputLayerSoftMaxValue cost:", t1);
+//        return predicted;
+//    }
+    private float[] forwardPass() {
+        for (int i = 1; i < layers.size(); i++) {
+            layers.get(i).forwardPass();
+        }
+        Layer outputLayer = getOutputLayer();
+        float[] predicted = outputLayer.filters[0].toArray1D();
+        //predicted = FactoryNormalization.normalizeMinMax(predicted);
+        predicted = UtilsSNN.softmax(predicted);
+        outputLayer.setOutputLayerSoftMaxValue(predicted);
+        //t1 = FactoryUtils.toc("setOutputLayerSoftMaxValue cost:", t1);
+        return predicted;
+    }
+
+    //Back Propagation in training neural networks step by step https://www.youtube.com/watch?v=-zI1bldB8to , https://www.youtube.com/watch?v=0e0z28wAWfg
+    //this web site is very informative: https://stackabuse.com/creating-a-neural-network-from-scratch-in-python-multi-class-classification/
+    //https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/ 
+    //çok çok iyi anlatılmış https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
+    //çok çok iyi video : https://www.youtube.com/watch?v=-zI1bldB8to Back Propagation in training neural networks step by step
+    //to calculate the derivative of cross entropy loss you can see at : https://deepnotes.io/softmax-crossentropy
+    //çok iyi anlatım 8.5 Neural Networks: Backpropagation (UvA - Machine Learning 1 - 2020)  zaman olarak 23:20 de backpropagation anlatılıyor https://www.youtube.com/watch?v=Pz3yKyUYM7k&ab_channel=ErikBekkers
+    //değişik ve çok harika süper bir anlatım : Backpropagation Algorithm | Neural Networks https://www.youtube.com/watch?v=sIX_9n-1UbM&ab_channel=FirstPrinciplesofComputerVision
+    private void backwardPass(float[] yActual, float[] yPredicted) {
+        for (int i = layers.size() - 1; i >= 1; i--) {
+            layers.get(i).backwardPass(yActual, yPredicted);
+        }
+        for (int i = layers.size() - 1; i >= 1; i--) {
+            layers.get(i).updateWeights();
+            //layers.get(i).printWeights();
+        }
+//        Layer layer=getOutputLayer();
+//        layer.backwardPass(yActual, yPredicted);
+//        layer.updateWeights();
+
+//        Layer layer2=getFullyConnectedLayer();
+//        layer2.backwardPass(yActual, yPredicted);
+//        layer2.updateWeights();
+    }
+
+    //Back Propagation in training neural networks step by step https://www.youtube.com/watch?v=-zI1bldB8to , https://www.youtube.com/watch?v=0e0z28wAWfg
+    //this web site is very informative: https://stackabuse.com/creating-a-neural-network-from-scratch-in-python-multi-class-classification/
+    //https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/ 
+    //çok çok iyi anlatılmış https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
+    //çok çok iyi video : https://www.youtube.com/watch?v=-zI1bldB8to Back Propagation in training neural networks step by step
+    //to calculate the derivative of cross entropy loss you can see at : https://deepnotes.io/softmax-crossentropy
+    //çok iyi anlatım 8.5 Neural Networks: Backpropagation (UvA - Machine Learning 1 - 2020)  zaman olarak 23:20 de backpropagation anlatılıyor https://www.youtube.com/watch?v=Pz3yKyUYM7k&ab_channel=ErikBekkers
+    private void backwardPass_eski(float[] y, float[] yPredicted) {
+//        //long t1=FactoryUtils.tic();
+//        //derivative of the categorical cross_entropy_loss
+//        float[] dc = FactoryUtils.subtract(yPredicted, y);
+//
+//        /**
+//         * Phase 1 : first calculate the change in weights of output layer nodes
+//         * along with bias weight. Note that original weights are not updated
+//         * now. All weights will be updated at the end. So we stored updated
+//         * weights in corresponding temporary weights
+//         */
+//        Layer outputLayer = getOutputLayer();
+//        for (int i = 0; i < y.length; i++) {
+//            Node node = outputLayer.filters[0].nodes[i][0];
+//            Node[] prevNodes = node.prevNodes;
+//            for (int j = 0; j < prevNodes.length; j++) {
+//                //update weights by W(next)=W-learning_rate*partial_derivative
+//                node.partialDerivative = dc[i];
+//                node.weightTemp[j] = node.weight[j] - LEARNING_RATE * node.partialDerivative * prevNodes[j].outputData;
+//                prevNodes[j].onlyOutputLayerWeightTemp[i] = node.weightTemp[j];
+//            }
+//            node.biasWeightTemp = node.biasWeight - LEARNING_RATE * dc[i];
+//        }
+//
+//        /**
+//         * Phase 2 : Backpropagate error through previous hidden layers
+//         */
+//        for (int q = layers.size() - 2; q > 0; q--) {
+//            Layer currentLayer = layers.get(q);
+//            //if it is the last hidden layer (last hidden layer is simulates te fully connected dense layer)
+//            if (q == layers.size() - 2) {
+//                for (int j = 0; j < nFilters; j++) {
+//                    Node[][] nodes = currentLayer.filters[j].nodes;
+//                    for (int i = 0; i < nodes.length; i++) {
+//                        for (int k = 0; k < nodes[0].length; k++) {
+//                            Node node = nodes[j][k];
+//                            float[] outWeights = nodes[i][k].onlyOutputLayerWeightTemp;
+//                            float sum = 0;
+//                            for (int m = 0; m < outWeights.length; m++) {
+//                                sum += outWeights[m] * dc[m];
+//                            }
+//                            node.partialDerivative = UtilsSNN.sigmoidDerivative(node.getWeightedSum()) * sum;
+//                            float pd = 0;
+//                            for (int n = 0; n < node.prevNodes.length; n++) {
+//                                pd = UtilsSNN.sigmoidDerivative(node.getWeightedSum()) * node.prevNodes[n].outputData * sum;
+//                                node.weightTemp[n] = node.weight[n] - LEARNING_RATE * pd;
+//                            }
+//                            pd = UtilsSNN.sigmoidDerivative(node.getWeightedSum()) * node.biasValue * sum;
+//                            node.biasWeightTemp = node.biasWeight - LEARNING_RATE * pd;
+//                        }
+//                    }
+//                }
+//            } else {
+//                for (int j = 0; j < nFilters; j++) {
+//                    Node[][] nodes = currentLayer.filters[j].nodes;
+//                    for (int i = 0; i < nodes.length; i++) {
+//                        for (int k = 0; k < nodes[0].length; k++) {
+//                            Node node = nodes[i][k];
+//                            Node[] prevNodes = node.prevNodes;
+//                            Node nextNode = node.nextNode[0];
+//                            float pd = 0;
+//                            node.partialDerivative = nextNode.partialDerivative * UtilsSNN.sigmoidDerivative(node.getWeightedSum());
+//                            for (int m = 0; m < prevNodes.length; m++) {
+//                                pd = nextNode.partialDerivative * UtilsSNN.sigmoidDerivative(node.getWeightedSum()) * prevNodes[m].outputData;
+//                                node.weightTemp[m] = node.weight[m] - LEARNING_RATE * pd;
+//                            }
+//                            pd = nextNode.partialDerivative * UtilsSNN.sigmoidDerivative(node.getWeightedSum());
+//                            node.biasWeightTemp = node.biasWeight - LEARNING_RATE * pd;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        /**
+//         * Phase 3: update original weights with tempweights
+//         *
+//         */
+//        for (Layer layer : layers) {
+//            layer.updateWeights();
+//            layer.printWeights();
+//        }
     }
 
     //calculate cross-entropy loss Cross_Entropy= - Sum(y(i)*log(yy(i))
@@ -281,86 +457,56 @@ public class SNN {
         }
         return ret;
     }
-    
-    long t1 = FactoryUtils.tic();
-    private float[] forwardPass() {
-        //System.out.println("");        
-        //t1 = FactoryUtils.toc("coming cost:", t1);
-        Layer output = getOutputLayer();
-        float[] predicted = output.forwardPass();
-        //t1 = FactoryUtils.toc("forward cost:", t1);
-        predicted = UtilsSNN.softmax(predicted);
-        //t1 = FactoryUtils.toc("softmax cost:", t1);
-        output.setOutputLayerSoftMaxValue(predicted);
-        //t1 = FactoryUtils.toc("setOutputLayerSoftMaxValue cost:", t1);
-        return predicted;
-    }
-
-    //Back Propagation in training neural networks step by step https://www.youtube.com/watch?v=-zI1bldB8to , https://www.youtube.com/watch?v=0e0z28wAWfg
-    //this web site is very informative: https://stackabuse.com/creating-a-neural-network-from-scratch-in-python-multi-class-classification/
-    //https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/ 
-    //çok çok iyi anlatılmış https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
-    //çok çok iyi video : https://www.youtube.com/watch?v=-zI1bldB8to Back Propagation in training neural networks step by step
-    //to calculate the derivative of cross entropy loss you can see at : https://deepnotes.io/softmax-crossentropy
-    private void backwardPass(float[] y, float[] yPredicted) {
-        //long t1=FactoryUtils.tic();
-        //SNN freezedSNN = copy();
-        //t1=FactoryUtils.toc("copy cost:",t1);
-        //derivative of the categorical cross_entropy_loss
-        float[] dc = subtract(yPredicted, y);
-
-        //first update weights of output layer nodes along with bias weight 
-        Layer outputLayer = getOutputLayer();
-        //Layer frzOutputLayer = freezedSNN.getOutputLayer();
-        for (int i = 0; i < y.length; i++) {
-            Node[][][] lastHiddenLayerNodes = outputLayer.filters[0].nodes[i][0].prevNodes4OutputLayer;
-            //Node[][][] frzLastHiddenLayerNodes = frzOutputLayer.filters[0].nodes[i][0].prevNodes4OutputLayer;
-            for (int j = 0; j < nFilters; j++) {
-                for (int k = 0; k < PATCH_SIZE; k++) {
-                    for (int n = 0; n < PATCH_SIZE; n++) {
-                        //calculate partial derivative of loss with respect to the corresponding node weights
-                        float partialDerivative = dc[i] * lastHiddenLayerNodes[j][k][n].data;
-                        //float partialDerivative = dc[i] * frzLastHiddenLayerNodes[j][k][n].data;
-                        //update weights by W(next)=W-learning_rate*partial_derivative
-                        lastHiddenLayerNodes[j][k][n].weightOutputLayer[i] = lastHiddenLayerNodes[j][k][n].weightOutputLayer[i] - LEARNING_RATE * partialDerivative;
-                    }
-                }
-            }
-            outputLayer.filters[0].nodes[i][0].biasWeight = outputLayer.filters[0].nodes[i][0].biasWeight - LEARNING_RATE * dc[i];
-        }
-        //t1=FactoryUtils.toc("remaining cost:",t1);
-    }
 
     //look at:https://medium.com/codex/mlps-applications-with-tweaks-in-its-structure-c9aa3f05578 
     private float getCrossEntropyLoss(float[] trueY, float[] predictedY) {
         float err = 0;
-        float[] predictedY_1 = this.layers.get(layers.size() - 1).filters[0].toArray1D();
+        //float[] predictedY_1 = this.layers.get(layers.size() - 1).filters[0].toArray1D();
+        int n = 0;
         for (int i = 0; i < trueY.length; i++) {
-            err += trueY[i] * Math.log(predictedY[i]);
+            if (trueY[i] == 1) {
+                err = trueY[i] * (float) Math.log(predictedY[i] + 1E-55); //buradaki log ln demektir veya log e tabanına göre demektir
+                return -err;
+            }
         }
-        err = -err;
+//        for (int i = 0; i < trueY.length; i++) {
+//            err += trueY[i] * Math.log(predictedY[i] + 1E-55); //buradaki log ln demektir veya log e tabanına göre demektir
+//        }
+//        err = -err;
         //System.out.println("err = " + err);
         return err;
     }
 
     public void feedInputLayerData(float[][][] f) {
         input = f;
+        Layer inputLayer = getInputLayer();
+        inputLayer.feedInputData(input);
+        //CMatrix cm = CMatrix.getInstance(input[0]).map(0, 255).imshow().imresize(500,500).imshow();
+        //int a=1;
     }
 
-    private float[] subtract(float[] s, float[] y) {
-        float[] ret = new float[s.length];
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = s[i] - y[i];
+    public float test(float[][][][] X, float[][] y, boolean isDebug) {
+        int nSample = X.length;
+        float cnt = 0;
+        long t1 = FactoryUtils.tic();
+        for (int i = 0; i < nSample; i++) {
+            feedInputLayerData(X[i]);
+            float[] pr = forwardPass();
+            int prIndex = FactoryUtils.getMaximumIndex(pr);
+            int drIndex = FactoryUtils.getMaximumIndex(y[i]);
+            if (isDebug) {
+                System.out.println("index=" + prIndex + " predicted = " + Arrays.toString(pr));
+                System.out.println("index=" + drIndex + " desired = " + Arrays.toString(y[i]));
+            }
+            if (prIndex == drIndex) {
+                cnt++;
+            }
+            if (isDebug) {
+                t1 = FactoryUtils.toc(t1);
+                System.out.println("accuracy rate:" + (cnt / nSample) + "\n");
+            }
         }
-        return ret;
-    }
-
-    public SNN copy() {
-        SNN ret = new SNN(modelName, rnd);
-        for (int i = 0; i < layers.size(); i++) {
-            ret.layers.add(this.layers.get(i).copy());
-        }
-        return ret;
+        return cnt / nSample;
     }
 
 }

@@ -4,6 +4,9 @@
  */
 package jazari.deep_learning.snn;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author cezerilab
@@ -20,6 +23,16 @@ public class DenemeSil {
 //        }
 //        err=-err;
 //        System.out.println("err = " + err);
+//        List<String> layers=new ArrayList();
+//        layers.add("input");
+//        layers.add("hidden");
+//        layers.add("output");
+//        for (int i = layers.size() - 2; i > 0; i--) {
+//            System.out.println("i:"+i);
+//            
+//        }
+        double c=-Math.log(0.0001);
+        System.out.println("c = " + c);
         
     }
 }

@@ -24,8 +24,9 @@ public class NeuralNetworkTest {
         char separator = ',';
         
         //Matrix data = MatrixUtils.readCSV("C:\\ai\\djl\\mnist\\csv/mnist_train.csv", separator, headerRows);
-        Matrix data = MatrixUtils.readCSV("dataset/Kaggle_Digits_1000.csv", separator, headerRows);
 //        Matrix data = MatrixUtils.readCSV("C:/Users/Glenn/Documents/Kaggle/Digit Recognizer/train.csv", separator, headerRows);
+        Matrix data = MatrixUtils.readCSV("C:\\ai\\djl\\mnist\\csv\\mnist_train.csv", separator, headerRows);
+//        Matrix data = MatrixUtils.readCSV("dataset/Kaggle_Digits_1000.csv", separator, headerRows);
 
         // Split data into training set and crossvalidation set.
         float crossValidationPercent = 10;

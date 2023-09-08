@@ -22,7 +22,7 @@ public class DataSet {
     public int nChannel = 1;
     public int nClasses;
 
-    public float[][][][] getTrainX() {
+    public float[][][][] getDataX() {
         int nr = data.size();
         float[][][][] ret = new float[nr][nChannel][][];
         if (nChannel == 1) {
@@ -39,24 +39,24 @@ public class DataSet {
         return ret;
     }
     
-    public float[][][][] getTrainX(int fromIndex, int toIndex) {
+    public float[][][][] getSubsetX(int fromIndex, int toIndex) {
         int nr = toIndex-fromIndex;
         float[][][][] ret = new float[nr][nChannel][][];
         if (nChannel == 1) {
-            for (int i = fromIndex; i < nr; i++) {
-                ret[i][0] = data.get(i).gray;
+            for (int i = fromIndex; i < toIndex; i++) {
+                ret[i-fromIndex][0] = data.get(i).gray;
             }
         }else if(nChannel==3){
-            for (int i = fromIndex; i < nr; i++) {
-                ret[i][0] = data.get(i).red;
-                ret[i][1] = data.get(i).green;
-                ret[i][2] = data.get(i).blue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                ret[i-fromIndex][0] = data.get(i).red;
+                ret[i-fromIndex][1] = data.get(i).green;
+                ret[i-fromIndex][2] = data.get(i).blue;
             }
         }
         return ret;
     }
     
-    public float[][] getTrainY() {
+    public float[][] getDataY() {
         int nr = data.size();
         float[][] ret = new float[nr][nClasses];
         for (int i = 0; i < nr; i++) {
@@ -66,12 +66,12 @@ public class DataSet {
         return ret;
     }
 
-    public float[][] getTrainY(int fromIndex, int toIndex) {
+    public float[][] getSubsetY(int fromIndex, int toIndex) {
         int nr = toIndex-fromIndex;
         float[][] ret = new float[nr][nClasses];
-        for (int i = fromIndex; i < nr; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             int cl_index=data.get(i).classLabelIndex;
-            ret[i]=FactoryUtils.getOneHotEncoding(nClasses, (int)this.classLabelIndex[cl_index]);
+            ret[i-fromIndex]=FactoryUtils.getOneHotEncoding(nClasses, (int)this.classLabelIndex[cl_index]);
         }
         return ret;
     }

@@ -79,8 +79,21 @@ public class UtilsSNN {
         float ret = sigmoid(x) * (1 - sigmoid(x));
         return ret;
     }
+    
+    public static float applyDerivativeFunction(ActivationType act,float val){
+        if (act==ActivationType.relu) {
+            return reluDerivative(val);
+        }else if(act==ActivationType.sigmoid){
+            return sigmoidDerivative(val);
+        }else{
+            return -1;
+        }
+    }
 
     private static float relu(float x) {
+//        if (x>5) {
+//            return 5;
+//        }
         float ret = Math.max(0, x);
         return ret;
     }
@@ -99,12 +112,12 @@ public class UtilsSNN {
         float exp_z_sum = 0.0f;
         for (int i = 0; i < nrows; i++) {
             for (int j = 0; j < ncols; j++) {
-                exp_z_sum += Math.pow(Math.E, nodes[i][j].data);
+                exp_z_sum += Math.pow(Math.E, nodes[i][j].dataOut);
             }
         }
         for (int i = 0; i < nrows; i++) {
             for (int j = 0; j < ncols; j++) {
-                nodes[i][j].data = (float) Math.pow(Math.E, nodes[i][j].data) / exp_z_sum;
+                nodes[i][j].dataOut = (float) Math.pow(Math.E, nodes[i][j].dataOut) / exp_z_sum;
             }
         }
     }

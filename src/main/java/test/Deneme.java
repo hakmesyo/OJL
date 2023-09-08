@@ -34,7 +34,8 @@ public class Deneme {
     }
 
     public static void main(String[] args) {
-        CMatrix cm = CMatrix.getInstance().annotateImage("images/dental_1.png");
+        System.out.println(Math.log(Math.E));
+//        CMatrix cm = CMatrix.getInstance().annotateImage("images/dental_1.png");
 ////        boolean b = intersects(new Point(10, 10), new Point(10, 20), new Point(11, 15));
 //        boolean b = intersects(20,10,10,20, new Point(15, 16));
 //        System.out.println("b = " + b);

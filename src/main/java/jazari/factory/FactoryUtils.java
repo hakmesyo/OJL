@@ -433,6 +433,28 @@ public final class FactoryUtils {
         }
     }
 
+    public static void writeToFile(String path, List<String> rows, int chunkSize) {
+        int nr = rows.size();
+        int nChunk = nr / chunkSize;
+        int kalan = nr - nChunk * chunkSize;
+
+        for (int i = 0; i < nChunk; i++) {
+            String row = "";
+            for (int j = 0; j < chunkSize; j++) {
+                row += rows.get(i * chunkSize + j) + "\n";
+            }
+            writeOnFile(path, row);
+        }
+        if (kalan != 0) {
+            String row = "";
+            for (int j = 0; j < kalan; j++) {
+                row += rows.get(nChunk * chunkSize + j) + "\n";
+            }
+            writeOnFile(path, row);
+        }
+
+    }
+
     public static void writeToFile(String path, String row) {
         Writer out = null;
         try {
@@ -780,7 +802,7 @@ public final class FactoryUtils {
         }
         return toFloatArray(lst);
     }
-    
+
     /**
      * get the unique/distinct values from the array provided
      *
@@ -806,7 +828,7 @@ public final class FactoryUtils {
         }
         return toIntArray1D(lst);
     }
-    
+
     /**
      * get the unique/distinct values from the array provided
      *
@@ -3088,25 +3110,6 @@ public final class FactoryUtils {
         return max;
     }
 
-//    public static float getMinimum(float[] p) {
-//        float m = p[0];
-//        for (int i = 0; i < p.length; i++) {
-//            if (p[i] < m) {
-//                m = p[i];
-//            }
-//        }
-//        return m;
-//    }
-//
-//    public static float getMaximum(float[] p) {
-//        float m = p[0];
-//        for (int i = 0; i < p.length; i++) {
-//            if (p[i] > m) {
-//                m = p[i];
-//            }
-//        }
-//        return m;
-//    }
     public static byte getMinimum(byte[] p) {
         byte m = p[0];
         for (int i = 0; i < p.length; i++) {
@@ -3153,27 +3156,11 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float getMean(float[][] m) {
-//        float ret;
-//        float toplam = 0;
-//        for (int i = 0; i < m.length; i++) {
-//            for (int j = 0; j < m[0].length; j++) {
-//                toplam += m[i][j];
-//            }
-//        }
-//        int pix = (m.length * m[0].length);
-//        ret = toplam / pix;
-//        return ret;
-//    }
     public static float getMean(float[] d) {
         float t = getSum(d);
         return t / d.length;
     }
 
-//    public static float getMean(float[] d) {
-//        float t = getSum(d);
-//        return t / d.length;
-//    }
     public static float getMean(int[] d) {
         float t = getSum(d);
         return t / d.length;
@@ -3226,13 +3213,6 @@ public final class FactoryUtils {
         return (float) Math.sqrt(t);
     }
 
-//    public static float getMagnitude(float[] d) {
-//        float t = 0;
-//        for (int i = 0; i < d.length; i++) {
-//            t += d[i] * d[i];
-//        }
-//        return Math.sqrt(t);
-//    }
     public static float getMagnitude(byte[] d) {
         float t = 0;
         for (int i = 0; i < d.length; i++) {
@@ -3277,9 +3257,9 @@ public final class FactoryUtils {
 
     public static float prod(float[][] d) {
         float ret = 1;
-        for (int i = 0; i < d.length; i++) {
+        for (float[] d1 : d) {
             for (int j = 0; j < d[0].length; j++) {
-                ret *= d[i][j];
+                ret *= d1[j];
             }
         }
         return ret;
@@ -3301,13 +3281,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float sum(float[] d) {
-//        float ret = 0;
-//        for (int i = 0; i < d.length; i++) {
-//            ret += d[i];
-//        }
-//        return ret;
-//    }
     public static long sum(long[] d) {
         long ret = 0;
         for (int i = 0; i < d.length; i++) {
@@ -3340,9 +3313,6 @@ public final class FactoryUtils {
         return sum(d) / d.length;
     }
 
-//    public static float mean(float[] d) {
-//        return sum(d) / d.length;
-//    }
     public static long mean(long[] d) {
         return sum(d) / d.length;
     }
@@ -3590,10 +3560,10 @@ public final class FactoryUtils {
         }
         return ret;
     }
-    
+
     public static float[] getOneHotEncoding(int nClasses, int class_number) {
         float[] ret = new float[nClasses];
-        ret[class_number]=1;
+        ret[class_number] = 1;
         return ret;
     }
 
@@ -3688,6 +3658,34 @@ public final class FactoryUtils {
         float[] ret = new float[d.length];
         for (int i = 0; i < d.length; i++) {
             ret[i] = gaussian(d[i], sigma, mean);
+        }
+        return ret;
+    }
+
+    public static float sigmoid(float x) {
+        float ret = (float) (1 / (1 + Math.pow(Math.E, -1 * x)));
+        return ret;
+    }
+
+    public static float[] sigmoid(float[] x) {
+        int nr = x.length;
+        float[] ret = new float[nr];
+        for (int i = 0; i < nr; i++) {
+            ret[i] = (float) (1 / (1 + Math.pow(Math.E, -1 * x[i])));
+        }
+        return ret;
+    }
+
+    public static float sigmoidDerivative(float x) {
+        float ret = sigmoid(x) * (1 - sigmoid(x));
+        return ret;
+    }
+
+    public static float[] sigmoidDerivative(float x[]) {
+        int nr = x.length;
+        float[] ret = new float[nr];
+        for (int i = 0; i < nr; i++) {
+            ret[i] = sigmoid(x[i]) * (1 - sigmoid(x[i]));
         }
         return ret;
     }
@@ -4970,6 +4968,42 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static float[][] readCSV_slow(String filename, char separator, int headerLines) {
+        BufferedReader br = null;
+        String[] strArray;
+        List<float[]> lst = new ArrayList();
+        try {
+            br = new BufferedReader(new FileReader(filename));
+            CSVReader cr = new CSVReader(br, separator, '\"', '\\', headerLines);
+            int k = 0;
+            while ((strArray = cr.readNext()) != null) {
+                int nr = strArray.length;
+                float[] f = new float[nr];
+                for (int i = 0; i < nr; i++) {
+                    f[i] = Float.parseFloat(strArray[i]);
+                }
+                lst.add(f);
+                //System.out.println((k++)+".satır");
+            }
+            cr.close();
+            br.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        int numRows = lst.size();
+        int numCols = lst.get(0).length;
+        float[][] ret = new float[numRows][numCols];
+        for (int row = 0; row < numRows; row++) {
+            for (int col = 0; col < numCols; col++) {
+                ret[row][col] = lst.get(row)[col];
+            }
+        }
+        return ret;
+    }
+
     /**
      * Reads a CSV-file from disk into a 2D float array.
      *
@@ -5553,6 +5587,14 @@ public final class FactoryUtils {
         return d;
     }
 
+    public static float[] subtract(float[] s, float[] y) {
+        float[] ret = new float[s.length];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = s[i] - y[i];
+        }
+        return ret;
+    }
+
     public static String formatBinary(int p) {
         return formatBinary(8, p);
     }
@@ -6114,9 +6156,9 @@ public final class FactoryUtils {
             List<File> imgList = Arrays.asList(FactoryUtils.getFileArrayInFolderForImages(dir.getAbsolutePath()));
             Collections.shuffle(imgList, new Random(123));
             List<File> imgReducedList = imgList.subList(0, (int) (imgList.size() * reduceRatio));
-            FactoryUtils.makeDirectory(path_reduced+"/"+dir.getName());
+            FactoryUtils.makeDirectory(path_reduced + "/" + dir.getName());
             for (File file : imgReducedList) {
-                copyFile(file, new File(path_reduced+"/"+dir.getName()+"/"+file.getName()));
+                copyFile(file, new File(path_reduced + "/" + dir.getName() + "/" + file.getName()));
             }
         }
     }
@@ -6805,9 +6847,24 @@ public final class FactoryUtils {
         return f;
     }
 
-    public static float[][][][] loadDataSetAs4DFloatFromImages(String path_train,int nChannel) {
-        float[][][][] ret=null;
-        
+    public static float[][][][] loadDataSetAs4DFloatFromImages(String path_train, int nChannel) {
+        float[][][][] ret = null;
+
+        return ret;
+    }
+
+    public static float[][][] toARGB(float[][][] f) {
+        int nr=f[0].length;
+        int nc=f[0][0].length;
+        float[][][] ret=new float[f.length+1][nr][nc];
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                ret[0][i][j]=255;
+            }
+        }
+        for (int i = 1; i < 4; i++) {
+            ret[i]=f[i-1];
+        }
         return ret;
     }
 
