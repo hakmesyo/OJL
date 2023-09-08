@@ -52,10 +52,10 @@ public class Node {
                 weightIn = setRandomWeights();
                 biasWeight = UtilsSNN.getRandomWeight(layer.model.rnd);
             } else {
-                //weightIn = setConstantWeights();
-                //biasWeight = 0.15f;
-                weightIn = setRandomWeights();
-                biasWeight = UtilsSNN.getRandomWeight(layer.model.rnd);
+                weightIn = setConstantWeights(1f);
+                biasWeight = 1f;
+//                weightIn = setRandomWeights();
+//                biasWeight = UtilsSNN.getRandomWeight(layer.model.rnd);
             }
             weightTempIn = new float[weightIn.length][weightIn[0].length][weightIn[0][0].length];
 
@@ -160,7 +160,7 @@ public class Node {
         return ret;
     }
 
-    private float[][][] setConstantWeights() {
+    private float[][][] setConstantWeights(float val) {
         int m = layer.nFilter;
         int nr = prevNodes[0].length;
         int nc = prevNodes[0][0].length;
@@ -168,7 +168,7 @@ public class Node {
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < nr; j++) {
                 for (int k = 0; k < nc; k++) {
-                    ret[i][j][k] = 0.15f;
+                    ret[i][j][k] = val;
                 }
             }
         }
@@ -250,6 +250,17 @@ public class Node {
             biasWeightTemp = biasWeight - layer.model.LEARNING_RATE * gradient;
         }
 
+    }
+
+    public void addNoise(float val) {
+        biasWeight+=(Math.random()>0.5)?-val:val;
+        for (int f = 0; f < weightIn.length; f++) {
+            for (int i = 0; i < weightIn[f].length; i++) {
+                for (int j = 0; j < weightIn[f][0].length; j++) {
+                    weightIn[f][i][j]+=(Math.random()>0.5)?-val:val;
+                }
+            }
+        }
     }
 
 }

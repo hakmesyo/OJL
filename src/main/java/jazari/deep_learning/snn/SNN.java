@@ -36,6 +36,7 @@ public class SNN {
     int nrows;
     int ncols;
     float[][][] input;
+    private float JITTER_VALUE = 0.01f;
 
     public SNN(String modelName, Random rnd) {
         this.rnd = rnd;
@@ -195,60 +196,72 @@ public class SNN {
         float e;
 
         float[] predicted;
-        //CMatrix cm = CMatrix.getInstance();
+        CMatrix cm1 = CMatrix.getInstance();
+        CMatrix cm2 = CMatrix.getInstance();
         int incr = 0;
+        long t=System.currentTimeMillis();
+//        float[][] weights = getLayer(1).filters[0].weights(0);
+//        cm1.setArray(weights).println().map(0, 255).imresize(512, 512).imshowRefresh();
         for (int i = 1; i < EPOCHS; i++) {
             //LEARNING_RATE=(i%(EPOCHS/4)==0)?LEARNING_RATE*0.5f:LEARNING_RATE;
             //t1 = FactoryUtils.toc(i + ".epoch elapsed time lr=" + LEARNING_RATE + " :", t1);
             float err = 0;
             int k = 0;
+            t=System.currentTimeMillis();
             for (int j = 0; j < number_of_batch; j++) {
                 for (int l = 0; l < BATCH_SIZE; l++) {
-                    //t1 = FactoryUtils.toc(l+".loop cost:",t1);
                     feedInputLayerData(X_train[k]);
-                    //cm.setArray(FactoryUtils.toARGB(X_train[k])).imshow();
-                    //t1 = FactoryUtils.toc("feedInputLayerData cost:", t1);
                     predicted = forwardPass();
-//                    System.out.println(j + ":" + l + " predicted = " + Arrays.toString(predicted));
-                    //t1 = FactoryUtils.toc("forwardpass cost:", t1);
-
                     e = getCrossEntropyLoss(y_train[k], predicted);
-                    //t1 = FactoryUtils.toc("getCrossEntropyLoss cost:",t1);
-                    //if (j==0 && l<5) System.out.println("class index:"+FactoryUtils.getMaximumIndex(y_train[k])+" error = " + e+" actual:"+Arrays.toString(y_train[k])+" predicted:"+Arrays.toString(predicted));
                     err += e;
-//                    System.out.println("current err:" + e + " total err:" + err);
-//                    t1=FactoryUtils.toc("forwardpass elapsed time:",t1);
-//                    System.out.println("-->*******--> backpropagation dan önceki weightler");
-//                    printWeights();
                     backwardPass(y_train[k], predicted);
-//                    System.out.println((incr++) + ".güncellenen weightler");
-//                    printWeights();
-//                    System.out.println("");
-
-//                    System.out.println("backpropagation dan sonraki weightler");
-//                    printWeights();
-                    //t1 = FactoryUtils.toc("backwardPass cost:",t1);
-//                    if (incr>14 && l>=20) {
-//                        System.out.println("e:"+e+" err:"+err); 
-//                    }
                     k++;
-                    //System.out.println("");
                 }
 //                System.out.println((incr++) + ".güncellenen weightler");
 //                printWeights();
 //                System.out.println("");
             }
-            System.out.println(i + ".epoch loss = " + err / y_train.length + " lr=" + LEARNING_RATE);
+            
+            long dt=System.currentTimeMillis()-t;
+            System.out.println(i + ".epoch, loss = " + err / y_train.length + ", lr = " + LEARNING_RATE+", time = "+dt+" ms");
             if (i % 10 == 0) {
                 //LEARNING_RATE*=0.1;
-                float acc=test(X_train, y_train, false);
-                System.out.println("**************"+i + ".epoch accuracy rate = " + acc);
+                float acc = test(X_train, y_train, false);
+                System.out.println("**************" + i + ".epoch accuracy rate = " + acc);
+                //float[][] weights=getLayer(1).filters[0].getWeightsIn();
+                //cm.setArray(weights).println().map(0, 255).imresize(128,128).imshow();
+                //JITTER_VALUE*=0.5;
+                //addNoise(JITTER_VALUE);
             }
-            if(i%50 == 0){
-                LEARNING_RATE*=0.1;
+            if (i % 5 == 0) {
+//                cm1.setArray(getLayer(1).filters[0].output()).println().map(0, 255).imresize(512, 512).imshow();
+//                   cm1.setArray(getLayer(2).filters[0].weights(0)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(1)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(2)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(3)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(4)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(5)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(6)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(7)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(8)).map(0, 255).imresize(512, 512).imshow()
+//                      .setArray(getLayer(2).filters[0].weights(9)).map(0, 255).imresize(512, 512).imshow()
+                        
+                        
+                        ;
+                int qw=3;
+//                float[][] output=getLayer(1).filters[0].output();
+//                cm2.setArray(output).map(0, 255).imresize(512,512).imshowRefresh();
+
+//                LEARNING_RATE*=0.1;
             }
         }
         return this;
+    }
+
+    public void addNoise(float val) {
+        for (Layer layer : layers) {
+            layer.addNoise(val);
+        }
     }
 
     public void printWeights() {

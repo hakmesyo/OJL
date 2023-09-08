@@ -85,19 +85,32 @@ public class Filter {
         }
         return ret;
     }
-    
-    public float[][] getWeightsIn() {
+
+    public float[][] output() {
+        return toArray2D();
+    }
+
+    public float[][] weights(int outputIndex) {
         int nr = this.prevFilter.nrows;
-        int nc = this.prevFilter.ncols;        
+        int nc = this.prevFilter.ncols;
         float[][] ret = new float[nr][nc];
-        for (int i = 0; i < nodes.length; i++) {
-            for (int j = 0; j < nodes[0].length; j++) {
-                for (int k = 0; k < patchSize; k++) {
-                    for (int m = 0; m < patchSize; m++) {
-                        ret[i*patchSize+k][j*patchSize+m] = nodes[i][j].weightIn[filterIndex][k][m];
+        if (layerType.equals(LayerType.hidden)) {
+            for (int i = 0; i < nodes.length; i++) {
+                for (int j = 0; j < nodes[0].length; j++) {
+                    for (int k = 0; k < patchSize; k++) {
+                        for (int m = 0; m < patchSize; m++) {
+                            ret[i * patchSize + k][j * patchSize + m] = nodes[i][j].weightIn[filterIndex][k][m];
+                        }
                     }
                 }
             }
+        } else {
+            for (int i = 0; i < nr; i++) {
+                for (int j = 0; j < nc; j++) {
+                    ret[i][j]=nodes[outputIndex][0].weightIn[filterIndex][i][j];
+                }
+            }
+
         }
         return ret;
     }
@@ -136,7 +149,6 @@ public class Filter {
 //            System.out.println("");
 //        }
 //    }
-
 //    public Filter copy() {
 //        Filter ret=new Filter(filterIndex, layer, activationType, patchSize, stride);
 //        for (int i = 0; i < nrows; i++) {
@@ -146,7 +158,6 @@ public class Filter {
 //        }
 //        return ret;
 //    }
-
     public void forwardPass() {
         //float[][] p=new float[nrows][ncols];
         for (int i = 0; i < nrows; i++) {
@@ -165,8 +176,6 @@ public class Filter {
     public String toString() {
         return "Filter{" + "filterIndex=" + filterIndex + ", layer=" + layer + ", layerType=" + layerType + '}';
     }
-    
-    
 
     public void updateWeights() {
         for (int i = 0; i < nodes.length; i++) {
@@ -177,15 +186,24 @@ public class Filter {
     }
 
     public void printWeights() {
-        System.out.println("Layer "+layer.layerIndex+" Filter "+filterIndex);
+        System.out.println("Layer " + layer.layerIndex + " Filter " + filterIndex);
         System.out.println(Arrays.deepToString(nodes));
     }
 
     public void backwardPass(float[] yActual, float[] yPredicted) {
         for (int i = 0; i < nodes.length; i++) {
             for (int j = 0; j < nodes[0].length; j++) {
-                nodes[i][j].backwardPass(yActual,yPredicted);
+                nodes[i][j].backwardPass(yActual, yPredicted);
             }
         }
     }
+
+    public void addNoise(float val) {
+        for (int i = 0; i < nodes.length; i++) {
+            for (int j = 0; j < nodes[0].length; j++) {
+                nodes[i][j].addNoise(val);
+            }
+        }
+    }
+
 }

@@ -23,7 +23,7 @@ public class TestMnist {
 
     public static int EPOCHS = 300;
     public static int BATCH_SIZE = 100;
-    public static float LEARNING_RATE = 1E-4f;
+    public static float LEARNING_RATE = 1E-3f;
     //public static float LEARNING_RATE = 0.001f;
     public static int NUMBER_OF_CLASSES = 10;
     public static int IMG_WIDTH = 28;
@@ -73,7 +73,7 @@ public class TestMnist {
         SNN model = new SNN("Model_1", new Random(123))
                 .addInputLayer(IMG_WIDTH, IMG_HEIGHT, NUM_FILTERS, PATCH_SIZE, STRIDE)
                 .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
-                .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
+                //.addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
                 //.addHiddenLayer(ActivationType.sigmoid, PATCH_SIZE, STRIDE)
                 .addOutputLayer(ActivationType.softmax, NUMBER_OF_CLASSES);
         model.compile();
@@ -99,7 +99,7 @@ public class TestMnist {
         System.out.println("final train_acc = " + final_train_acc+"  final test_acc = "+final_test_acc);
         int x = 3;
         
-        float[][] weights=model.getLayer(1).filters[0].getWeightsIn();
+//        float[][] weights=model.getLayer(1).filters[0].getWeightsIn();
 //        CMatrix cm = CMatrix.getInstance(weights).map(0, 255).imshow().imresize(512, 512).imshow();
 //        float[][] out=model.getLayer(1).filters[0].toArray2D();
 //        CMatrix cm2 = CMatrix.getInstance(out).map(0, 255).imshow().imresize(512, 512).imshow();

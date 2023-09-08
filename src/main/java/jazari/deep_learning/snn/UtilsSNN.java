@@ -91,8 +91,8 @@ public class UtilsSNN {
     }
 
     private static float relu(float x) {
-//        if (x>5) {
-//            return 5;
+//        if (x>10) {
+//            return 10;
 //        }
         float ret = Math.max(0, x);
         return ret;

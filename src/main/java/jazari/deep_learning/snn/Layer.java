@@ -192,4 +192,12 @@ public class Layer {
         }
     }
 
+    public void addNoise(float val) {
+        if (layerType!=LayerType.input) {
+            for (Filter filter : filters) {
+                filter.addNoise(val);
+            }
+        }
+    }
+
 }
