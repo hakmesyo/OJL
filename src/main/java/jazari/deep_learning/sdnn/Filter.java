@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package jazari.deep_learning.snn;
+package jazari.deep_learning.sdnn;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import jazari.matrix.CMatrix;
 
 /**
  *

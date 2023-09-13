@@ -3,14 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package jazari.deep_learning.snn;
+package jazari.deep_learning.sdnn;
 
-import com.google.gson.Gson;
-import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import jazari.factory.FactoryUtils;
 import jazari.matrix.CMatrix;
@@ -19,10 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import jazari.factory.FactoryNormalization;
-import jazari.image_processing.ImageProcess;
 
 /**
  *

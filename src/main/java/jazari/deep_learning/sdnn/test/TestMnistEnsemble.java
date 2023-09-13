@@ -2,14 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package jazari.deep_learning.snn.test;
+package jazari.deep_learning.sdnn.test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import jazari.deep_learning.snn.ActivationType;
-import jazari.deep_learning.snn.SNN;
-import jazari.deep_learning.snn.UtilsSNN;
+import jazari.deep_learning.sdnn.ActivationType;
+import jazari.deep_learning.sdnn.SNN;
+import jazari.deep_learning.sdnn.UtilsSNN;
 import jazari.factory.FactoryDataSetLoader;
 import jazari.factory.FactoryUtils;
 import jazari.matrix.CMatrix;
@@ -47,8 +47,8 @@ public class TestMnistEnsemble {
     public static String path_model = "D:\\ai\\djl\\mnist\\saved_model";
 
     public static void main(String[] args) {
-//        test_single_models();
-        test_znz_models();
+        test_single_models();
+        //test_znz_models();
     }
 
     private static void saveModels() {

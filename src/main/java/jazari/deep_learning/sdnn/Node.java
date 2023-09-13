@@ -2,11 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Record.java to edit this template
  */
-package jazari.deep_learning.snn;
+package jazari.deep_learning.sdnn;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import jazari.factory.FactoryNormalization;
 import jazari.factory.FactoryUtils;
 
 /**
