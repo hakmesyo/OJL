@@ -4,11 +4,13 @@
  */
 package jazari.deep_learning.snn;
 
+import java.io.Serializable;
+
 /**
  *
  * @author cezerilab
  */
-public class Layer {
+public class Layer  implements Serializable{
 
     //All layers is a 2D structure by default. It holds one or more filters and each filter contains 2D Nodes
     //MLP differs form SNN in that in MLP each hidden neuron (node) connects to all neurons from previous layer
@@ -17,8 +19,9 @@ public class Layer {
     int nrows;
     int ncols;
     LayerType layerType;
-    Filter[] filters;
+    public Filter[] filters;
     int nFilter;
+    int nChannel;
     int patchSize;
     int stride;
     ActivationType activationType;
@@ -43,6 +46,7 @@ public class Layer {
         this.nClasses=model.NUMBER_OF_CLASSES;
         filters = new Filter[model.nFilters];
         nFilter = filters.length;
+        nChannel=model.nChannels;
         if (layerIndex > 0) {
             prevLayer = model.layers.get(layerIndex - 1);
         }
@@ -156,13 +160,13 @@ public class Layer {
 //        return ret;
 //    }
 
-    void feedInputData(float[][][] input) {
+    public void feedInputData(float[][][] input) {
         for (int k = 0; k < nFilter; k++) {
             Filter filter=filters[k];
             Node[][] node=filter.nodes;
             for (int i = 0; i < filter.nrows; i++) {
                 for (int j = 0; j < filter.ncols; j++) {
-                    node[i][j].dataOut=input[k][i][j];
+                    node[i][j].dataOut=input[0][i][j];
                 }
             }
         }

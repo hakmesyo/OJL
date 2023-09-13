@@ -102,7 +102,7 @@ public class FactoryNormalization {
         float mean = FactoryUtils.getMean(v);
         float std = FactoryStatistic.getStandardDeviation(v);
         for (int i = 0; i < v.length; i++) {
-            ret[i] = FactoryUtils.formatFloat((float)(0.5f * (Math.tanh(0.01f * ((v[i] - mean) / std)) + 1.0f)));
+            ret[i] = FactoryUtils.formatFloat((float) (0.5f * (Math.tanh(0.01f * ((v[i] - mean) / std)) + 1.0f)));
         }
         return ret;
     }
@@ -119,7 +119,7 @@ public class FactoryNormalization {
     public static float[] normalizeSigmoidal(float[] v) {
         float[] ret = FactoryMatrix.clone(v);
         for (int i = 0; i < v.length; i++) {
-            ret[i] = FactoryUtils.formatFloat((float)(1.0f / (1 + Math.exp(-v[i]))));
+            ret[i] = FactoryUtils.formatFloat((float) (1.0f / (1 + Math.exp(-v[i]))));
         }
         return ret;
     }
@@ -132,7 +132,7 @@ public class FactoryNormalization {
         ret = FactoryUtils.transpose(ret);
         return ret;
     }
-    
+
     public static float[][] normalizeMax(float[][] p) {
         float[][] ret = FactoryUtils.transpose(FactoryMatrix.clone(p));
         for (int i = 0; i < ret.length; i++) {
@@ -141,7 +141,7 @@ public class FactoryNormalization {
         ret = FactoryUtils.transpose(ret);
         return ret;
     }
-    
+
 //    public static float[][] normalizeMinMax(float[][] p) {
 //        float[][] ret = FactoryUtils.transpose(FactoryMatrix.clone(p));
 //        for (int i = 0; i < ret.length; i++) {
@@ -150,7 +150,6 @@ public class FactoryNormalization {
 //        ret = FactoryUtils.transpose(ret);
 //        return ret;
 //    }
-
     public static int[] normalizeMinMax(int[] p) {
         int min = FactoryUtils.getMinimum(p);
         int max = FactoryUtils.getMaximum(p);
@@ -167,12 +166,18 @@ public class FactoryNormalization {
         float min = FactoryUtils.getMinimum(v);
         float max = FactoryUtils.getMaximum(v);
         float delta = (max - min);
-        for (int i = 0; i < v.length; i++) {
-            ret[i] = FactoryUtils.formatFloat((v[i] - min) / delta);
+        if (delta == 0) {
+            for (int i = 0; i < v.length; i++) {
+                ret[i] = 0;
+            }
+        } else {
+            for (int i = 0; i < v.length; i++) {
+                ret[i] = FactoryUtils.formatFloat((v[i] - min) / delta);
+            }
         }
         return ret;
     }
-    
+
     public static float[] normalizeMax(float[] v) {
         float[] ret = FactoryMatrix.clone(v);
         float min = 0;
@@ -183,7 +188,7 @@ public class FactoryNormalization {
         }
         return ret;
     }
-    
+
 //    public static float[] normalizeMinMax(float[] v) {
 //        float[] ret = FactoryMatrix.clone(v);
 //        float min = FactoryUtils.getMinimum(v);
@@ -194,7 +199,6 @@ public class FactoryNormalization {
 //        }
 //        return ret;
 //    }
-
     public static float[] normalizeIntensity(float[] v, float dmin, float dmax) {
         float[] ret = FactoryMatrix.clone(v);
         float min = FactoryUtils.getMinimum(v);
@@ -208,16 +212,16 @@ public class FactoryNormalization {
         return ret;
     }
 
-    public static float[][] normalizeWithRange(float[][] d, float min, float max) {        
-        float[][] temp = d.clone();        
+    public static float[][] normalizeWithRange(float[][] d, float min, float max) {
+        float[][] temp = d.clone();
         float range = max - min;
-        float mn=FactoryUtils.getMinimum(d);
-        float mx=FactoryUtils.getMaximum(d);
-        float r=mx-mn;
-        int nr=d.length,nc=d[0].length;
+        float mn = FactoryUtils.getMinimum(d);
+        float mx = FactoryUtils.getMaximum(d);
+        float r = mx - mn;
+        int nr = d.length, nc = d[0].length;
         for (int i = 0; i < nr; i++) {
             for (int j = 0; j < nc; j++) {
-                temp[i][j] = min+range*((temp[i][j] - mn) / r);
+                temp[i][j] = min + range * ((temp[i][j] - mn) / r);
             }
         }
 
@@ -232,14 +236,15 @@ public class FactoryNormalization {
 //        }
         return temp;
     }
-    public static float[][] normalizeWithRange_sorunlu(float[][] param, float min, float max) {        
+
+    public static float[][] normalizeWithRange_sorunlu(float[][] param, float min, float max) {
         float[][] temp = param.clone();
-        float[][] temp2=normalizeMinMax(param.clone());
+        float[][] temp2 = normalizeMinMax(param.clone());
         float range = max - min;
         for (int i = 0; i < param.length; i++) {
             for (int j = 0; j < param[0].length; j++) {
-                float d=temp2[i][j];
-                float tmp = d*range+min;
+                float d = temp2[i][j];
+                float tmp = d * range + min;
                 temp[i][j] = tmp;
             }
         }

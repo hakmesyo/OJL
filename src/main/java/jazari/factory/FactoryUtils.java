@@ -164,27 +164,55 @@ public final class FactoryUtils {
      * @throws java.io.IOException
      * @throws java.lang.ClassNotFoundException
      */
-    public static Object deserialize(String fileName) throws IOException,
-            ClassNotFoundException {
-        FileInputStream fis = new FileInputStream(fileName);
-        BufferedInputStream bis = new BufferedInputStream(fis);
-        Object obj;
-        try (ObjectInputStream ois = new ObjectInputStream(bis)) {
-            obj = ois.readObject();
+    public static Object deserialize(String fileName) {
+        FileInputStream fis = null;
+        Object obj = null;
+        try {
+            fis = new FileInputStream(fileName);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            try (ObjectInputStream ois = new ObjectInputStream(bis)) {
+                obj = ois.readObject();
+            } catch (IOException ex) {
+                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         return obj;
     }
 
     /**
      * serialize the given object and save it to given file
+     * @param obj
+     * @param fileName
      */
-    public static void serialize(Object obj, String fileName)
-            throws IOException {
-        FileOutputStream fos = new FileOutputStream(fileName);
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(obj);
-        oos.close();
+    public static void serialize(Object obj, String fileName){
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(fileName);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(obj);
+            oos.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException ex) {
+                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
 //    private static String curr_file;
@@ -400,10 +428,13 @@ public final class FactoryUtils {
 
     public static void writeToFile(String path, List<String> rows) {
         String row = "";
+        StringBuilder sb = new StringBuilder();
         for (String row1 : rows) {
-            row += row1 + "\n";
+            sb.append(row1 + "\n");
+            //row += row1 + "\n";
         }
-        row = row.substring(0, row.length() - 1);
+        //row = row.substring(0, row.length() - 1);
+        row = sb.toString();
         Writer out = null;
         try {
             try {
@@ -6854,16 +6885,16 @@ public final class FactoryUtils {
     }
 
     public static float[][][] toARGB(float[][][] f) {
-        int nr=f[0].length;
-        int nc=f[0][0].length;
-        float[][][] ret=new float[f.length+1][nr][nc];
+        int nr = f[0].length;
+        int nc = f[0][0].length;
+        float[][][] ret = new float[f.length + 1][nr][nc];
         for (int i = 0; i < nr; i++) {
             for (int j = 0; j < nc; j++) {
-                ret[0][i][j]=255;
+                ret[0][i][j] = 255;
             }
         }
         for (int i = 1; i < 4; i++) {
-            ret[i]=f[i-1];
+            ret[i] = f[i - 1];
         }
         return ret;
     }

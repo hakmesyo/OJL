@@ -62,7 +62,8 @@ public final class TrainMnist {
                 new Mlp(
                         Mnist.IMAGE_HEIGHT * Mnist.IMAGE_WIDTH,
                         Mnist.NUM_CLASSES,
-                        new int[] {49});
+                        new int[] {10});
+                        //new int[] {49});
                         //new int[] {128, 64});
 
         try (Model model = Model.newInstance("mlp")) {
@@ -89,7 +90,8 @@ public final class TrainMnist {
                 trainer.initialize(inputShape);
 
                 long t1=FactoryUtils.tic();
-                EasyTrain.fit(trainer, arguments.getEpoch(), trainingSet, validateSet);
+                EasyTrain.fit(trainer, 10, trainingSet, validateSet);
+                //EasyTrain.fit(trainer, arguments.getEpoch(), trainingSet, validateSet);
                 t1=FactoryUtils.toc("total time=",t1);
                 return trainer.getTrainingResult();
             }

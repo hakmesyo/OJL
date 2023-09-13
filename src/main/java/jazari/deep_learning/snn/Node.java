@@ -4,6 +4,7 @@
  */
 package jazari.deep_learning.snn;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import jazari.factory.FactoryNormalization;
 import jazari.factory.FactoryUtils;
@@ -12,7 +13,7 @@ import jazari.factory.FactoryUtils;
  *
  * @author cezerilab
  */
-public class Node {
+public class Node  implements Serializable{
 
     int row;
     int col;
@@ -52,8 +53,8 @@ public class Node {
                 weightIn = setRandomWeights();
                 biasWeight = UtilsSNN.getRandomWeight(layer.model.rnd);
             } else {
-                weightIn = setConstantWeights(1f);
-                biasWeight = 1f;
+                weightIn = setConstantWeights(0.05f);
+                biasWeight = 0.05f;
 //                weightIn = setRandomWeights();
 //                biasWeight = UtilsSNN.getRandomWeight(layer.model.rnd);
             }
@@ -71,6 +72,9 @@ public class Node {
             ret = UtilsSNN.applyActivation(ret, filter.activationType);
         }
         this.dataOut = ret;
+        if (layer.model.isDebug) {
+            System.out.println(this);
+        }
         return ret;
     }
 
@@ -235,8 +239,15 @@ public class Node {
             }
             biasWeightTemp = biasWeight - layer.model.LEARNING_RATE * gradient;
         } else {
+//            System.out.println(this);
+//            if (layer.layerIndex==3 && row==0 && col==2) {
+//                System.out.println("burası");
+//            }
             gradient = 0;
             Node[] nn = this.nextNode;
+            if (nn[0]==null) {
+                return;
+            }
             int nr = nn.length;
             gradient = nn[0].gradient * nn[0].weightTempIn[filterIndex][row%patch_size][col%patch_size];
             float der = UtilsSNN.applyDerivativeFunction(layer.activationType, this.dataOut);

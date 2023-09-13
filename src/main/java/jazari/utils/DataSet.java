@@ -76,6 +76,16 @@ public class DataSet {
         return ret;
     }
 
+    public float[][] getSubsetYEnsemble(int fromIndex, int toIndex) {
+        int nr = toIndex-fromIndex;
+        float[][] ret = new float[nr][nClasses];
+        for (int i = fromIndex; i < toIndex; i++) {
+            int cl_index=data.get(i).classLabelIndex;
+            ret[i-fromIndex]=FactoryUtils.getOneHotEncoding(nClasses, cl_index);
+        }
+        return ret;
+    }
+
     public void shuffle(Random rnd) {
         Collections.shuffle(data,rnd);
     }

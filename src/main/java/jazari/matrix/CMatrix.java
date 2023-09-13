@@ -6644,23 +6644,13 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix serialize(String fileName) {
-        try {
-            FactoryUtils.serialize(this, fileName);
-        } catch (IOException ex) {
-            Logger.getLogger(CMatrix.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        FactoryUtils.serialize(this, fileName);
         return this;
     }
 
     public CMatrix deSerialize(String fileName) {
         CMatrix cm = CMatrix.getInstance();
-        try {
-            cm = (CMatrix) FactoryUtils.deserialize(fileName);
-        } catch (IOException ex) {
-            Logger.getLogger(CMatrix.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(CMatrix.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        cm = (CMatrix) FactoryUtils.deserialize(fileName);
         return cm;
     }
 

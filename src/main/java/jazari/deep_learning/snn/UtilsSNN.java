@@ -5,15 +5,20 @@
  */
 package jazari.deep_learning.snn;
 
-import com.google.gson.reflect.TypeToken;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jazari.factory.FactoryUtils;
 import jazari.image_processing.ImageProcess;
 
@@ -199,5 +204,32 @@ public class UtilsSNN {
         return ret;
     }
 
+    public static void saveModel(String path, SNN model) {
+        FactoryUtils.serialize(model, path);
+//        FileOutputStream file = null;
+//        try {
+//            file = new FileOutputStream(path);
+//            ObjectOutputStream out = new ObjectOutputStream(file);
+//            // Method for serialization of object
+//            out.writeObject(model);
+//            out.close();
+//            file.close();
+//            System.out.println("Object has been serialized");
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(SNN.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            Logger.getLogger(SNN.class.getName()).log(Level.SEVERE, null, ex);
+//        } finally {
+//            try {
+//                file.close();
+//            } catch (IOException ex) {
+//                Logger.getLogger(SNN.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
+    }
+    
+    public static SNN loadModel(String path) {
+        return (SNN)FactoryUtils.deserialize(path);
+    }
 
 }

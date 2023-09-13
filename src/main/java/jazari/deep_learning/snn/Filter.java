@@ -5,6 +5,7 @@
  */
 package jazari.deep_learning.snn;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import jazari.matrix.CMatrix;
 
@@ -12,7 +13,7 @@ import jazari.matrix.CMatrix;
  *
  * @author DELL LAB
  */
-public class Filter {
+public class Filter  implements Serializable{
 
     int filterIndex;
     Layer layer;

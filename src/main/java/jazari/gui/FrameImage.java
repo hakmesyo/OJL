@@ -55,10 +55,14 @@ public class FrameImage extends javax.swing.JFrame {
      *
      * @param cm : image to be drawn
      * @param imagePath : image path
+     * @param caption
      */
     public FrameImage(CMatrix cm, String imagePath, String caption) {
         initComponents();
         imageFolderPath = FactoryUtils.getFolderPath(imagePath);
+        if (caption!=null && !caption.isEmpty()) {
+            setTitle(caption);
+        }
         loadImage(cm, imagePath, caption);
         eventListener();
         //isPolygon.setSelected(true);
@@ -504,7 +508,10 @@ public class FrameImage extends javax.swing.JFrame {
 
     private void loadImage(CMatrix cm, String imagePath, String caption) {
         String[] s = FactoryUtils.splitPath(imagePath);
-        this.setTitle(s[s.length - 1]);
+        if (imagePath!=null && !imagePath.isEmpty()) {
+            this.setTitle(s[s.length - 1]);
+        }
+        
 
         this.img = cm.getImage();
         this.imagePath = imagePath;
