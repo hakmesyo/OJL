@@ -411,6 +411,33 @@ public final class FactoryUtils {
         } catch (IOException e) {
         }
     }
+    public static void writeOnFile(String file_name, List<String> rows) {
+        String row = "";
+        StringBuilder sb = new StringBuilder();
+        for (String row1 : rows) {
+            sb.append(row1 + "\n");
+        }
+        row = sb.toString();
+
+        File outFile = new File(file_name);
+        if (!outFile.exists()) {
+            try {
+                if (!outFile.createNewFile()) {
+                    System.out.println(file_name + " file was generated");
+                    return;
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        FileWriter out;
+        try {
+            out = new FileWriter(outFile, true);
+            out.write(row);
+            out.close();
+        } catch (IOException e) {
+        }
+    }
 
     public static void writeOnFile(String row) {
         File file = getFileFromChooserSave(getDefaultDirectory());
@@ -431,9 +458,7 @@ public final class FactoryUtils {
         StringBuilder sb = new StringBuilder();
         for (String row1 : rows) {
             sb.append(row1 + "\n");
-            //row += row1 + "\n";
         }
-        //row = row.substring(0, row.length() - 1);
         row = sb.toString();
         Writer out = null;
         try {
@@ -893,6 +918,16 @@ public final class FactoryUtils {
             }
         } catch (FileNotFoundException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+    
+    public static List<String> readFileAsList(String fileName){
+        List<String> ret=new ArrayList<>();                
+        String[] s=readFile(fileName).split("\n");
+        int n=s.length;
+        for (int i = 0; i < n; i++) {
+            ret.add(s[i]);
         }
         return ret;
     }
@@ -7364,9 +7399,9 @@ public final class FactoryUtils {
             FactoryUtils.makeDirectory(base_path + "/valid/" + folder.getName());
             FactoryUtils.makeDirectory(base_path + "/test/" + folder.getName());
             for (int i = 0; i < n; i++) {
-                if (i <= (int) (n * r_train)) {
+                if (i < (int) (n * r_train)) {
                     FactoryUtils.copyFile(lst.get(i), new File(base_path + "/train/" + folder.getName() + "/" + lst.get(i).getName()));
-                } else if (i > (int) (n * r_train) && i <= (int) (n * (r_train + r_valid))) {
+                } else if (i >= (int) (n * r_train) && i < (int) (n * (r_train + r_valid))) {
                     FactoryUtils.copyFile(lst.get(i), new File(base_path + "/valid/" + folder.getName() + "/" + lst.get(i).getName()));
                 } else {
                     FactoryUtils.copyFile(lst.get(i), new File(base_path + "/test/" + folder.getName() + "/" + lst.get(i).getName()));

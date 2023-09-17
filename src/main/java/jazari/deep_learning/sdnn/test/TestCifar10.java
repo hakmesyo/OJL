@@ -4,92 +4,116 @@
  */
 package jazari.deep_learning.sdnn.test;
 
+import java.util.List;
 import java.util.Random;
 import jazari.deep_learning.sdnn.ActivationType;
+import jazari.deep_learning.sdnn.DataSetSDNN;
 import jazari.deep_learning.sdnn.SNN;
-import jazari.factory.FactoryDataSetLoader;
-import jazari.factory.FactoryUtils;
-import jazari.utils.DataSet;
+import jazari.deep_learning.sdnn.UtilsSNN;
 
 /**
  *
  * @author cezerilab
  */
 public class TestCifar10 {
-    public static int EPOCHS = 20;
-    public static int BATCH_SIZE = 100;
-    public static float LEARNING_RATE = 1E-2f;
-    public static int NUMBER_OF_CLASSES = 10;
-    public static int IMG_WIDTH = 32;
-    public static int IMG_HEIGHT = 32;
-    public static int NUM_CHANNELS = 3;
-    public static int NUM_FILTERS = 1;
-    public static int PATCH_SIZE = 2;
-    public static int STRIDE = PATCH_SIZE;
+    private static final int EPOCHS = 10;
+    private static final int BATCH_SIZE = 1;
+    private static final float LEARNING_RATE = 1E-3f;
+    private static final int NUMBER_OF_CLASSES = 10;
+    private static final int IMG_WIDTH = 32;
+    private static final int IMG_HEIGHT = 32;
+    private static final int NUM_CHANNELS = 1;
+    private static final int NUM_FILTERS = 1;
+    private static final int PATCH_SIZE = 2;
+    private static final int STRIDE = PATCH_SIZE;
+    private static final String PATH = "D:\\ai\\djl\\cifar10\\png";
+    private static final String PATH_TRAIN = "D:\\ai\\djl\\cifar10\\png\\train";
+    private static final String PATH_TEST = "D:\\ai\\djl\\cifar10\\png\\test";
+    private static final String PATH_VALID = "D:\\ai\\djl\\cifar10\\png\\test";
+    private static final String PATH_MODEL = "D:\\ai\\djl\\cifar10\\png";
 
     public static void main(String[] args) {
-        String path_train = "C:\\ai\\djl\\cifar10\\csv\\train.csv";
-        String path_test = "C:\\ai\\djl\\cifar10\\csv\\test.csv";
+        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TRAIN,1,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_VALID,1,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TEST,1,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        
+//        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImage(PATH_TRAIN,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+//        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImage(PATH_VALID,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+//        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImage(PATH_TEST,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
 
-        //FactoryUtils.reduceDataSet(path_train_whole,path_train,0.1f);
-        long t1 = FactoryUtils.tic();
+//        trainAndSaveModel(ds_train, ds_valid);
+//        testModel(ds_test);
+        visualizeModel(ds_test);
+//        visualizeLearningMetrics();
+        int a = 1;
 
-//        LinkedHashMap<String, List<String>> tr = UtilsSNN.loadData(path_train);
-//        List<String> X_tr = tr.get("X");
-//        List<String> y_tr = tr.get("Y");
-//        float[][][][] X_train = UtilsSNN.loadData(X_tr, true,1,IMG_WIDTH, IMG_WIDTH);
-//        float[][] y_train=UtilsSNN.to2dFloat(y_tr);
-//        LinkedHashMap<String, List<String>> tst = UtilsSNN.loadData(path_test);
-//        List<String> X_ts = tst.get("X");
-//        List<String> y_ts = tst.get("Y");
-//        float[][][][] X_test = UtilsSNN.loadData(X_ts, true, 1,IMG_WIDTH, IMG_WIDTH);
-//        float[][] y_test=UtilsSNN.to2dFloat(y_ts);
-        //DataSet ds_train=FactoryDataSetLoader.loadDataSetFromImage(path_train, "gray");
-        DataSet ds_train = FactoryDataSetLoader.loadDataSetFromCSV(path_train, NUM_CHANNELS,NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT,-1);
-        ds_train = FactoryDataSetLoader.normalizeDataSetMinMax(ds_train, 0, 1);
-        ds_train.shuffle(new Random(123));
-        DataSet ds_test = FactoryDataSetLoader.loadDataSetFromCSV(path_test, NUM_CHANNELS,NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT,-1);
-        ds_test = FactoryDataSetLoader.normalizeDataSetMinMax(ds_test, 0, 1);
-        ds_test.shuffle(new Random(123));
-        //float[][][][] X_train=ds_train.getTrainX();
-        //float[][] y_train=ds_train.getTrainY();
-        int sample_size = 50000;
-        float[][][][] X_train = ds_train.getSubsetX(0, sample_size);
-        float[][] y_train = ds_train.getSubsetY(0, sample_size);
-        float[][][][] X_test = ds_test.getSubsetX(0, 10000);
-        float[][] y_test = ds_test.getSubsetY(0, 10000);
+    }
 
-        t1 = FactoryUtils.toc("data loading elapsed time:", t1);
+    private static void trainAndSaveModel(DataSetSDNN ds_train, DataSetSDNN ds_valid) {
 
-        SNN model = new SNN("Model_1", new Random(123),false)
+        SNN model = new SNN("Model_" + 0, new Random(123), false)
                 .addInputLayer(IMG_WIDTH, IMG_HEIGHT, NUM_CHANNELS, NUM_FILTERS, PATCH_SIZE, STRIDE)
                 .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
                 .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
-                //.addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
+                //                .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
+                //                .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
                 .addOutputLayer(ActivationType.softmax, NUMBER_OF_CLASSES);
         model.compile();
         model.summary();
+
+        //start transfer learning
+        //model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
+
+        float train_acc = model.test(ds_train, false);
+        float valid_acc = model.test(ds_valid, false);
+        System.out.println("initial train_acc = " + train_acc + " initial validation_acc = " + valid_acc);
         
-        float train_acc=model.test(X_train, y_train,false);
-        float test_acc=model.test(X_test, y_test,false);
-        System.out.println("initial train_acc = " + train_acc+"  initial test_acc = "+test_acc);
+        model.fit(ds_train,ds_valid, LEARNING_RATE, EPOCHS, BATCH_SIZE,false);
 
-        //model.dump();
-//        Layer output=model.getOutputLayer();
-//        float[] ret=output.forwardPass();
-//        System.out.println("ret = " + Arrays.toString(ret));
-//        ret=UtilsSNN.softmax(ret);
-//        System.out.println("ret = " + Arrays.toString(ret));
-//        float value1=output.filters[0].nodes[0][0].getOutput();
-//        float value2=output.filters[0].nodes[1][0].getOutput();
-//        float value3=output.filters[0].nodes[2][0].getOutput();
-        model.fit(X_train, y_train, LEARNING_RATE, EPOCHS, BATCH_SIZE);
-
-        float final_train_acc=model.test(X_train, y_train,false);
-        float final_test_acc=model.test(X_test, y_test,false);
-        System.out.println("final train_acc = " + final_train_acc+"  final test_acc = "+final_test_acc);
-        int x = 3;
+        long t = System.currentTimeMillis();
+        float final_train_acc = model.test(ds_train, false);
+        float final_valid_acc = model.test(ds_valid, false);
+        System.out.println("-------------------------------------------------------------------------------------");
+        System.out.println("final train_acc = " + final_train_acc + ", final validation_acc = " + final_valid_acc + ", time = " + (System.currentTimeMillis() - t) + " ms");
+        model.saveModel(PATH_MODEL + "/snn_" + 0 + ".model");
+        model.saveTrainingMetrics(PATH_MODEL + "/snn_0.metrics");
     }
 
-    
+    private static void testModel(DataSetSDNN ds) {
+        SNN model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
+        model.summary();
+
+        for (int i = 0; i < 1; i++) {
+            long t1 = System.currentTimeMillis();
+            float test_acc = model.test(ds, false);
+            long t2 = System.currentTimeMillis() - t1;
+            float time = (1.0f * t2 / ds.size);
+            float fps = 1000.0f / time;
+            System.out.println("\n--------------------------------------------------\n"
+                    + "test_acc = " + test_acc + ", time = " + time + " ms, FPS = " + fps);
+        }
+    }
+
+    private static void visualizeModel(DataSetSDNN ds) {
+        SNN model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
+        model.summary();
+
+        model.feedInputLayerData(ds.X[1]);
+        model.forwardPass();
+        model.getLayer(0).visualizeOutputs();
+        model.getLayer(1).visualizeWeights();
+        model.getLayer(1).visualizeOutputs();
+        model.getLayer(2).visualizeWeights();
+        model.getLayer(2).visualizeOutputs();
+        model.getLayer(3).visualizeWeights();
+        model.getLayer(3).visualizeOutputs();
+    }
+
+    private static void visualizeLearningMetrics() {
+        SNN model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
+        model.summary();
+        
+        List<String> lst=model.loadTrainingMetrics(PATH+"/snn_0.metrics");
+        model.plotLearningMetrics(lst);
+    }
 }

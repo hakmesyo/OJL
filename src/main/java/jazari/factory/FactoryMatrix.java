@@ -3429,6 +3429,15 @@ public final class FactoryMatrix implements Serializable {
         }
         return ret;
     }
+    
+    public static float[] range1D(float from_inclusive, float to_exclusive, float step) {
+        int delta = (int) ((to_exclusive - from_inclusive) / step);
+        float[] ret = new float[delta];
+        for (int i = 0; i < delta; i++) {
+            ret[i] = from_inclusive + i * step;
+        }
+        return ret;
+    }
 
     public static String[] toStringArray(char[] lst) {
         String[] st = new String[lst.length];

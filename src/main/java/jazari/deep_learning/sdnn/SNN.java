@@ -37,6 +37,7 @@ public class SNN implements Serializable {
     float[][][] input;
     private float JITTER_VALUE = 0.01f;
     public boolean isDebug = false;
+    List<String> lstMetrics = new ArrayList<>();
 
     public SNN(String modelName, Random rnd, boolean isDebug) {
         this.rnd = rnd;
@@ -93,7 +94,7 @@ public class SNN implements Serializable {
         return df.format(value);
     }
 
-    private int getTotalParams() {
+    public int getTotalParams() {
         int ret = 0;
         for (int i = 0; i < layers.size(); i++) {
             ret += getLayerParams(layers.get(i));
@@ -101,17 +102,17 @@ public class SNN implements Serializable {
         return ret;
     }
 
-    private int getTrainableParams() {
+    public int getTrainableParams() {
         int ret = getTotalParams();
         return ret;
     }
 
-    private int getNonTrainableParams() {
+    public int getNonTrainableParams() {
         int ret = 0;
         return ret;
     }
 
-    private int getLayerParams(Layer current) {
+    public int getLayerParams(Layer current) {
         int ret = current.getTotalParams();
         return ret;
     }
@@ -180,83 +181,95 @@ public class SNN implements Serializable {
         return layers.get(layers.size() - 2);
     }
 
-    public SNN fit(float[][][][] X_train, float[][] y_train, float LEARNING_RATE, int EPOCHS, int BATCH_SIZE) {
-        long t1 = FactoryUtils.tic();
+    public SNN fit(DataSetSDNN ds_train, DataSetSDNN ds_valid, float LEARNING_RATE, int EPOCHS, int BATCH_SIZE, boolean isLossOnly) {
         this.BATCH_SIZE = BATCH_SIZE;
         this.EPOCHS = EPOCHS;
         this.LEARNING_RATE = LEARNING_RATE;
-        int number_of_batch = X_train.length / BATCH_SIZE;
-        System.out.println("\ninitial loss: " + calculateError(X_train, y_train) / y_train.length);
-        t1 = FactoryUtils.toc(t1);
+        int number_of_batch = ds_train.X.length / BATCH_SIZE;
+        System.out.println("\ninitial loss: " + calculateError(ds_train) / ds_train.size);
         System.out.println("");
         float e;
-
         float[] predicted;
-        CMatrix cm1 = CMatrix.getInstance();
-        CMatrix cm2 = CMatrix.getInstance();
-        int incr = 0;
-        long t = System.currentTimeMillis();
-//        float[][] weights = getLayer(1).filters[0].weights(0);
-//        cm1.setArray(weights).println().map(0, 255).imresize(512, 512).imshowRefresh();
         System.out.println("------------------------------------------------------------------------------------");
         for (int i = 0; i < EPOCHS; i++) {
-            //LEARNING_RATE=(i%(EPOCHS/4)==0)?LEARNING_RATE*0.5f:LEARNING_RATE;
-            //t1 = FactoryUtils.toc(i + ".epoch elapsed time lr=" + LEARNING_RATE + " :", t1);
             float err = 0;
             int k = 0;
-            t = System.currentTimeMillis();
+            long t = System.currentTimeMillis();
             for (int j = 0; j < number_of_batch; j++) {
                 for (int l = 0; l < BATCH_SIZE; l++) {
-                    feedInputLayerData(X_train[k]);
+                    feedInputLayerData(ds_train.X[k]);
                     predicted = forwardPass();
-                    e = getCrossEntropyLoss(y_train[k], predicted);
+                    e = getCrossEntropyLoss(ds_train.y[k], predicted);
                     err += e;
-                    backwardPass(y_train[k], predicted);
+                    backwardPass(ds_train.y[k], predicted);
                     k++;
                 }
-//                System.out.println((incr++) + ".güncellenen weightler");
-//                printWeights();
-//                System.out.println("");
             }
 
+            String str = "";
+            float acc_loss = err / ds_train.size;
             long dt = System.currentTimeMillis() - t;
-            float acc = test(X_train, y_train, false);
-            System.out.println((i + 1) + ".epoch, loss = " + err / y_train.length + ", lr = " + LEARNING_RATE + ", acc = " + acc + ", time = " + dt + " ms");
 
-            //cm1.setArray(getLayer(1).filters[0].weights(0)).println().map(0, 255).imresize(512, 512).imshowRefresh();
-            //cm1.setArray(getLayer(1).filters[0].output()).println().map(0, 255).imresize(512, 512).imshowRefresh();
-            if (i % 10 == 0) {
-                //LEARNING_RATE*=0.1;
-//                float acc = test(X_train, y_train, false);
-//                System.out.println("**************" + i + ".epoch accuracy rate = " + acc);
-                //float[][] weights=getLayer(1).filters[0].getWeightsIn();
-                //cm.setArray(weights).println().map(0, 255).imresize(128,128).imshow();
-                //JITTER_VALUE*=0.5;
-                //addNoise(JITTER_VALUE);
-            }
-            //cm1.setArray(getLayer(2).filters[0].output()).println().map(0, 255).imresize(512, 512).imshow();
-            if (i % 5 == 0) {
-                //                cm1.setArray(getLayer(1).filters[0].output()).println().map(0, 255).imresize(512, 512).imshow();
-                //                   cm1.setArray(getLayer(2).filters[0].weights(0)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(1)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(2)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(3)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(4)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(5)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(6)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(7)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(8)).map(0, 255).imresize(512, 512).imshow()
-                //                      .setArray(getLayer(2).filters[0].weights(9)).map(0, 255).imresize(512, 512).imshow()
-
-                ;
-                int qw = 3;
-//                float[][] output=getLayer(1).filters[0].output();
-//                cm2.setArray(output).map(0, 255).imresize(512,512).imshowRefresh();
-
-//                LEARNING_RATE*=0.1;
+            if (isLossOnly) {
+                str = (i + 1) + ".epoch, train loss = " + acc_loss +  ", time = " + dt + " ms" + ", lr = " + LEARNING_RATE;
+                System.out.println(str);
+                lstMetrics.add(str);
+            } else {
+                float train_acc = test(ds_train, false);
+                if (ds_valid!=null) {
+                    float valid_acc = test(ds_valid, false);
+                    float valid_loss = getValidationLoss(ds_valid);
+                    str = (i + 1) + ".epoch, train loss = " + acc_loss + ", train acc = " + train_acc + ", validation loss = " + valid_loss + ", validation acc = " + valid_acc + ", time = " + dt + " ms" + ", lr = " + LEARNING_RATE;
+                    System.out.println(str);
+                    lstMetrics.add(str);
+                } else {
+                    str = (i + 1) + ".epoch, train loss = " + acc_loss + ", train acc = " + train_acc + ", time = " + dt + " ms" + ", lr = " + LEARNING_RATE;
+                    System.out.println(str);
+                    lstMetrics.add(str);
+                }
             }
         }
         return this;
+    }
+
+    public void saveTrainingMetrics(String filePath) {
+        if (!lstMetrics.isEmpty()) {
+            FactoryUtils.writeOnFile(filePath, lstMetrics);
+        }
+    }
+
+    public List<String> loadTrainingMetrics(String filePath) {
+        if (FactoryUtils.isFileExist(filePath)) {
+            return FactoryUtils.readFileAsList(filePath);
+        } else {
+            System.err.println("no file at path error");
+            return null;
+        }
+    }
+
+    public void plotLearningMetrics(List<String> lst) {
+        for (String st : lst) {
+            String[] s = st.split(",");
+
+        }
+    }
+
+    public void plotConfusionMatrix() {
+
+    }
+
+    public float getValidationLoss(DataSetSDNN ds) {
+        int n = ds.size;
+        float[] predicted = null;
+        float e = 0;
+        float err = 0;
+        for (int i = 0; i < n; i++) {
+            feedInputLayerData(ds.X[i]);
+            predicted = forwardPass();
+            e = getCrossEntropyLoss(ds.y[i], predicted);
+            err += e;
+        }
+        return err / n;
     }
 
     public void addNoise(float val) {
@@ -272,18 +285,14 @@ public class SNN implements Serializable {
 
     }
 
-    long t1 = FactoryUtils.tic();
-
-    private float[] forwardPass() {
+    public float[] forwardPass() {
         for (int i = 1; i < layers.size(); i++) {
             layers.get(i).forwardPass();
         }
         Layer outputLayer = getOutputLayer();
         float[] predicted = outputLayer.filters[0].toArray1D();
-        //predicted = FactoryNormalization.normalizeMinMax(predicted);
         predicted = UtilsSNN.softmax(predicted);
         outputLayer.setOutputLayerSoftMaxValue(predicted);
-        //t1 = FactoryUtils.toc("setOutputLayerSoftMaxValue cost:", t1);
         return predicted;
     }
 
@@ -295,31 +304,29 @@ public class SNN implements Serializable {
     //to calculate the derivative of cross entropy loss you can see at : https://deepnotes.io/softmax-crossentropy
     //çok iyi anlatım 8.5 Neural Networks: Backpropagation (UvA - Machine Learning 1 - 2020)  zaman olarak 23:20 de backpropagation anlatılıyor https://www.youtube.com/watch?v=Pz3yKyUYM7k&ab_channel=ErikBekkers
     //değişik ve çok harika süper bir anlatım : Backpropagation Algorithm | Neural Networks https://www.youtube.com/watch?v=sIX_9n-1UbM&ab_channel=FirstPrinciplesofComputerVision
-    private void backwardPass(float[] yActual, float[] yPredicted) {
+    public void backwardPass(float[] yActual, float[] yPredicted) {
         for (int i = layers.size() - 1; i >= 1; i--) {
             layers.get(i).backwardPass(yActual, yPredicted);
         }
         for (int i = layers.size() - 1; i >= 1; i--) {
             layers.get(i).updateWeights();
-            //layers.get(i).printWeights();
         }
     }
 
-
     //calculate cross-entropy loss Cross_Entropy= - Sum(y(i)*log(yy(i))
-    private float calculateError(float[][][][] X, float[][] y) {
+    public float calculateError(DataSetSDNN ds) {
         float ret = 0;
         //isDebug=true;
-        for (int i = 0; i < X.length; i++) {
-            this.input[0] = X[i][0];
+        for (int i = 0; i < ds.X.length; i++) {
+            this.input[0] = ds.X[i][0];
             float[] predicted = forwardPass();
-            float err = getCrossEntropyLoss(y[i], predicted);
+            float err = getCrossEntropyLoss(ds.y[i], predicted);
             ret += err;
         }
         return FactoryUtils.formatFloat(ret);
     }
 
-    private float[][] getArray(String s) {
+    public float[][] getArray(String s) {
         s = s.replace("[", "");
         s = s.replace("]", "");
         String[] str = s.split(",");
@@ -331,21 +338,15 @@ public class SNN implements Serializable {
     }
 
     //look at:https://medium.com/codex/mlps-applications-with-tweaks-in-its-structure-c9aa3f05578 
-    private float getCrossEntropyLoss(float[] trueY, float[] predictedY) {
+    public float getCrossEntropyLoss(float[] trueY, float[] predictedY) {
         float err = 0;
-        //float[] predictedY_1 = this.layers.get(layers.size() - 1).filters[0].toArray1D();
-        int n = 0;
-        for (int i = 0; i < trueY.length; i++) {
+        int n = trueY.length;
+        for (int i = 0; i < n; i++) {
             if (trueY[i] == 1) {
                 err = trueY[i] * (float) Math.log(predictedY[i] + 1E-55); //buradaki log ln demektir veya log e tabanına göre demektir
                 return -err;
             }
         }
-//        for (int i = 0; i < trueY.length; i++) {
-//            err += trueY[i] * Math.log(predictedY[i] + 1E-55); //buradaki log ln demektir veya log e tabanına göre demektir
-//        }
-//        err = -err;
-        //System.out.println("err = " + err);
         return err;
     }
 
@@ -353,29 +354,27 @@ public class SNN implements Serializable {
         input = f;
         Layer inputLayer = getInputLayer();
         inputLayer.feedInputData(input);
-        //CMatrix cm = CMatrix.getInstance(input[0]).map(0, 255).imshow().imresize(500,500).imshow();
-        //int a=1;
     }
 
-    public float test(float[][][][] X, float[][] y, boolean isDebug) {
-        int nSample = X.length;
+    public float test(DataSetSDNN ds, boolean isDebug) {
+        int nSample = ds.X.length;
         float cnt = 0;
         long t1 = FactoryUtils.tic();
         for (int i = 0; i < nSample; i++) {
-            feedInputLayerData(X[i]);
+            feedInputLayerData(ds.X[i]);
             float[] pr = forwardPass();
             if (isDebug) {
-                //CMatrix.getInstance().setArray(X[i][0]).println().map(0, 255).imresize(512, 512).imshow();
+//                CMatrix.getInstance().setArray(X[i][0]).println().map(0, 255).imresize(512, 512).imshow();
 //                CMatrix.getInstance().setArray(getLayer(2).filters[0].weights(0)).println().map(0, 255).imresize(512, 512).imshow();
-//                CMatrix.getInstance().setArray(getLayer(2).filters[0].output()).println().map(0, 255).imresize(512, 512).imshow();
+//                CMatrix.getInstance().setArray(getLayer(3).filters[0].output()).println().map(0, 255).imresize(512, 512).imshow();
             }
 
             int prIndex = FactoryUtils.getMaximumIndex(pr);
             //System.out.println("confidence:"+pr[prIndex]);
-            int drIndex = FactoryUtils.getMaximumIndex(y[i]);
+            int drIndex = FactoryUtils.getMaximumIndex(ds.y[i]);
             if (isDebug) {
                 System.out.println("index=" + prIndex + " predicted = " + Arrays.toString(pr));
-                System.out.println("index=" + drIndex + " desired = " + Arrays.toString(y[i]));
+                System.out.println("index=" + drIndex + " desired = " + Arrays.toString(ds.y[i]));
             }
             if (prIndex == drIndex) {
                 cnt++;

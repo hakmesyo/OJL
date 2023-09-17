@@ -4,25 +4,21 @@
  */
 package jazari.deep_learning.sdnn.test;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
 import jazari.deep_learning.sdnn.ActivationType;
 import jazari.deep_learning.sdnn.DataSetSDNN;
 import jazari.deep_learning.sdnn.SNN;
 import jazari.deep_learning.sdnn.UtilsSNN;
-import jazari.factory.FactoryDataSetLoader;
-import jazari.factory.FactoryUtils;
 
 /**
  *
  * @author cezerilab
  */
-public class TestPistachio {
-
+public class TestCatsDogs {
     private static final int EPOCHS = 10;
     private static final int BATCH_SIZE = 1;
-    private static final float LEARNING_RATE = 1E-3f;
+    private static final float LEARNING_RATE = 1E-4f;
     private static final int NUMBER_OF_CLASSES = 2;
     private static final int IMG_WIDTH = 224;
     private static final int IMG_HEIGHT = 224;
@@ -30,21 +26,25 @@ public class TestPistachio {
     private static final int NUM_FILTERS = 1;
     private static final int PATCH_SIZE = 2;
     private static final int STRIDE = PATCH_SIZE;
-    private static final String PATH = "D:\\ai\\djl\\pistachio_224_224";
-    private static final String PATH_TRAIN = "D:\\ai\\djl\\pistachio_224_224\\train";
-    private static final String PATH_TEST = "D:\\ai\\djl\\pistachio_224_224\\test";
-    private static final String PATH_VALID = "D:\\ai\\djl\\pistachio_224_224\\test";
-    private static final String PATH_MODEL = "D:\\ai\\djl\\pistachio_224_224";
+    private static final String PATH = "D:\\ai\\djl\\cats_dogs";
+    private static final String PATH_TRAIN = "D:\\ai\\djl\\cats_dogs\\train";
+    private static final String PATH_TEST = "D:\\ai\\djl\\cats_dogs\\test";
+    private static final String PATH_VALID = "D:\\ai\\djl\\cats_dogs\\valid";
+    private static final String PATH_MODEL = "D:\\ai\\djl\\cats_dogs";
 
     public static void main(String[] args) {
-        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImage(PATH_TRAIN,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImage(PATH_VALID,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImage(PATH_TEST,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TRAIN,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_VALID,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TEST,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        
+//        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImage(PATH_TRAIN,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+//        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImage(PATH_VALID,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+//        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImage(PATH_TEST,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
 
-        trainAndSaveModel(ds_train,ds_valid);
-        //testModel(X_test, y_test);
-        //visualizeModel(X_test);
-        //visualizeLearningMetrics();
+//        trainAndSaveModel(ds_train, ds_valid);
+//        testModel(ds_test);
+        visualizeModel(ds_test);
+//        visualizeLearningMetrics();
         int a = 1;
 
     }
@@ -62,12 +62,13 @@ public class TestPistachio {
         model.summary();
 
         //start transfer learning
-        //model = UtilsSNN.loadModel(path_model + "/snn_0.model");
+        model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
+
         float train_acc = model.test(ds_train, false);
         float valid_acc = model.test(ds_valid, false);
         System.out.println("initial train_acc = " + train_acc + " initial validation_acc = " + valid_acc);
-
-        model.fit(ds_train,ds_valid, LEARNING_RATE, EPOCHS, BATCH_SIZE, false);
+        
+        model.fit(ds_train,ds_valid, LEARNING_RATE, EPOCHS, BATCH_SIZE,false);
 
         long t = System.currentTimeMillis();
         float final_train_acc = model.test(ds_train, false);
@@ -97,7 +98,7 @@ public class TestPistachio {
         SNN model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
         model.summary();
 
-        model.feedInputLayerData(ds.X[1]);
+        model.feedInputLayerData(ds.X[0]);
         model.forwardPass();
         model.getLayer(0).visualizeOutputs();
         model.getLayer(1).visualizeWeights();
@@ -111,9 +112,8 @@ public class TestPistachio {
     private static void visualizeLearningMetrics() {
         SNN model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
         model.summary();
-
-        List<String> lst = model.loadTrainingMetrics(PATH + "/snn_0.metrics");
+        
+        List<String> lst=model.loadTrainingMetrics(PATH+"/snn_0.metrics");
         model.plotLearningMetrics(lst);
     }
-
 }

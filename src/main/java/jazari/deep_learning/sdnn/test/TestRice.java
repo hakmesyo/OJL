@@ -4,61 +4,48 @@
  */
 package jazari.deep_learning.sdnn.test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import jazari.deep_learning.sdnn.ActivationType;
 import jazari.deep_learning.sdnn.DataSetSDNN;
 import jazari.deep_learning.sdnn.SNN;
 import jazari.deep_learning.sdnn.UtilsSNN;
-import jazari.factory.FactoryDataSetLoader;
-import jazari.factory.FactoryUtils;
-import jazari.matrix.CMatrix;
-import jazari.utils.DataSet;
 
 /**
- * Bu yaklaşımın geleneksel CNN'den farkı CNN'de ki kernel içerisindeki
- * weightler yine tüm resmin pixelleri ile muhatap oluyordu. Ve bütün resimdeki
- * piksellerin kernel matrisindeki weightler üzerinde etkisi vardır. SNN de
- * durum farklıdır. Şöyle ki resimde hereket ettirilen bir window/kernel yoktur
- * dolayısıyla convolution işleminden bahsedilemez. İkinci fark; input imgedeki
- * spatial bir bölgedeki piksellerin her biri sadece bir alt katmandaki
- * (abstract) node ile bağlantısı bulunmaktadır. Bu SNN yi oldukça sparse veya
- * bağlantı adedi olarak oldukça seyrek bir yapıya dönüştürür. SNN'in diğer bir
- * üstünlüğü teorik olarak input imgenin kare olma zorunluluğunun
- * bulunmamasıdır.
  *
  * @author cezerilab
  */
-public class TestMnistEnsemble {
+public class TestRice {
 
     private static final int EPOCHS = 10;
     private static final int BATCH_SIZE = 1;
-    private static final float LEARNING_RATE = 1E-3f;
-    private static final int NUMBER_OF_CLASSES = 10;
-    private static final int IMG_WIDTH = 28;
-    private static final int IMG_HEIGHT = 28;
+    private static final float LEARNING_RATE = 1E-4f;
+    private static final int NUMBER_OF_CLASSES = 5;
+    private static final int IMG_WIDTH = 250;
+    private static final int IMG_HEIGHT = 250;
     private static final int NUM_CHANNELS = 1;
     private static final int NUM_FILTERS = 1;
     private static final int PATCH_SIZE = 2;
-    private static final int STRIDE = 2;
-    private static final String PATH = "D:\\ai\\djl\\mnist\\csv";
-    private static final String PATH_TRAIN = "D:\\ai\\djl\\mnist\\csv\\mnist_train.csv";
-    private static final String PATH_TEST = "D:\\ai\\djl\\mnist\\csv\\mnist_test.csv";
-    private static final String PATH_VALID = "";
-    private static final String PATH_MODEL = "D:\\ai\\djl\\mnist\\csv";
-    
+    private static final int STRIDE = PATCH_SIZE;
+    private static final String PATH = "D:\\ai\\djl\\rice";
+    private static final String PATH_TRAIN = "D:\\ai\\djl\\rice\\train";
+    private static final String PATH_TEST = "D:\\ai\\djl\\rice\\test";
+    private static final String PATH_VALID = "D:\\ai\\djl\\rice\\valid";
+    private static final String PATH_MODEL = "D:\\ai\\djl\\rice";
+
     public static void main(String[] args) {
-        int filterClassIndex=3;
-        DataSetSDNN ds_train = UtilsSNN.generateDataSetFromCsvFilterOneClass(PATH_TRAIN, filterClassIndex, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
-        DataSetSDNN ds_valid = UtilsSNN.generateDataSetFromCsvFilterOneClass(PATH_VALID, filterClassIndex, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
-        DataSetSDNN ds_test = UtilsSNN.generateDataSetFromCsvFilterOneClass(PATH_TEST, 6, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
+        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImage(PATH_TRAIN,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImage(PATH_VALID,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImage(PATH_TEST,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+
         trainAndSaveModel(ds_train, ds_valid);
 //        testModel(ds_test);
 //        visualizeModel(ds_test);
 //        visualizeLearningMetrics();
+        int a = 1;
+
     }
-    
+
     private static void trainAndSaveModel(DataSetSDNN ds_train, DataSetSDNN ds_valid) {
         SNN model = new SNN("Model_" + 0, new Random(123), false)
                 .addInputLayer(IMG_WIDTH, IMG_HEIGHT, NUM_CHANNELS, NUM_FILTERS, PATCH_SIZE, STRIDE)
@@ -134,4 +121,5 @@ public class TestMnistEnsemble {
         List<String> lst=model.loadTrainingMetrics(PATH+"/snn_0.metrics");
         model.plotLearningMetrics(lst);
     }
+
 }

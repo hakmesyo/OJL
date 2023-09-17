@@ -7,6 +7,7 @@ package jazari.deep_learning.sdnn;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import jazari.matrix.CMatrix;
 
 /**
  *
@@ -204,6 +205,14 @@ public class Filter  implements Serializable{
                 nodes[i][j].addNoise(val);
             }
         }
+    }
+
+    public void visualizeWeights() {
+        CMatrix.getInstance().setArray(weights(0)).println().map(0, 255).imshow(layer.layerIndex+".layer ");
+    }
+    
+    public void visualizeOutputs() {
+        CMatrix.getInstance().setArray(output()).println().map(0, 255).imshow(layer.layerIndex+".layer ");
     }
 
 }

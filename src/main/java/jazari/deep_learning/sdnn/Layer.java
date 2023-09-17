@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author cezerilab
  */
-public class Layer  implements Serializable{
+public class Layer implements Serializable {
 
     //All layers is a 2D structure by default. It holds one or more filters and each filter contains 2D Nodes
     //MLP differs form SNN in that in MLP each hidden neuron (node) connects to all neurons from previous layer
@@ -43,10 +43,10 @@ public class Layer  implements Serializable{
         this.activationType = activationType;
         this.patchSize = patchSize;
         this.stride = stride;
-        this.nClasses=model.NUMBER_OF_CLASSES;
-        filters = new Filter[model.nFilters];
-        nFilter = filters.length;
-        nChannel=model.nChannels;
+        this.nClasses = model.NUMBER_OF_CLASSES;
+        nChannel = model.nChannels;
+        nFilter = model.nFilters;
+        filters = new Filter[nFilter];
         if (layerIndex > 0) {
             prevLayer = model.layers.get(layerIndex - 1);
         }
@@ -79,16 +79,16 @@ public class Layer  implements Serializable{
         nrows = filters[0].nrows;
         ncols = filters[0].ncols;
     }
-    
-    public Layer getOutputLayer(){
+
+    public Layer getOutputLayer() {
         return this.model.getOutputLayer();
     }
-    
-    public Layer getInputLayer(){
+
+    public Layer getInputLayer() {
         return this.model.getInputLayer();
     }
 
-    public Layer getFullyConnectedLayer(){
+    public Layer getFullyConnectedLayer() {
         return this.model.getFullyConnectedLayer();
     }
 
@@ -113,7 +113,7 @@ public class Layer  implements Serializable{
         } else if (layerType == LayerType.hidden) {
             return this.filters.length * this.filters[0].nodes.length * this.filters[0].nodes[0].length * (patchSize * patchSize + 1);
         } else {
-            return this.prevLayer.nFilter * this.nClasses * (this.prevLayer.nrows * this.prevLayer.ncols+1);
+            return this.prevLayer.nFilter * this.nClasses * (this.prevLayer.nrows * this.prevLayer.ncols + 1);
         }
     }
 
@@ -126,7 +126,6 @@ public class Layer  implements Serializable{
 //            filters[i].dump();
 //        }
 //    }
-
     public void forwardPass() {
         for (Filter filter : filters) {
             filter.forwardPass();
@@ -159,21 +158,20 @@ public class Layer  implements Serializable{
 //        }
 //        return ret;
 //    }
-
     public void feedInputData(float[][][] input) {
         for (int k = 0; k < nFilter; k++) {
-            Filter filter=filters[k];
-            Node[][] node=filter.nodes;
+            Filter filter = filters[k];
+            Node[][] node = filter.nodes;
             for (int i = 0; i < filter.nrows; i++) {
                 for (int j = 0; j < filter.ncols; j++) {
-                    node[i][j].dataOut=input[0][i][j];
+                    node[i][j].dataOut = input[0][i][j];
                 }
             }
         }
     }
 
     public void updateWeights() {
-        if (layerType!=LayerType.input) {
+        if (layerType != LayerType.input) {
             for (Filter filter : filters) {
                 filter.updateWeights();
             }
@@ -181,23 +179,37 @@ public class Layer  implements Serializable{
     }
 
     public void printWeights() {
-        if (layerType!=LayerType.input) {
+        if (layerType != LayerType.input) {
             for (Filter filter : filters) {
                 filter.printWeights();
             }
         }
     }
 
-    public void backwardPass(float[] yActual, float[] yPredicted) {
-        if (layerType!=LayerType.input) {
+    public void visualizeWeights() {
+        if (layerType != LayerType.input) {
             for (Filter filter : filters) {
-                filter.backwardPass(yActual,yPredicted);
+                filter.visualizeWeights();
+            }
+        }
+    }
+
+    public void visualizeOutputs() {
+        for (Filter filter : filters) {
+            filter.visualizeOutputs();
+        }
+    }
+
+    public void backwardPass(float[] yActual, float[] yPredicted) {
+        if (layerType != LayerType.input) {
+            for (Filter filter : filters) {
+                filter.backwardPass(yActual, yPredicted);
             }
         }
     }
 
     public void addNoise(float val) {
-        if (layerType!=LayerType.input) {
+        if (layerType != LayerType.input) {
             for (Filter filter : filters) {
                 filter.addNoise(val);
             }

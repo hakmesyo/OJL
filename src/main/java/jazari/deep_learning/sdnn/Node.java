@@ -52,6 +52,8 @@ public class Node  implements Serializable{
                 weightIn = setRandomWeights();
                 biasWeight = UtilsSNN.getRandomWeight(layer.model.rnd);
             } else {
+//                weightIn = setConstantWeights(0.5f);
+//                biasWeight = 0.5f;
                 weightIn = setConstantWeights(0.05f);
                 biasWeight = 0.05f;
 //                weightIn = setRandomWeights();
