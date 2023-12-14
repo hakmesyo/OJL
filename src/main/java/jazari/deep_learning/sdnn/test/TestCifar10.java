@@ -16,6 +16,7 @@ import jazari.deep_learning.sdnn.UtilsSNN;
  * @author cezerilab
  */
 public class TestCifar10 {
+
     private static final int EPOCHS = 10;
     private static final int BATCH_SIZE = 1;
     private static final float LEARNING_RATE = 1E-3f;
@@ -33,17 +34,16 @@ public class TestCifar10 {
     private static final String PATH_MODEL = "D:\\ai\\djl\\cifar10\\png";
 
     public static void main(String[] args) {
-        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TRAIN,1,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_VALID,1,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TEST,1,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-        
+        DataSetSDNN ds_train = UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TRAIN, 1, NUM_CHANNELS, IMG_WIDTH, IMG_HEIGHT);
+        DataSetSDNN ds_valid = UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_VALID, 1, NUM_CHANNELS, IMG_WIDTH, IMG_HEIGHT);
+        DataSetSDNN ds_test = UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TEST, 1, NUM_CHANNELS, IMG_WIDTH, IMG_HEIGHT);
+
 //        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImage(PATH_TRAIN,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
 //        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImage(PATH_VALID,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
 //        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImage(PATH_TEST,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-
-//        trainAndSaveModel(ds_train, ds_valid);
+        trainAndSaveModel(ds_train, ds_valid);
 //        testModel(ds_test);
-        visualizeModel(ds_test);
+//        visualizeModel(ds_test);
 //        visualizeLearningMetrics();
         int a = 1;
 
@@ -55,20 +55,20 @@ public class TestCifar10 {
                 .addInputLayer(IMG_WIDTH, IMG_HEIGHT, NUM_CHANNELS, NUM_FILTERS, PATCH_SIZE, STRIDE)
                 .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
                 .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
-                //                .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
-                //                .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
+//                .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
+//                .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
+//                .addHiddenLayer(ActivationType.relu, PATCH_SIZE, STRIDE)
                 .addOutputLayer(ActivationType.softmax, NUMBER_OF_CLASSES);
         model.compile();
         model.summary();
 
         //start transfer learning
         //model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
-
         float train_acc = model.test(ds_train, false);
         float valid_acc = model.test(ds_valid, false);
         System.out.println("initial train_acc = " + train_acc + " initial validation_acc = " + valid_acc);
-        
-        model.fit(ds_train,ds_valid, LEARNING_RATE, EPOCHS, BATCH_SIZE,false);
+
+        model.fit(ds_train, ds_valid, LEARNING_RATE, EPOCHS, BATCH_SIZE, false);
 
         long t = System.currentTimeMillis();
         float final_train_acc = model.test(ds_train, false);
@@ -112,8 +112,8 @@ public class TestCifar10 {
     private static void visualizeLearningMetrics() {
         SNN model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
         model.summary();
-        
-        List<String> lst=model.loadTrainingMetrics(PATH+"/snn_0.metrics");
+
+        List<String> lst = model.loadTrainingMetrics(PATH + "/snn_0.metrics");
         model.plotLearningMetrics(lst);
     }
 }

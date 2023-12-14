@@ -20,7 +20,7 @@ import jazari.factory.FactoryUtils;
  */
 public class TestPistachio {
 
-    private static final int EPOCHS = 10;
+    private static final int EPOCHS = 30;
     private static final int BATCH_SIZE = 1;
     private static final float LEARNING_RATE = 1E-3f;
     private static final int NUMBER_OF_CLASSES = 2;
@@ -33,7 +33,7 @@ public class TestPistachio {
     private static final String PATH = "D:\\ai\\djl\\pistachio_224_224";
     private static final String PATH_TRAIN = "D:\\ai\\djl\\pistachio_224_224\\train";
     private static final String PATH_TEST = "D:\\ai\\djl\\pistachio_224_224\\test";
-    private static final String PATH_VALID = "D:\\ai\\djl\\pistachio_224_224\\test";
+    private static final String PATH_VALID = "D:\\ai\\djl\\pistachio_224_224\\validation";
     private static final String PATH_MODEL = "D:\\ai\\djl\\pistachio_224_224";
 
     public static void main(String[] args) {
@@ -62,7 +62,7 @@ public class TestPistachio {
         model.summary();
 
         //start transfer learning
-        //model = UtilsSNN.loadModel(path_model + "/snn_0.model");
+        model = UtilsSNN.loadModel(PATH_MODEL + "/snn_0.model");
         float train_acc = model.test(ds_train, false);
         float valid_acc = model.test(ds_valid, false);
         System.out.println("initial train_acc = " + train_acc + " initial validation_acc = " + valid_acc);

@@ -540,6 +540,8 @@ public final class ImageProcess {
     public static BufferedImage cropImage(BufferedImage src, int px, int py, int width, int height) {
         if (src.getType() == BufferedImage.TYPE_BYTE_GRAY) {
             return src.getSubimage(px, py, width, height);
+        } else if(src.getType() == BufferedImage.TYPE_4BYTE_ABGR){
+            return src.getSubimage(px, py, width, height);
         } else {
             return toBGR(src.getSubimage(px, py, width, height));
         }
@@ -1693,7 +1695,7 @@ public final class ImageProcess {
     }
 
     /**
-     * Resizes an image using a Graphics2D object backed by a BufferedImage.
+     * Resizes an image using a Graphics2D BufferedImage. Width or Height might w and/or h
      *
      * @param src - source image to scale
      * @param w - desired width
@@ -1725,6 +1727,39 @@ public final class ImageProcess {
         g2.dispose();
 
 //        return resizedImg;
+        return img;
+    }
+    
+    /**
+     * Resizes an image using a Graphics2D BufferedImage. 
+     *
+     * @param src - source image to scale
+     * @param minimumSize - desired width
+     * @return - the new resized image
+     */
+    public static BufferedImage resizeAspectRatio(BufferedImage src, int minimumSize) {
+        int finalw = minimumSize;
+        int finalh = minimumSize;
+        float factor = 1.0f;
+        if (src.getWidth() > src.getHeight()) {
+            factor = ((float) src.getHeight() / (float) src.getWidth());
+            finalh = (int) (finalw * factor);
+        } else {
+            factor = ((float) src.getWidth() / (float) src.getHeight());
+            finalw = (int) (finalh * factor);
+        }
+
+        BufferedImage resizedImg = new BufferedImage(finalw, finalh, BufferedImage.TRANSLUCENT);
+        Graphics2D g2 = resizedImg.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(src, 0, 0, finalw, finalh, null);
+        g2.dispose();
+
+        BufferedImage img = new BufferedImage(finalw, finalh, src.getType());
+        g2 = img.createGraphics();
+        g2.drawImage(resizedImg, 0, 0, finalw, finalh, null);
+        g2.dispose();
+
         return img;
     }
 
@@ -2595,7 +2630,18 @@ public final class ImageProcess {
             Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
         }
         return ret;
+    }
 
+    public static boolean saveImageTransparentBackGround(BufferedImage img, String fileName) {
+        File file = new File(fileName);
+        String extension = FactoryUtils.getFileExtension(fileName);
+        boolean ret = false;
+        try {
+            ret = ImageIO.write(img, extension, file);
+        } catch (IOException ex) {
+            Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
     }
 
     public static void saveImageSVG(BufferedImage img, String dest_path) {
@@ -4331,6 +4377,20 @@ public final class ImageProcess {
         int w = img.getWidth();
         int h = img.getHeight();
         return cropImage(img, (w - 224) / 2, (h - 224) / 2, 224, 224);
+    }
+
+    public static BufferedImage[][] tileImage(BufferedImage img, int nr, int nc) {
+        BufferedImage[][] ret=new BufferedImage[nr][nc];
+        int w=img.getWidth()/nc;
+        int h=img.getHeight()/nr;
+        for (int i = 0; i < nc; i++) {
+            System.out.println("");
+            for (int j = 0; j < nr; j++) {
+                ret[j][i]=ImageProcess.cropImage(img, i*w,j*h,w,h);
+                //System.out.println((i*w)+":"+(j*h)+":"+ret[i][j].getWidth()+":"+ret[i][j].getHeight()+"");
+            }
+        }
+        return ret;
     }
 
 }

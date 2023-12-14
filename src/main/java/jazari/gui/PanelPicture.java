@@ -359,12 +359,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         int wPanel = this.getWidth();
         int hPanel = this.getHeight();
 
-        img_width = (int) (0.8 * currBufferedImage.getWidth());
-        img_height = (int) (0.8 * currBufferedImage.getHeight());
 //        img_width = currBufferedImage.getWidth();
 //        img_height = currBufferedImage.getHeight();
-
         if (currBufferedImage != null) {
+            img_width = (int) (0.8 * currBufferedImage.getWidth());
+            img_height = (int) (0.8 * currBufferedImage.getHeight());
 
             updatePanelOffsetValuesWhileImageMoving();
 
@@ -527,6 +526,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Smooth",
             "Sharpen",
             "Crop", //"Generate Segmentation Masks",
+            "Resize Images"
         };
 
         ButtonGroup itemsGroup = new ButtonGroup();
@@ -2017,6 +2017,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("AutoSize")) {
                     activateAutoSize = true;
+                } else if (obj.getText().equals("Resize Images")) {
+                    FrameResizeImages frm = new FrameResizeImages(imageFolder);
+                    frm.setVisible(true);
                 } else if (obj.getText().equals("AutoSizeAspect")) {
                     activateAutoSizeAspect = true;
                 } else if (obj.getText().equals("Crop")) {

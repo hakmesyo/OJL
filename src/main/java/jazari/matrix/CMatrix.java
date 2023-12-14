@@ -536,7 +536,7 @@ public final class CMatrix implements Serializable {
         CMatrix cm = new CMatrix();
         return cm;
     }
-    
+
     /**
      * read and load image file
      *
@@ -544,7 +544,7 @@ public final class CMatrix implements Serializable {
      */
     public static CMatrix getInstance(File imageFile) {
         CMatrix cm = new CMatrix();
-        cm=cm.imread(imageFile);
+        cm = cm.imread(imageFile);
         return cm;
     }
 
@@ -1332,7 +1332,7 @@ public final class CMatrix implements Serializable {
         if (this.image != null) {
             if (this.image.getType() == 10) {
                 this.image = ImageProcess.pixelsToImageGray(d);
-            } 
+            }
 //            else {
 //                this.image = ImageProcess.pixelsToImageColor(d);
 //            }
@@ -2143,7 +2143,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix bar() {
-        FrameBar frm = new FrameBar(this,null);
+        FrameBar frm = new FrameBar(this, null);
         frm.setVisible(true);
         return this;
     }
@@ -2154,7 +2154,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix showBar(String[] labels) {
-        FrameBar frm = new FrameBar(this,labels);
+        FrameBar frm = new FrameBar(this, labels);
         frm.setVisible(true);
         return this;
     }
@@ -2165,7 +2165,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix plotBar(String[] labels) {
-        FrameBar frm = new FrameBar(this,labels);
+        FrameBar frm = new FrameBar(this, labels);
         frm.setVisible(true);
         return this;
     }
@@ -2254,6 +2254,7 @@ public final class CMatrix implements Serializable {
 
     /**
      * Apply adaptive threshold to the gray image. Produce binarize image
+     *
      * @param t1
      * @param t2
      * @return
@@ -2265,13 +2266,13 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix imthresholdColorRange(int r1, int r2, int g1, int g2, int b1, int b2) {
-        image = ImageProcess.adaptiveThresholdColorLimits(r1,r2,g1,g2,b1,b2,toFloatArray3D());
+        image = ImageProcess.adaptiveThresholdColorLimits(r1, r2, g1, g2, b1, b2, toFloatArray3D());
         setArray(ImageProcess.imageToPixelsFloat(image));
         return this;
     }
 
     public CMatrix imthresholdColorAdaptive(int r, int dr, int g, int dg, int b, int db) {
-        image = ImageProcess.adaptiveThresholdColorAdaptive(r,dr,g,dg,b,db,toFloatArray3D());
+        image = ImageProcess.adaptiveThresholdColorAdaptive(r, dr, g, dg, b, db, toFloatArray3D());
         setArray(ImageProcess.imageToPixelsFloat(image));
         return this;
     }
@@ -7412,7 +7413,7 @@ public final class CMatrix implements Serializable {
     }
 
     public float[][][] getARGB() {
-        
+
         if (image != null) {
             return ImageProcess.imageToPixelsColorFloatFaster(image);
         } else {
@@ -9454,18 +9455,36 @@ public final class CMatrix implements Serializable {
     }
 
     public float[] getPixelColorARGB(int r, int c) {
-        float[][][] d=getARGB();
-        float[] ret=new float[4];
+        float[][][] d = getARGB();
+        float[] ret = new float[4];
         for (int i = 0; i < ret.length; i++) {
-            ret[i]=d[i][r][c];
+            ret[i] = d[i][r][c];
         }
         return ret;
     }
 
     public float getPixelColorGray(int r, int c) {
-        float[][] d=toFloatArray2D();
-        float ret=d[r][c];
+        float[][] d = toFloatArray2D();
+        float ret = d[r][c];
         return ret;
+    }
+
+    public CMatrix recordCameraImage(String path,double fps) {
+        if (webCam != null) {
+            int dt = (int)(1000 / fps);
+             new Thread(() -> {
+                while (true) {
+                    try {
+                        Thread.sleep(dt);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(CMatrix.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    BufferedImage img=webCam.getImage();
+                    ImageProcess.saveImage(img, path+"/"+FactoryUtils.getDateTime()+".jpg");
+                }
+            }).start();
+        }
+        return this;
     }
 
 }

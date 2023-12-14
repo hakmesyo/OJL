@@ -125,6 +125,35 @@ public final class FactoryUtils {
         }
     }
 
+//    public static String listPorts() {
+//        java.util.Enumeration<CommPortIdentifier> portEnum = CommPortIdentifier.getPortIdentifiers();
+//        String str="";
+//        while (portEnum.hasMoreElements()) {
+//            CommPortIdentifier portIdentifier = portEnum.nextElement();
+//            String s=portIdentifier.getName() + " - " + getPortTypeName(portIdentifier.getPortType());
+//            System.out.println(s);
+//            str+=s+"\n";
+//        }
+//        return str;
+//    }
+//
+//    public static String getPortTypeName(int portType) {
+//        switch (portType) {
+//            case CommPortIdentifier.PORT_I2C:
+//                return "I2C";
+//            case CommPortIdentifier.PORT_PARALLEL:
+//                return "Parallel";
+//            case CommPortIdentifier.PORT_RAW:
+//                return "Raw";
+//            case CommPortIdentifier.PORT_RS485:
+//                return "RS485";
+//            case CommPortIdentifier.PORT_SERIAL:
+//                return "Serial";
+//            default:
+//                return "unknown type";
+//        }
+//    }
+
     public static String getMacAddress() {
         InetAddress ip;
         StringBuilder sb = new StringBuilder();;
@@ -191,10 +220,11 @@ public final class FactoryUtils {
 
     /**
      * serialize the given object and save it to given file
+     *
      * @param obj
      * @param fileName
      */
-    public static void serialize(Object obj, String fileName){
+    public static void serialize(Object obj, String fileName) {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(fileName);
@@ -411,6 +441,7 @@ public final class FactoryUtils {
         } catch (IOException e) {
         }
     }
+
     public static void writeOnFile(String file_name, List<String> rows) {
         String row = "";
         StringBuilder sb = new StringBuilder();
@@ -921,11 +952,11 @@ public final class FactoryUtils {
         }
         return ret;
     }
-    
-    public static List<String> readFileAsList(String fileName){
-        List<String> ret=new ArrayList<>();                
-        String[] s=readFile(fileName).split("\n");
-        int n=s.length;
+
+    public static List<String> readFileAsList(String fileName) {
+        List<String> ret = new ArrayList<>();
+        String[] s = readFile(fileName).split("\n");
+        int n = s.length;
         for (int i = 0; i < n; i++) {
             ret.add(s[i]);
         }
