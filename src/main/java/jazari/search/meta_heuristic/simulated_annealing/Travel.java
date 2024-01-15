@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-import lombok.Data;
+//import lombok.Data;
 
-@Data
+//@Data
 public class Travel {
 
-    private ArrayList<City> travel = new ArrayList<>();
-    private ArrayList<City> previousTravel = new ArrayList<>();
+    public ArrayList<City> travel = new ArrayList<>();
+    public ArrayList<City> previousTravel = new ArrayList<>();
 
     private Travel(){
         

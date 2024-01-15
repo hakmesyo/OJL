@@ -18,6 +18,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
+import java.awt.geom.AffineTransform;
 import jazari.factory.FactoryMatrix;
 import jazari.factory.FactoryNormalization;
 
@@ -33,15 +34,19 @@ public class PanelBar extends TPanelData {
     private Color[] color;
     private String[] labels;
     int max_label_index = -1;
+    private boolean isValueVisible = true;
+    private FrameBar frm;
 
-    public PanelBar(CMatrix cm, String[] labels) {
+    public PanelBar(FrameBar frm, CMatrix cm, String[] labels, boolean isValueVisible) {
         super(cm);
+        this.frm = frm;
+        this.isValueVisible = isValueVisible;
         this.originalData = FactoryMatrix.transpose(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
         this.labels = labels;
         if (labels != null) {
             max_label_index = getMaximumLengthIndex(labels);
-        }else{
-            this.labels=generateArtificialLabels(originalData[0]);
+        } else {
+            this.labels = generateArtificialLabels(originalData[0]);
         }
         //this.data = FactoryNormalization.normalizeMinMax(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
         this.data = FactoryNormalization.normalizeMax(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
@@ -86,7 +91,10 @@ public class PanelBar extends TPanelData {
 //                RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 //        Font fnt = gr.getFont();
 //        gr.setFont(new Font(fnt.getFontName(), 1, 15));
-        gr.setColor(Color.white);
+        if (!frm.chk_darkMode.isSelected()) {
+            gr.setColor(Color.white);
+        }
+
         int w = getWidth();
         int h = getHeight();
         gr.fillRect(0, 0, w, h);
@@ -95,7 +103,7 @@ public class PanelBar extends TPanelData {
         int dx = w - 2 * px;
         int dy = h - 2 * py;
         if (max_label_index != -1) {
-            dy = h - 90 - gr.getFontMetrics().stringWidth(labels[max_label_index]);
+            dy = h - 3 * gr.getFontMetrics().stringWidth(labels[max_label_index]);
         }
 
         Point[][] mp = mappingDataToScreenCoordinates(getMatrix().toDoubleArray2D(), dx, dy, px, py);
@@ -121,28 +129,22 @@ public class PanelBar extends TPanelData {
         float deltaValX = d.length / n;
         float deltaX = dx / n;
 
-        for (int i = 0; i <= n; i++) {
-            int x = (int) (px + deltaX * i);
-            gr.drawString(FactoryUtils.formatFloat(i * deltaValX, 0) + "", x - 5, dy + py + 30);
-            gr.drawLine(x, dy + py + 2, x, dy + py + 12);
-
+        if (labels == null || labels.length == 0) {
+            for (int i = 0; i <= n; i++) {
+                int x = (int) (px + deltaX * i);
+                gr.drawString(FactoryUtils.formatFloat(i * deltaValX, 0) + "", x - 5, dy + py + 30);
+                gr.drawLine(x, dy + py + 2, x, dy + py + 12);
+            }
         }
-        deltaX = dx / d.length;
-        int qx = 45;
-        int qy = 65;
         float delta_x = 1.0f * dx / data[0].length;
+        String maxLabel=FactoryUtils.getMaximum(labels);
+        int length = FactoryUtils.getGraphicsTextWidth(gr, maxLabel);
         for (int i = 0; i < d.length; i++) {
-            int x1 = (int) (px + i * delta_x + delta_x);
-            gr.rotate(Math.toRadians(-90), x1 + qx, py + dy + qy);
-            gr.drawString(labels[i], x1, dy + py + 12);
-            gr.rotate(Math.toRadians(90), x1 + qx, py + dy + qy);
-
-//            int x = Math.round(px + deltaX * i);
-//            gr.rotate(Math.toRadians(-90), x + qx, dy + py + qy);
-//            gr.drawString(labels[i], x, dy + py + 12);
-//            gr.rotate(Math.toRadians(90), x + qx, dy + py + qy);
+            int x1 = (int) (px + i * delta_x+delta_x/2);            
+            FactoryUtils.drawRotatedString(gr, labels[i], x1, py+dy+3*length, -Math.PI / 2);
         }
     }
+    
 
     private void drawAxisY(Graphics2D gr, int px, int py, int dx, int dy) {
 //        float maxY = FactoryUtils.getMaximum(data);
@@ -178,8 +180,10 @@ public class PanelBar extends TPanelData {
                 gr.setColor(color[k]);
                 gr.fillRect(px + x, py + dy - y, (x2 - x), y);
                 gr.setColor(Color.black);
-                //int titleWidth = FactoryUtils.getGraphicsTextWidth(gr, originalData[k][i] + "");
-                //gr.drawString(originalData[k][i] + "", px + x + (normX-titleWidth)/2, dy + py - y - 3);
+                if (isValueVisible) {
+                    int titleWidth = FactoryUtils.getGraphicsTextWidth(gr, originalData[k][i] + "");
+                    gr.drawString(originalData[k][i] + "", px + x + (normX - titleWidth) / 2, dy + py - y - 3);
+                }
                 gr.drawRect(px + x, py + dy - y, (x2 - x), y);
             }
         }
@@ -205,18 +209,18 @@ public class PanelBar extends TPanelData {
             //gr.drawString(originalData[0][nX] + "", x1 + (((int)(delta_x * 2f)-titleWidth)/2) , dy + py - y - 3);
             //gr.setColor(Color.black);
             //gr.drawString(originalData[0][nX] + "", x1 + (((int)(delta_x * 2f)-titleWidth)/2) , dy + py - y + 20);
-            gr.drawString(originalData[0][nX] + "", x1 + (((int) (delta_x) - titleWidth) / 2), dy + py - y - 10);
-
+            gr.drawString(originalData[0][nX] + "", x1 + (((int) (delta_x) - titleWidth) / 2), dy + py - y - 3);
+            //gr.drawString(originalData[0][nX] + "", px + x + (normX - titleWidth) / 2, dy + py - y - 3);
             x1 = (int) (px + nX * delta_x + delta_x);
             gr.rotate(Math.toRadians(-90), x1 + qx, py + dy + qy);
-            gr.setFont(new Font("Dialog", 0, 12));
+            //gr.setFont(new Font("Dialog", 0, 12));
             gr.setColor(Color.white);
             gr.drawString(labels[nX], x1, dy + py + 12);
-            gr.setFont(new Font("Dialog", 1, 12));
+            //gr.setFont(new Font("Dialog", 1, 12));
             gr.setColor(Color.red);
             gr.drawString(labels[nX], x1, dy + py + 12);
             gr.rotate(Math.toRadians(90), x1 + qx, py + dy + qy);
-            gr.setFont(new Font("Dialog", 0, 12));
+            //gr.setFont(new Font("Dialog", 0, 12));
         }
 
     }
@@ -255,11 +259,16 @@ public class PanelBar extends TPanelData {
     }
 
     private String[] generateArtificialLabels(float[] d) {
-        String[] ret=new String[d.length];
+        String[] ret = new String[d.length];
         for (int i = 0; i < d.length; i++) {
-            ret[i]=""+d[i];
+            ret[i] = "" + d[i];
         }
         return ret;
+    }
+
+    void setValueVisible(boolean valueVisible) {
+        this.isValueVisible = valueVisible;
+        repaint();
     }
 
 

@@ -135,6 +135,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.stream.IntStream;
 import javax.swing.JPanel;
 import jazari.gui.FrameDataSetTextEditor;
@@ -201,6 +202,7 @@ public final class CMatrix implements Serializable {
     public FactoryWebCam factoryWebCam;
     public Webcam webCam;
     public String valueString;
+    private Map map;
 
     public CMatrix getCurrentMatrix() {
         return currentMatrix;
@@ -2155,6 +2157,7 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix showBar(String[] labels) {
         FrameBar frm = new FrameBar(this, labels);
+        frm.setValuVisible(true);
         frm.setVisible(true);
         return this;
     }
@@ -2166,6 +2169,18 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plotBar(String[] labels) {
         FrameBar frm = new FrameBar(this, labels);
+        frm.setVisible(true);
+        return this;
+    }
+
+    /**
+     * plot the curves of each column in the matrix
+     *
+     * @return CMatrix
+     */
+    public CMatrix plotBar(String[] labels, boolean isValueVisible) {
+        FrameBar frm = new FrameBar(this, labels);
+        frm.setValuVisible(isValueVisible);
         frm.setVisible(true);
         return this;
     }
@@ -9469,20 +9484,44 @@ public final class CMatrix implements Serializable {
         return ret;
     }
 
-    public CMatrix recordCameraImage(String path,double fps) {
+    public CMatrix recordCameraImage(String path, double fps) {
         if (webCam != null) {
-            int dt = (int)(1000 / fps);
-             new Thread(() -> {
+            int dt = (int) (1000 / fps);
+            new Thread(() -> {
                 while (true) {
                     try {
                         Thread.sleep(dt);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(CMatrix.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    BufferedImage img=webCam.getImage();
-                    ImageProcess.saveImage(img, path+"/"+FactoryUtils.getDateTime()+".jpg");
+                    BufferedImage img = webCam.getImage();
+                    ImageProcess.saveImage(img, path + "/" + FactoryUtils.getDateTime() + ".jpg");
                 }
             }).start();
+        }
+        return this;
+    }
+
+    public CMatrix setMap(Map map) {
+        this.map = map;
+        return this;
+    }
+
+    public CMatrix showMapHistogram() {
+        if (map != null && map.size() > 0) {
+            Map<String,Integer> mp=(Map<String,Integer>)map;
+            float[] data = new float[map.size()];
+            String[] labels=new String[map.size()];
+            int k=0;
+            for (Map.Entry<String, Integer> entry : mp.entrySet()) {
+                data[k]=entry.getValue();
+                labels[k]=entry.getKey();
+                k++;
+            }
+            this.setArray(data);
+            this.plotBar(labels,true);
+        } else {
+            System.err.println("no hashmap for plotting histogram");
         }
         return this;
     }

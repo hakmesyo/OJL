@@ -93,12 +93,12 @@ public class SimulatedAnnealing {
     }
 
     private static CPoint[] getEdgePos(Travel travel) {
-        int n = travel.getTravel().size();
+        int n = travel.travel.size();
         CPoint[] ret = new CPoint[n];
         for (int i = 0; i < n; i++) {
             ret[i] = new CPoint();
-            ret[i].column = travel.getTravel().get(i).getX();
-            ret[i].row = travel.getTravel().get(i).getY();
+            ret[i].column = travel.travel.get(i).getX();
+            ret[i].row = travel.travel.get(i).getY();
         }
         return ret;
     }

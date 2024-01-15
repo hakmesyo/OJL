@@ -66,6 +66,8 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -85,6 +87,7 @@ import jazari.gui.FrameImage;
 import jazari.image_processing.ImageProcess;
 import jazari.matrix.CRectangle;
 import jazari.utils.CopyImageToClipboard;
+import jazari.utils.WindowsLikeComparator;
 import jazari.utils.YoloPolygonJson;
 import jazari.utils.pascalvoc.PascalVocBoundingBox;
 import jazari.utils.pascalvoc.PascalVocAttribute;
@@ -94,6 +97,7 @@ import jazari.utils.pascalvoc.PascalVocPolygon;
 import jazari.utils.pascalvoc.PascalVocSize;
 import jazari.utils.pascalvoc.PascalVocSource;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.comparator.NameFileComparator;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
@@ -153,7 +157,6 @@ public final class FactoryUtils {
 //                return "unknown type";
 //        }
 //    }
-
     public static String getMacAddress() {
         InetAddress ip;
         StringBuilder sb = new StringBuilder();;
@@ -3504,7 +3507,10 @@ public final class FactoryUtils {
             }
         }
         File[] list = results.toArray(new File[0]);
-        Arrays.sort(list, Comparator.comparingLong(File::lastModified));
+        //Arrays.sort(list, Comparator.comparingLong(File::lastModified));
+        List lst = Arrays.asList(list);
+        Collections.sort(lst, new WindowsLikeComparator());
+        lst.toArray(list);
 
         return list;
     }
@@ -3595,27 +3601,39 @@ public final class FactoryUtils {
             }
         };
         File[] list = dir.listFiles(IMAGE_FILTER);
-        //Arrays.sort(list, Comparator.comparingLong(File::lastModified));
-        //Arrays.sort(list, Comparator.comparing(File::getName));
-        //Arrays.sort(list, (a, b) -> a.getName().compareTo(b.getName()));
-        //Arrays.sort(list,Comparator.naturalOrder());
-        Arrays.sort(list, new Comparator<File>() {
-            public int compare(File f1, File f2) {
-                return extractInt(f1.getName()) - extractInt(f2.getName());
-            }
 
-            int extractInt(String s) {
-                String num = "";
-                try {
-                    return Integer.parseInt(s.replaceAll("\\D", ""));
-                } catch (NumberFormatException e) {
-                    return 0;
-                }
-                //return num.isEmpty() ? 0 : Integer.parseInt(num);
-            }
-        });
-
+        List lst = Arrays.asList(list);
+        Collections.sort(lst, new WindowsLikeComparator());
+        lst.toArray(list);
         return list;
+    }
+
+    public static File[] getFileArrayForImagesSubFoldersRecursively(String path) {
+        File folder = new File(path);
+
+        if (!folder.exists()) {
+            System.out.println("Folder was not found : " + path);
+            return new File[0];
+        }
+
+        File[] files = folder.listFiles();
+
+        List<File> listImageFiles = new ArrayList<>();
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    File[] subFiles = getFileArrayForImagesSubFoldersRecursively(file.getAbsolutePath());
+                    listImageFiles.addAll(List.of(subFiles));
+                } else {
+                    String fileName = file.getName().toLowerCase();
+                    if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png") || fileName.endsWith(".gif")) {
+                        listImageFiles.add(file);
+                    }
+                }
+            }
+        }
+        return listImageFiles.toArray(new File[0]);
     }
 
     /**
@@ -3642,8 +3660,10 @@ public final class FactoryUtils {
             }
         };
         File[] list = dir.listFiles(FILE_FILTER);
-        //Arrays.sort(list, Comparator.comparingLong(File::lastModified));
-        Arrays.sort(list, Comparator.comparing(File::getName));
+        List lst = Arrays.asList(list);
+        Collections.sort(lst, new WindowsLikeComparator());
+        lst.toArray(list);
+        //Arrays.sort(list, Comparator.comparing(File::getName));
         return list;
     }
 
@@ -3674,7 +3694,11 @@ public final class FactoryUtils {
         File dir = new File(imageFolder);
         File[] list = dir.listFiles();
         //Arrays.sort(list, Comparator.comparingLong(File::lastModified));
-        Arrays.sort(list, Comparator.comparing(File::getName));
+        //Arrays.sort(list, Comparator.comparing(File::getName));
+        List lst = Arrays.asList(list);
+        Collections.sort(lst, new WindowsLikeComparator());
+        lst.toArray(list);
+
         return list;
     }
 
@@ -6965,6 +6989,63 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static Map getHashMapHistogramByFileName(String path, String regex) {
+        File[] imgs = FactoryUtils.getFileArrayInFolderForImages(path);
+        Map<String, Integer> hist = new HashMap<>();
+        for (File img : imgs) {
+            String name = (regex != null && regex != "") ? img.getName().split(regex)[0] : img.getName();
+            if (hist.containsKey(name)) {
+                hist.replace(name, hist.get(name) + 1);
+            } else {
+                hist.put(name, 1);
+            }
+        }
+        for (Map.Entry<String, Integer> entry : hist.entrySet()) {
+            System.out.println(entry);
+        }
+        return hist;
+    }
+
+    public static Map getHashMapHistogramByFolderName(String path) {
+        File[] dirs = FactoryUtils.getDirectories(path);
+        Map<String, Integer> hist = new HashMap<>();
+        for (File dir : dirs) {
+            String name = dir.getName();
+            if (!hist.containsKey(name)) {
+                hist.put(name, 0);
+                File[] imgs = FactoryUtils.getFileArrayForImagesSubFoldersRecursively(path + "/" + name);
+                hist.replace(name, imgs.length);
+            }
+        }
+        for (Map.Entry<String, Integer> entry : hist.entrySet()) {
+            System.out.println(entry);
+        }
+        return hist;
+    }
+
+    public static String[] resolveHashMapToLabels(Map<String, Integer> map) {
+        String[] label = new String[map.size()];
+        int k = 0;
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            label[k++] = entry.getKey();
+        }
+        return label;
+    }
+
+    public static float[] resolveHashMapToArray(Map<String, Integer> map) {
+        float[] ret = new float[map.size()];
+        int k = 0;
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            ret[k++] = entry.getValue();
+        }
+        return ret;
+    }
+
+    public static String getMaximum(String[] str) {
+        return Arrays.stream(str)
+                .max(String::compareTo)
+                .orElse(null);
+    }
 //    public static Rectangle getBoundingRectangle(Polygon polygon) {
 //        if (polygon.npoints <= 0) {
 //            return null;
@@ -6995,6 +7076,7 @@ public final class FactoryUtils {
 //        ret.height = maxY - minY;
 //        return ret;
 //    }
+
     public <T> List<T> toArrayList(T[][] twoDArray) {
         List<T> list = new ArrayList<T>();
         for (T[] array : twoDArray) {
@@ -8223,6 +8305,13 @@ public final class FactoryUtils {
     public static BufferedImage copyImage2ClipBoard(BufferedImage img) {
         new CopyImageToClipboard(img);
         return img;
+    }
+
+    public static void drawRotatedString(Graphics g, String text, int x, int y, double angle) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.rotate(angle, x, y);
+        g2d.drawString(text, x, y);
+        g2d.rotate(-angle, x, y);
     }
 
 }

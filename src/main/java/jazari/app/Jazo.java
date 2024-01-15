@@ -1,5 +1,6 @@
 package jazari.app;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Component;
 import javax.swing.TransferHandler;
@@ -91,11 +92,12 @@ public class Jazo extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Jazo.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        FlatDarculaLaf.setup();
+//        try {
+//            UIManager.setLookAndFeel(new FlatDarkLaf());
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(Jazo.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 ////        /* Set the Nimbus look and feel */
 ////        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
 ////        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -123,10 +125,7 @@ public class Jazo extends javax.swing.JFrame {
 ////        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-//                System.setProperty("awt.useSystemAAFontSettings", "on");
-//                System.setProperty("swing.aatext", "true");
                 Jazo jazo = new Jazo();
-                //jazo.setLocationRelativeTo(null);
                 jazo.setVisible(true);
             }
         });

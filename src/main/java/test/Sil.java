@@ -22,18 +22,17 @@ public class Sil {
 
     public static void main(String[] args) {
 
-        int n=10000;
-        long t1=FactoryUtils.tic();
-        float[][] d=new float[n][n];
-        for (int i = 0; i < 1000; i++) {            
-          //cm.pow(2);
-          //CMatrix cm = CMatrix.getInstance().randn(n,n);
-          //d=FactoryMatrix.randMatrix(n, n);
-          //CMatrix.getInstance().rand(n, n);
-          array = Nd4j.rand(n, n);
-        }
-        t1=FactoryUtils.toc(t1);
-
+//        int n=10000;
+//        long t1=FactoryUtils.tic();
+//        float[][] d=new float[n][n];
+//        for (int i = 0; i < 1000; i++) {            
+//          //cm.pow(2);
+//          //CMatrix cm = CMatrix.getInstance().randn(n,n);
+//          //d=FactoryMatrix.randMatrix(n, n);
+//          //CMatrix.getInstance().rand(n, n);
+//          array = Nd4j.rand(n, n);
+//        }
+//        t1=FactoryUtils.toc(t1);
 //        FactoryUtils.makeDirectory("images/sil");
 //        CMatrix cm = CMatrix.getInstance();
 //        File[] files=FactoryUtils.getFileListInFolderForImages("images");

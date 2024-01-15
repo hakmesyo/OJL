@@ -5,6 +5,7 @@
  */
 package jazari.gui;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
 import jazari.image_processing.ImageProcess;
 import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
@@ -18,6 +19,7 @@ public class FrameBar extends javax.swing.JFrame {
 
     private CMatrix cm;
     private String[] labels;
+    private boolean isValueVisible;
 
 
 //    public FrameBar(CMatrix cm) {
@@ -29,6 +31,7 @@ public class FrameBar extends javax.swing.JFrame {
     
     public FrameBar(CMatrix cm, String[] labels) {
         super(cm.name+"|Bar");
+        FlatDarculaLaf.setup();
         cm.name+="|Bar";
         this.cm =cm.clone();
         this.labels=labels;
@@ -49,12 +52,14 @@ public class FrameBar extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel_plot = new jazari.gui.PanelBar(cm,labels);
+        panel_plot = new jazari.gui.PanelBar(this,cm,labels,isValueVisible);
         jPanel2 = new javax.swing.JPanel();
         btn_dataGrid = new javax.swing.JButton();
         btn_save = new javax.swing.JButton();
         txt_dpi = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        chk_darkMode = new javax.swing.JCheckBox();
+        chk_transpose = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -91,6 +96,20 @@ public class FrameBar extends javax.swing.JFrame {
 
         jLabel2.setText("dpi");
 
+        chk_darkMode.setText("dark mode");
+        chk_darkMode.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                chk_darkModeStateChanged(evt);
+            }
+        });
+
+        chk_transpose.setText("transpose view");
+        chk_transpose.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_transposeİtemStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -103,7 +122,11 @@ public class FrameBar extends javax.swing.JFrame {
                 .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
-                .addContainerGap(613, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(chk_transpose, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_darkMode, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -111,7 +134,9 @@ public class FrameBar extends javax.swing.JFrame {
                 .addComponent(btn_dataGrid)
                 .addComponent(btn_save)
                 .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jLabel2))
+                .addComponent(jLabel2)
+                .addComponent(chk_darkMode)
+                .addComponent(chk_transpose))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -141,6 +166,14 @@ public class FrameBar extends javax.swing.JFrame {
         savePanel();
     }//GEN-LAST:event_btn_saveActionPerformed
 
+    private void chk_darkModeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_chk_darkModeStateChanged
+        getBarPanel().repaint();
+    }//GEN-LAST:event_chk_darkModeStateChanged
+
+    private void chk_transposeİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_transposeİtemStateChanged
+        getBarPanel().repaint();
+    }//GEN-LAST:event_chk_transposeİtemStateChanged
+
     public PanelBar getBarPanel() {
         return (PanelBar) panel_plot;
     }
@@ -161,6 +194,8 @@ public class FrameBar extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_dataGrid;
     private javax.swing.JButton btn_save;
+    public javax.swing.JCheckBox chk_darkMode;
+    public javax.swing.JCheckBox chk_transpose;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel panel_plot;
@@ -180,6 +215,21 @@ public class FrameBar extends javax.swing.JFrame {
         }
         cp.setSize((int) (cp.getWidth() / scale), (int) (cp.getHeight() / scale));
     }
+
+    public void setValuVisible(boolean valueVisible) {
+        this.isValueVisible=valueVisible;
+        getBarPanel().setValueVisible(isValueVisible);
+    }
+    
+//    public static void main(String[] args) {
+//        FlatDarculaLaf.setup();
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                FrameBar jazo = new FrameBar(null,null);
+//                jazo.setVisible(true);
+//            }
+//        });
+//    }
 
 
 }
