@@ -23,6 +23,7 @@ import jazari.utils.UniqueRandomNumbers;
 import jazari.websocket.SocketServer;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -79,6 +80,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -3769,12 +3771,34 @@ public final class FactoryUtils {
         Rectangle2D r1 = gr.getFont().getStringBounds(t, 0, t.length(), gr.getFontMetrics().getFontRenderContext());
         return (int) r1.getWidth();
     }
+    
+    public static int getMaxGraphicsTextWidth(Graphics gr, String[] t) {
+        int ret=0;
+        for (int i = 0; i < t.length; i++) {
+            Rectangle2D r1 = gr.getFont().getStringBounds(t[i], 0, t[i].length(), gr.getFontMetrics().getFontRenderContext());
+            if (ret<r1.getWidth()) {
+                ret=(int)r1.getWidth();
+            }
+        }        
+        return ret;
+    }
 
     public static int getGraphicsTextHeight(Graphics gr, String t) {
         Rectangle2D r1 = gr.getFont().getStringBounds(t, 0, t.length(), gr.getFontMetrics().getFontRenderContext());
         return (int) r1.getHeight();
     }
 
+    public static int getMaxGraphicsTextHeight(Graphics gr, String[] t) {
+        int ret=0;
+        for (String t1 : t) {
+            Rectangle2D r1 = gr.getFont().getStringBounds(t1, 0, t1.length(), gr.getFontMetrics().getFontRenderContext());
+            if (ret<r1.getHeight()) {
+                ret=(int)r1.getHeight();
+            }
+        }        
+        return ret;
+    }
+    
     public static float[] gaussian(float[] d, float sigma, float mean) {
         float[] ret = new float[d.length];
         for (int i = 0; i < d.length; i++) {
@@ -6059,6 +6083,28 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static int getLongestStringIndex(float[] items) {
+        int n = 0;
+        int ret = 0;
+        for (int i = 0; i < items.length; i++) {
+            if (n < (""+items[i]).length()) {
+                n = (""+items[i]).length();
+                ret = i;
+            }
+        }
+        return ret;
+    }
+    
+    public static int getLongestStringLength(float[] items) {
+        int n = 0;
+        for (int i = 0; i < items.length; i++) {
+            if (n < (""+items[i]).length()) {
+                n = (""+items[i]).length();
+            }
+        }
+        return n;
+    }
+
     public static double[][] toDoubleArray2D(float[][] d) {
         int nr = d.length;
         int nc = d[0].length;
@@ -8307,11 +8353,17 @@ public final class FactoryUtils {
         return img;
     }
 
-    public static void drawRotatedString(Graphics g, String text, int x, int y, double angle) {
+    public static Point drawRotatedString(Graphics g, String text, int x, int y, double angle) {
+        Point ret=new Point(x,y);
         Graphics2D g2d = (Graphics2D) g;
         g2d.rotate(angle, x, y);
         g2d.drawString(text, x, y);
         g2d.rotate(-angle, x, y);
+        return ret;
+    }
+    
+    public static Font getDefaultFont(){
+        return new JLabel().getFont();
     }
 
 }

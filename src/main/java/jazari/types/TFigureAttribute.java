@@ -6,10 +6,12 @@
 
 package jazari.types;
 
+import java.awt.Font;
 import jazari.factory.FactoryMatrix;
 import jazari.factory.FactoryUtils;
 import java.awt.Stroke;
 import java.util.ArrayList;
+import javax.swing.JLabel;
 
 /**
  *
@@ -18,11 +20,11 @@ import java.util.ArrayList;
 public class TFigureAttribute {
     public String figureCaption="Default Caption";
     public String title="Plot";
-    public String[] axis_names=new String[]{"Indexes","Values"};
-//    public String[] axis_names=new String[]{"",""};
-//    public String[] items=new String[]{"Observed","Simulated"};;
+    public Font fontTitle=new JLabel().getFont();
+    public Font fontAxisX=new JLabel().getFont();
+    public Font fontAxisY=new JLabel().getFont();
+    public String[] axis_names=new String[]{"x - axis","y - axis"};
     public String[] items=new String[]{"X1","X2"};;
-//    public TPointType pointType=TPointType.LINE;
     public String pointType="-";
     public ArrayList<String> perfMetricStr=new ArrayList();
     public ArrayList<Float> perfMetricVal=new ArrayList();

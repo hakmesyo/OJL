@@ -42,6 +42,11 @@ public class Deneme {
 
 
     public static void main(String[] args) {
+        CMatrix cm1 = CMatrix.getInstance().range(-360, 360).toRadians().sin();
+        CMatrix cm2 = CMatrix.getInstance().range(-360, 360).toRadians().cos();
+        CMatrix cm3 = CMatrix.getInstance().range(-360, 360).toRadians().timesScalar(3).cos();
+        //CMatrix cm = cm1.cat(1,cm2).cat(1, cm3).plot(new String[]{"Sin-Cos Functions","angle","value"},new String[]{"sin","cos","cos(3x)"});
+        CMatrix cm = cm1.cat(1,cm2).cat(1, cm3).plot(CMatrix.getInstance().range(-360,360).toFloatArray1D());
         //        System.out.println(Math.log(Math.E));
         //        List<File> filenames = Arrays.asList(new File[]{
         //            new File("filename01.jpg"),

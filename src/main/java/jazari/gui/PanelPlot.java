@@ -19,6 +19,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
@@ -27,7 +28,10 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JColorChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import org.drjekyll.fontchooser.FontDialog;
 
 /**
  *
@@ -41,7 +45,6 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     private boolean isShowPoint = false;
     private boolean lblShow = false;
     private Point mousePos = new Point(0, 0);
-    private JLabel lbl = null;
     private float scale = 1;
     private TFigureAttribute figureAttribute;
     private String[] items;
@@ -50,8 +53,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     private boolean isMousePressed = false;
     Graphics2D gr;
     CPoint[][] mp;
-    private boolean isTraced = true;
-    private int fromRight = 150;
+    private int fromRight = 50;
     private int fromLeft = 100;
     private int fromTop = 50;
     private int fromBottom = 70;
@@ -66,17 +68,38 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     private Stroke prevStroke;
     private AlphaComposite prevAlcom;
     private float prevAlpha;
+    private boolean isDarkMode = true;
+    private boolean isGridX = true;
+    private boolean isGridY = true;
+    private boolean isLegend = true;
+    private Rectangle rectPlotCanvas;
+    private Rectangle rectTitle;
+    private Rectangle rectAxisX;
+    private Rectangle rectAxisY;
+    private Rectangle rectLegend;
+    private float[][] realValues;
+    int[] vals;
+    private Color colorLine = new Color(255, 255, 0);
+    private int legendTextWidth;
+    private int legendTextHeight;
+    private int titleWidth;
+    private int titleHeight;
+    private CPoint selectedCPoint;
+    private int selectedLineIndex;
+    private int selectedLineValue;
 
     public PanelPlot(CMatrix ff) {
         this.cm = ff;
-        items = new String[cm.getColumnNumber()];
-        for (int i = 0; i < items.length; i++) {
-            items[i] = "Line - " + (i + 1);
+        if (figureAttribute == null) {
+            items = new String[cm.getColumnNumber()];
+            for (int i = 0; i < items.length; i++) {
+                items[i] = "Line - " + (i + 1);
+            }
+            this.figureAttribute = new TFigureAttribute();
+            this.figureAttribute.items = items;
         }
-        this.figureAttribute = new TFigureAttribute();
-        this.figureAttribute.items=items;
         initialize();
-        repaint();
+        //repaint();
     }
 
     public PanelPlot(CMatrix ff, float[] x) {
@@ -88,7 +111,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         }
         this.figureAttribute = new TFigureAttribute();
         initialize();
-        repaint();
+        //repaint();
     }
 
     public PanelPlot(CMatrix ff, TFigureAttribute attr) {
@@ -96,7 +119,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         this.figureAttribute = attr;
         this.items = attr.items;
         initialize();
-        repaint();
+        //repaint();
     }
 
     public PanelPlot(CMatrix ff, TFigureAttribute attr, float[] x) {
@@ -105,7 +128,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         this.figureAttribute = attr;
         this.items = attr.items;
         initialize();
-        repaint();
+        //repaint();
     }
 
     public void setXAxis(float[] x) {
@@ -113,75 +136,105 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         repaint();
     }
 
+    @Override
     public void paint(Graphics g) {
+
         gr = (Graphics2D) g;
         gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         Font fnt = gr.getFont();
-        gr.setFont(new Font(fnt.getFontName(), 1, 18));
-        gr.setColor(Color.white);
+        gr.setFont(new Font(fnt.getFontName(), 1, 14));
         int w = getWidth();
         int h = getHeight();
-//        int index = FactoryUtils.getLongestStringIndex(items);
-//        int itemWidth = FactoryUtils.getGraphicsTextWidth(gr, items[index]);
-
-        canvas_width = getWidth() - (fromLeft + fromRight);
-        canvas_height = getHeight() - (fromBottom + fromTop);
-        gr.fillRect(0, 0, w, h);
-        gr.setColor(Color.red);
-        gr.drawRect(0, 0, w - 1, h - 1);
-        gr.drawRect(1, 1, w - 3, h - 3);
-        gr.setColor(Color.darkGray);
-        int titleWidth = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.title);
-        int pTitleX = (w - titleWidth) / 2;
-        gr.drawString(figureAttribute.title, pTitleX, 30);
-        int px = 100;
+        int px = fromLeft;
         int py = h - 90;
-        int[] vals;
-        gr.setColor(Color.white);
-        gr.setColor(Color.decode("#EAEAF2"));
-        gr.fillRect(fromLeft, fromTop, canvas_width, canvas_height);
-        drawYAxis(gr, px, py, w, fromRight, cm.toFloatArray2D());
-        drawXAxis(gr, px, py, w, fromRight, cm.toFloatArray2D());
+
+        //ekranın tümünü dark mode veya beyaz ile boya
+        if (isDarkMode) {
+            gr.setColor(Color.DARK_GRAY);
+        } else {
+            gr.setColor(Color.white);
+        }
+        gr.fillRect(0, 0, w, h);
+
+        drawTitle(gr, w);
+        drawTitleAxisX(gr);
+        drawTitleAxisY(gr);
+
+        //çizim tuvali
+        drawPlotCanvas(gr);
 
 //        Point2D p2d = getScreenCoordinate();
 //        System.out.println(p2d.getX() + "," + p2d.getY());
 //        temp_afft = gr.getTransform();
 //        gr.translate(0.0, h);      // Move the origin to the lower left for actual cartesian coordinate system
 //        gr.scale(1.0, -1.0);       // Flip the sign of the coordinate system
-        mp = mappingDataToScreenCoordinates(cm.toFloatArray2D(), fromLeft, fromTop, canvas_width, canvas_height);
+        mp = mappingDataToScreenCoordinates(cm.toFloatArray2D(), fromLeft + 10, fromTop + 10, canvas_width - 20, canvas_height - 20);
+        int[][] mappedVal = getMaxMinValue(mp);
+        drawYAxis(gr, mappedVal, px, py, w - fromRight - 20, fromRight, cm.toFloatArray2D());
+        drawXAxis(gr, mappedVal, px, py, w - fromRight, fromRight, cm.toFloatArray2D());
         for (int r = 0; r < items.length; r++) {
             drawPolyLines(gr, mp, r);
         }
-        if (isTraced) {
-            if (mousePos.x > fromLeft && mousePos.x < fromLeft + canvas_width && mousePos.y > fromTop && mousePos.y < fromTop + canvas_height) {
-                if (isMousePressed) {
-                    int selectedLineIndex = selectLine(mp);
-                    if (selectedLineIndex != -1) {
-                        itemSelected[selectedLineIndex] = !itemSelected[selectedLineIndex];
-                    } else {
-                        for (int i = 0; i < itemSelected.length; i++) {
-                            itemSelected[i] = false;
-                        }
 
-                    }
-                    isMousePressed = false;
-                    repaint();
+        if (selectedCPoint != null) {
+            if (isDarkMode) {
+                gr.setColor(Color.darkGray);
+                gr.fillRect(selectedCPoint.column + 10, selectedCPoint.row - 10, 90, 17);
+                gr.setColor(Color.lightGray);
+                if (xAxis == null) {
+                    gr.drawString("( x=" + selectedLineIndex + " ; y=" + realValues[selectedLineIndex][selectedLineValue] + " )", selectedCPoint.column + 10, selectedCPoint.row);
+                } else {
+                    gr.drawString("( x=" + (selectedLineIndex + xAxis[0]) + " ; y=" + realValues[selectedLineIndex][selectedLineValue] + " )", selectedCPoint.column + 10, selectedCPoint.row);
                 }
-                //drawMouseAxis(gr, mousePos, fromLeft, fromTop, canvas_width, canvas_height);
-                vals = checkDataPoints(gr, mp, fromLeft, fromTop, canvas_width, canvas_height);
-                drawItems(gr, this.items, w, h, fromRight, fromTop);
+                gr.fillOval(selectedCPoint.column - 3, selectedCPoint.row - 3, 6, 6);
             } else {
-                if (isMousePressed) {
-                    isMousePressed = false;
+                gr.setColor(Color.white);
+                gr.fillRect(selectedCPoint.column + 10, selectedCPoint.row - 10, 90, 17);
+                gr.setColor(Color.darkGray);
+                if (xAxis == null) {
+                    gr.drawString("( x=" + selectedLineIndex + " ; y=" + realValues[selectedLineIndex][selectedLineValue] + " )", selectedCPoint.column + 10, selectedCPoint.row);
+                } else {
+                    gr.drawString("( x=" + (selectedLineIndex + xAxis[0]) + " ; y=" + realValues[selectedLineIndex][selectedLineValue] + " )", selectedCPoint.column + 10, selectedCPoint.row);
                 }
-                drawItems(gr, this.items, w, h, fromRight, fromTop);
+                gr.fillOval(selectedCPoint.column - 3, selectedCPoint.row - 3, 6, 6);
             }
-        } else {
-            drawItems(gr, this.items, w, h, fromRight, fromTop);
         }
-        gr.setStroke(new BasicStroke());
-        gr.setColor(Color.black);
+
+        if (isLegend) {
+            drawLegend(gr);
+        }
+
+        //drawItems(gr, this.items, w, h, fromRight, fromTop);
+//        if (isTraced) {
+//            if (mousePos.x > fromLeft && mousePos.x < fromLeft + canvas_width && mousePos.y > fromTop && mousePos.y < fromTop + canvas_height) {
+//                if (isMousePressed) {
+//                    int selectedLineIndex = selectLine(mp);
+//                    if (selectedLineIndex != -1) {
+//                        itemSelected[selectedLineIndex] = !itemSelected[selectedLineIndex];
+//                    } else {
+//                        for (int i = 0; i < itemSelected.length; i++) {
+//                            itemSelected[i] = false;
+//                        }
+//
+//                    }
+//                    isMousePressed = false;
+//                    repaint();
+//                }
+//                //drawMouseAxis(gr, mousePos, fromLeft, fromTop, canvas_width, canvas_height);
+//                vals = checkDataPoints(gr, mp, fromLeft, fromTop, canvas_width, canvas_height);
+//                drawItems(gr, this.items, w, h, fromRight, fromTop);
+//            } else {
+//                if (isMousePressed) {
+//                    isMousePressed = false;
+//                }
+//                drawItems(gr, this.items, w, h, fromRight, fromTop);
+//            }
+//        } else {
+//            drawItems(gr, this.items, w, h, fromRight, fromTop);
+//        }
+        //gr.setStroke(new BasicStroke());
+        //gr.setColor(Color.black);
     }
 
     private void push(Color col) {
@@ -213,7 +266,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         float maxY = getMaxYValue(d);
         float minY = getMinYValue(d);
         float deltaY = maxY - minY;
-        float maxX = getMaxXValue(d);
+        float maxX = d.length;
         float cellWidth = w / maxX;
         float cellHeight = h / deltaY;
         for (int r = 0; r < d[0].length; r++) {
@@ -245,28 +298,109 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     }
 
     private void initialize() {
-        //each letter approximately 9 pixels width
-        int index = FactoryUtils.getLongestStringIndex(items);
-        fromRight = (int) (items[index].length() * 9 * 2.5);
-        fromLeft = 100;
+        realValues = FactoryUtils.formatFloat(cm.toFloatArray2D(), 2);
+        float[] yy = calculateYAxisLabels();
+        int length = FactoryUtils.getLongestStringLength(cm.formatFloat(3).toFloatArray1D());
+        fromLeft = 30 + length * 5;
+        fromRight = 50;
         fromTop = 50;
         fromBottom = 70;
         itemSelected = new boolean[items.length];
-
-        lbl = new JLabel("X:Y");
-        this.add(lbl);
-        lbl.setBounds(new Rectangle(10, 0, 100, 20));
-        lbl.setForeground(Color.black);
-        this.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        this.updateUI();
+        //henüz paint olayı çağrılmadığı için panelin büyüklüğünü bilmiyor o yüzden width ve height olarak 100,100 değerleri girildi
+        rectPlotCanvas = new Rectangle(fromLeft, fromRight, 100, 100);
+        rectLegend = new Rectangle(0, 0, 100, 100);
+        rectTitle = new Rectangle(0, 0, 100, 100);
+        rectAxisX = new Rectangle(0, 0, 100, 100);
+        rectAxisY = new Rectangle(0, 0, 100, 100);
 
         addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {  // Added method for double click detection
+                if (evt.getClickCount() == 2) {  // Check for double click
+                    mousePos = evt.getPoint();
+                    if (isLegend && rectLegend.contains(mousePos)) {
+                        for (int i = 0; i < items.length; i++) {
+                            Rectangle rectLine = new Rectangle(rectLegend.x + 10, rectLegend.y + (i * legendTextHeight) + 10, 30, legendTextHeight);
+                            if (rectLine.contains(mousePos)) {
+                                colorLine = JColorChooser.showDialog(null, "Choose Color for BoundingBox", colorLine);
+                                color[i] = colorLine != null ? colorLine : color[i];
+                                repaint();
+                                return;
+                            }
+                            Rectangle textLine = new Rectangle(rectLegend.x + 50, rectLegend.y + (i * legendTextHeight) + 10, legendTextWidth, legendTextHeight);
+                            if (textLine.contains(mousePos)) {
+                                String st = JOptionPane.showInputDialog(null, "set legend text as", items[i]);
+                                if (st != null) {
+                                    items[i] = st;
+                                }
+                                repaint();
+                                return;
+                            }
+                        }
+                    }
+                    if (rectPlotCanvas.contains(mousePos)) {
+                        int selLineIndex = selectLine(mp);
+                        if (selLineIndex != -1) {
+                            itemSelected[selLineIndex] = !itemSelected[selLineIndex];
+                        } else {
+                            for (int i = 0; i < itemSelected.length; i++) {
+                                itemSelected[i] = false;
+                            }
+                        }
+                        vals = checkDataPoints(gr, mp, fromLeft, fromTop, canvas_width, canvas_height);
+                        repaint();
+                    } else if (rectTitle.contains(mousePos)) {
+                        String st = JOptionPane.showInputDialog(null, "set title as", figureAttribute.title);
+                        if (st != null) {
+                            figureAttribute.title = st;
+                        }
+                        JLabel lbl = new JLabel();
+                        Font temp = lbl.getFont();
+                        FontDialog.showDialog(lbl);
+                        if (!temp.equals(lbl.getFont())) {
+                            figureAttribute.fontTitle = lbl.getFont();
+                        }
+                        repaint();
+                    } else if (rectAxisX.contains(mousePos)) {
+                        String st = JOptionPane.showInputDialog(null, "set axis name as", figureAttribute.axis_names[0]);
+                        if (st != null) {
+                            figureAttribute.axis_names[0] = st;
+                        }
+                        JLabel lbl = new JLabel();
+                        Font temp = lbl.getFont();
+                        FontDialog.showDialog(lbl);
+                        if (!temp.equals(lbl.getFont())) {
+                            figureAttribute.fontAxisX = lbl.getFont();
+                        }
+                        repaint();
+                    } else if (rectAxisY.contains(mousePos)) {
+                        String st = JOptionPane.showInputDialog(null, "set axis name as", figureAttribute.axis_names[1]);
+                        if (st != null) {
+                            figureAttribute.axis_names[1] = st;
+                        }
+                        JLabel lbl = new JLabel();
+                        Font temp = lbl.getFont();
+                        FontDialog.showDialog(lbl);
+                        if (!temp.equals(lbl.getFont())) {
+                            figureAttribute.fontAxisY = lbl.getFont();
+                        }
+                        repaint();
+                    } else {
+                        if (isMousePressed) {
+                            isMousePressed = false;
+                        }
+                    }
+                }
+            }
 
+            @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
+                mousePos = evt.getPoint();
                 isMousePressed = true;
                 repaint();
             }
 
+            @Override
             public void mouseReleased(java.awt.event.MouseEvent evt) {
 //                isMousePressed = false;
             }
@@ -275,15 +409,55 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
         this.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 
+            @Override
             public void mouseMoved(java.awt.event.MouseEvent e) {
-                mousePos = e.getPoint();
-                repaint();
+//                mousePos = e.getPoint();
+//                Rectangle r1 = new Rectangle();
+//                for (int i = 0; i < mp.length; i++) {
+//                    for (int j = 0; j < mp[0].length; j++) {
+//                        r1.x = mp[i][j].column - 4;
+//                        r1.y = mp[i][j].row - 4;
+//                        r1.width = 8;
+//                        r1.height = 8;
+//                        if (r1.contains(mousePos)) {
+//                            selectedCPoint = mp[i][j];
+//                            selectedLineIndex = i;
+//                            selectedLineValue = j;
+//                            //System.out.println(mousePos);
+//                            repaint();
+//                            return;
+//                        }
+//                    }
+//                }
+//                selectedCPoint = null;
+//                selectedLineIndex = -1;
+//                repaint();
             }
 
+            @Override
             public void mouseDragged(java.awt.event.MouseEvent e) {
-//                mousePos = e.getPoint();
-//                lbl.setVisible(true);
-//                repaint();
+                mousePos = e.getPoint();
+                Rectangle r1 = new Rectangle();
+                for (int i = 0; i < mp.length; i++) {
+                    for (int j = 0; j < mp[0].length; j++) {
+                        r1.x = mp[i][j].column - 4;
+                        r1.y = mp[i][j].row - 4;
+                        r1.width = 8;
+                        r1.height = 8;
+                        if (r1.contains(mousePos)) {
+                            selectedCPoint = mp[i][j];
+                            selectedLineIndex = i;
+                            selectedLineValue = j;
+                            //System.out.println(mousePos);
+                            repaint();
+                            return;
+                        }
+                    }
+                }
+                selectedCPoint = null;
+                selectedLineIndex = -1;
+                repaint();
+                System.gc();
             }
         });
 
@@ -305,26 +479,6 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                 }
             }
         }
-        return ret;
-    }
-
-    private int selectLineFromItemMenu(CPoint[][] mp) {
-        int ret = -1;
-        int nr = mp.length;
-        int nc = mp[0].length;
-        for (int i = 0; i < nr; i++) {
-            for (int j = 0; j < nc; j++) {
-                if (mp[i][j].row > mousePos.y - 5
-                        && mp[i][j].row < mousePos.y + 5
-                        && mp[i][j].column > mousePos.x - 5
-                        && mp[i][j].column < mousePos.x + 5) {
-                    ret = i;
-                    return ret;
-
-                }
-            }
-        }
-        isMousePressed = false;
         return ret;
     }
 
@@ -354,7 +508,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
         float alpha = this.alpha_blending;
         if (itemSelected[nr]) {
-            alpha = 0.75f;
+            alpha = 0.85f;
             stroke = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
         } else if (checkItemSelected()) {
             alpha = this.alpha_blending;
@@ -363,13 +517,49 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
         gr.setComposite(alcom);
 
-        if (pType.contains("-")) {
+        if (pType.equals("-")) {
             if (figureAttribute.isStroke) {
                 gr.setStroke(figureAttribute.stroke.get(nr));
                 gr.drawPolyline(xp, yp, cm.getRowNumber());
             } else {
                 gr.setStroke(stroke);
                 gr.drawPolyline(xp, yp, cm.getRowNumber());
+            }
+        } else if (pType.equals(".")) {
+            if (figureAttribute.isStroke) {
+                gr.setStroke(figureAttribute.stroke.get(nr));
+                gr.drawPolyline(xp, yp, cm.getRowNumber());
+            } else {
+                gr.setStroke(stroke);
+                int pointRadius = 2;
+                for (int i = 0; i < xp.length - 1; i++) {
+                    gr.fillOval(xp[i] - pointRadius, yp[i] - pointRadius, pointRadius * 2, pointRadius * 2);
+                    gr.drawLine(xp[i], yp[i], xp[i + 1], yp[i + 1]);
+                }
+            }
+        } else if (pType.equals("*")) {
+            if (figureAttribute.isStroke) {
+                gr.setStroke(figureAttribute.stroke.get(nr));
+                gr.drawPolyline(xp, yp, cm.getRowNumber());
+            } else {
+                gr.setStroke(stroke);
+                for (int i = 0; i < xp.length - 1; i++) {
+                    gr.drawString(pType, xp[i] - 4, yp[i] + 6);
+                    gr.drawLine(xp[i], yp[i], xp[i + 1], yp[i + 1]);
+                }
+            }
+        } else if (pType.equals("o")) {
+            if (figureAttribute.isStroke) {
+                gr.setStroke(figureAttribute.stroke.get(nr));
+                gr.drawPolyline(xp, yp, cm.getRowNumber());
+            } else {
+                gr.setStroke(stroke);
+                int pointRadius = 4;
+                for (int i = 0; i < xp.length - 1; i++) {
+                    gr.drawOval(xp[i] - pointRadius, yp[i] - pointRadius, pointRadius * 2, pointRadius * 2);
+                    gr.drawLine(xp[i], yp[i], xp[i + 1], yp[i + 1]);
+                }
+                gr.drawOval(xp[xp.length - 1] - pointRadius, yp[xp.length - 1] - pointRadius, pointRadius * 2, pointRadius * 2);
             }
         }
         if (isShowPoint) {
@@ -419,8 +609,8 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                     push(color[j]);
                     gr.drawString("" + FactoryUtils.formatFloat(cm.toFloatArray2D()[i][j], 3), fromLeft - 50, mp[i][j].row + 6);
                     gr.drawString("" + FactoryUtils.formatFloat(cm.toFloatArray2D()[i][j], 3), fromLeft + canvas_width + 5, mp[i][j].row + 6);
-                    gr.drawLine(fromLeft, mp[i][j].row+1, fromLeft + canvas_width, mp[i][j].row+1);
-                    gr.drawLine(mp[i][j].column+1, fromTop, mp[i][j].column+1, fromTop + canvas_height);
+                    gr.drawLine(fromLeft, mp[i][j].row + 1, fromLeft + canvas_width, mp[i][j].row + 1);
+                    gr.drawLine(mp[i][j].column + 1, fromTop, mp[i][j].column + 1, fromTop + canvas_height);
                     pop();
 
                     //red rectangles denoting index values on the X axis bottom and up
@@ -468,15 +658,36 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         }
     }
 
-    private void drawYAxis(Graphics gr, int x0, int y0, int w, int fromRight, float[][] d) {
+    private float[] calculateYAxisLabels() {
+        float[][] d = cm.toFloatArray2D();
+        int y = (getHeight() - 90);
+        float n = Math.round(y / 100.0);
+        float maxY = getMaxYValue(d);
+        float minY = getMinYValue(d);
+        float deltaY = maxY - minY;
+        float[] yVal = new float[(int) n + 1];
+        float delta = deltaY / n;
+        for (int i = 0; i <= n; i++) {
+            if (maxY > 10) {
+                yVal[i] = Math.round(Math.round((i * delta + minY) * n) / n);
+            } else {
+                yVal[i] = (i * delta + minY);
+            }
+
+        }
+        return yVal;
+    }
+
+    private void drawYAxis(Graphics gr, int[][] mappedVal, int x0, int y0, int w, int fromRight, float[][] d) {
         float maxY = getMaxYValue(d);
         float minY = getMinYValue(d);
         float deltaY = maxY - minY;
         float n = Math.round(y0 / 100.0);
-        int l = y0 - 50;
-        int top = 50;
-        gr.drawLine(x0, top, x0, y0 + 20);
-        gr.drawLine(w - fromRight, top, w - fromRight, y0 + 20);
+        //int l = y0 - 50;
+        int l = mappedVal[1][1] - mappedVal[1][0];
+        //int top = 50;
+        y0 = mappedVal[1][1];
+        //gr.drawLine(x0, top, x0, y0);
         float delta = deltaY / n;
         float[] yVal = new float[(int) n + 1];
         float dY = l / n;
@@ -484,33 +695,46 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         int art = 5;
         int shift = 20;
         for (int i = 0; i <= n; i++) {
-            gr.setColor(Color.darkGray);
+            if (isDarkMode) {
+                gr.setColor(Color.lightGray);
+            } else {
+                gr.setColor(Color.darkGray);
+            }
             if (maxY > 10) {
                 yVal[i] = Math.round(Math.round((i * delta + minY) * n) / n);
             } else {
                 yVal[i] = (i * delta + minY);
             }
+            String val = FactoryUtils.formatFloatAsString(yVal[i], 3);
+            gr.drawString(val, x0 - 10 - FactoryUtils.getGraphicsTextWidth(gr, val), (int) (y0 - i * dY) + art);
+            gr.drawLine(x0 - 5, (int) (y0 - i * dY), x0, (int) (y0 - i * dY));
 
-            //System.out.println(i+":"+yVal[i]+":"+FactoryUtils.formatFloatAsString(yVal[i], 3));
-            gr.drawString(FactoryUtils.formatFloat(yVal[i], 3) + "", x0 - 80, (int) (y0 - i * dY + shift) + art);
-
-            q = (int) (y0 - i * dY + shift);
-            gr.setColor(Color.white);
-            if (i < n) {
-                gr.drawLine(x0, q - (int) dY / 2, x0 + w - fromRight, q - (int) dY / 2);
+            if (isGridX) {
+                q = (int) (y0 - i * dY + shift);
+                if (isDarkMode) {
+                    gr.setColor(Color.decode("#4F4F4F"));
+                } else {
+                    //gr.setColor(Color.white);
+                    gr.setColor(Color.lightGray);
+                }
+                if (i < n) {
+                    gr.drawLine(x0 + 2, q - (int) dY / 2, x0 + w - fromRight + 4, q - (int) dY / 2);
+                }
+                if (i > 0) {
+                    gr.drawLine(x0 + 2, q, x0 + w - fromRight + 4, q);
+                }
             }
-            gr.drawLine(x0, q, x0 + w - fromRight, q);
         }
-        gr.setColor(Color.darkGray);
-        gr.drawString(figureAttribute.axis_names[1], 20, 35);
     }
 
-    private void drawXAxis(Graphics gr, int x0, int y0, int w, int fromRight, float[][] d) {
+    private void drawXAxis(Graphics gr, int[][] mappedVal, int x0, int y0, int w, int fromRight, float[][] d) {
         gr.setColor(Color.darkGray);
         float maxX = 0;
         float minX = 0;
         float n = Math.round(w / 150.0);
-        int l = w - (x0 + fromRight);
+        //int l = w - (x0 + fromRight);
+        int l = mappedVal[0][1] - mappedVal[0][0];
+        x0 = mappedVal[0][0];
         float dx = l / n;
         float[] xVal = new float[(int) n + 1];
         int top = 50;
@@ -519,13 +743,17 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
             minX = FactoryUtils.getMinimum(this.xAxis);
             maxX = Math.abs(maxX - minX);
         } else {
-            maxX = getMaxXValue(d);
+            maxX = d.length;
         }
         float delta = maxX / n;
-        gr.drawString(figureAttribute.axis_names[0], w - 110, y0 + 40);
+        //gr.drawString(figureAttribute.axis_names[0], w - 110, y0 + 40);
         int q = 0;
         for (int i = 0; i <= n; i++) {
-            gr.setColor(Color.darkGray);
+            if (isDarkMode) {
+                gr.setColor(Color.lightGray);
+            } else {
+                gr.setColor(Color.darkGray);
+            }
             if (i < n) {
                 xVal[i] = (Math.round(minX + i * delta));
             } else {
@@ -534,13 +762,22 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
             q = (int) (x0 + i * dx);
             gr.drawString(FactoryUtils.formatFloatAsString(xVal[i], 3), q - 10, y0 + 40);
-            gr.setColor(Color.white);
-            if (i < n) {
-                gr.drawLine(q + (int) dx / 2, top, q + (int) dx / 2, y0 + 20);
+            gr.drawLine(q, y0 + 20, q, y0 + 25);
+            if (isGridY) {
+                if (isDarkMode) {
+                    gr.setColor(Color.decode("#4F4F4F"));
+                } else {
+                    gr.setColor(Color.lightGray);
+                }
+                if (i < n) {
+                    gr.drawLine(q + (int) dx / 2, top + 2, q + (int) dx / 2, y0 + 18);
+                }
+                if (i > 0) {
+                    gr.drawLine(q, top + 2, q, y0 + 18);
+                }
             }
-            gr.drawLine(q, top, q, y0 + 20);
+
         }
-        gr.setColor(Color.darkGray);
     }
 
     private float getMaxYValue(float[][] d) {
@@ -567,18 +804,6 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
             }
         }
         return ret;
-    }
-
-    private float getMaxXValue(float[][] d) {
-//        float ret = 0;
-//        ret = d[0].length;
-//        for (int i = 0; i < d.length; i++) {
-//            if (ret < d[i].length) {
-//                ret = d[i].length;
-//            }
-//        }
-//        return ret;
-        return d.length;
     }
 
     /**
@@ -613,28 +838,6 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         return scale;
     }
 
-    private int getMaxWidth(Graphics gr, String[] t) {
-        if (t.length == 1) {
-            Rectangle2D r1 = gr.getFont().getStringBounds(t[0], 0, t[0].length(), gr.getFontMetrics().getFontRenderContext());
-            return (int) r1.getWidth();
-        }
-        Rectangle2D r1 = gr.getFont().getStringBounds(t[0], 0, t[0].length(), gr.getFontMetrics().getFontRenderContext());
-        Rectangle2D r2 = gr.getFont().getStringBounds(t[1], 0, t[1].length(), gr.getFontMetrics().getFontRenderContext());
-        int ret = (int) Math.max(r1.getWidth(), r2.getWidth()) + 20;
-        return ret;
-    }
-
-    private int getMaxHeight(Graphics gr, String[] t) {
-        if (t.length == 1) {
-            Rectangle2D r1 = gr.getFont().getStringBounds(t[0], 0, t[0].length(), gr.getFontMetrics().getFontRenderContext());
-            return (int) r1.getHeight();
-        }
-        Rectangle2D r1 = gr.getFont().getStringBounds(t[0], 0, t[0].length(), gr.getFontMetrics().getFontRenderContext());
-        Rectangle2D r2 = gr.getFont().getStringBounds(t[1], 0, t[1].length(), gr.getFontMetrics().getFontRenderContext());
-        int ret = (int) Math.max(r1.getHeight(), r2.getHeight());
-        return ret;
-    }
-
     public void setPlotType(String type) {
         this.figureAttribute.pointType = type;
         repaint();
@@ -642,8 +845,8 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
     public void setFigureAttribute(TFigureAttribute figureAttribute) {
         this.figureAttribute = figureAttribute;
-        if (figureAttribute.items!=null || figureAttribute.items.length>0) {
-            this.items=figureAttribute.items;
+        if (figureAttribute.items != null || figureAttribute.items.length > 0) {
+            this.items = figureAttribute.items;
         }
         //this.items=figureAttribute.items;
         repaint();
@@ -653,55 +856,9 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         return this.figureAttribute;
     }
 
-    private void drawItems(Graphics2D gr, String[] items, int w, int h, int fromRight, int fromTop) {
-        gr.setColor(Color.gray);
-        gr.drawString("Items", w - fromRight + 60, fromTop + 20);
-        gr.drawString("-----------------------", w - fromRight + 20, fromTop + 40);
-        int dt = 30;
-        int next = 50;
-        for (int i = 0; i < items.length; i++) {
-            gr.setColor(color[i]);
-            gr.drawString(items[i], w - fromRight + next + 10, fromTop + 60 + dt * i);
-            if (itemSelected[i]) {
-                gr.setColor(Color.lightGray);
-                gr.drawRect(w - fromRight + next, fromTop + 30 + dt * i + 8, 90, 30);
-                gr.setColor(Color.darkGray);
-                gr.drawLine(w - fromRight + next, fromTop + 30 + dt * i + 9, w - 40, fromTop + 30 + dt * i + 9);
-                gr.drawLine(w - fromRight + next, fromTop + 30 + dt * i + 10, w - 40, fromTop + 30 + dt * i + 10);
-                gr.drawLine(w - fromRight + next + 1, fromTop + 30 + dt * i + 8, w - fromRight + next + 1, fromTop + 30 + dt * i + 38);
-                gr.drawLine(w - fromRight + next + 2, fromTop + 30 + dt * i + 8, w - fromRight + next + 2, fromTop + 30 + dt * i + 38);
-            }
-        }
-    }
-
-    private void drawItems(Graphics2D gr, String[] items, int w, int h, int fromRight, int fromTop, int[] vals) {
-        gr.setColor(Color.gray);
-        gr.drawString("Items", w - fromRight + 40, fromTop + 20);
-        gr.drawString("----------------------", w - fromRight + 20, fromTop + 40);
-        int dt = 30;
-        for (int i = 0; i < items.length; i++) {
-            gr.setColor(color[i]);
-            gr.drawString(items[i] + " = " + FactoryUtils.formatFloat(cm.toFloatArray2D()[i][vals[i]], 2), w - fromRight + 20, fromTop + 60 + dt * i);
-            if (itemSelected[i]) {
-                gr.setColor(Color.lightGray);
-                gr.drawRect(w - fromRight + 15, fromTop + 30 + dt * i + 8, fromRight - 25, 30);
-                gr.setColor(Color.darkGray);
-                gr.drawLine(w - fromRight + 16, fromTop + 31 + dt * i + 8, w - 11, fromTop + 31 + dt * i + 8);
-                gr.drawLine(w - fromRight + 17, fromTop + 32 + dt * i + 8, w - 12, fromTop + 32 + dt * i + 8);
-                gr.drawLine(w - fromRight + 16, fromTop + 31 + dt * i + 8, w - fromRight + 16, fromTop + 29 + dt * i + 38);
-                gr.drawLine(w - fromRight + 17, fromTop + 32 + dt * i + 8, w - fromRight + 17, fromTop + 28 + dt * i + 38);
-            }
-        }
-    }
-
     public void setRandomSeed(long currentTimeMillis) {
         this.rand_seed = currentTimeMillis;
         color = FactoryUtils.getRandomColors(cm.getRowNumber(), rand_seed);
-    }
-
-    public void setTrace(boolean selected) {
-        isTraced = selected;
-        repaint();
     }
 
     @Override
@@ -753,6 +910,186 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                 return true;
             }
         }
+        return ret;
+    }
+
+    public void setDarkMode(boolean isDarkMode) {
+        this.isDarkMode = isDarkMode;
+        repaint();
+    }
+
+    public void setGridy(boolean selected) {
+        this.isGridY = selected;
+        repaint();
+    }
+
+    public void setGridx(boolean selected) {
+        this.isGridX = selected;
+        repaint();
+    }
+
+    public void setPointType(String selected) {
+        figureAttribute.pointType = selected;
+        repaint();
+    }
+
+    public void setLegend(boolean selected) {
+        isLegend = selected;
+        repaint();
+    }
+
+    private void drawLegend(Graphics2D gr) {
+        legendTextWidth = FactoryUtils.getMaxGraphicsTextWidth(gr, items);
+        legendTextHeight = FactoryUtils.getMaxGraphicsTextHeight(gr, items);
+        int w = legendTextWidth + 60;
+        int px = rectPlotCanvas.x + rectPlotCanvas.width - w - 10;
+        int py = rectPlotCanvas.y + 10;
+        int h = (items.length + 1) * legendTextHeight;
+
+        rectLegend.x = px;
+        rectLegend.y = py;
+        rectLegend.width = w;
+        rectLegend.height = h;
+
+        if (isDarkMode) {
+            gr.setColor(Color.darkGray);
+            gr.fillRoundRect(px, py, w, h, 5, 5);
+            gr.setColor(Color.decode("#9F9F9F"));
+            gr.drawRoundRect(px, py, w, h, 5, 5);
+            gr.setColor(Color.decode("#BFBFBF"));
+        } else {
+            gr.setColor(Color.white);
+            gr.fillRoundRect(px, py, w, h, 5, 5);
+            gr.setColor(Color.decode("#BFBFBF"));
+            gr.drawRoundRect(px, py, w, h, 5, 5);
+            gr.setColor(Color.darkGray);
+        }
+        Stroke prev = gr.getStroke();
+        Stroke stroke = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f);
+        gr.setComposite(alcom);
+        gr.setStroke(stroke);
+        int k = 0;
+        Color temp = gr.getColor();
+        for (String item : items) {
+            gr.setColor(color[k]);
+            int yy = py + 20 + (k) * legendTextHeight;
+            gr.drawLine(px + 10, yy - 5, px + 35, yy - 5);
+            gr.setColor(temp);
+            gr.drawString(item, px + 50, yy);
+            k++;
+        }
+        alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f);
+        gr.setComposite(alcom);
+        gr.setStroke(prev);
+    }
+
+    private void drawTitle(Graphics2D gr, int w) {
+        if (isDarkMode) {
+            gr.setColor(Color.lightGray);
+        } else {
+            gr.setColor(Color.darkGray);
+        }
+        gr.setFont(figureAttribute.fontTitle);
+        titleWidth = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.title);
+        titleHeight = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.title);
+        int pTitleX = (w + 30 - titleWidth) / 2;
+        gr.drawString(figureAttribute.title, pTitleX, 30);
+        rectTitle.x = pTitleX;
+        rectTitle.y = 20;
+        rectTitle.width = titleWidth;
+        rectTitle.height = titleHeight;
+        gr.setFont(FactoryUtils.getDefaultFont());
+    }
+
+    private void drawTitleAxisX(Graphics2D gr) {
+        if (isDarkMode) {
+            gr.setColor(Color.lightGray);
+        } else {
+            gr.setColor(Color.darkGray);
+        }
+        gr.setFont(figureAttribute.fontAxisX);
+        int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[0]);
+        int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[0]);
+        int px = (getWidth() - axis_width) / 2;
+        int py = getHeight() - 20;
+        gr.drawString(figureAttribute.axis_names[0], px, py);
+        rectAxisX.x = px;
+        rectAxisX.y = py - 10;
+        rectAxisX.width = axis_width;
+        rectAxisX.height = axis_height;
+        gr.setFont(FactoryUtils.getDefaultFont());
+    }
+
+    private void drawTitleAxisY(Graphics2D gr) {
+        if (isDarkMode) {
+            gr.setColor(Color.lightGray);
+        } else {
+            gr.setColor(Color.darkGray);
+        }
+        gr.setFont(figureAttribute.fontAxisY);
+        int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[1]);
+        int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[1]);
+        int px = 30;
+        int py = getHeight() - (getHeight() - axis_width) / 2-10;
+        Point p = FactoryUtils.drawRotatedString(gr, figureAttribute.axis_names[1], px, py, -Math.PI / 2);
+        rectAxisY.x = px - 10;
+        rectAxisY.y = py - axis_width;
+        //90 derece döndüğü için tersi alındı
+        rectAxisY.width = axis_height;
+        rectAxisY.height = axis_width;
+        gr.setFont(FactoryUtils.getDefaultFont());
+    }
+
+    private void drawPlotCanvas(Graphics2D gr) {
+        canvas_width = getWidth() - (fromLeft + fromRight);
+        canvas_height = getHeight() - (fromBottom + fromTop);
+
+        //plot alanını ilgili renkle boya
+        rectPlotCanvas.x = fromLeft;
+        rectPlotCanvas.y = fromTop;
+        rectPlotCanvas.width = canvas_width;
+        rectPlotCanvas.height = canvas_height;
+        if (isDarkMode) {
+            gr.setColor(Color.darkGray);
+            gr.fillRect(fromLeft, fromTop, canvas_width, canvas_height);
+            gr.setColor(Color.lightGray);
+            gr.drawRect(fromLeft, fromTop, canvas_width, canvas_height);
+        } else {
+            // gr.setColor(Color.decode("#EAEAF2"));
+            gr.setColor(Color.white);
+            gr.fillRect(fromLeft, fromTop, canvas_width, canvas_height);
+            gr.setColor(Color.black);
+            gr.drawRect(fromLeft, fromTop, canvas_width, canvas_height);
+        }
+    }
+
+    private int[][] getMaxMinValue(CPoint[][] d) {
+        int[][] ret = new int[2][2];
+        int maxX = Integer.MIN_VALUE;
+        int minX = Integer.MAX_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int minY = Integer.MAX_VALUE;
+        for (int i = 0; i < d.length; i++) {
+            for (int j = 0; j < d[0].length; j++) {
+                if (d[i][j].row > maxY) {
+                    maxY = d[i][j].row;
+                }
+                if (d[i][j].row < minY) {
+                    minY = d[i][j].row;
+                }
+                if (d[i][j].column > maxX) {
+                    maxX = d[i][j].column;
+                }
+                if (d[i][j].column < minX) {
+                    minX = d[i][j].column;
+                }
+            }
+        }
+        ret[0][0] = minX;
+        ret[0][1] = maxX;
+        ret[1][0] = minY;
+        ret[1][1] = maxY;
         return ret;
     }
 

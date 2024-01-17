@@ -2028,6 +2028,98 @@ public final class CMatrix implements Serializable {
         framePlot.setVisible(true);
         return this;
     }
+    
+    /**
+     * Matlab compatible command: plot the curves of each column in the matrix
+     *
+     * @return CMatrix
+     */
+    public CMatrix plot(float[] xAxis) {
+        this.array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
+        TFigureAttribute attr = new TFigureAttribute();
+        attr.items = getColumnNamesArray();
+
+        if (!hold_on) {
+            framePlot = new FramePlot(this, attr, xAxis);
+        } else {
+            if (framePlot == null) {
+                framePlot = new FramePlot(this, attr, xAxis);
+            }
+            framePlot.setMatrix(this);
+        }
+        TFigureAttribute fg = new TFigureAttribute();
+        fg.pointType = plotType;
+        fg.items = getColumnNamesArray();
+        framePlot.setFigureAttribute(fg);
+        framePlot.setVisible(true);
+        return this;
+    }
+    
+    /**
+     * Matlab compatible command: plot the curves of each column in the matrix
+     *
+     * @param label:labels of each rows
+     * @return CMatrix
+     */
+    public CMatrix plot(String[] title_axis,String[] label) {
+        this.array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
+        TFigureAttribute attr = new TFigureAttribute();
+        if (title_axis!=null) {
+            if (title_axis.length==1) {
+                attr.title=title_axis[0];
+            }else if(title_axis.length==3){
+                attr.title=title_axis[0];
+                attr.axis_names[0]=title_axis[1];
+                attr.axis_names[1]=title_axis[2];
+            }
+        }
+        
+        attr.items = label;
+        if (!hold_on) {
+            framePlot = new FramePlot(this, attr);
+        } else {
+            if (framePlot == null) {
+                framePlot = new FramePlot(this, attr);
+            }
+            framePlot.setMatrix(this);
+        }
+        framePlot.setVisible(true);
+        return this;
+    }
+    
+    /**
+     * Matlab compatible command: plot the curves of each column in the matrix
+     *
+     * @param title_axis
+     * @param label:labels of each rows
+     * @param xAxis:custom x axis values as float array
+     * @return CMatrix
+     */
+    public CMatrix plot(String[] title_axis,String[] label, float[] xAxis) {
+        this.array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
+        TFigureAttribute attr = new TFigureAttribute();
+        if (title_axis!=null) {
+            if (title_axis.length==1) {
+                attr.title=title_axis[0];
+            }else if(title_axis.length==3){
+                attr.title=title_axis[0];
+                attr.axis_names[0]=title_axis[1];
+                attr.axis_names[1]=title_axis[2];
+            }
+        }
+        
+        attr.items = label;
+        if (!hold_on) {
+            framePlot = new FramePlot(this, attr,xAxis);
+        } else {
+            if (framePlot == null) {
+                framePlot = new FramePlot(this, attr,xAxis);
+            }
+            framePlot.setMatrix(this);
+        }
+        framePlot.setVisible(true);
+        return this;
+    }
 
     /**
      * Matlab compatible command: plot the curves of each column in the matrix
@@ -2190,17 +2282,17 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
-    /**
-     * plot the curves based on provided x axis values
-     *
-     * @param x:value of x axis
-     * @return
-     */
-    public CMatrix plot(float[] x) {
-        FramePlot frm = new FramePlot(this.clone(), x);
-        frm.setVisible(true);
-        return this;
-    }
+//    /**
+//     * plot the curves based on provided x axis values
+//     *
+//     * @param x:value of x axis
+//     * @return
+//     */
+//    public CMatrix plot(float[] x) {
+//        FramePlot frm = new FramePlot(this.clone(), x);
+//        frm.setVisible(true);
+//        return this;
+//    }
 
     public CMatrix plot(TFigureAttribute attr) {
         FramePlot frm = new FramePlot(this.clone(), attr);

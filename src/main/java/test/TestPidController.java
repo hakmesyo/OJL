@@ -5,6 +5,7 @@
  */
 package test;
 
+import jazari.matrix.CMatrix;
 import jazari.utils.PidController;
 
 /**
@@ -36,11 +37,13 @@ public class TestPidController {
         //System.err.printf("Output\tP\tI\tD\n");
 
         // Position based test code
-        for (int i = 0; i < 100; i++) {
+        int n=200;
+        double[][] data=new double[n][4];
+        for (int i = 0; i < n; i++) {
 
             //if(i==50)miniPID.setI(.05);
-            if (i == 60) {
-                target = 50;
+            if (i == n/2) {
+                target = target/2;
             }
 
             //if(i==75)target=(100);
@@ -51,9 +54,17 @@ public class TestPidController {
             //System.out.println("=========================="); 
             //System.out.printf("Current: %3.2f , Actual: %3.2f, Error: %3.2f\n",actual, output, (target-actual));
             System.err.printf("%3.2f\t%3.2f\t%3.2f\t%3.2f\n", target, actual, output, (target - actual));
+            data[i][0]=target;
+            data[i][1]=actual;
+            data[i][2]=output;
+            data[i][3]=(target - actual);
 
             //if(i>80 && i%5==0)actual+=(Math.random()-.5)*20;
         }
+        
+        CMatrix cm = CMatrix.getInstance(data)
+                .plot(new String[]{"Pid Controller"},new String[]{"target","actual","output","(target-actual)"})
+                ;
 
     }
 }

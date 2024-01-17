@@ -51,17 +51,6 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         cm.plotPanel = getPlotPanel();
         initialize();
-        try {
-            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     public FramePlot(CMatrix cm, float[] x) {
@@ -75,17 +64,6 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         cm.plotPanel = getPlotPanel();
         initialize();
-        try {
-            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     public FramePlot(CMatrix cm, TFigureAttribute attr) {
@@ -95,19 +73,8 @@ public class FramePlot extends javax.swing.JFrame {
         initComponents();
         getPlotPanel().setFigureAttribute(this.figureAttribute);
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
-        cm.plotPanel = getPlotPanel();
+        this.cm.plotPanel = getPlotPanel();
         initialize();
-        try {
-            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     public FramePlot(CMatrix cm, TFigureAttribute attr, float[] x) {
@@ -120,17 +87,17 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         getPlotPanel().setXAxis(x);
         initialize();
-        try {
-            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//        } catch (ClassNotFoundException ex) {
+//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     public void setMatrix(CMatrix cm) {
@@ -148,15 +115,19 @@ public class FramePlot extends javax.swing.JFrame {
     private void initComponents() {
 
         panel_plot = new jazari.gui.PanelPlot(cm);
-        jPanel2 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jPanel1 = new javax.swing.JPanel();
         btn_dataGrid = new javax.swing.JButton();
         btn_scatter = new javax.swing.JButton();
         btn_save = new javax.swing.JButton();
         txt_dpi = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        btnSort = new javax.swing.JButton();
         btn_refresh = new javax.swing.JButton();
-        chk_trace = new javax.swing.JCheckBox();
+        chk_legend = new javax.swing.JCheckBox();
+        chk_dark_mode = new javax.swing.JCheckBox();
+        chk_gridy = new javax.swing.JCheckBox();
+        chk_gridx = new javax.swing.JCheckBox();
+        combo_line_type = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -170,10 +141,10 @@ public class FramePlot extends javax.swing.JFrame {
         );
         panel_plotLayout.setVerticalGroup(
             panel_plotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 563, Short.MAX_VALUE)
+            .addGap(0, 552, Short.MAX_VALUE)
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         btn_dataGrid.setText("Data Grid");
         btn_dataGrid.addActionListener(new java.awt.event.ActionListener() {
@@ -200,13 +171,6 @@ public class FramePlot extends javax.swing.JFrame {
 
         jLabel2.setText("dpi");
 
-        btnSort.setText("sort");
-        btnSort.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSortActionPerformed(evt);
-            }
-        });
-
         btn_refresh.setText("refresh");
         btn_refresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -214,64 +178,110 @@ public class FramePlot extends javax.swing.JFrame {
             }
         });
 
-        chk_trace.setText("trace");
-        chk_trace.addItemListener(new java.awt.event.ItemListener() {
+        chk_legend.setSelected(true);
+        chk_legend.setText("legend");
+        chk_legend.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                chk_traceItemStateChanged(evt);
+                chk_legendItemStateChanged(evt);
             }
         });
-        chk_trace.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+        chk_legend.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                chk_tracePropertyChange(evt);
+                chk_legendPropertyChange(evt);
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        chk_dark_mode.setSelected(true);
+        chk_dark_mode.setText("dark mode");
+        chk_dark_mode.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_dark_modeİtemStateChanged(evt);
+            }
+        });
+
+        chk_gridy.setSelected(true);
+        chk_gridy.setText("gridy");
+        chk_gridy.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_gridyİtemStateChanged(evt);
+            }
+        });
+
+        chk_gridx.setSelected(true);
+        chk_gridx.setText("gridx");
+        chk_gridx.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_gridxİtemStateChanged(evt);
+            }
+        });
+
+        combo_line_type.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        combo_line_type.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-", ".", "*", "o" }));
+        combo_line_type.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                combo_line_typeİtemStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(btn_dataGrid)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_scatter)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_save, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 263, Short.MAX_VALUE)
-                .addComponent(chk_trace)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btn_refresh)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSort)
-                .addGap(89, 89, 89))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(btn_dataGrid)
-                .addComponent(btn_scatter)
-                .addComponent(btn_save)
-                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jLabel2)
-                .addComponent(btnSort)
                 .addComponent(btn_refresh)
-                .addComponent(chk_trace))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 180, Short.MAX_VALUE)
+                .addComponent(combo_line_type, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_gridx, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_gridy)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_dark_mode)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_legend)
+                .addGap(14, 14, 14))
         );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_dataGrid)
+                    .addComponent(btn_scatter)
+                    .addComponent(btn_save)
+                    .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(btn_refresh)
+                    .addComponent(chk_legend)
+                    .addComponent(chk_dark_mode)
+                    .addComponent(chk_gridy)
+                    .addComponent(chk_gridx)
+                    .addComponent(combo_line_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 77, Short.MAX_VALUE))
+        );
+
+        jScrollPane1.setViewportView(jPanel1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panel_plot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panel_plot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -298,21 +308,33 @@ public class FramePlot extends javax.swing.JFrame {
         savePanel();
     }//GEN-LAST:event_btn_saveActionPerformed
 
-    private void btnSortActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSortActionPerformed
-        sort();
-    }//GEN-LAST:event_btnSortActionPerformed
-
     private void btn_refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_refreshActionPerformed
         getPlotPanel().setMatrix(this.cm);
     }//GEN-LAST:event_btn_refreshActionPerformed
 
-    private void chk_tracePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_chk_tracePropertyChange
+    private void chk_legendPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_chk_legendPropertyChange
         
-    }//GEN-LAST:event_chk_tracePropertyChange
+    }//GEN-LAST:event_chk_legendPropertyChange
 
-    private void chk_traceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_traceItemStateChanged
-        getPlotPanel().setTrace(chk_trace.isSelected());
-    }//GEN-LAST:event_chk_traceItemStateChanged
+    private void chk_legendItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_legendItemStateChanged
+        getPlotPanel().setLegend(chk_legend.isSelected());
+    }//GEN-LAST:event_chk_legendItemStateChanged
+
+    private void chk_dark_modeİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_dark_modeİtemStateChanged
+        getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
+    }//GEN-LAST:event_chk_dark_modeİtemStateChanged
+
+    private void chk_gridyİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_gridyİtemStateChanged
+        getPlotPanel().setGridy(chk_gridy.isSelected());
+    }//GEN-LAST:event_chk_gridyİtemStateChanged
+
+    private void chk_gridxİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_gridxİtemStateChanged
+        getPlotPanel().setGridx(chk_gridx.isSelected());
+    }//GEN-LAST:event_chk_gridxİtemStateChanged
+
+    private void combo_line_typeİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_combo_line_typeİtemStateChanged
+        getPlotPanel().setPointType(combo_line_type.getSelectedItem().toString());
+    }//GEN-LAST:event_combo_line_typeİtemStateChanged
 
     public PanelPlot getPlotPanel() {
         return (PanelPlot) panel_plot;
@@ -367,14 +389,18 @@ public class FramePlot extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnSort;
     private javax.swing.JButton btn_dataGrid;
     private javax.swing.JButton btn_refresh;
     private javax.swing.JButton btn_save;
     private javax.swing.JButton btn_scatter;
-    private javax.swing.JCheckBox chk_trace;
+    private javax.swing.JCheckBox chk_dark_mode;
+    private javax.swing.JCheckBox chk_gridx;
+    private javax.swing.JCheckBox chk_gridy;
+    private javax.swing.JCheckBox chk_legend;
+    private javax.swing.JComboBox<String> combo_line_type;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel panel_plot;
     private javax.swing.JTextField txt_dpi;
     // End of variables declaration//GEN-END:variables
@@ -393,11 +419,11 @@ public class FramePlot extends javax.swing.JFrame {
             CMatrix cmx = FactoryUtils.sortRows(m2, index);
             getPlotPanel().setMatrix(cmx.transpose());
             isSort = false;
-            btnSort.setText("unsort");
+            //btnSort.setText("unsort");
             return;
         } else {
             getPlotPanel().setMatrix(cm);
-            btnSort.setText("sort");
+            //btnSort.setText("sort");
             isSort = true;
         }
     }

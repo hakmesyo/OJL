@@ -41,7 +41,7 @@
 		</bndbox>
 	</object>
 	<object>
-		<name>bariyer_red</name>
+		<name>sola_donulmez</name>
 		<occluded>0</occluded>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
