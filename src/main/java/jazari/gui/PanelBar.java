@@ -36,6 +36,9 @@ public class PanelBar extends TPanelData {
     int max_label_index = -1;
     private boolean isValueVisible = true;
     private FrameBar frm;
+    private boolean isDarkMode=true;
+    private boolean isTransposed=false;
+    private boolean isLegend=true;
 
     public PanelBar(FrameBar frm, CMatrix cm, String[] labels, boolean isValueVisible) {
         super(cm);
@@ -91,7 +94,7 @@ public class PanelBar extends TPanelData {
 //                RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 //        Font fnt = gr.getFont();
 //        gr.setFont(new Font(fnt.getFontName(), 1, 15));
-        if (!frm.chk_darkMode.isSelected()) {
+        if (isDarkMode) {
             gr.setColor(Color.white);
         }
 
@@ -266,8 +269,35 @@ public class PanelBar extends TPanelData {
         return ret;
     }
 
-    void setValueVisible(boolean valueVisible) {
+    public void setValueVisible(boolean valueVisible) {
         this.isValueVisible = valueVisible;
+        repaint();
+    }
+
+    public void setLegend(boolean selected) {
+        isLegend=selected;
+        repaint();
+    }
+
+    void setDarkMode(boolean selected) {
+        isDarkMode=selected;
+        repaint();
+    }
+
+    public void setGridy(boolean selected) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public void setGridx(boolean selected) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public void setPointType(String toString) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public void setTranspose(boolean selected) {
+        isTransposed=selected;
         repaint();
     }
 

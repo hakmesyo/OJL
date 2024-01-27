@@ -286,9 +286,24 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     }
 
     public void setMatrix(CMatrix m) {
-        this.cm = m.clone();
+        this.cm = m;
         rand_seed = System.currentTimeMillis();
         color = FactoryUtils.getRandomColors(cm.getRowNumber(), rand_seed);
+        figureAttribute.items = generateItemText(cm.getRowNumber());
+        repaint();
+    }
+    
+    public void setMatrix(CMatrix m,boolean isColorPersist) {
+        this.cm = m;
+        rand_seed = System.currentTimeMillis();
+        if (isColorPersist) {
+            if (color==null) {
+                color = FactoryUtils.getRandomColors(cm.getRowNumber(), rand_seed);
+            }
+        }else{
+            color = FactoryUtils.getRandomColors(cm.getRowNumber(), rand_seed);
+        }
+        
         figureAttribute.items = generateItemText(cm.getRowNumber());
         repaint();
     }

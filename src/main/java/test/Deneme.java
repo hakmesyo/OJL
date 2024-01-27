@@ -42,6 +42,13 @@ public class Deneme {
 
 
     public static void main(String[] args) {
+        float f=0;
+        long t1=FactoryUtils.tic();
+        for (int i = 0; i < 100; i++) {            
+            f=FactoryUtils.perlinNoise(i, 0.05f);
+            t1=FactoryUtils.toc(t1);
+        }
+        
         CMatrix cm1 = CMatrix.getInstance().range(-360, 360).toRadians().sin();
         CMatrix cm2 = CMatrix.getInstance().range(-360, 360).toRadians().cos();
         CMatrix cm3 = CMatrix.getInstance().range(-360, 360).toRadians().timesScalar(3).cos();

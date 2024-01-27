@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
+import javax.swing.JSlider;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -87,22 +88,21 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         getPlotPanel().setXAxis(x);
         initialize();
-//        try {
-//            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//        } catch (ClassNotFoundException ex) {
-//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (InstantiationException ex) {
-//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (IllegalAccessException ex) {
-//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (UnsupportedLookAndFeelException ex) {
-//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-//        }
     }
 
     public void setMatrix(CMatrix cm) {
         this.cm = cm;
         getPlotPanel().setMatrix(cm);
+    }
+
+    public void setMatrix(CMatrix cm,boolean isColorPersist) {
+        this.cm = cm;
+        if (isColorPersist) {
+            getPlotPanel().setMatrix(cm,isColorPersist);
+        }else{
+            getPlotPanel().setMatrix(cm);
+        }
+        
     }
 
     /**
@@ -128,6 +128,8 @@ public class FramePlot extends javax.swing.JFrame {
         chk_gridy = new javax.swing.JCheckBox();
         chk_gridx = new javax.swing.JCheckBox();
         combo_line_type = new javax.swing.JComboBox<>();
+        slider_sleep = new javax.swing.JSlider();
+        lbl_sleep = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -223,6 +225,27 @@ public class FramePlot extends javax.swing.JFrame {
             }
         });
 
+        slider_sleep.setMaximum(5000);
+        slider_sleep.setPaintLabels(true);
+        slider_sleep.setPaintTicks(true);
+        slider_sleep.setToolTipText("set loop speed");
+        slider_sleep.setValue(5000);
+        slider_sleep.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                slider_sleepStateChanged(evt);
+            }
+        });
+        slider_sleep.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+                slider_sleepCaretPositionChanged(evt);
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+            }
+        });
+
+        lbl_sleep.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        lbl_sleep.setText("0");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -239,7 +262,11 @@ public class FramePlot extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_refresh)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 180, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                .addComponent(lbl_sleep, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(slider_sleep, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(combo_line_type, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chk_gridx, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -265,7 +292,9 @@ public class FramePlot extends javax.swing.JFrame {
                     .addComponent(chk_dark_mode)
                     .addComponent(chk_gridy)
                     .addComponent(chk_gridx)
-                    .addComponent(combo_line_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(combo_line_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(slider_sleep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lbl_sleep))
                 .addGap(0, 77, Short.MAX_VALUE))
         );
 
@@ -336,6 +365,14 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setPointType(combo_line_type.getSelectedItem().toString());
     }//GEN-LAST:event_combo_line_typeİtemStateChanged
 
+    private void slider_sleepCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_slider_sleepCaretPositionChanged
+        
+    }//GEN-LAST:event_slider_sleepCaretPositionChanged
+
+    private void slider_sleepStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_slider_sleepStateChanged
+        lbl_sleep.setText(slider_sleep.getValue()+"");
+    }//GEN-LAST:event_slider_sleepStateChanged
+
     public PanelPlot getPlotPanel() {
         return (PanelPlot) panel_plot;
     }
@@ -401,7 +438,9 @@ public class FramePlot extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lbl_sleep;
     private javax.swing.JPanel panel_plot;
+    private javax.swing.JSlider slider_sleep;
     private javax.swing.JTextField txt_dpi;
     // End of variables declaration//GEN-END:variables
 
@@ -445,5 +484,22 @@ public class FramePlot extends javax.swing.JFrame {
                 dispose();
             }
         });
+        slider_sleep.setVisible(false);
+    }
+
+    public void setSliderVisible(boolean fromAnimated) {
+        slider_sleep.setVisible(fromAnimated);
+    }
+
+    public void setSliderPosition(int thread_sleep) {
+        slider_sleep.setValue(thread_sleep);
+    }
+
+    public int getSliderSleepValue() {
+        return slider_sleep.getValue();
+    }
+    
+    public JSlider getSliderSleep() {
+        return slider_sleep;
     }
 }

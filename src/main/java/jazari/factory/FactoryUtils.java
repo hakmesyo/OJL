@@ -89,6 +89,7 @@ import jazari.gui.FrameImage;
 import jazari.image_processing.ImageProcess;
 import jazari.matrix.CRectangle;
 import jazari.utils.CopyImageToClipboard;
+import jazari.utils.PerlinNoise;
 import jazari.utils.WindowsLikeComparator;
 import jazari.utils.YoloPolygonJson;
 import jazari.utils.pascalvoc.PascalVocBoundingBox;
@@ -2210,19 +2211,13 @@ public final class FactoryUtils {
     }
 
     public static String formatFloatAsString(float num, int n) {
-        //String ret = String.format("%." + n + "f", num).replace(',', '.');
         float x = formatFloat(num, n);
-        String ret = "" + x;
-        if (x >= 1 || x <= -1) {
-            int m = (x > 0) ? ret.length() : ret.length() - 1;
-            if (m > 2) {
-                int q = m - (m / 2) - 2;
-                x = (float) (Math.round(x / Math.pow(10, q)) * Math.pow(10, q));
-                ret = "" + x;
-            }
+        String ret = Float.toString(x);
+        if (x % 1 == 0) {
             ret = ret.substring(0, ret.indexOf("."));
         }
         if (ret.length() > 10) {
+            // çok büyük sayılar için bilimsel gösterim yap
             ret = String.format("%5.2e", Float.parseFloat(ret));
         }
         return ret;
@@ -3771,15 +3766,15 @@ public final class FactoryUtils {
         Rectangle2D r1 = gr.getFont().getStringBounds(t, 0, t.length(), gr.getFontMetrics().getFontRenderContext());
         return (int) r1.getWidth();
     }
-    
+
     public static int getMaxGraphicsTextWidth(Graphics gr, String[] t) {
-        int ret=0;
+        int ret = 0;
         for (int i = 0; i < t.length; i++) {
             Rectangle2D r1 = gr.getFont().getStringBounds(t[i], 0, t[i].length(), gr.getFontMetrics().getFontRenderContext());
-            if (ret<r1.getWidth()) {
-                ret=(int)r1.getWidth();
+            if (ret < r1.getWidth()) {
+                ret = (int) r1.getWidth();
             }
-        }        
+        }
         return ret;
     }
 
@@ -3789,16 +3784,16 @@ public final class FactoryUtils {
     }
 
     public static int getMaxGraphicsTextHeight(Graphics gr, String[] t) {
-        int ret=0;
+        int ret = 0;
         for (String t1 : t) {
             Rectangle2D r1 = gr.getFont().getStringBounds(t1, 0, t1.length(), gr.getFontMetrics().getFontRenderContext());
-            if (ret<r1.getHeight()) {
-                ret=(int)r1.getHeight();
+            if (ret < r1.getHeight()) {
+                ret = (int) r1.getHeight();
             }
-        }        
+        }
         return ret;
     }
-    
+
     public static float[] gaussian(float[] d, float sigma, float mean) {
         float[] ret = new float[d.length];
         for (int i = 0; i < d.length; i++) {
@@ -6087,19 +6082,19 @@ public final class FactoryUtils {
         int n = 0;
         int ret = 0;
         for (int i = 0; i < items.length; i++) {
-            if (n < (""+items[i]).length()) {
-                n = (""+items[i]).length();
+            if (n < ("" + items[i]).length()) {
+                n = ("" + items[i]).length();
                 ret = i;
             }
         }
         return ret;
     }
-    
+
     public static int getLongestStringLength(float[] items) {
         int n = 0;
         for (int i = 0; i < items.length; i++) {
-            if (n < (""+items[i]).length()) {
-                n = (""+items[i]).length();
+            if (n < ("" + items[i]).length()) {
+                n = ("" + items[i]).length();
             }
         }
         return n;
@@ -8354,16 +8349,26 @@ public final class FactoryUtils {
     }
 
     public static Point drawRotatedString(Graphics g, String text, int x, int y, double angle) {
-        Point ret=new Point(x,y);
+        Point ret = new Point(x, y);
         Graphics2D g2d = (Graphics2D) g;
         g2d.rotate(angle, x, y);
         g2d.drawString(text, x, y);
         g2d.rotate(-angle, x, y);
         return ret;
     }
-    
-    public static Font getDefaultFont(){
+
+    public static Font getDefaultFont() {
         return new JLabel().getFont();
+    }
+
+    /**
+     * generate single perlin noise based on the value
+     * @param value
+     * @param scale
+     * @return
+     */
+    public static float perlinNoise(float value, float scale) {
+        return PerlinNoise.noise(value * scale, value * scale, 1.44f);
     }
 
 }

@@ -139,6 +139,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 import javax.swing.JPanel;
 import jazari.gui.FrameDataSetTextEditor;
+import jazari.interfaces.call_back_interface.CallBackAppend;
 import jazari.utils.DataAugmentationOpt;
 import jazari.utils.PerlinNoise2D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -203,6 +204,7 @@ public final class CMatrix implements Serializable {
     public Webcam webCam;
     public String valueString;
     private Map map;
+    private int gc_counter = 0;
 
     public CMatrix getCurrentMatrix() {
         return currentMatrix;
@@ -1493,7 +1495,20 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * column wised reshaping operation
+     * row wised reshaping operation
+     *
+     * @param cm
+     * @param dims
+     * @return
+     */
+    public CMatrix reshape(CMatrix cm, int... dims) {
+        array = cm.clone().array;
+        array = array.reshape(dims);
+        return this;
+    }
+
+    /**
+     * row wised reshaping operation
      *
      * @param r
      * @param c
@@ -1709,8 +1724,15 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    /**
+     * generates n rows with 1 column 2d tensor
+     *
+     * @param n
+     * @return
+     */
     public CMatrix zeros(int n) {
-        array = Nd4j.zeros(n, n);
+        array = Nd4j.zeros(n, 1);
+        //array = Nd4j.zeros(n, n);
         return this;
     }
 
@@ -1771,8 +1793,15 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    /**
+     * generates n rows with one column 2d tensor having value of one
+     *
+     * @param n
+     * @return
+     */
     public CMatrix ones(int n) {
-        array = Nd4j.ones(n, n);
+        array = Nd4j.ones(n, 1);
+        //array = Nd4j.ones(n, n);
         return this;
     }
 
@@ -1792,7 +1821,8 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix rand(int n) {
-        array = Nd4j.rand(n, n);
+        array = Nd4j.rand(n, 1);
+        //array = Nd4j.rand(n, n);
         return this;
     }
 
@@ -2028,10 +2058,11 @@ public final class CMatrix implements Serializable {
         framePlot.setVisible(true);
         return this;
     }
-    
+
     /**
      * Matlab compatible command: plot the curves of each column in the matrix
      *
+     * @param xAxis
      * @return CMatrix
      */
     public CMatrix plot(float[] xAxis) {
@@ -2054,26 +2085,27 @@ public final class CMatrix implements Serializable {
         framePlot.setVisible(true);
         return this;
     }
-    
+
     /**
      * Matlab compatible command: plot the curves of each column in the matrix
      *
+     * @param title_axis
      * @param label:labels of each rows
      * @return CMatrix
      */
-    public CMatrix plot(String[] title_axis,String[] label) {
+    public CMatrix plot(String[] title_axis, String[] label) {
         this.array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
         TFigureAttribute attr = new TFigureAttribute();
-        if (title_axis!=null) {
-            if (title_axis.length==1) {
-                attr.title=title_axis[0];
-            }else if(title_axis.length==3){
-                attr.title=title_axis[0];
-                attr.axis_names[0]=title_axis[1];
-                attr.axis_names[1]=title_axis[2];
+        if (title_axis != null) {
+            if (title_axis.length == 1) {
+                attr.title = title_axis[0];
+            } else if (title_axis.length == 3) {
+                attr.title = title_axis[0];
+                attr.axis_names[0] = title_axis[1];
+                attr.axis_names[1] = title_axis[2];
             }
         }
-        
+
         attr.items = label;
         if (!hold_on) {
             framePlot = new FramePlot(this, attr);
@@ -2086,7 +2118,7 @@ public final class CMatrix implements Serializable {
         framePlot.setVisible(true);
         return this;
     }
-    
+
     /**
      * Matlab compatible command: plot the curves of each column in the matrix
      *
@@ -2095,25 +2127,25 @@ public final class CMatrix implements Serializable {
      * @param xAxis:custom x axis values as float array
      * @return CMatrix
      */
-    public CMatrix plot(String[] title_axis,String[] label, float[] xAxis) {
+    public CMatrix plot(String[] title_axis, String[] label, float[] xAxis) {
         this.array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
         TFigureAttribute attr = new TFigureAttribute();
-        if (title_axis!=null) {
-            if (title_axis.length==1) {
-                attr.title=title_axis[0];
-            }else if(title_axis.length==3){
-                attr.title=title_axis[0];
-                attr.axis_names[0]=title_axis[1];
-                attr.axis_names[1]=title_axis[2];
+        if (title_axis != null) {
+            if (title_axis.length == 1) {
+                attr.title = title_axis[0];
+            } else if (title_axis.length == 3) {
+                attr.title = title_axis[0];
+                attr.axis_names[0] = title_axis[1];
+                attr.axis_names[1] = title_axis[2];
             }
         }
-        
+
         attr.items = label;
         if (!hold_on) {
-            framePlot = new FramePlot(this, attr,xAxis);
+            framePlot = new FramePlot(this, attr, xAxis);
         } else {
             if (framePlot == null) {
-                framePlot = new FramePlot(this, attr,xAxis);
+                framePlot = new FramePlot(this, attr, xAxis);
             }
             framePlot.setMatrix(this);
         }
@@ -2146,6 +2178,7 @@ public final class CMatrix implements Serializable {
     /**
      * plot the curves of each column in the matrix
      *
+     * @param frm
      * @return CMatrix
      */
     public CMatrix plotRefresh(FramePlot frm) {
@@ -2163,10 +2196,54 @@ public final class CMatrix implements Serializable {
     public CMatrix plotRefresh() {
         if (framePlot == null) {
             framePlot = new FramePlot(this);
+            framePlot.setVisible(true);
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        framePlot.setMatrix(this);
-        framePlot.setVisible(true);
+        framePlot.setMatrix(this, true);
+        if (gc_counter++ > 10) {
+            gc_counter = 0;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.gc();
+                }
+            }).start();
+        }
+        return this;
+    }
+
+    /**
+     * By using single plot frame, this command try to redraw updated matrix it
+     * is useful if you make animation or moving simulation within the loop
+     *
+     * @param thread_sleep
+     * @param fromAnimated
+     * @return CMatrix
+     */
+    public CMatrix plotRefresh(int thread_sleep, boolean fromAnimated) {
+        if (framePlot == null) {
+            framePlot = new FramePlot(this);
+            framePlot.setVisible(true);
+            framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        }
+        framePlot.setMatrix(this, true);
+        framePlot.setSliderVisible(fromAnimated);
+        if (gc_counter++ > 100) {
+            gc_counter = 0;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.gc();
+                }
+            }).start();
+        }
+        if (framePlot.getSliderSleepValue() == framePlot.getSliderSleep().getMaximum()) {
+            framePlot.setSliderPosition(thread_sleep);
+            FactoryUtils.bekle(thread_sleep);
+        } else {
+            //framePlot.setSliderPosition(thread_sleep);
+            FactoryUtils.bekle(framePlot.getSliderSleepValue());
+        }
         return this;
     }
 
@@ -2293,7 +2370,6 @@ public final class CMatrix implements Serializable {
 //        frm.setVisible(true);
 //        return this;
 //    }
-
     public CMatrix plot(TFigureAttribute attr) {
         FramePlot frm = new FramePlot(this.clone(), attr);
         frm.setVisible(true);
@@ -3654,6 +3730,10 @@ public final class CMatrix implements Serializable {
         CMatrix ret = this.clone();
         ret.array = ret.array.mul(cm.array);
         return ret;
+    }
+
+    public CMatrix matmul(CMatrix cm) {
+        return dot(cm);
     }
 
     public CMatrix muli(CMatrix cm) {
@@ -9601,21 +9681,160 @@ public final class CMatrix implements Serializable {
 
     public CMatrix showMapHistogram() {
         if (map != null && map.size() > 0) {
-            Map<String,Integer> mp=(Map<String,Integer>)map;
+            Map<String, Integer> mp = (Map<String, Integer>) map;
             float[] data = new float[map.size()];
-            String[] labels=new String[map.size()];
-            int k=0;
+            String[] labels = new String[map.size()];
+            int k = 0;
             for (Map.Entry<String, Integer> entry : mp.entrySet()) {
-                data[k]=entry.getValue();
-                labels[k]=entry.getKey();
+                data[k] = entry.getValue();
+                labels[k] = entry.getKey();
                 k++;
             }
             this.setArray(data);
-            this.plotBar(labels,true);
+            this.plotBar(labels, true);
         } else {
             System.err.println("no hashmap for plotting histogram");
         }
         return this;
     }
 
+    /**
+     * removes a dimension of size 1 ex: 1x3x4 --> 3x4
+     *
+     * @return
+     */
+    public CMatrix squeeze() {
+        long[] shp = array.shape();
+        ArrayList<Integer> lst = new ArrayList();
+        for (int i = 0; i < shp.length; i++) {
+            if (shp[i] == 1) {
+                lst.add(i);
+            }
+        }
+        for (int i = 0; i < lst.size(); i++) {
+            array = squeezeOneDim().array;
+        }
+
+        return this;
+    }
+
+    /**
+     * removes a dimension of size 1 ex: 1x3x4 --> 3x4
+     *
+     * @param dim
+     * @return
+     */
+    public CMatrix squeeze(int dim) {
+        array = Nd4j.squeeze(array, dim);
+        return this;
+    }
+
+    private CMatrix squeezeOneDim() {
+        long[] shp = array.shape();
+        for (int i = 0; i < shp.length; i++) {
+            if (shp[i] == 1) {
+                array = Nd4j.squeeze(array, i);
+                return this;
+            }
+        }
+        return this;
+    }
+
+    /**
+     * add 1 extra dimension to the tensors
+     *
+     * @param dim
+     * @return
+     */
+    public CMatrix unsqueeze(int dim) {
+        long[] dims = array.shape();
+        int[] newDims = new int[dims.length + 1];
+        for (int i = 0; i < newDims.length; i++) {
+            if (dim > i) {
+                newDims[i] = (int) dims[i];
+            } else if (dim == i) {
+                newDims[i] = 1;
+            } else {
+                newDims[i] = (int) dims[i - 1];
+            }
+        }
+        array = reshape(newDims).array;
+        return this;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public CMatrix pop() {
+        float[][] f = FactoryUtils.transpose(toFloatArray2D());
+        int nr = f.length;
+        for (int i = 0; i < nr; i++) {
+            System.arraycopy(f[i], 1, f[i], 0, f[i].length - 1);
+            f[i] = Arrays.copyOf(f[i], f[i].length - 1);
+        }
+        setArray(FactoryUtils.transpose(f));
+        return this;
+    }
+
+    /**
+     *
+     * @param value
+     * @return
+     */
+    public CMatrix push(float value) {
+        float[][] f = FactoryUtils.transpose(toFloatArray2D());
+        int nr = f.length;
+        int nc = f[0].length;
+
+        float[][] yeniDizi = new float[nr][nc + 1];
+
+        for (int i = 0; i < nr; i++) {
+            System.arraycopy(f[i], 0, yeniDizi[i], 0, nc);
+            yeniDizi[i][nc] = value;
+        }
+
+        setArray(FactoryUtils.transpose(yeniDizi));
+        return this;
+    }
+
+    public CMatrix append(float... value) {
+        long t1 = FactoryUtils.tic();
+        //System.out.println("append içi");
+        float[][] f = FactoryUtils.transpose(toFloatArray2D());
+        //t1=FactoryUtils.toc("transpose cost:", t1);
+        int nr = f.length;
+        int nc = f[0].length;
+        for (int i = 0; i < nr; i++) {
+            System.arraycopy(f[i], 1, f[i], 0, nc - 1);
+            f[i][nc - 1] = value[i];
+        }
+        //t1=FactoryUtils.toc("append cost:", t1);
+        setArray(FactoryUtils.transpose(f));
+        //t1=FactoryUtils.toc("setArray cost:", t1);
+        return this;
+    }
+
+    public CMatrix plotAnimated(int loopNumber, int threadSleep, CallBackAppend function) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (loopNumber == -1) {
+                    int k = 0;
+                    while (true) {
+                        float[] values = function.append(k++);
+                        append(values);
+                        plotRefresh(threadSleep, true);
+                    }
+                } else {
+                    for (int i = 0; i < loopNumber; i++) {
+                        float[] values = function.append(i);
+                        append(values);
+                        plotRefresh(threadSleep, true);
+                    }
+                }
+            }
+        }).start();
+        return this;
+    }
 }

@@ -87,7 +87,11 @@
                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btn_refresh" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="180" max="32767" attributes="0"/>
+                      <EmptySpace pref="45" max="32767" attributes="0"/>
+                      <Component id="lbl_sleep" min="-2" pref="37" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="slider_sleep" min="-2" pref="86" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="combo_line_type" min="-2" pref="43" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="chk_gridx" min="-2" pref="50" max="-2" attributes="0"/>
@@ -116,6 +120,8 @@
                           <Component id="chk_gridy" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="chk_gridx" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="combo_line_type" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="slider_sleep" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="lbl_sleep" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="77" max="32767" attributes="0"/>
                   </Group>
@@ -222,6 +228,25 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JSlider" name="slider_sleep">
+              <Properties>
+                <Property name="maximum" type="int" value="5000"/>
+                <Property name="paintLabels" type="boolean" value="true"/>
+                <Property name="paintTicks" type="boolean" value="true"/>
+                <Property name="toolTipText" type="java.lang.String" value="set loop speed"/>
+                <Property name="value" type="int" value="5000"/>
+              </Properties>
+              <Events>
+                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="slider_sleepStateChanged"/>
+                <EventHandler event="caretPositionChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="slider_sleepCaretPositionChanged"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="lbl_sleep">
+              <Properties>
+                <Property name="horizontalAlignment" type="int" value="11"/>
+                <Property name="text" type="java.lang.String" value="0"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>
