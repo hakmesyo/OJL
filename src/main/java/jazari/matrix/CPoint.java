@@ -15,7 +15,7 @@ import java.util.Objects;
 public final class CPoint implements Serializable{
     public int row=0;
     public int column=0;
-    public int weight=0;
+    public float weight=0;
     public int limit=0;
     public int counter=0;
     public int rowVector=0;
@@ -48,7 +48,7 @@ public final class CPoint implements Serializable{
         int hash = 7;
         hash = 97 * hash + this.row;
         hash = 97 * hash + this.column;
-        hash = 97 * hash + this.weight;
+        hash = 97 * hash + (int)this.weight;
         hash = 97 * hash + Objects.hashCode(this.dir);
         return hash;
     }

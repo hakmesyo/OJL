@@ -6,10 +6,15 @@
 package jazari.gui;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import jazari.image_processing.ImageProcess;
 import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import jazari.types.TFigureAttribute;
 
 /**
@@ -18,31 +23,54 @@ import jazari.types.TFigureAttribute;
  */
 public class FrameBar extends javax.swing.JFrame {
 
+    static {
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     private CMatrix cm;
-    private String[] labels;
-    private boolean isValueVisible;
+    private String[] labels = null;
+    private boolean isValueVisible = false;
+    private String[] items = null;
+    private TFigureAttribute attr = null;
 
-
-//    public FrameBar(CMatrix cm) {
-//        super(cm.name+"|Bar");
-//        cm.name+="|Bar";
-//        this.cm =cm.clone();
-//        initComponents();
-//    }
-    
-    public FrameBar(CMatrix cm, String[] labels) {
-        super(cm.name+"|Bar");
-        FlatDarculaLaf.setup();
-        cm.name+="|Bar";
-        this.cm =cm.clone();
-        this.labels=labels;
+    public FrameBar(CMatrix cm, TFigureAttribute attr, String[] labels) {
+        super(cm.name + "|Bar");
+        cm.name += "|Bar";
+        this.cm = cm.clone();
+        this.attr = attr;
+        if (attr == null) {
+            this.labels = labels;
+        }
         initComponents();
     }
-    
-    public void setLabels(String ... labels){
-        this.labels=labels;
+
+    public FrameBar(CMatrix cm, TFigureAttribute attr, String[] labels, String[] items) {
+        super(cm.name + "|Bar");
+        cm.name += "|Bar";
+        this.cm = cm.clone();
+        this.attr = attr;
+        if (attr == null) {
+            this.labels = labels;
+            this.items = items;
+        }
+        initComponents();
     }
 
+    public FrameBar(CMatrix cm, TFigureAttribute attr) {
+        super(cm.name + "|Bar");
+        cm.name += "|Bar";
+        this.cm = cm.clone();
+        this.attr = attr;
+        initComponents();
+    }
+
+    public void setLabels(String... labels) {
+        this.labels = labels;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -53,7 +81,8 @@ public class FrameBar extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel_plot = new jazari.gui.PanelBar(this,cm,labels,isValueVisible);
+        panel_bar = new jazari.gui.PanelBar(this,cm,attr,labels,items,isValueVisible);
+        jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         btn_dataGrid = new javax.swing.JButton();
         btn_scatter = new javax.swing.JButton();
@@ -65,23 +94,28 @@ public class FrameBar extends javax.swing.JFrame {
         chk_dark_mode = new javax.swing.JCheckBox();
         chk_gridy = new javax.swing.JCheckBox();
         chk_gridx = new javax.swing.JCheckBox();
-        combo_line_type = new javax.swing.JComboBox<>();
         chk_transpose = new javax.swing.JCheckBox();
+        chk_val = new javax.swing.JCheckBox();
+        chk_x_title = new javax.swing.JCheckBox();
+        chk_y_title = new javax.swing.JCheckBox();
+        chk_fill_bar = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        panel_plot.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        panel_bar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        javax.swing.GroupLayout panel_plotLayout = new javax.swing.GroupLayout(panel_plot);
-        panel_plot.setLayout(panel_plotLayout);
-        panel_plotLayout.setHorizontalGroup(
-            panel_plotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 888, Short.MAX_VALUE)
+        javax.swing.GroupLayout panel_barLayout = new javax.swing.GroupLayout(panel_bar);
+        panel_bar.setLayout(panel_barLayout);
+        panel_barLayout.setHorizontalGroup(
+            panel_barLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
-        panel_plotLayout.setVerticalGroup(
-            panel_plotLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 505, Short.MAX_VALUE)
+        panel_barLayout.setVerticalGroup(
+            panel_barLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 545, Short.MAX_VALUE)
         );
+
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         btn_dataGrid.setText("Data Grid");
         btn_dataGrid.addActionListener(new java.awt.event.ActionListener() {
@@ -104,7 +138,7 @@ public class FrameBar extends javax.swing.JFrame {
             }
         });
 
-        txt_dpi.setText("300");
+        txt_dpi.setText("96");
 
         jLabel3.setText("dpi");
 
@@ -116,7 +150,7 @@ public class FrameBar extends javax.swing.JFrame {
         });
 
         chk_legend.setSelected(true);
-        chk_legend.setText("legend");
+        chk_legend.setText("Legend");
         chk_legend.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 chk_legendItemStateChanged(evt);
@@ -129,7 +163,7 @@ public class FrameBar extends javax.swing.JFrame {
         });
 
         chk_dark_mode.setSelected(true);
-        chk_dark_mode.setText("dark mode");
+        chk_dark_mode.setText("Dark");
         chk_dark_mode.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 chk_dark_modeİtemStateChanged(evt);
@@ -137,7 +171,8 @@ public class FrameBar extends javax.swing.JFrame {
         });
 
         chk_gridy.setSelected(true);
-        chk_gridy.setText("gridy");
+        chk_gridy.setText("Col");
+        chk_gridy.setToolTipText("Show Column Lines");
         chk_gridy.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 chk_gridyİtemStateChanged(evt);
@@ -145,25 +180,52 @@ public class FrameBar extends javax.swing.JFrame {
         });
 
         chk_gridx.setSelected(true);
-        chk_gridx.setText("gridx");
+        chk_gridx.setText("Row");
+        chk_gridx.setToolTipText("Show Row Lines");
         chk_gridx.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 chk_gridxİtemStateChanged(evt);
             }
         });
 
-        combo_line_type.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        combo_line_type.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-", ".", "*", "o" }));
-        combo_line_type.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                combo_line_typeİtemStateChanged(evt);
-            }
-        });
-
-        chk_transpose.setText("transpose");
+        chk_transpose.setText("T");
+        chk_transpose.setToolTipText("Transpose");
         chk_transpose.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 chk_transposeİtemStateChanged(evt);
+            }
+        });
+
+        chk_val.setText("Val");
+        chk_val.setToolTipText("Show values on bars");
+        chk_val.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_valİtemStateChanged(evt);
+            }
+        });
+
+        chk_x_title.setSelected(true);
+        chk_x_title.setText("X-Ax");
+        chk_x_title.setToolTipText("Show X axis caption/title");
+        chk_x_title.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_x_titleİtemStateChanged(evt);
+            }
+        });
+
+        chk_y_title.setSelected(true);
+        chk_y_title.setText("Y-Ax");
+        chk_y_title.setToolTipText("Show Y axis caption/title");
+        chk_y_title.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_y_titleİtemStateChanged(evt);
+            }
+        });
+
+        chk_fill_bar.setText("Fill");
+        chk_fill_bar.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_fill_barİtemStateChanged(evt);
             }
         });
 
@@ -171,31 +233,37 @@ public class FrameBar extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(btn_dataGrid)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_scatter)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_save, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_refresh)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 89, Short.MAX_VALUE)
-                .addComponent(chk_transpose, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_refresh, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(combo_line_type, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(chk_transpose)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 141, Short.MAX_VALUE)
+                .addComponent(chk_val)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chk_gridx, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(chk_fill_bar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_y_title)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_x_title)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_gridx)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chk_gridy)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chk_dark_mode)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chk_legend)
-                .addGap(14, 14, 14))
+                .addGap(2, 2, 2)
+                .addComponent(chk_dark_mode)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -211,27 +279,29 @@ public class FrameBar extends javax.swing.JFrame {
                     .addComponent(chk_dark_mode)
                     .addComponent(chk_gridy)
                     .addComponent(chk_gridx)
-                    .addComponent(combo_line_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chk_transpose))
-                .addGap(0, 9, Short.MAX_VALUE))
+                    .addComponent(chk_transpose)
+                    .addComponent(chk_val)
+                    .addComponent(chk_x_title)
+                    .addComponent(chk_y_title)
+                    .addComponent(chk_fill_bar))
+                .addGap(0, 18, Short.MAX_VALUE))
         );
+
+        jScrollPane1.setViewportView(jPanel1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panel_plot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jScrollPane1)
+            .addComponent(panel_bar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panel_plot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(panel_bar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -243,7 +313,7 @@ public class FrameBar extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed
-        if (getBarPanel().getMatrix().getColumnNumber()<2) {
+        if (getBarPanel().getMatrix().getColumnNumber() < 2) {
             System.err.println("number of columns should be at least 2");
             return;
         }
@@ -280,24 +350,36 @@ public class FrameBar extends javax.swing.JFrame {
         getBarPanel().setGridx(chk_gridx.isSelected());
     }//GEN-LAST:event_chk_gridxİtemStateChanged
 
-    private void combo_line_typeİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_combo_line_typeİtemStateChanged
-        getBarPanel().setPointType(combo_line_type.getSelectedItem().toString());
-    }//GEN-LAST:event_combo_line_typeİtemStateChanged
-
     private void chk_transposeİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_transposeİtemStateChanged
         getBarPanel().setTranspose(chk_transpose.isSelected());
     }//GEN-LAST:event_chk_transposeİtemStateChanged
 
+    private void chk_valİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_valİtemStateChanged
+        getBarPanel().setValueVisible(chk_val.isSelected());
+    }//GEN-LAST:event_chk_valİtemStateChanged
+
+    private void chk_x_titleİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_x_titleİtemStateChanged
+        getBarPanel().setXAxisVisible(chk_x_title.isSelected());
+    }//GEN-LAST:event_chk_x_titleİtemStateChanged
+
+    private void chk_y_titleİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_y_titleİtemStateChanged
+        getBarPanel().setYAxisVisible(chk_y_title.isSelected());
+    }//GEN-LAST:event_chk_y_titleİtemStateChanged
+
+    private void chk_fill_barİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_fill_barİtemStateChanged
+        getBarPanel().setFillBar(chk_fill_bar.isSelected());
+    }//GEN-LAST:event_chk_fill_barİtemStateChanged
+
     public PanelBar getBarPanel() {
-        return (PanelBar) panel_plot;
+        return (PanelBar) panel_bar;
     }
-    
-    public void setBarData(CMatrix cmx){
+
+    public void setBarData(CMatrix cmx) {
         this.cm = cmx.getHistogram();
         getBarPanel().setMatrix(cm);
     }
 
-    public void setBarData(CMatrix cmx, String[] labels){
+    public void setBarData(CMatrix cmx, String[] labels) {
         this.cm = cmx.getHistogram();
         getBarPanel().setMatrix(cm, labels);
     }
@@ -311,14 +393,18 @@ public class FrameBar extends javax.swing.JFrame {
     private javax.swing.JButton btn_save;
     private javax.swing.JButton btn_scatter;
     private javax.swing.JCheckBox chk_dark_mode;
+    private javax.swing.JCheckBox chk_fill_bar;
     private javax.swing.JCheckBox chk_gridx;
     private javax.swing.JCheckBox chk_gridy;
     private javax.swing.JCheckBox chk_legend;
     private javax.swing.JCheckBox chk_transpose;
-    private javax.swing.JComboBox<String> combo_line_type;
+    private javax.swing.JCheckBox chk_val;
+    private javax.swing.JCheckBox chk_x_title;
+    private javax.swing.JCheckBox chk_y_title;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel panel_plot;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel panel_bar;
     private javax.swing.JTextField txt_dpi;
     // End of variables declaration//GEN-END:variables
 
@@ -337,19 +423,48 @@ public class FrameBar extends javax.swing.JFrame {
     }
 
     public void setValuVisible(boolean valueVisible) {
-        this.isValueVisible=valueVisible;
+        this.isValueVisible = valueVisible;
         getBarPanel().setValueVisible(isValueVisible);
     }
-    
+
 //    public static void main(String[] args) {
-//        FlatDarculaLaf.setup();
+//        try {
+//            /* Set the Nimbus look and feel */
+//            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+//            /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+//            * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+//            */
+//            UIManager.setLookAndFeel(new FlatDarkLaf());
+////        try {
+////            
+//////            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//////            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//////                if ("Nimbus".equals(info.getName())) {
+//////                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//////                    break;
+//////                }
+//////            }
+////        } catch (ClassNotFoundException ex) {
+////            java.util.logging.Logger.getLogger(FramePlot.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+////        } catch (InstantiationException ex) {
+////            java.util.logging.Logger.getLogger(FramePlot.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+////        } catch (IllegalAccessException ex) {
+////            java.util.logging.Logger.getLogger(FramePlot.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+////        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+////            java.util.logging.Logger.getLogger(FramePlot.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+////        }
+////</editor-fold>
+////</editor-fold>
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(FrameBar.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        //FlatDarculaLaf.setup();
 //        java.awt.EventQueue.invokeLater(new Runnable() {
 //            public void run() {
-//                FrameBar jazo = new FrameBar(null,null);
+//                CMatrix cm = CMatrix.getInstance().rand(5, 1);
+//                FrameBar jazo = new FrameBar(cm,null);
 //                jazo.setVisible(true);
 //            }
 //        });
 //    }
-
-
 }

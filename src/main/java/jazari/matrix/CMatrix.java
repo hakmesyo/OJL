@@ -2080,7 +2080,7 @@ public final class CMatrix implements Serializable {
         }
         TFigureAttribute fg = new TFigureAttribute();
         fg.pointType = plotType;
-        fg.items = getColumnNamesArray();
+        fg.items = getColumnNamesArray();        
         framePlot.setFigureAttribute(fg);
         framePlot.setVisible(true);
         return this;
@@ -2309,7 +2309,7 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * plot the curves of each column in the matrix
+     * plot the bar of each column in the matrix
      *
      * @return CMatrix
      */
@@ -2320,35 +2320,73 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * plot the curves of each column in the matrix
      *
+     * @param attr:TFigureAttribute object
+     * @return
+     */
+    public CMatrix bar(TFigureAttribute attr) {
+        FrameBar frm = new FrameBar(this, attr);
+        frm.setVisible(true);
+        return this;
+    }
+
+    /**
+     * plot the bar of each column in the matrix
+     *
+     * @param labels:set of group names
+     * @return CMatrix
+     */
+    public CMatrix bar(String[] labels) {
+        FrameBar frm = new FrameBar(this, null, labels);
+        frm.setVisible(true);
+        return this;
+    }
+    
+    /**
+     * plot the bar of each column in the matrix
+     *
+     * @param labels      :set of group names
+     * @param columnNames :set of column names 
+     * @return CMatrix
+     */
+    public CMatrix bar(String[] labels, String[] columnNames) {
+        FrameBar frm = new FrameBar(this, null, labels,columnNames);
+        frm.setVisible(true);
+        return this;
+    }
+
+    /**
+     * plot the bar of each column in the matrix
+     *
+     * @param labels
      * @return CMatrix
      */
     public CMatrix showBar(String[] labels) {
-        FrameBar frm = new FrameBar(this, labels);
+        FrameBar frm = new FrameBar(this, null, labels);
         frm.setValuVisible(true);
         frm.setVisible(true);
         return this;
     }
 
     /**
-     * plot the curves of each column in the matrix
+     * plot the bar of each column in the matrix
      *
+     * @param labels
      * @return CMatrix
      */
     public CMatrix plotBar(String[] labels) {
-        FrameBar frm = new FrameBar(this, labels);
+        FrameBar frm = new FrameBar(this, null, labels);
         frm.setVisible(true);
         return this;
     }
 
     /**
-     * plot the curves of each column in the matrix
+     * plot the bar of each column in the matrix
      *
      * @return CMatrix
      */
     public CMatrix plotBar(String[] labels, boolean isValueVisible) {
-        FrameBar frm = new FrameBar(this, labels);
+        FrameBar frm = new FrameBar(this, null, labels);
         frm.setValuVisible(isValueVisible);
         frm.setVisible(true);
         return this;
@@ -2803,7 +2841,8 @@ public final class CMatrix implements Serializable {
         float[] d = FactoryMatrix.getHistogram(array.toFloatMatrix(), 256);
         //setArray(d).transpose();
         array = Nd4j.create(d, new int[]{d.length, 1});
-        this.bar();
+        //TFigureAttribute attr=null;
+        bar();
         return this;
     }
 

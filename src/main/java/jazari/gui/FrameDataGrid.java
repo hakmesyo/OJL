@@ -31,15 +31,15 @@ public class FrameDataGrid extends javax.swing.JFrame {
      */
     public FrameDataGrid() {
         initComponents();
-        LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, jTable_artificialDS);
+        LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
         tableLineNumber.setBackground(Color.LIGHT_GRAY);
         jScrollPane2.setRowHeaderView(tableLineNumber);
     }
 
     public FrameDataGrid(CMatrix m) {
         initComponents();
-        LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, jTable_artificialDS);
-        tableLineNumber.setBackground(Color.LIGHT_GRAY);
+        LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
+        //tableLineNumber.setBackground(Color.LIGHT_GRAY);
         jScrollPane2.setRowHeaderView(tableLineNumber);
         setMatrix(m);
         this.lbl_size.setText("[" + m.getSize().row + " x " + m.getSize().column + "]");
@@ -48,7 +48,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
     public void setMatrix(CMatrix m) {
         this.cm = m;
-        jTable_artificialDS.setModel(getTableModelForArtificialData(cm, false));
+        ds_table.setModel(getTableModelForArtificialData(cm, false));
     }
 
     public CMatrix getMatrix() {
@@ -66,7 +66,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
         jPanel26 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable_artificialDS = new javax.swing.JTable();
+        ds_table = new javax.swing.JTable();
         lbl_size = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jButton_buildArtificialDS = new javax.swing.JButton();
@@ -87,7 +87,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
         jPanel26.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jTable_artificialDS.setModel(new javax.swing.table.DefaultTableModel(
+        ds_table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -98,9 +98,9 @@ public class FrameDataGrid extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jTable_artificialDS.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-        jTable_artificialDS.setCellSelectionEnabled(true);
-        jScrollPane2.setViewportView(jTable_artificialDS);
+        ds_table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        ds_table.setCellSelectionEnabled(true);
+        jScrollPane2.setViewportView(ds_table);
 
         lbl_size.setText("5x5");
 
@@ -302,8 +302,8 @@ public class FrameDataGrid extends javax.swing.JFrame {
         int nRows = Integer.parseInt(jTextField_rowNumber.getText());
         String type = (jComboBox_randomType.getSelectedIndex() == 0) ? "uniform" : "gaussian";
         artificialDS = getArtificialDataSet(nCols, nRows, type);
-        clearTable(jTable_artificialDS);
-        jTable_artificialDS.setModel(getTableModelForArtificialData(artificialDS));
+        clearTable(ds_table);
+        ds_table.setModel(getTableModelForArtificialData(artificialDS));
         this.cm = null;
     }
 
@@ -340,7 +340,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
     }
 
     private void btn_visualizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_visualizeActionPerformed
-        plotMatrix(jTable_artificialDS);
+        plotMatrix(ds_table);
     }//GEN-LAST:event_btn_visualizeActionPerformed
 
     private void btn_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_plotActionPerformed
@@ -349,7 +349,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
             //attr.items = getMatrix().getColumnNamesArray();
             getMatrix().plot();
         } else {
-            double[][] d = tableToArray(jTable_artificialDS);
+            double[][] d = tableToArray(ds_table);
             CMatrix cm = CMatrix.getInstance(d);
             setMatrix(cm);
             //TFigureAttribute attr = new TFigureAttribute();
@@ -367,7 +367,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
         if (getMatrix() != null) {
             getMatrix().scatter();
         } else {
-            double[][] d = tableToArray(jTable_artificialDS);
+            double[][] d = tableToArray(ds_table);
             CMatrix cm = CMatrix.getInstance(d);
             setMatrix(cm);
             cm.scatter();
@@ -376,14 +376,14 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
     private void btn_visualize1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_visualize1ActionPerformed
         cm = cm.transpose();
-        LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, jTable_artificialDS);
+        LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
         tableLineNumber.setBackground(Color.LIGHT_GRAY);
         jScrollPane2.setRowHeaderView(tableLineNumber);
         setMatrix(cm);
     }//GEN-LAST:event_btn_visualize1ActionPerformed
 
     private void btn_convert_2_intActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_convert_2_intActionPerformed
-        jTable_artificialDS.setModel(getTableModelForArtificialData(cm, true));
+        ds_table.setModel(getTableModelForArtificialData(cm, true));
     }//GEN-LAST:event_btn_convert_2_intActionPerformed
 
     private void btn_from_textActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_from_textActionPerformed
@@ -394,7 +394,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
         if (getMatrix() != null) {
             getMatrix().bar();
         } else {
-            double[][] d = tableToArray(jTable_artificialDS);
+            double[][] d = tableToArray(ds_table);
             CMatrix cm = CMatrix.getInstance(d);
             setMatrix(cm);
             cm.bar();
@@ -502,6 +502,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
     private javax.swing.JButton btn_scatter;
     private javax.swing.JButton btn_visualize;
     private javax.swing.JButton btn_visualize1;
+    private javax.swing.JTable ds_table;
     private javax.swing.JButton jButton_buildArtificialDS;
     private javax.swing.JComboBox jComboBox_randomType;
     private javax.swing.JLabel jLabel29;
@@ -509,7 +510,6 @@ public class FrameDataGrid extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel26;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable_artificialDS;
     private javax.swing.JTextField jTextField_colNumber;
     private javax.swing.JTextField jTextField_rowNumber;
     private javax.swing.JLabel lbl_size;

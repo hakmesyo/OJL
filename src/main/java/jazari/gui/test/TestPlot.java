@@ -4,8 +4,6 @@
  */
 package jazari.gui.test;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jazari.factory.FactoryUtils;
 import jazari.matrix.CMatrix;
 import jazari.types.TFigureAttribute;
@@ -28,12 +26,13 @@ import org.apache.commons.math3.random.RandomGenerator;
 public class TestPlot {
 
     public static void main(String[] args) {
+        testSimplePlot();
 //        testPerlin();
 //        testKalman();
 //        testTrigonometry();
 //        testAnimatedSinPlot();
 //        testAnimatedRandomPlot();
-        testAnimatedPerlinPlot();
+//        testAnimatedPerlinPlot();
     }
 
     private static void testKalman() {
@@ -250,5 +249,18 @@ public class TestPlot {
 ////            System.out.println("elapsed time="+(System.currentTimeMillis()-t1));
 ////            t1=System.currentTimeMillis();
 //        }
+    }
+
+    private static void testSimplePlot() {
+        float[] f={20.12f,50.13f,35f,62.67f,49.17f,21f,35f,41f,45f,52f};
+        f=CMatrix.getInstance().linspace(-30, 150, 200).toFloatArray1D();
+        CMatrix cm = CMatrix.getInstance(f)
+                //.range(-21, 21)
+                .perlinNoise(0.1f)
+                //.rand(330,1)
+                //.println()
+                //.plot(CMatrix.getInstance().range(-21,21).toFloatArray1D())
+                .plot(f)
+                ;
     }
 }

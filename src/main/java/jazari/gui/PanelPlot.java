@@ -25,7 +25,6 @@ import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JColorChooser;
@@ -164,15 +163,10 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         //çizim tuvali
         drawPlotCanvas(gr);
 
-//        Point2D p2d = getScreenCoordinate();
-//        System.out.println(p2d.getX() + "," + p2d.getY());
-//        temp_afft = gr.getTransform();
-//        gr.translate(0.0, h);      // Move the origin to the lower left for actual cartesian coordinate system
-//        gr.scale(1.0, -1.0);       // Flip the sign of the coordinate system
         mp = mappingDataToScreenCoordinates(cm.toFloatArray2D(), fromLeft + 10, fromTop + 10, canvas_width - 20, canvas_height - 20);
         int[][] mappedVal = getMaxMinValue(mp);
-        drawYAxis(gr, mappedVal, px, py, w - fromRight - 20, fromRight, cm.toFloatArray2D());
-        drawXAxis(gr, mappedVal, px, py, w - fromRight, fromRight, cm.toFloatArray2D());
+        drawYAxis(gr, mp, mappedVal, px, py, w - fromRight - 20, fromRight, cm.toFloatArray2D());
+        drawXAxis(gr, mp, mappedVal, px, py, w - fromRight, fromRight, cm.toFloatArray2D());
         for (int r = 0; r < items.length; r++) {
             drawPolyLines(gr, mp, r);
         }
@@ -205,36 +199,6 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
             drawLegend(gr);
         }
 
-        //drawItems(gr, this.items, w, h, fromRight, fromTop);
-//        if (isTraced) {
-//            if (mousePos.x > fromLeft && mousePos.x < fromLeft + canvas_width && mousePos.y > fromTop && mousePos.y < fromTop + canvas_height) {
-//                if (isMousePressed) {
-//                    int selectedLineIndex = selectLine(mp);
-//                    if (selectedLineIndex != -1) {
-//                        itemSelected[selectedLineIndex] = !itemSelected[selectedLineIndex];
-//                    } else {
-//                        for (int i = 0; i < itemSelected.length; i++) {
-//                            itemSelected[i] = false;
-//                        }
-//
-//                    }
-//                    isMousePressed = false;
-//                    repaint();
-//                }
-//                //drawMouseAxis(gr, mousePos, fromLeft, fromTop, canvas_width, canvas_height);
-//                vals = checkDataPoints(gr, mp, fromLeft, fromTop, canvas_width, canvas_height);
-//                drawItems(gr, this.items, w, h, fromRight, fromTop);
-//            } else {
-//                if (isMousePressed) {
-//                    isMousePressed = false;
-//                }
-//                drawItems(gr, this.items, w, h, fromRight, fromTop);
-//            }
-//        } else {
-//            drawItems(gr, this.items, w, h, fromRight, fromTop);
-//        }
-        //gr.setStroke(new BasicStroke());
-        //gr.setColor(Color.black);
     }
 
     private void push(Color col) {
@@ -263,21 +227,16 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
     private CPoint[][] mappingDataToScreenCoordinates(float[][] d, int fromLeft, int fromTop, int w, int h) {
         CPoint[][] ret = new CPoint[d.length][d[0].length];
-        float maxY = getMaxYValue(d);
-        float minY = getMinYValue(d);
+        float maxY = FactoryUtils.getMaximum(d);
+        float minY = FactoryUtils.getMinimum(d);
         float deltaY = maxY - minY;
         float maxX = d.length;
-        float cellWidth = w / maxX;
+        float cellWidth = w / (maxX - 1);
         float cellHeight = h / deltaY;
         for (int r = 0; r < d[0].length; r++) {
             for (int c = 0; c < d.length; c++) {
                 CPoint p = new CPoint();
-                if (c == 0) {
-                    p.column = (int) Math.round(fromLeft + (c) * cellWidth);
-                } else {
-                    p.column = (int) Math.round(fromLeft + (c + 1) * cellWidth);
-                }
-
+                p.column = (int) Math.round(fromLeft + (c) * cellWidth);
                 p.row = (int) Math.round((fromTop + h) - (d[c][r] - minY) * cellHeight);
                 ret[c][r] = p;
             }
@@ -292,18 +251,18 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         figureAttribute.items = generateItemText(cm.getRowNumber());
         repaint();
     }
-    
-    public void setMatrix(CMatrix m,boolean isColorPersist) {
+
+    public void setMatrix(CMatrix m, boolean isColorPersist) {
         this.cm = m;
         rand_seed = System.currentTimeMillis();
         if (isColorPersist) {
-            if (color==null) {
+            if (color == null) {
                 color = FactoryUtils.getRandomColors(cm.getRowNumber(), rand_seed);
             }
-        }else{
+        } else {
             color = FactoryUtils.getRandomColors(cm.getRowNumber(), rand_seed);
         }
-        
+
         figureAttribute.items = generateItemText(cm.getRowNumber());
         repaint();
     }
@@ -316,7 +275,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         realValues = FactoryUtils.formatFloat(cm.toFloatArray2D(), 2);
         float[] yy = calculateYAxisLabels();
         int length = FactoryUtils.getLongestStringLength(cm.formatFloat(3).toFloatArray1D());
-        fromLeft = 30 + length * 5;
+        fromLeft = 50 + length * 5;
         fromRight = 50;
         fromTop = 50;
         fromBottom = 70;
@@ -377,9 +336,9 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                         }
                         repaint();
                     } else if (rectAxisX.contains(mousePos)) {
-                        String st = JOptionPane.showInputDialog(null, "set axis name as", figureAttribute.axis_names[0]);
+                        String st = JOptionPane.showInputDialog(null, "set axis name as", figureAttribute.axis_names[1]);
                         if (st != null) {
-                            figureAttribute.axis_names[0] = st;
+                            figureAttribute.axis_names[1] = st;
                         }
                         JLabel lbl = new JLabel();
                         Font temp = lbl.getFont();
@@ -389,9 +348,9 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                         }
                         repaint();
                     } else if (rectAxisY.contains(mousePos)) {
-                        String st = JOptionPane.showInputDialog(null, "set axis name as", figureAttribute.axis_names[1]);
+                        String st = JOptionPane.showInputDialog(null, "set axis name as", figureAttribute.axis_names[0]);
                         if (st != null) {
-                            figureAttribute.axis_names[1] = st;
+                            figureAttribute.axis_names[0] = st;
                         }
                         JLabel lbl = new JLabel();
                         Font temp = lbl.getFont();
@@ -646,23 +605,6 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                 }
             }
         }
-        /*
-        float alpha = 0.65f;
-        AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-        gr.setComposite(alcom);
-        gr.setColor(Color.gray);
-        int index=FactoryUtils.getLongestStringIndex(items);
-        int itemWidth = FactoryUtils.getGraphicsTextWidth(gr, items[index]);
-        int n = items.length;
-        gr.fillRect(mousePos.x+5, mousePos.y+5, (int)(itemWidth*2.5), 30 * n);
-        gr.setColor(Color.blue);
-        for (int i = 0; i < items.length; i++) {
-            gr.drawString(items[i]+":"+FactoryUtils.formatDouble(cm.toDoubleArray2D()[i][vals[i]],2), mousePos.x+10, mousePos.y+30+i*30);
-        }        
-        alpha = 1f;
-        alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-        gr.setComposite(alcom);
-         */
         return vals;
     }
 
@@ -677,8 +619,8 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         float[][] d = cm.toFloatArray2D();
         int y = (getHeight() - 90);
         float n = Math.round(y / 100.0);
-        float maxY = getMaxYValue(d);
-        float minY = getMinYValue(d);
+        float maxY = FactoryUtils.getMaximum(d);
+        float minY = FactoryUtils.getMinimum(d);
         float deltaY = maxY - minY;
         float[] yVal = new float[(int) n + 1];
         float delta = deltaY / n;
@@ -693,9 +635,9 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
         return yVal;
     }
 
-    private void drawYAxis(Graphics gr, int[][] mappedVal, int x0, int y0, int w, int fromRight, float[][] d) {
-        float maxY = getMaxYValue(d);
-        float minY = getMinYValue(d);
+    private void drawYAxis(Graphics gr, CPoint[][] mp, int[][] mappedVal, int x0, int y0, int w, int fromRight, float[][] d) {
+        float maxY = FactoryUtils.getMaximum(d);
+        float minY = FactoryUtils.getMinimum(d);
         float deltaY = maxY - minY;
         float n = Math.round(y0 / 100.0);
         //int l = y0 - 50;
@@ -733,93 +675,54 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                     gr.setColor(Color.lightGray);
                 }
                 if (i < n) {
-                    gr.drawLine(x0 + 2, q - (int) dY / 2, x0 + w - fromRight + 4, q - (int) dY / 2);
+                    gr.drawLine(x0 + 2, q - (int) dY / 2, x0 + w - fromRight -12, q - (int) dY / 2);
                 }
                 if (i > 0) {
-                    gr.drawLine(x0 + 2, q, x0 + w - fromRight + 4, q);
+                    gr.drawLine(x0 + 2, q, x0 + w - fromRight -12, q);
                 }
             }
         }
     }
 
-    private void drawXAxis(Graphics gr, int[][] mappedVal, int x0, int y0, int w, int fromRight, float[][] d) {
+    private void drawXAxis(Graphics gr, CPoint[][] mp, int[][] mappedVal, int x0, int y0, int w, int fromRight, float[][] d) {
         gr.setColor(Color.darkGray);
-        float maxX = 0;
-        float minX = 0;
-        float n = Math.round(w / 150.0);
-        //int l = w - (x0 + fromRight);
-        int l = mappedVal[0][1] - mappedVal[0][0];
-        x0 = mappedVal[0][0];
-        float dx = l / n;
-        float[] xVal = new float[(int) n + 1];
-        int top = 50;
-        if (this.xAxis != null && this.xAxis.length != 0) {
-            maxX = FactoryUtils.getMaximum(this.xAxis);
-            minX = FactoryUtils.getMinimum(this.xAxis);
-            maxX = Math.abs(maxX - minX);
-        } else {
-            maxX = d.length;
+        float n = (Math.round(w / 150.0) >= d.length) ? d.length - 1 : Math.round(w / 150.0) - 1;
+        float incr = d.length / n;
+        if (d.length <= 10) {
+            incr = 1;
+            n = d.length;
         }
-        float delta = maxX / n;
-        //gr.drawString(figureAttribute.axis_names[0], w - 110, y0 + 40);
-        int q = 0;
         for (int i = 0; i <= n; i++) {
+            if (d.length <= 10 && i == d.length) {
+                continue;
+            }
             if (isDarkMode) {
                 gr.setColor(Color.lightGray);
             } else {
                 gr.setColor(Color.darkGray);
             }
-            if (i < n) {
-                xVal[i] = (Math.round(minX + i * delta));
-            } else {
-                xVal[i] = (Math.round(minX + i * delta)) - 1;
+            int index = Math.round(i * incr);
+            int offset = FactoryUtils.getGraphicsTextWidth(gr, index + "") / 2;
+            if (i == n) {
+                index = d.length - 1;
             }
-
-            q = (int) (x0 + i * dx);
-            gr.drawString(FactoryUtils.formatFloatAsString(xVal[i], 3), q - 10, y0 + 40);
-            gr.drawLine(q, y0 + 20, q, y0 + 25);
+            if (xAxis == null || xAxis.length == 0) {
+                gr.drawString(""+index, mp[index][0].column - offset, y0 + 40);
+            }else{
+                gr.drawString(""+FactoryUtils.formatFloatAsString(xAxis[index],3), mp[index][0].column - offset, y0 + 40);
+            }
+            gr.drawLine(mp[index][0].column, y0 + 20, mp[index][0].column, y0 + 25);
             if (isGridY) {
                 if (isDarkMode) {
                     gr.setColor(Color.decode("#4F4F4F"));
                 } else {
                     gr.setColor(Color.lightGray);
                 }
-                if (i < n) {
-                    gr.drawLine(q + (int) dx / 2, top + 2, q + (int) dx / 2, y0 + 18);
-                }
-                if (i > 0) {
-                    gr.drawLine(q, top + 2, q, y0 + 18);
-                }
+                gr.drawLine(mp[index][0].column,fromTop+2 , mp[index][0].column, y0 + 18);
             }
-
         }
     }
 
-    private float getMaxYValue(float[][] d) {
-        float ret = 0;
-        ret = d[0][0];
-        for (int i = 0; i < d.length; i++) {
-            for (int j = 0; j < d[0].length; j++) {
-                if (ret < d[i][j]) {
-                    ret = d[i][j];
-                }
-            }
-        }
-        return ret;
-    }
-
-    private float getMinYValue(float[][] d) {
-        float ret = 0;
-        ret = d[0][0];
-        for (int i = 0; i < d.length; i++) {
-            for (int j = 0; j < d[0].length; j++) {
-                if (ret > d[i][j]) {
-                    ret = d[i][j];
-                }
-            }
-        }
-        return ret;
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1024,11 +927,11 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
             gr.setColor(Color.darkGray);
         }
         gr.setFont(figureAttribute.fontAxisX);
-        int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[0]);
-        int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[0]);
+        int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[1]);
+        int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[1]);
         int px = (getWidth() - axis_width) / 2;
         int py = getHeight() - 20;
-        gr.drawString(figureAttribute.axis_names[0], px, py);
+        gr.drawString(figureAttribute.axis_names[1], px, py);
         rectAxisX.x = px;
         rectAxisX.y = py - 10;
         rectAxisX.width = axis_width;
@@ -1043,11 +946,11 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
             gr.setColor(Color.darkGray);
         }
         gr.setFont(figureAttribute.fontAxisY);
-        int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[1]);
-        int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[1]);
+        int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[0]);
+        int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[0]);
         int px = 30;
-        int py = getHeight() - (getHeight() - axis_width) / 2-10;
-        Point p = FactoryUtils.drawRotatedString(gr, figureAttribute.axis_names[1], px, py, -Math.PI / 2);
+        int py = getHeight() - (getHeight() - axis_width) / 2 - 10;
+        Point p = FactoryUtils.drawRotatedString(gr, figureAttribute.axis_names[0], px, py, -Math.PI / 2);
         rectAxisY.x = px - 10;
         rectAxisY.y = py - axis_width;
         //90 derece döndüğü için tersi alındı

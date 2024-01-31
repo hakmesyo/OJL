@@ -169,7 +169,7 @@ public class FramePlot extends javax.swing.JFrame {
             }
         });
 
-        txt_dpi.setText("300");
+        txt_dpi.setText("96");
 
         jLabel2.setText("dpi");
 

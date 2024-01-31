@@ -3778,6 +3778,15 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static int getMaxGraphicsTextSeriesWidth(Graphics gr, String[] t) {
+        int ret = 0;
+        for (int i = 0; i < t.length; i++) {
+            Rectangle2D r1 = gr.getFont().getStringBounds(t[i], 0, t[i].length(), gr.getFontMetrics().getFontRenderContext());
+            ret += r1.getWidth() + 30;
+        }
+        return ret;
+    }
+
     public static int getGraphicsTextHeight(Graphics gr, String t) {
         Rectangle2D r1 = gr.getFont().getStringBounds(t, 0, t.length(), gr.getFontMetrics().getFontRenderContext());
         return (int) r1.getHeight();
@@ -6167,12 +6176,37 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static float map(float x, float x1, float x2, float x3, float x4) {
-        if (x2 <= x1 || x4 <= x3) {
-            System.err.println("mapping can only be x2>x1 and x4>x3 and x should be in between x1 and x2");
+    /**
+     *
+     * @param x
+     * @param fromX1
+     * @param fromX2
+     * @param toX1
+     * @param toX2
+     * @return
+     */
+    public static float map(float x, float fromX1, float fromX2, float toX1, float toX2) {
+        if (fromX2 <= fromX1 || toX2 <= toX1) {
+            System.err.println("Mapping can only be performed when fromX2 > fromX1 and toX2 > toX1, and x should be in between fromX1 and fromX2.");
             System.exit(-1);
         }
-        return x * (x4 - x3) / (x2 - x1) + x3;
+
+        float result = (x - fromX1) * (toX2 - toX1) / (fromX2 - fromX1) + toX1;
+
+        // Optional: Limit the result to the target range
+        if (result < toX1) {
+            return toX1;
+        } else if (result > toX2) {
+            return toX2;
+        } else {
+            return result;
+        }
+
+//        if (fromX2 <= fromX1 || toX2 <= toX1) {
+//            System.err.println("mapping can only be x2>x1 and x4>x3 and x should be in between x1 and x2");
+//            System.exit(-1);
+//        }
+//        return x * (toX2 - toX1) / (fromX2 - fromX1) + toX1;
     }
 
     public static String toJSON(List lst) {
@@ -8363,12 +8397,33 @@ public final class FactoryUtils {
 
     /**
      * generate single perlin noise based on the value
+     *
      * @param value
      * @param scale
      * @return
      */
     public static float perlinNoise(float value, float scale) {
         return PerlinNoise.noise(value * scale, value * scale, 1.44f);
+    }
+
+    public static int getDigitSensitivity(float val) {
+        int ret = 0;
+        if (val < 0.001) {
+            ret = 6;
+        } else if (val < 0.01) {
+            ret = 5;
+        } else if (val < 0.1) {
+            ret = 4;
+        } else if (val < 1) {
+            ret = 3;
+        } else if (val<10){
+            ret = 2;
+        } else if (val<100){
+            ret = 1;
+        } else {
+            ret = 0;
+        }
+        return ret;
     }
 
 }
