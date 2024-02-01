@@ -221,7 +221,7 @@ public final class CMatrix implements Serializable {
 
     public CMatrix buildFramePlot() {
         if (framePlot == null) {
-            framePlot = new FramePlot(this);
+            framePlot = new FramePlot(this.toFloatArray2D());
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         return this;
@@ -2044,12 +2044,12 @@ public final class CMatrix implements Serializable {
         attr.items = getColumnNamesArray();
 
         if (!hold_on) {
-            framePlot = new FramePlot(this, attr);
+            framePlot = new FramePlot(this.toFloatArray2D(), attr);
         } else {
             if (framePlot == null) {
-                framePlot = new FramePlot(this, attr);
+                framePlot = new FramePlot(this.toFloatArray2D(), attr);
             }
-            framePlot.setMatrix(this);
+            framePlot.setMatrix(this.toFloatArray2D());
         }
         TFigureAttribute fg = new TFigureAttribute();
         fg.pointType = plotType;
@@ -2071,12 +2071,12 @@ public final class CMatrix implements Serializable {
         attr.items = getColumnNamesArray();
 
         if (!hold_on) {
-            framePlot = new FramePlot(this, attr, xAxis);
+            framePlot = new FramePlot(this.toFloatArray2D(), attr, xAxis);
         } else {
             if (framePlot == null) {
-                framePlot = new FramePlot(this, attr, xAxis);
+                framePlot = new FramePlot(this.toFloatArray2D(), attr, xAxis);
             }
-            framePlot.setMatrix(this);
+            framePlot.setMatrix(this.toFloatArray2D());
         }
         TFigureAttribute fg = new TFigureAttribute();
         fg.pointType = plotType;
@@ -2108,12 +2108,12 @@ public final class CMatrix implements Serializable {
 
         attr.items = label;
         if (!hold_on) {
-            framePlot = new FramePlot(this, attr);
+            framePlot = new FramePlot(this.toFloatArray2D(), attr);
         } else {
             if (framePlot == null) {
-                framePlot = new FramePlot(this, attr);
+                framePlot = new FramePlot(this.toFloatArray2D(), attr);
             }
-            framePlot.setMatrix(this);
+            framePlot.setMatrix(this.toFloatArray2D());
         }
         framePlot.setVisible(true);
         return this;
@@ -2142,12 +2142,12 @@ public final class CMatrix implements Serializable {
 
         attr.items = label;
         if (!hold_on) {
-            framePlot = new FramePlot(this, attr, xAxis);
+            framePlot = new FramePlot(this.toFloatArray2D(), attr, xAxis);
         } else {
             if (framePlot == null) {
-                framePlot = new FramePlot(this, attr, xAxis);
+                framePlot = new FramePlot(this.toFloatArray2D(), attr, xAxis);
             }
-            framePlot.setMatrix(this);
+            framePlot.setMatrix(this.toFloatArray2D());
         }
         framePlot.setVisible(true);
         return this;
@@ -2182,7 +2182,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix plotRefresh(FramePlot frm) {
-        frm.setMatrix(this);
+        frm.setMatrix(this.toFloatArray2D());
         frm.setVisible(true);
         return this;
     }
@@ -2195,11 +2195,11 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plotRefresh() {
         if (framePlot == null) {
-            framePlot = new FramePlot(this);
+            framePlot = new FramePlot(this.toFloatArray2D());
             framePlot.setVisible(true);
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        framePlot.setMatrix(this, true);
+        framePlot.setMatrix(this.toFloatArray2D(), true);
         if (gc_counter++ > 10) {
             gc_counter = 0;
             new Thread(new Runnable() {
@@ -2222,11 +2222,11 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plotRefresh(int thread_sleep, boolean fromAnimated) {
         if (framePlot == null) {
-            framePlot = new FramePlot(this);
+            framePlot = new FramePlot(this.toFloatArray2D(),true);
             framePlot.setVisible(true);
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        framePlot.setMatrix(this, true);
+        framePlot.setMatrix(this.toFloatArray2D(), true);
         framePlot.setSliderVisible(fromAnimated);
         if (gc_counter++ > 100) {
             gc_counter = 0;
@@ -2255,10 +2255,10 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plotRefresh(TFigureAttribute fg) {
         if (framePlot == null) {
-            framePlot = new FramePlot(this);
+            framePlot = new FramePlot(this.toFloatArray2D());
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        framePlot.setMatrix(this);
+        framePlot.setMatrix(this.toFloatArray2D());
         framePlot.setFigureAttribute(fg);
         framePlot.setVisible(true);
         return this;
@@ -2266,10 +2266,10 @@ public final class CMatrix implements Serializable {
 
     public CMatrix plotRefresh(TFigureAttribute fg, String caption) {
         if (framePlot == null) {
-            framePlot = new FramePlot(this);
+            framePlot = new FramePlot(this.toFloatArray2D());
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        framePlot.setMatrix(this);
+        framePlot.setMatrix(this.toFloatArray2D());
         framePlot.setFigureAttribute(fg);
         framePlot.setVisible(true);
         framePlot.setTitle(caption);
@@ -2284,10 +2284,10 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plotRefresh(float[] x) {
         if (framePlot == null) {
-            framePlot = new FramePlot(this);
+            framePlot = new FramePlot(this.toFloatArray2D());
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        framePlot.setMatrix(this);
+        framePlot.setMatrix(this.toFloatArray2D());
         framePlot.setVisible(true);
         return this;
     }
@@ -2300,10 +2300,10 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plotOn() {
         if (framePlot == null) {
-            framePlot = new FramePlot(this);
+            framePlot = new FramePlot(this.toFloatArray2D());
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
-        framePlot.setMatrix(this);
+        framePlot.setMatrix(this.toFloatArray2D());
         framePlot.setVisible(true);
         return this;
     }
@@ -2314,7 +2314,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix bar() {
-        FrameBar frm = new FrameBar(this, null);
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null);
         frm.setVisible(true);
         return this;
     }
@@ -2325,7 +2325,7 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public CMatrix bar(TFigureAttribute attr) {
-        FrameBar frm = new FrameBar(this, attr);
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), attr);
         frm.setVisible(true);
         return this;
     }
@@ -2337,7 +2337,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix bar(String[] labels) {
-        FrameBar frm = new FrameBar(this, null, labels);
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, labels);
         frm.setVisible(true);
         return this;
     }
@@ -2350,7 +2350,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix bar(String[] labels, String[] columnNames) {
-        FrameBar frm = new FrameBar(this, null, labels,columnNames);
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, labels,columnNames);
         frm.setVisible(true);
         return this;
     }
@@ -2362,7 +2362,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix showBar(String[] labels) {
-        FrameBar frm = new FrameBar(this, null, labels);
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, labels);
         frm.setValuVisible(true);
         frm.setVisible(true);
         return this;
@@ -2375,7 +2375,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix plotBar(String[] labels) {
-        FrameBar frm = new FrameBar(this, null, labels);
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, labels);
         frm.setVisible(true);
         return this;
     }
@@ -2386,7 +2386,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix plotBar(String[] labels, boolean isValueVisible) {
-        FrameBar frm = new FrameBar(this, null, labels);
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, labels);
         frm.setValuVisible(isValueVisible);
         frm.setVisible(true);
         return this;
@@ -2409,13 +2409,13 @@ public final class CMatrix implements Serializable {
 //        return this;
 //    }
     public CMatrix plot(TFigureAttribute attr) {
-        FramePlot frm = new FramePlot(this.clone(), attr);
+        FramePlot frm = new FramePlot(this.toFloatArray2D(), attr);
         frm.setVisible(true);
         return this;
     }
 
     public CMatrix plot(TFigureAttribute attr, float[] x) {
-        FramePlot frm = new FramePlot(this.clone(), attr, x);
+        FramePlot frm = new FramePlot(this.toFloatArray2D(), attr, x);
         frm.setVisible(true);
         return this;
     }
@@ -2426,7 +2426,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix plot(String title) {
-        FramePlot frm = new FramePlot(this.clone());
+        FramePlot frm = new FramePlot(this.toFloatArray2D());
         frm.setPlotType(this.plotType);
         frm.setVisible(true);
         frm.setTitle(title);
@@ -3035,7 +3035,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix showDataGrid() {
-        FrameDataGrid frm = new FrameDataGrid(this);
+        FrameDataGrid frm = new FrameDataGrid(this.toFloatArray2D());
         frm.setVisible(true);
         return this;
     }

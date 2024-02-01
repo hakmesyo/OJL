@@ -8,7 +8,6 @@ package jazari.gui;
 import com.formdev.flatlaf.FlatDarkLaf;
 import jazari.types.TFigureAttribute;
 import jazari.matrix.CMatrix;
-import jazari.factory.FactoryMatrix;
 import jazari.factory.FactoryUtils;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -26,6 +25,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  * @author BAP1
  */
 public class FramePlot extends javax.swing.JFrame {
+
     static {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
@@ -34,75 +34,96 @@ public class FramePlot extends javax.swing.JFrame {
         }
     }
 
-    private CMatrix cm;
     private TFigureAttribute figureAttribute;
     private boolean isSort = true;
+    private float[][] data;
+    private boolean isPlotRefreshed;
 
     /**
      * Creates new form CPlot
      */
-    public FramePlot(CMatrix cm) {
-        this.cm = cm.clone();
-        this.setTitle(cm.name + " :: Plot");
+    public FramePlot(float[][] data) {
+        this.data = data;
+        this.setTitle("Plot");
         initComponents();
         TFigureAttribute attr = new TFigureAttribute();
-        attr.items=cm.getColumnNamesArray();
-        this.figureAttribute = attr;
-        getPlotPanel().setFigureAttribute(attr);
-        getPlotPanel().setRandomSeed(System.currentTimeMillis());
-        cm.plotPanel = getPlotPanel();
-        initialize();
-    }
-
-    public FramePlot(CMatrix cm, float[] x) {
-        this.cm = cm.clone();
-        this.setTitle(cm.name + " :: Plot");
-        initComponents();
-        TFigureAttribute attr = new TFigureAttribute();
-        this.figureAttribute = attr;
-        getPlotPanel().setFigureAttribute(attr);
-        getPlotPanel().setXAxis(x);
-        getPlotPanel().setRandomSeed(System.currentTimeMillis());
-        cm.plotPanel = getPlotPanel();
-        initialize();
-    }
-
-    public FramePlot(CMatrix cm, TFigureAttribute attr) {
-        this.cm = cm.clone();
-        this.figureAttribute = attr;
-        this.setTitle((attr.figureCaption.isEmpty()) ? cm.name + " :: Plot" : attr.figureCaption);
-        initComponents();
-        getPlotPanel().setFigureAttribute(this.figureAttribute);
-        getPlotPanel().setRandomSeed(System.currentTimeMillis());
-        this.cm.plotPanel = getPlotPanel();
-        initialize();
-    }
-
-    public FramePlot(CMatrix cm, TFigureAttribute attr, float[] x) {
-        this.cm = cm.clone();
-        this.figureAttribute = attr;
-        this.setTitle((attr.figureCaption.isEmpty()) ? cm.name + " :: Plot" : attr.figureCaption);
-        initComponents();
-        getPlotPanel().setFigureAttribute(this.figureAttribute);
-        cm.plotPanel = getPlotPanel();
-        getPlotPanel().setRandomSeed(System.currentTimeMillis());
-        getPlotPanel().setXAxis(x);
-        initialize();
-    }
-
-    public void setMatrix(CMatrix cm) {
-        this.cm = cm;
-        getPlotPanel().setMatrix(cm);
-    }
-
-    public void setMatrix(CMatrix cm,boolean isColorPersist) {
-        this.cm = cm;
-        if (isColorPersist) {
-            getPlotPanel().setMatrix(cm,isColorPersist);
-        }else{
-            getPlotPanel().setMatrix(cm);
+        attr.items = new String[data[0].length];
+        for (int i = 0; i < data[0].length; i++) {
+            attr.items[i] = "item-" + (i + 1);
         }
-        
+        this.figureAttribute = attr;
+        getPlotPanel().setFigureAttribute(attr);
+        getPlotPanel().setRandomSeed(System.currentTimeMillis());
+        //cm.plotPanel = getPlotPanel();
+        initialize();
+    }
+
+    public FramePlot(float[][] data, boolean isPlotRefreshed) {
+        this.isPlotRefreshed = isPlotRefreshed;
+        this.data = data;
+        this.setTitle("Plot");
+        initComponents();
+        TFigureAttribute attr = new TFigureAttribute();
+        attr.items = new String[data[0].length];
+        for (int i = 0; i < data[0].length; i++) {
+            attr.items[i] = "item-" + (i + 1);
+        }
+        this.figureAttribute = attr;
+        getPlotPanel().setFigureAttribute(attr);
+        getPlotPanel().setRandomSeed(System.currentTimeMillis());
+        //cm.plotPanel = getPlotPanel();
+        initialize();
+    }
+
+    public FramePlot(float[][] data, float[] x) {
+        this.data = data;
+        this.setTitle("Plot");
+        initComponents();
+        TFigureAttribute attr = new TFigureAttribute();
+        this.figureAttribute = attr;
+        getPlotPanel().setFigureAttribute(attr);
+        getPlotPanel().setXAxis(x);
+        getPlotPanel().setRandomSeed(System.currentTimeMillis());
+        //cm.plotPanel = getPlotPanel();
+        initialize();
+    }
+
+    public FramePlot(float[][] data, TFigureAttribute attr) {
+        this.data = data;
+        this.figureAttribute = attr;
+        this.setTitle((attr.figureCaption.isEmpty()) ? "Plot" : attr.figureCaption);
+        initComponents();
+        getPlotPanel().setFigureAttribute(this.figureAttribute);
+        getPlotPanel().setRandomSeed(System.currentTimeMillis());
+        //this.cm.plotPanel = getPlotPanel();
+        initialize();
+    }
+
+    public FramePlot(float[][] data, TFigureAttribute attr, float[] x) {
+        this.data = data;
+        this.figureAttribute = attr;
+        this.setTitle((attr.figureCaption.isEmpty()) ? "Plot" : attr.figureCaption);
+        initComponents();
+        getPlotPanel().setFigureAttribute(this.figureAttribute);
+        //cm.plotPanel = getPlotPanel();
+        getPlotPanel().setRandomSeed(System.currentTimeMillis());
+        getPlotPanel().setXAxis(x);
+        initialize();
+    }
+
+    public void setMatrix(float[][] data) {
+        this.data = data;
+        getPlotPanel().setMatrix(data);
+    }
+
+    public void setMatrix(float[][] data, boolean isColorPersist) {
+        this.data = data;
+        if (isColorPersist) {
+            getPlotPanel().setMatrix(data, isColorPersist);
+        } else {
+            getPlotPanel().setMatrix(data);
+        }
+
     }
 
     /**
@@ -114,7 +135,7 @@ public class FramePlot extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel_plot = new jazari.gui.PanelPlot(cm);
+        panel_plot = new jazari.gui.PanelPlot(data);
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         btn_dataGrid = new javax.swing.JButton();
@@ -132,6 +153,14 @@ public class FramePlot extends javax.swing.JFrame {
         lbl_sleep = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         panel_plot.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -262,10 +291,10 @@ public class FramePlot extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_refresh)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 78, Short.MAX_VALUE)
                 .addComponent(lbl_sleep, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(slider_sleep, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(slider_sleep, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(combo_line_type, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -273,10 +302,10 @@ public class FramePlot extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chk_gridy)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chk_dark_mode)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chk_legend)
-                .addGap(14, 14, 14))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chk_dark_mode)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -319,18 +348,18 @@ public class FramePlot extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
-        CMatrix cm = getPlotPanel().getMatrix();
-        new FrameDataGrid(cm).setVisible(true);
+        //CMatrix cm = getPlotPanel().getMatrix();
+        new FrameDataGrid(data).setVisible(true);
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed
-        if (getPlotPanel().getMatrix().getColumnNumber()<2) {
+        if (getPlotPanel().getMatrix()[0].length < 2) {
             System.err.println("number of columns should be at least 2");
             return;
         }
         TFigureAttribute attr = new TFigureAttribute();
         attr.figureCaption = this.getTitle();
-        getPlotPanel().getMatrix().scatter(attr);
+        CMatrix.getInstance(data).scatter(attr);
     }//GEN-LAST:event_btn_scatterActionPerformed
 
     private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed
@@ -338,11 +367,11 @@ public class FramePlot extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_saveActionPerformed
 
     private void btn_refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_refreshActionPerformed
-        getPlotPanel().setMatrix(this.cm);
+        getPlotPanel().setMatrix(data);
     }//GEN-LAST:event_btn_refreshActionPerformed
 
     private void chk_legendPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_chk_legendPropertyChange
-        
+
     }//GEN-LAST:event_chk_legendPropertyChange
 
     private void chk_legendItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_legendItemStateChanged
@@ -366,12 +395,23 @@ public class FramePlot extends javax.swing.JFrame {
     }//GEN-LAST:event_combo_line_typeİtemStateChanged
 
     private void slider_sleepCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_slider_sleepCaretPositionChanged
-        
+
     }//GEN-LAST:event_slider_sleepCaretPositionChanged
 
     private void slider_sleepStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_slider_sleepStateChanged
-        lbl_sleep.setText(slider_sleep.getValue()+"");
+        lbl_sleep.setText(slider_sleep.getValue() + "");
     }//GEN-LAST:event_slider_sleepStateChanged
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+
+    }//GEN-LAST:event_formWindowClosing
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        if (isPlotRefreshed) {
+            System.gc();
+            System.exit(0);
+        }
+    }//GEN-LAST:event_formWindowClosed
 
     public PanelPlot getPlotPanel() {
         return (PanelPlot) panel_plot;
@@ -386,7 +426,7 @@ public class FramePlot extends javax.swing.JFrame {
             //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
             /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
             * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-            */
+             */
             UIManager.setLookAndFeel(new FlatDarkLaf());
 //        try {
 //            
@@ -415,7 +455,7 @@ public class FramePlot extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                FramePlot frm = new FramePlot(CMatrix.getInstance().rand(2, 13));
+                FramePlot frm = new FramePlot(CMatrix.getInstance().rand(2, 13).toFloatArray2D());
                 frm.setVisible(true);
                 String[] s = {"Observed", "Simulated"};
                 TFigureAttribute attr = new TFigureAttribute();
@@ -445,28 +485,27 @@ public class FramePlot extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void savePanel() {
-        FactoryUtils.savePanel(getPlotPanel(),txt_dpi.getText());
+        FactoryUtils.savePanel(getPlotPanel(), txt_dpi.getText());
     }
 
-    private void sort() {
-        if (isSort) {
-            String sortType = FactoryUtils.inputMessage("Write sorting type [asc,desc]", "asc");
-            CMatrix m2 = cm.clone();
-            float[][] d = m2.toFloatArray2D();
-            float[] d2 = FactoryMatrix.clone(d[0]);
-            int[] index = FactoryUtils.sortArrayAndReturnIndex(d2, sortType);
-            CMatrix cmx = FactoryUtils.sortRows(m2, index);
-            getPlotPanel().setMatrix(cmx.transpose());
-            isSort = false;
-            //btnSort.setText("unsort");
-            return;
-        } else {
-            getPlotPanel().setMatrix(cm);
-            //btnSort.setText("sort");
-            isSort = true;
-        }
-    }
-
+//    private void sort() {
+//        if (isSort) {
+//            String sortType = FactoryUtils.inputMessage("Write sorting type [asc,desc]", "asc");
+//            CMatrix m2 = cm.clone();
+//            float[][] d = m2.toFloatArray2D();
+//            float[] d2 = FactoryMatrix.clone(d[0]);
+//            int[] index = FactoryUtils.sortArrayAndReturnIndex(d2, sortType);
+//            CMatrix cmx = FactoryUtils.sortRows(m2, index);
+//            getPlotPanel().setMatrix(cmx.transpose().toFloatArray2D());
+//            isSort = false;
+//            //btnSort.setText("unsort");
+//            return;
+//        } else {
+//            getPlotPanel().setMatrix(cm);
+//            //btnSort.setText("sort");
+//            isSort = true;
+//        }
+//    }
     public void setPlotType(String plotType) {
         getPlotPanel().setPlotType(plotType);
     }
@@ -498,7 +537,7 @@ public class FramePlot extends javax.swing.JFrame {
     public int getSliderSleepValue() {
         return slider_sleep.getValue();
     }
-    
+
     public JSlider getSliderSleep() {
         return slider_sleep;
     }

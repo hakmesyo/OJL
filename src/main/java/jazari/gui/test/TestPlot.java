@@ -136,10 +136,10 @@ public class TestPlot {
         //plotAnimated kendi içinde loop mekanizması barındırıyor, functional interface ve lambda kullanımı var
         CMatrix cm = CMatrix.getInstance()
                 .range(100)
-                .println()
+                //.println()
                 .range2D(0,90,2)
                 .transpose()
-                .println()
+                //.println()
                 .toRadians()
                 .timesScalar(5)
 //                .sin()
@@ -253,13 +253,14 @@ public class TestPlot {
 
     private static void testSimplePlot() {
         float[] f={20.12f,50.13f,35f,62.67f,49.17f,21f,35f,41f,45f,52f};
-        f=CMatrix.getInstance().linspace(-30, 150, 200).toFloatArray1D();
+        f=CMatrix.getInstance().linspace(-30, 150, 500).toFloatArray1D();
         CMatrix cm = CMatrix.getInstance(f)
                 //.range(-21, 21)
-                .perlinNoise(0.1f)
-                //.rand(330,1)
+                .perlinNoise(0.03f)
+                //.rand(30,3)
                 //.println()
-                //.plot(CMatrix.getInstance().range(-21,21).toFloatArray1D())
+                //.plot(CMatrix.getInstance().linspace(-3, 3, 10).toFloatArray1D())
+                //.plot(CMatrix.getInstance().linspace(-3, 3, 10).toFloatArray1D())
                 .plot(f)
                 ;
     }

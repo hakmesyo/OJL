@@ -166,7 +166,7 @@ public final class FrameScatterBlob extends javax.swing.JFrame {
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
         CMatrix cm = getScatterBlobPanel().getMatrix();
-        new FrameDataGrid(cm).setVisible(true);
+        new FrameDataGrid(cm.toFloatArray2D()).setVisible(true);
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_plotActionPerformed

@@ -14,6 +14,8 @@ import java.util.Vector;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import jazari.factory.FactoryMatrix;
+import jazari.factory.FactoryUtils;
 import jazari.types.TFigureAttribute;
 //import org.ujmp.core.Matrix;
 //import org.ujmp.core.MatrixFactory;
@@ -24,7 +26,7 @@ import jazari.types.TFigureAttribute;
  */
 public class FrameDataGrid extends javax.swing.JFrame {
 
-    CMatrix cm = null;
+    private float[][] data;
 
     /**
      * Creates new form DataGrid
@@ -36,23 +38,23 @@ public class FrameDataGrid extends javax.swing.JFrame {
         jScrollPane2.setRowHeaderView(tableLineNumber);
     }
 
-    public FrameDataGrid(CMatrix m) {
+    public FrameDataGrid(float[][] data) {
         initComponents();
         LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
         //tableLineNumber.setBackground(Color.LIGHT_GRAY);
         jScrollPane2.setRowHeaderView(tableLineNumber);
-        setMatrix(m);
-        this.lbl_size.setText("[" + m.getSize().row + " x " + m.getSize().column + "]");
-        this.setTitle(cm.name + " :: DataGrid");
+        setMatrix(data);
+        this.lbl_size.setText("[" + data.length + " x " + data[0].length + "]");
+        this.setTitle("DataGrid");
     }
 
-    public void setMatrix(CMatrix m) {
-        this.cm = m;
-        ds_table.setModel(getTableModelForArtificialData(cm, false));
+    public void setMatrix(float[][] data) {
+        this.data = data;
+        ds_table.setModel(getTableModelForArtificialData(data, false));
     }
 
-    public CMatrix getMatrix() {
-        return cm;
+    public float[][] getMatrix() {
+        return data;
     }
 
     /**
@@ -270,25 +272,25 @@ public class FrameDataGrid extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton_buildArtificialDSActionPerformed
     private Vector<String> artificialDS = new Vector<String>();  //  @jve:decl-index=0:
 
-    public TableModel getTableModelForArtificialData(CMatrix m, boolean isInt) {
-        if (m == null || m.getRowNumber() == 0) {
+    public TableModel getTableModelForArtificialData(float[][] data, boolean isInt) {
+        if (data == null || data.length == 0) {
             return null;
         }
         try {
-            int colNumber = m.getColumnNumber();
+            int colNumber = data[0].length;
             String columnNames[] = new String[colNumber];
             for (int i = 0; i < colNumber; i++) {
                 columnNames[i] = "" + (i);
             }
 //            columnNames[colNumber - 1] = "Class Label";
             if (!isInt) {
-                Object data[][] = m.toStringArray2D();
-                TableModel model = new DefaultTableModel(data, columnNames) {
+                String dataS[][] = FactoryUtils.toStringArray2D(data);
+                TableModel model = new DefaultTableModel(dataS, columnNames) {
                 };
                 return model;
             } else {
-                Object data[][] = m.toStringArray2DAsInt();
-                TableModel model = new DefaultTableModel(data, columnNames) {
+                String dataS[][] = FactoryMatrix.toStringArray2DAsInt(data);
+                TableModel model = new DefaultTableModel(dataS, columnNames) {
                 };
                 return model;
             }
@@ -304,7 +306,6 @@ public class FrameDataGrid extends javax.swing.JFrame {
         artificialDS = getArtificialDataSet(nCols, nRows, type);
         clearTable(ds_table);
         ds_table.setModel(getTableModelForArtificialData(artificialDS));
-        this.cm = null;
     }
 
     public static Vector<String> getArtificialDataSet(int cols, int rows, String type) {
@@ -345,13 +346,11 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
     private void btn_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_plotActionPerformed
         if (getMatrix() != null) {
-            //TFigureAttribute attr = new TFigureAttribute();
-            //attr.items = getMatrix().getColumnNamesArray();
-            getMatrix().plot();
+            CMatrix.getInstance(data).plot();
         } else {
             double[][] d = tableToArray(ds_table);
             CMatrix cm = CMatrix.getInstance(d);
-            setMatrix(cm);
+            setMatrix(cm.toFloatArray2D());
             //TFigureAttribute attr = new TFigureAttribute();
             //attr.items = cm.getColumnNamesArray();
             cm.plot();
@@ -360,30 +359,28 @@ public class FrameDataGrid extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_plotActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed
-        if (getMatrix().getColumnNumber()<2) {
+        if (getMatrix()[0].length<2) {
             System.err.println("number of columns should be at least 2");
             return;
         }
         if (getMatrix() != null) {
-            getMatrix().scatter();
+            CMatrix.getInstance(data).scatter();
         } else {
             double[][] d = tableToArray(ds_table);
             CMatrix cm = CMatrix.getInstance(d);
-            setMatrix(cm);
+            setMatrix(cm.toFloatArray2D());
             cm.scatter();
         }
     }//GEN-LAST:event_btn_scatterActionPerformed
 
     private void btn_visualize1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_visualize1ActionPerformed
-        cm = cm.transpose();
         LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
         tableLineNumber.setBackground(Color.LIGHT_GRAY);
         jScrollPane2.setRowHeaderView(tableLineNumber);
-        setMatrix(cm);
     }//GEN-LAST:event_btn_visualize1ActionPerformed
 
     private void btn_convert_2_intActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_convert_2_intActionPerformed
-        ds_table.setModel(getTableModelForArtificialData(cm, true));
+        ds_table.setModel(getTableModelForArtificialData(data, true));
     }//GEN-LAST:event_btn_convert_2_intActionPerformed
 
     private void btn_from_textActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_from_textActionPerformed
@@ -392,11 +389,11 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
     private void btn_bar_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_bar_plotActionPerformed
         if (getMatrix() != null) {
-            getMatrix().bar();
+            CMatrix.getInstance(data).bar();
         } else {
             double[][] d = tableToArray(ds_table);
             CMatrix cm = CMatrix.getInstance(d);
-            setMatrix(cm);
+            setMatrix(cm.toFloatArray2D());
             cm.bar();
         }
     }//GEN-LAST:event_btn_bar_plotActionPerformed

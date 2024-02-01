@@ -13,8 +13,8 @@ import jazari.types.TFigureAttribute;
  */
 public class TestBar {
     public static void main(String[] args) {
-        //CMatrix cm1 = CMatrix.getInstance().imread("images/pullar.png").imhist();
-        callWithTFigureAttribute();
+//        CMatrix cm1 = CMatrix.getInstance().imread("images/pullar.png").imhist();
+//        callWithTFigureAttribute();
         //callWithLabelsAndItems();
     }
 

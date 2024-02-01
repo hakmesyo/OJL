@@ -5,16 +5,15 @@
  */
 package jazari.gui;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import jazari.image_processing.ImageProcess;
-import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jazari.matrix.CMatrix;
 import jazari.types.TFigureAttribute;
 
 /**
@@ -31,27 +30,29 @@ public class FrameBar extends javax.swing.JFrame {
         }
     }
 
-    private CMatrix cm;
+    private float[][] data;
     private String[] labels = null;
     private boolean isValueVisible = false;
     private String[] items = null;
     private TFigureAttribute attr = null;
 
-    public FrameBar(CMatrix cm, TFigureAttribute attr, String[] labels) {
-        super(cm.name + "|Bar");
-        cm.name += "|Bar";
-        this.cm = cm.clone();
+    public FrameBar(float[][] data, TFigureAttribute attr, String[] labels) {
+        super("|Bar");
+        //cm.name += "|Bar";
+        //this.cm = cm.clone();
         this.attr = attr;
+        this.data=data;
         if (attr == null) {
             this.labels = labels;
         }
         initComponents();
     }
 
-    public FrameBar(CMatrix cm, TFigureAttribute attr, String[] labels, String[] items) {
-        super(cm.name + "|Bar");
-        cm.name += "|Bar";
-        this.cm = cm.clone();
+    public FrameBar(float[][] data, TFigureAttribute attr, String[] labels, String[] items) {
+        super("|Bar");
+        //cm.name += "|Bar";
+        //this.cm = cm.clone();
+        this.data=data;
         this.attr = attr;
         if (attr == null) {
             this.labels = labels;
@@ -60,10 +61,11 @@ public class FrameBar extends javax.swing.JFrame {
         initComponents();
     }
 
-    public FrameBar(CMatrix cm, TFigureAttribute attr) {
-        super(cm.name + "|Bar");
-        cm.name += "|Bar";
-        this.cm = cm.clone();
+    public FrameBar(float[][] data, TFigureAttribute attr) {
+        super("|Bar");
+        //cm.name += "|Bar";
+        //this.cm = cm.clone();
+        this.data=data;
         this.attr = attr;
         initComponents();
     }
@@ -81,7 +83,7 @@ public class FrameBar extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel_bar = new jazari.gui.PanelBar(this,cm,attr,labels,items,isValueVisible);
+        panel_bar = new jazari.gui.PanelBar(this,data,attr,labels,items,isValueVisible);
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         btn_dataGrid = new javax.swing.JButton();
@@ -308,18 +310,17 @@ public class FrameBar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
-        CMatrix cm = getBarPanel().getMatrix();
-        new FrameDataGrid(cm).setVisible(true);
+        new FrameDataGrid(data).setVisible(true);
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed
-        if (getBarPanel().getMatrix().getColumnNumber() < 2) {
+        if (getBarPanel().getMatrix().length < 2) {
             System.err.println("number of columns should be at least 2");
             return;
         }
         TFigureAttribute attr = new TFigureAttribute();
         attr.figureCaption = this.getTitle();
-        getBarPanel().getMatrix().scatter(attr);
+        CMatrix.getInstance(data).scatter(attr);
     }//GEN-LAST:event_btn_scatterActionPerformed
 
     private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed
@@ -327,7 +328,7 @@ public class FrameBar extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_saveActionPerformed
 
     private void btn_refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_refreshActionPerformed
-        getBarPanel().setMatrix(this.cm);
+        getBarPanel().setMatrix(this.data);
     }//GEN-LAST:event_btn_refreshActionPerformed
 
     private void chk_legendItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_legendItemStateChanged
@@ -374,14 +375,14 @@ public class FrameBar extends javax.swing.JFrame {
         return (PanelBar) panel_bar;
     }
 
-    public void setBarData(CMatrix cmx) {
-        this.cm = cmx.getHistogram();
-        getBarPanel().setMatrix(cm);
+    public void setBarData(float[][] data) {
+        //this.cm = cmx.getHistogram();
+        getBarPanel().setMatrix(data);
     }
 
-    public void setBarData(CMatrix cmx, String[] labels) {
-        this.cm = cmx.getHistogram();
-        getBarPanel().setMatrix(cm, labels);
+    public void setBarData(float[][] data, String[] labels) {
+        //this.cm = cmx.getHistogram();
+        getBarPanel().setMatrix(data, labels);
     }
 
     /**
@@ -427,44 +428,4 @@ public class FrameBar extends javax.swing.JFrame {
         getBarPanel().setValueVisible(isValueVisible);
     }
 
-//    public static void main(String[] args) {
-//        try {
-//            /* Set the Nimbus look and feel */
-//            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-//            /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-//            * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-//            */
-//            UIManager.setLookAndFeel(new FlatDarkLaf());
-////        try {
-////            
-//////            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//////            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-//////                if ("Nimbus".equals(info.getName())) {
-//////                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-//////                    break;
-//////                }
-//////            }
-////        } catch (ClassNotFoundException ex) {
-////            java.util.logging.Logger.getLogger(FramePlot.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-////        } catch (InstantiationException ex) {
-////            java.util.logging.Logger.getLogger(FramePlot.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-////        } catch (IllegalAccessException ex) {
-////            java.util.logging.Logger.getLogger(FramePlot.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-////        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-////            java.util.logging.Logger.getLogger(FramePlot.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-////        }
-////</editor-fold>
-////</editor-fold>
-//        } catch (UnsupportedLookAndFeelException ex) {
-//            Logger.getLogger(FrameBar.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        //FlatDarculaLaf.setup();
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                CMatrix cm = CMatrix.getInstance().rand(5, 1);
-//                FrameBar jazo = new FrameBar(cm,null);
-//                jazo.setVisible(true);
-//            }
-//        });
-//    }
 }

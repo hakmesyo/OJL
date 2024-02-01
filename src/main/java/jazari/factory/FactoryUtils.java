@@ -252,9 +252,9 @@ public final class FactoryUtils {
     }
 
 //    private static String curr_file;
-    public static void plot(CMatrix cm) {
-        new FramePlot(cm).setVisible(true);
-    }
+//    public static void plot(CMatrix cm) {
+//        new FramePlot(cm).setVisible(true);
+//    }
 
     public static ArrayList<Point> shuffleList(ArrayList<Point> lst) {
         long seed = System.nanoTime();
@@ -6109,6 +6109,18 @@ public final class FactoryUtils {
         return n;
     }
 
+    public static int getLongestStringLength(float[][] items) {
+        int n = 0;
+        for (int i = 0; i < items.length; i++) {
+            for (int j = 0; j < items[0].length; j++) {
+                if (n < ("" + items[i][j]).length()) {
+                    n = ("" + items[i][j]).length();
+                }
+            }
+        }
+        return n;
+    }
+
     public static double[][] toDoubleArray2D(float[][] d) {
         int nr = d.length;
         int nc = d[0].length;
@@ -8416,9 +8428,9 @@ public final class FactoryUtils {
             ret = 4;
         } else if (val < 1) {
             ret = 3;
-        } else if (val<10){
+        } else if (val < 10) {
             ret = 2;
-        } else if (val<100){
+        } else if (val < 100) {
             ret = 1;
         } else {
             ret = 0;

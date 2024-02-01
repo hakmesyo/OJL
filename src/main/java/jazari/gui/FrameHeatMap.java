@@ -139,7 +139,7 @@ public final class FrameHeatMap extends javax.swing.JFrame {
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
         CMatrix cm = getHeatMapPanel().getMatrix();
-        new FrameDataGrid(cm).setVisible(true);
+        new FrameDataGrid(cm.toFloatArray2D()).setVisible(true);
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     public PanelHeatMap getHeatMapPanel() {

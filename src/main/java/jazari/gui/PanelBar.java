@@ -5,7 +5,6 @@
  */
 package jazari.gui;
 
-import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -63,7 +62,7 @@ public class PanelBar extends javax.swing.JPanel {
     private Rectangle rectAxisY;
     private Rectangle rectLegend;
     private float[][] realValues;
-    private CMatrix cm;
+    //private CMatrix cm;
     private CPoint[][] mp;
     private String[] items;
     private long rand_seed;
@@ -77,16 +76,16 @@ public class PanelBar extends javax.swing.JPanel {
     private boolean isMousePressed = false;
     private int virtualXAxisPosY;
     private Graphics2D gr;
-    private int[][] mappedVal=null;
+    private int[][] mappedVal = null;
 
-    public PanelBar(FrameBar frm, CMatrix cm, TFigureAttribute attr, String[] labels, String[] items, boolean isValueVisible) {
-        this.cm = cm;
+    public PanelBar(FrameBar frm, float[][] data, TFigureAttribute attr, String[] labels, String[] items, boolean isValueVisible) {
+        this.data = data;
         this.frm = frm;
         this.isValueVisible = isValueVisible;
-        this.originalData = FactoryMatrix.transpose(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
-        this.data = FactoryNormalization.normalizeMax(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
-        this.data = FactoryMatrix.transpose(this.data);
-        color = FactoryUtils.generateColor(data.length);
+        this.originalData = (FactoryMatrix.clone(data));
+//        this.originalData = FactoryMatrix.transpose(FactoryMatrix.clone(data));
+//        this.data = FactoryNormalization.normalizeMax(FactoryMatrix.clone(data));
+//        this.data = FactoryMatrix.transpose(this.data);
         if (attr != null) {
             figureAttribute = attr;
             if (figureAttribute.labels != null) {
@@ -98,7 +97,7 @@ public class PanelBar extends javax.swing.JPanel {
             if (figureAttribute.items != null) {
                 this.items = figureAttribute.items;
             } else {
-                this.items = new String[cm.getColumnNumber()];
+                this.items = new String[data.length];
                 for (int i = 0; i < this.items.length; i++) {
                     this.items[i] = "Bar-" + (i + 1);
                 }
@@ -113,7 +112,7 @@ public class PanelBar extends javax.swing.JPanel {
             if (items != null) {
                 this.items = items;
             } else {
-                this.items = new String[cm.getColumnNumber()];
+                this.items = new String[data.length];
                 for (int i = 0; i < this.items.length; i++) {
                     this.items[i] = "Bar-" + (i + 1);
                 }
@@ -124,6 +123,7 @@ public class PanelBar extends javax.swing.JPanel {
             this.figureAttribute.title = "Bar Plot";
 
         }
+        color = FactoryUtils.generateColor(this.items.length);
         initialize();
     }
 
@@ -140,7 +140,7 @@ public class PanelBar extends javax.swing.JPanel {
 //    }
     private void initialize() {
         minValue = FactoryUtils.getMinimum(data);
-        int length = FactoryUtils.getLongestStringLength(cm.formatFloat(3).toFloatArray1D());
+        int length = FactoryUtils.getLongestStringLength(FactoryUtils.formatFloat(data, 3));
         fromLeft = 50 + length * 5;
         fromRight = 20;
         fromTop = 100;
@@ -260,7 +260,7 @@ public class PanelBar extends javax.swing.JPanel {
 //                int px=(int)FactoryUtils.map(mousePos.x, 0, getWidth(), 0, canvas_width);
 //                int py=(int)FactoryUtils.map(mousePos.y, 0, getHeight(), 0  , canvas_height);
 //                frm.setTitle("Bar Plot  ["+px+","+py+"]");
-                frm.setTitle("Bar Plot  ["+mousePos.x+","+mousePos.y+"]");
+                frm.setTitle("Bar Plot  [" + mousePos.x + "," + mousePos.y + "]");
                 //System.out.println(mousePos);
                 //repaint();
             }
@@ -293,13 +293,13 @@ public class PanelBar extends javax.swing.JPanel {
         drawTitleAxisX(gr);
         drawTitleAxisY(gr);
 
-        float[][] d = cm.toFloatArray2D();
-        mp = mappingDataToScreenCoordinates(d, fromLeft + 10, fromTop + 15, canvas_width - 20, canvas_height - 30);
+        //float[][] d = cm.toFloatArray2D();
+        mp = mappingDataToScreenCoordinates(data, fromLeft + 10, fromTop + 15, canvas_width - 20, canvas_height - 30);
         mappedVal = getMaxMinValue(mp);
         drawPlotCanvas(gr);
-        drawYAxis(gr, px, py, canvas_width, fromRight, d);
-        drawXAxis(gr, mp, mappedVal, px, py, w - fromRight, fromRight, d);
-        drawBars(gr, mp, mappedVal, py, d);
+        drawYAxis(gr, px, py, canvas_width, fromRight, data);
+        drawXAxis(gr, mp, mappedVal, px, py, w - fromRight, fromRight, data);
+        drawBars(gr, mp, mappedVal, py, data);
         if (isLegend) {
             drawLegend(gr);
         }
@@ -336,11 +336,6 @@ public class PanelBar extends javax.swing.JPanel {
             } else {
                 gr.setColor(Color.darkGray);
             }
-//            if (maxY > 10) {
-//                yVal[i] = Math.round(Math.round((i * delta + minY) * n) / n);
-//            } else {
-//                yVal[i] = (i * delta + minY);
-//            }
             yVal[i] = (i * delta + minY);
             String val = FactoryUtils.formatFloatAsString(yVal[i], sensitivity);
             gr.drawString(val, px - 10 - FactoryUtils.getGraphicsTextWidth(gr, val), (int) (taban - i * dY) + art);
@@ -398,8 +393,8 @@ public class PanelBar extends javax.swing.JPanel {
     }
 
     private void drawBars(Graphics2D gr, CPoint[][] mp, int[][] mpv, int taban, float[][] d) {
-        float min = FactoryUtils.getMinimum(cm.toFloatArray2D());
-        float max = FactoryUtils.getMaximum(cm.toFloatArray2D());
+        float min = FactoryUtils.getMinimum(data);
+        float max = FactoryUtils.getMaximum(data);
         int sensitivity = FactoryUtils.getDigitSensitivity(Math.abs(max - min));
 
         //int pos_y = (int) (mpv[1][1] - FactoryUtils.map(0, min, max, mpv[1][0], mpv[1][1])) + 8;
@@ -530,20 +525,20 @@ public class PanelBar extends javax.swing.JPanel {
         return ret;
     }
 
-    public void setMatrix(CMatrix m) {
-        this.cm = m;
+    public void setMatrix(float[][] data) {
+        this.data = data;
         rand_seed = System.currentTimeMillis();
-        color = FactoryUtils.getRandomColors(cm.getColumnNumber(), rand_seed);
-        figureAttribute.items = generateItemText(cm.getColumnNumber());
+        figureAttribute.items = generateItemText(data[0].length);
+        color = FactoryUtils.getRandomColors(figureAttribute.items.length, rand_seed);
         repaint();
     }
 
-    public void setMatrix(CMatrix m, String[] labels) {
-        this.cm = m;
+    public void setMatrix(float[][] data, String[] labels) {
+        this.data = data;
         this.labels = labels;
         rand_seed = System.currentTimeMillis();
-        color = FactoryUtils.getRandomColors(cm.getColumnNumber(), rand_seed);
-        figureAttribute.items = generateItemText(cm.getColumnNumber());
+        color = FactoryUtils.getRandomColors(data.length, rand_seed);
+        figureAttribute.items = generateItemText(data.length);
         repaint();
     }
 
@@ -558,23 +553,23 @@ public class PanelBar extends javax.swing.JPanel {
         return ret;
     }
 
-    public void setMatrix(CMatrix m, boolean isColorPersist) {
-        this.cm = m;
+    public void setMatrix(float[][] data, boolean isColorPersist) {
+        this.data = data;
         rand_seed = System.currentTimeMillis();
         if (isColorPersist) {
             if (color == null) {
-                color = FactoryUtils.getRandomColors(cm.getRowNumber(), rand_seed);
+                color = FactoryUtils.getRandomColors(data.length, rand_seed);
             }
         } else {
-            color = FactoryUtils.getRandomColors(cm.getRowNumber(), rand_seed);
+            color = FactoryUtils.getRandomColors(data.length, rand_seed);
         }
 
-        figureAttribute.items = generateItemText(cm.getRowNumber());
+        figureAttribute.items = generateItemText(data.length);
         repaint();
     }
 
-    public CMatrix getMatrix() {
-        return this.cm;
+    public float[][] getMatrix() {
+        return this.data;
     }
 
     private void drawLegend(Graphics2D gr) {
@@ -633,7 +628,11 @@ public class PanelBar extends javax.swing.JPanel {
         } else {
             gr.setColor(Color.darkGray);
         }
-        gr.setFont(figureAttribute.fontTitle);
+        if (figureAttribute.fontTitle == null) {
+            gr.setFont(gr.getFont().deriveFont(20.0f));
+        } else {
+            gr.setFont(figureAttribute.fontTitle);
+        }
         titleWidth = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.title);
         titleHeight = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.title);
         int pTitleX = fromLeft + (canvas_width - titleWidth) / 2;
@@ -651,10 +650,14 @@ public class PanelBar extends javax.swing.JPanel {
         } else {
             gr.setColor(Color.darkGray);
         }
-        gr.setFont(figureAttribute.fontAxisX);
+        if (figureAttribute.fontAxisX == null) {
+            gr.setFont(gr.getFont().deriveFont(Font.ITALIC, 16.0f));
+        } else {
+            gr.setFont(figureAttribute.fontAxisX);
+        }
         int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[1]);
         int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[1]);
-        int px = (getWidth() - axis_width) / 2;
+        int px = 70 + fromRight + (canvas_width - axis_width) / 2;
         int py = getHeight() - 20;
         if (isXAxisTitleVisible) {
             gr.drawString(figureAttribute.axis_names[1], px, py);
@@ -672,7 +675,11 @@ public class PanelBar extends javax.swing.JPanel {
         } else {
             gr.setColor(Color.darkGray);
         }
-        gr.setFont(figureAttribute.fontAxisY);
+        if (figureAttribute.fontAxisY == null) {
+            gr.setFont(gr.getFont().deriveFont(Font.ITALIC, 16.0f));
+        } else {
+            gr.setFont(figureAttribute.fontAxisY);
+        }
         int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[0]);
         int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[0]);
         int px = 30;

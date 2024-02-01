@@ -20,9 +20,9 @@ public class TFigureAttribute {
 
     public String figureCaption = "Default Caption";
     public String title = "Plot";
-    public Font fontTitle = new JLabel().getFont();
-    public Font fontAxisX = new JLabel().getFont();
-    public Font fontAxisY = new JLabel().getFont();
+    public Font fontTitle = null;//new JLabel().getFont();
+    public Font fontAxisX = null;//new JLabel().getFont();
+    public Font fontAxisY = null;//new JLabel().getFont();
     public String[] axis_names = new String[]{"y - axis", "x - axis"};
     public String[] items = new String[]{"X1", "X2"};
     public String[] labels = null;
