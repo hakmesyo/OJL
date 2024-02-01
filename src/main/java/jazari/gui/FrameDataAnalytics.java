@@ -297,7 +297,7 @@ public class FrameDataAnalytics extends javax.swing.JFrame {
 
     private void btn_bar_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_bar_plotActionPerformed
         float[][] data = getData();
-        CMatrix cm = CMatrix.getInstance(data).plotBar(names);        
+        CMatrix cm = CMatrix.getInstance(data).bar(names);        
     }//GEN-LAST:event_btn_bar_plotActionPerformed
 
     /**

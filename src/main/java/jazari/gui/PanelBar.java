@@ -92,7 +92,7 @@ public class PanelBar extends javax.swing.JPanel {
                 this.labels = figureAttribute.labels;
                 max_label_index = getMaximumLengthIndex(this.labels);
             } else {
-                this.labels = generateArtificialLabels(originalData[0]);
+                this.labels = generateArtificialLabels(data.length);
             }
             if (figureAttribute.items != null) {
                 this.items = figureAttribute.items;
@@ -107,12 +107,12 @@ public class PanelBar extends javax.swing.JPanel {
                 this.labels = labels;
                 max_label_index = getMaximumLengthIndex(labels);
             } else {
-                this.labels = generateArtificialLabels(originalData[0]);
+                this.labels = generateArtificialLabels(data.length);
             }
             if (items != null) {
                 this.items = items;
             } else {
-                this.items = new String[data.length];
+                this.items = new String[data[0].length];
                 for (int i = 0; i < this.items.length; i++) {
                     this.items[i] = "Bar-" + (i + 1);
                 }
@@ -543,7 +543,7 @@ public class PanelBar extends javax.swing.JPanel {
     }
 
     private String[] generateItemText(int n) {
-        if (figureAttribute.items.length != 0) {
+        if (figureAttribute.items!=null && figureAttribute.items.length != 0) {
             return figureAttribute.items;
         }
         String[] ret = new String[n];
@@ -753,9 +753,9 @@ public class PanelBar extends javax.swing.JPanel {
         return ret;
     }
 
-    private String[] generateArtificialLabels(float[] d) {
-        String[] ret = new String[d.length];
-        for (int i = 0; i < d.length; i++) {
+    private String[] generateArtificialLabels(int n) {
+        String[] ret = new String[n];
+        for (int i = 0; i < n; i++) {
             ret[i] = "" + i;
         }
         return ret;

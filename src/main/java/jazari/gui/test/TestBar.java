@@ -13,6 +13,7 @@ import jazari.types.TFigureAttribute;
  */
 public class TestBar {
     public static void main(String[] args) {
+        simpleBarCall();
 //        CMatrix cm1 = CMatrix.getInstance().imread("images/pullar.png").imhist();
 //        callWithTFigureAttribute();
         //callWithLabelsAndItems();
@@ -26,7 +27,7 @@ public class TestBar {
                 new String[]{"SCNN","U-Net","ENet","ENet-SAD"}
         );
         CMatrix cm = CMatrix.getInstance()
-                .rand(4, 5, -150f, 151f)
+                .rand(2, 5, -150f, 151f)
                 .bar(attr)
                 ;
     }
@@ -40,6 +41,15 @@ public class TestBar {
                 .rand(4, 5, -150f, 151f)
                 .shape()
                 .bar(labels,items)                
+                ;
+    }
+
+    private static void simpleBarCall() {
+        CMatrix cm = CMatrix.getInstance()
+                .rand(10, 1)
+                .println()
+                .bar()
+                
                 ;
     }
 }
