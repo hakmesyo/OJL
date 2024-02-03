@@ -38,7 +38,7 @@ public class TestPidController {
 
         // Position based test code
         int n=200;
-        double[][] data=new double[n][4];
+        double[][] data=new double[4][n];
         for (int i = 0; i < n; i++) {
 
             //if(i==50)miniPID.setI(.05);
@@ -54,10 +54,10 @@ public class TestPidController {
             //System.out.println("=========================="); 
             //System.out.printf("Current: %3.2f , Actual: %3.2f, Error: %3.2f\n",actual, output, (target-actual));
             System.err.printf("%3.2f\t%3.2f\t%3.2f\t%3.2f\n", target, actual, output, (target - actual));
-            data[i][0]=target;
-            data[i][1]=actual;
-            data[i][2]=output;
-            data[i][3]=(target - actual);
+            data[0][i]=target;
+            data[1][i]=actual;
+            data[2][i]=output;
+            data[3][i]=(target - actual);
 
             //if(i>80 && i%5==0)actual+=(Math.random()-.5)*20;
         }

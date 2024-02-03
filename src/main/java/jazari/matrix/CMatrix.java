@@ -2041,7 +2041,7 @@ public final class CMatrix implements Serializable {
     public CMatrix plot() {
         this.array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
         TFigureAttribute attr = new TFigureAttribute();
-        attr.items = getColumnNamesArray();
+        attr.items = getRowNamesArray();
 
         if (!hold_on) {
             framePlot = new FramePlot(this.toFloatArray2D(), attr);
@@ -2051,10 +2051,6 @@ public final class CMatrix implements Serializable {
             }
             framePlot.setMatrix(this.toFloatArray2D());
         }
-        TFigureAttribute fg = new TFigureAttribute();
-        fg.pointType = plotType;
-        fg.items = getColumnNamesArray();
-        framePlot.setFigureAttribute(fg);
         framePlot.setVisible(true);
         return this;
     }
@@ -2066,9 +2062,12 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix plot(float[] xAxis) {
-        this.array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
+        array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
+        if (getRowNumber()==xAxis.length) {
+           array=transpose().array;
+        }
         TFigureAttribute attr = new TFigureAttribute();
-        attr.items = getColumnNamesArray();
+        attr.items = getRowNamesArray();
 
         if (!hold_on) {
             framePlot = new FramePlot(this.toFloatArray2D(), attr, xAxis);
@@ -2078,10 +2077,10 @@ public final class CMatrix implements Serializable {
             }
             framePlot.setMatrix(this.toFloatArray2D());
         }
-        TFigureAttribute fg = new TFigureAttribute();
-        fg.pointType = plotType;
-        fg.items = getColumnNamesArray();        
-        framePlot.setFigureAttribute(fg);
+//        TFigureAttribute fg = new TFigureAttribute();
+//        fg.pointType = plotType;
+//        fg.items = getColumnNamesArray();        
+//        framePlot.setFigureAttribute(fg);
         framePlot.setVisible(true);
         return this;
     }
@@ -2309,7 +2308,8 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * plot the bar of each column in the matrix
+     * plot the bar of each row as group and each columns as items
+     * it could be interpreted as each row is model and each colum is an experiment on that model
      *
      * @return CMatrix
      */
@@ -2333,11 +2333,11 @@ public final class CMatrix implements Serializable {
     /**
      * plot the bar of each column in the matrix
      *
-     * @param labels:set of group names
+     * @param categories:set of group names
      * @return CMatrix
      */
-    public CMatrix bar(String[] labels) {
-        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, labels);
+    public CMatrix bar(String[] categories) {
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, categories);
         frm.setVisible(true);
         return this;
     }
@@ -2345,12 +2345,12 @@ public final class CMatrix implements Serializable {
     /**
      * plot the bar of each column in the matrix
      *
-     * @param labels      :set of group names
+     * @param categories      :set of group names
      * @param columnNames :set of column names 
      * @return CMatrix
      */
-    public CMatrix bar(String[] labels, String[] columnNames) {
-        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, labels,columnNames);
+    public CMatrix bar(String[] categories, String[] columnNames) {
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, categories,columnNames);
         frm.setVisible(true);
         return this;
     }
@@ -7708,6 +7708,14 @@ public final class CMatrix implements Serializable {
 
     public String[] getColumnNamesArray() {
         String[] ret = new String[getColumnNumber()];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = "f_" + i;
+        }
+        return ret;
+    }
+    
+    public String[] getRowNamesArray() {
+        String[] ret = new String[getRowNumber()];
         for (int i = 0; i < ret.length; i++) {
             ret[i] = "f_" + i;
         }

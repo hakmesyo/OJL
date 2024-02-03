@@ -39,12 +39,9 @@ import org.drjekyll.fontchooser.FontDialog;
  * @author BAP1
  */
 public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener {
-
-    //private CMatrix cm;
     private float[] xAxis;
     private Color[] color;
     private boolean isShowPoint = false;
-    private boolean lblShow = false;
     private Point mousePos = new Point(0, 0);
     private float scale = 1;
     private TFigureAttribute figureAttribute;
@@ -62,7 +59,6 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     private int canvas_height = 200;
     private boolean[] itemSelected;
     private AffineTransform afft = new AffineTransform();
-    private AffineTransform temp_afft = new AffineTransform();
     private AffineTransform inverseScale = new AffineTransform();
     private float zoom = 1;
     private Color prevColor;
@@ -79,66 +75,26 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     private Rectangle rectAxisX;
     private Rectangle rectAxisY;
     private Rectangle rectLegend;
-    private float[][] realValues;
-    int[] vals;
     private Color colorLine = new Color(255, 255, 0);
     private int legendTextWidth;
     private int legendTextHeight;
     private int titleWidth;
     private int titleHeight;
-    private CPoint selectedCPoint;
-    private int selectedItemIndex;
-    private int selectedLineIndex;
-    private float selectedLineIndexValue;
     private float[][] data = null;
     private boolean isMouseDragged;
     Rectangle r1 = new Rectangle();
 
     public PanelPlot(float[][] data) {
-        //this.data = FactoryMatrix.transpose(FactoryMatrix.clone(data));
-        this.data = FactoryMatrix.transpose(data);
+        this.data = data;
         if (figureAttribute == null) {
-            items = new String[data[0].length];
-            for (int i = 0; i < items.length; i++) {
-                items[i] = "Line - " + (i + 1);
-            }
             this.figureAttribute = new TFigureAttribute();
-            this.figureAttribute.items = items;
+            this.figureAttribute.items = new String[this.data.length];
+            for (int i = 0; i < this.figureAttribute.items.length; i++) {
+                this.figureAttribute.items[i] = "Line - " + (i + 1);
+            }
+            items=this.figureAttribute.items;
         }
         initialize();
-        //repaint();
-    }
-
-    public PanelPlot(float[][] data, float[] x) {
-        this.xAxis = x;
-        //this.data = FactoryMatrix.transpose(FactoryMatrix.clone(data));
-        this.data = FactoryMatrix.transpose(data);
-        items = new String[data[0].length];
-        for (int i = 0; i < items.length; i++) {
-            items[i] = "Line - " + (i + 1);
-        }
-        this.figureAttribute = new TFigureAttribute();
-        initialize();
-        //repaint();
-    }
-
-    public PanelPlot(float[][] data, TFigureAttribute attr) {
-        //this.data = FactoryMatrix.transpose(FactoryMatrix.clone(data));
-        this.data = FactoryMatrix.transpose(data);
-        this.figureAttribute = attr;
-        this.items = attr.items;
-        initialize();
-        //repaint();
-    }
-
-    public PanelPlot(float[][] data, TFigureAttribute attr, float[] x) {
-        this.xAxis = x;
-        //this.data = FactoryMatrix.transpose(FactoryMatrix.clone(data));
-        this.data = FactoryMatrix.transpose(data);
-        this.figureAttribute = attr;
-        this.items = attr.items;
-        initialize();
-        //repaint();
     }
 
     public void setXAxis(float[] x) {
@@ -194,7 +150,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
             }
             gr.drawLine(mousePos.x, rectPlotCanvas.y, mousePos.x, rectPlotCanvas.y + rectPlotCanvas.height);
             int pxx = mousePos.x;
-            int index = Math.round(FactoryUtils.map(pxx, rectInnerCanvas.x, rectInnerCanvas.x + rectInnerCanvas.width, 0, data[0].length));
+            int index = (int)(FactoryUtils.map(pxx, rectInnerCanvas.x, rectInnerCanvas.x + rectInnerCanvas.width, 0, data[0].length));
             for (int i = 0; i < mp.length; i++) {
                 r1.x = mp[i][index].column - 4;
                 r1.y = mp[i][index].row - 4;
@@ -206,18 +162,21 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                         gr.fillRect(mousePos.x, mp[i][index].row - 10, 50, 17);
                         gr.setColor(color[i]);
                         if (xAxis == null) {
-                            gr.drawString("" + index + "," + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
+                            gr.drawString("" + index + " , " + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
                         } else {
-                            gr.drawString("" + (index + xAxis[0]) + "," + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
+                            int fv=Math.round(FactoryUtils.map(mousePos.x-mappedVal[0][0], 0, mappedVal[0][1]-mappedVal[0][0], xAxis[0], xAxis[xAxis.length-1]));
+                            gr.drawString("" + fv + " , " + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
+                            //gr.drawString("" + (index + xAxis[0]) + "," + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
                         }
                     } else {
                         gr.setColor(Color.white);
                         gr.fillRect(mousePos.x, mp[i][index].row - 10, 50, 17);
                         gr.setColor(color[i]);
                         if (xAxis == null) {
-                            gr.drawString("" + index + "," + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
+                            gr.drawString("" + index + " , " + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
                         } else {
-                            gr.drawString("" + (index + xAxis[0]) + "," + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
+                            int fv=Math.round(FactoryUtils.map(mousePos.x-mappedVal[0][0], 0, mappedVal[0][1]-mappedVal[0][0], xAxis[0], xAxis[xAxis.length-1]));
+                            gr.drawString("" + fv + " , " + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
                         }
                     }
                 }
@@ -275,8 +234,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     }
 
     public void setMatrix(float[][] data) {
-        this.data = FactoryMatrix.transpose(FactoryMatrix.clone(data));
-        //this.data = data;
+        this.data = data;
         rand_seed = System.currentTimeMillis();
         figureAttribute.items = generateItemText(this.data.length);
         color = FactoryUtils.getRandomColors(figureAttribute.items.length, rand_seed);
@@ -304,7 +262,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
     }
 
     private void initialize() {
-        realValues = FactoryUtils.formatFloat(data, 2);
+        FactoryUtils.formatFloat(data, 2);
         float[] yy = calculateYAxisLabels();
         int length = FactoryUtils.getLongestStringLength(FactoryUtils.formatFloat(data, 3));
         fromLeft = 50 + length * 5;
@@ -353,7 +311,7 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
                                 itemSelected[i] = false;
                             }
                         }
-                        vals = checkDataPoints(gr, mp, fromLeft, fromTop, canvas_width, canvas_height);
+                        checkDataPoints(gr, mp, fromLeft, fromTop, canvas_width, canvas_height);
                         repaint();
                     } else if (rectTitle.contains(mousePos)) {
                         String st = JOptionPane.showInputDialog(null, "set title as", figureAttribute.title);
@@ -419,6 +377,8 @@ public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener 
 
             @Override
             public void mouseMoved(java.awt.event.MouseEvent e) {
+                //System.out.println("e = " + e.getPoint());
+                mousePos=e.getPoint();
             }
 
             @Override

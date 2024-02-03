@@ -21,26 +21,29 @@ public class TFigureAttribute {
     public String figureCaption = "Default Caption";
     public String title = "Plot";
     public Font fontTitle = null;//new JLabel().getFont();
+    public Font[] fontCategories = null;//new JLabel().getFont();
     public Font fontAxisX = null;//new JLabel().getFont();
     public Font fontAxisY = null;//new JLabel().getFont();
     public String[] axis_names = new String[]{"y - axis", "x - axis"};
     public String[] items = new String[]{"X1", "X2"};
-    public String[] labels = null;
+    public String[] categories = null;
     public String pointType = "-";
     public ArrayList<String> perfMetricStr = new ArrayList();
     public ArrayList<Float> perfMetricVal = new ArrayList();
     public boolean isStroke = false;
     public ArrayList<Stroke> stroke = new ArrayList<>();
 
-    public TFigureAttribute() {
-
+    public TFigureAttribute() { 
+        int a=3;
     }
 
-    public TFigureAttribute(String title,String[] axisNames, String[] items, String[] labels) {
+    public TFigureAttribute(String title,String[] axisNames, String[] items, String[] categories) {
         this.title=title;
         this.axis_names=axisNames;
         this.items=items;
-        this.labels=labels;
+        this.categories=categories;
+        this.fontCategories=new Font[this.categories.length];
+        setFontCategories(new JLabel().getFont());
     }
 
     public TFigureAttribute(String figureCaption, String title, String axisNames, String items) {
@@ -60,6 +63,13 @@ public class TFigureAttribute {
         ret.items = FactoryMatrix.clone(this.items);
         ret.perfMetricStr = (ArrayList<String>) this.perfMetricStr.clone();
         ret.perfMetricVal = (ArrayList<Float>) this.perfMetricVal.clone();
+        ret.fontCategories=fontCategories;
         return ret;
+    }
+
+    public void setFontCategories(Font font) {
+        for (int i = 0; i < fontCategories.length; i++) {
+            fontCategories[i]=font;
+        }
     }
 }

@@ -4,9 +4,11 @@
  */
 package jazari.gui.test;
 
+import jazari.factory.FactoryMatrix;
 import jazari.factory.FactoryUtils;
 import jazari.matrix.CMatrix;
 import jazari.types.TFigureAttribute;
+import jazari.utils.PidController;
 import org.apache.commons.math3.filter.DefaultMeasurementModel;
 import org.apache.commons.math3.filter.DefaultProcessModel;
 import org.apache.commons.math3.filter.KalmanFilter;
@@ -26,13 +28,14 @@ import org.apache.commons.math3.random.RandomGenerator;
 public class TestPlot {
 
     public static void main(String[] args) {
-        testSimplePlot();
+//        testSimplePlot();
 //        testPerlin();
 //        testKalman();
+//        testPidController();
 //        testTrigonometry();
 //        testAnimatedSinPlot();
 //        testAnimatedRandomPlot();
-//        testAnimatedPerlinPlot();
+        testAnimatedPerlinPlot();
     }
 
     private static void testKalman() {
@@ -102,6 +105,7 @@ public class TestPlot {
             data[i] = new double[]{position, velocity};
             System.out.println("position = " + position + " velocity = " + velocity);
         }
+        data=FactoryMatrix.transpose(data);
         CMatrix cm = CMatrix.getInstance()
                 .setArray(data)
                 .plot(new TFigureAttribute("Kalman Example", "Kalman behaviour along time", "Iterations,Value", "position,velocity"));
@@ -129,6 +133,7 @@ public class TestPlot {
         CMatrix cm2 = cm.clone().timesScalar(3).cos();
         CMatrix cm3 = cm1.cat(1, cm2)
                 //.println()
+                .transpose()
                 .plot();
     }
 
@@ -253,15 +258,69 @@ public class TestPlot {
 
     private static void testSimplePlot() {
         float[] f={20.12f,50.13f,35f,62.67f,49.17f,21f,35f,41f,45f,52f};
-        f=CMatrix.getInstance().linspace(-30, 150, 500).toFloatArray1D();
+        f=CMatrix.getInstance().linspace(-30, 150, 180).toFloatArray1D();
         CMatrix cm = CMatrix.getInstance(f)
-                //.range(-21, 21)
                 .perlinNoise(0.03f)
-                //.rand(30,3)
+                .shape()
+                .plot(f)
                 //.println()
                 //.plot(CMatrix.getInstance().linspace(-3, 3, 10).toFloatArray1D())
                 //.plot(CMatrix.getInstance().linspace(-3, 3, 10).toFloatArray1D())
-                .plot(f)
+                //.plot(f)
+                .rand(1, 100)
+                .plot()
                 ;
+    }
+
+    private static void testPidController() {
+        PidController pid = new PidController(0.25, 0.01, 0.4);
+        pid.setOutputLimits(10);
+        //pid.setMaxIOutput(2);
+        //pid.setOutputRampRate(3);
+        //pid.setOutputFilter(.3);
+        pid.setSetpointRange(40);
+
+        double target = 100;
+
+        double actual = 0;
+        double output = 0;
+
+        pid.setSetpoint(0);
+        pid.setSetpoint(target);
+        
+
+        System.err.printf("Target\tActual\tOutput\tError\n");
+        //System.err.printf("Output\tP\tI\tD\n");
+
+        // Position based test code
+        int n=200;
+        double[][] data=new double[4][n];
+        for (int i = 0; i < n; i++) {
+
+            //if(i==50)miniPID.setI(.05);
+            if (i == n/2) {
+                target = target/2;
+            }
+
+            //if(i==75)target=(100);
+            //if(i>50 && i%4==0)target=target+(Math.random()-.5)*50;
+            output = pid.getOutput(actual, target);
+            actual = actual + output;
+
+            //System.out.println("=========================="); 
+            //System.out.printf("Current: %3.2f , Actual: %3.2f, Error: %3.2f\n",actual, output, (target-actual));
+            System.err.printf("%3.2f\t%3.2f\t%3.2f\t%3.2f\n", target, actual, output, (target - actual));
+            data[0][i]=target;
+            data[1][i]=actual;
+            data[2][i]=output;
+            data[3][i]=(target - actual);
+
+            //if(i>80 && i%5==0)actual+=(Math.random()-.5)*20;
+        }
+        
+        CMatrix cm = CMatrix.getInstance(data)
+                .plot(new String[]{"Pid Controller"},new String[]{"target","actual","output","(target-actual)"})
+                ;
+
     }
 }

@@ -21,8 +21,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.JColorChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import jazari.factory.FactoryMatrix;
-import jazari.factory.FactoryNormalization;
 import jazari.matrix.CPoint;
 import jazari.types.TFigureAttribute;
 import org.drjekyll.fontchooser.FontDialog;
@@ -34,13 +32,11 @@ import org.drjekyll.fontchooser.FontDialog;
 public class PanelBar extends javax.swing.JPanel {
 
     private float[][] data;
-    private float[][] originalData;
-    private float scale = 1;
+    //private float[][] originalData=null;
     private Color[] color;
-    private String[] labels;
-    int max_label_index = -1;
+    private String[] categories;
     private boolean isValueVisible = false;
-    private FrameBar frm;
+    private FrameBar frm = null;
     private boolean isDarkMode = true;
     private boolean isGridX = true;
     private boolean isGridY = true;
@@ -51,7 +47,7 @@ public class PanelBar extends javax.swing.JPanel {
     private int fromBottom = 0;
     private int canvas_width = 0;
     private int canvas_height = 0;
-    private TFigureAttribute figureAttribute;
+    private TFigureAttribute figureAttribute = null;
     private int legendTextWidth;
     private int legendTextHeight;
     private int titleWidth;
@@ -61,14 +57,11 @@ public class PanelBar extends javax.swing.JPanel {
     private Rectangle rectAxisX;
     private Rectangle rectAxisY;
     private Rectangle rectLegend;
-    private float[][] realValues;
-    //private CMatrix cm;
+    private Rectangle[] rectCategories = null;
     private CPoint[][] mp;
-    private String[] items;
+    private String[] items = null;
     private long rand_seed;
-    private boolean isTransposed;
     private Point mousePos;
-    private float minValue;
     private boolean isXAxisTitleVisible = true;
     private boolean isYAxisTitleVisible = true;
     private boolean isFillBar = false;
@@ -78,21 +71,25 @@ public class PanelBar extends javax.swing.JPanel {
     private Graphics2D gr;
     private int[][] mappedVal = null;
 
-    public PanelBar(FrameBar frm, float[][] data, TFigureAttribute attr, String[] labels, String[] items, boolean isValueVisible) {
+    /**
+     *
+     * @param frm
+     * @param data : 2D float data
+     * @param attr : TFigureAttribute object
+     * @param categories:data's first dimension
+     * @param items:data's second dimension
+     */
+    public PanelBar(FrameBar frm, float[][] data, TFigureAttribute attr, String[] categories, String[] items) {
         this.data = data;
         this.frm = frm;
-        this.isValueVisible = isValueVisible;
-        this.originalData = (FactoryMatrix.clone(data));
-//        this.originalData = FactoryMatrix.transpose(FactoryMatrix.clone(data));
-//        this.data = FactoryNormalization.normalizeMax(FactoryMatrix.clone(data));
-//        this.data = FactoryMatrix.transpose(this.data);
+        //this.originalData = (FactoryMatrix.clone(data));
         if (attr != null) {
             figureAttribute = attr;
-            if (figureAttribute.labels != null) {
-                this.labels = figureAttribute.labels;
-                max_label_index = getMaximumLengthIndex(this.labels);
+            if (figureAttribute.categories != null) {
+                this.categories = figureAttribute.categories;
+                getMaximumLengthIndex(this.categories);
             } else {
-                this.labels = generateArtificialLabels(data.length);
+                this.categories = generateArtificialLabels(data.length);
             }
             if (figureAttribute.items != null) {
                 this.items = figureAttribute.items;
@@ -103,11 +100,11 @@ public class PanelBar extends javax.swing.JPanel {
                 }
             }
         } else {
-            if (labels != null) {
-                this.labels = labels;
-                max_label_index = getMaximumLengthIndex(labels);
+            if (categories != null) {
+                this.categories = categories;
+                getMaximumLengthIndex(categories);
             } else {
-                this.labels = generateArtificialLabels(data.length);
+                this.categories = generateArtificialLabels(data.length);
             }
             if (items != null) {
                 this.items = items;
@@ -118,8 +115,9 @@ public class PanelBar extends javax.swing.JPanel {
                 }
             }
             this.figureAttribute = new TFigureAttribute();
-            this.figureAttribute.items = items;
-            this.figureAttribute.labels = labels;
+            this.figureAttribute.items = this.items;
+            this.figureAttribute.categories = this.categories;
+            this.figureAttribute.fontCategories = new Font[this.categories.length];
             this.figureAttribute.title = "Bar Plot";
 
         }
@@ -127,19 +125,8 @@ public class PanelBar extends javax.swing.JPanel {
         initialize();
     }
 
-//    public float[][] getData() {
-//        return getMatrix().getArray2Dfloat();
-//    }
-//
-//    public void setData(CMatrix cm) {
-//        getMatrix().setArray(cm.array);
-//        this.data = FactoryNormalization.normalizeMax(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
-//        this.data = FactoryMatrix.transpose(this.data);
-//        this.originalData = FactoryMatrix.transpose(FactoryMatrix.clone(getMatrix().getArray2Dfloat()));
-//        repaint();
-//    }
     private void initialize() {
-        minValue = FactoryUtils.getMinimum(data);
+        FactoryUtils.getMinimum(data);
         int length = FactoryUtils.getLongestStringLength(FactoryUtils.formatFloat(data, 3));
         fromLeft = 50 + length * 5;
         fromRight = 20;
@@ -148,10 +135,14 @@ public class PanelBar extends javax.swing.JPanel {
 
         //henüz paint olayı çağrılmadığı için panelin büyüklüğü bilinmiyor o yüzden width ve height olarak 100,100 değerleri girildi
         rectPlotCanvas = new Rectangle(fromLeft, fromRight, 100, 100);
-        rectLegend = new Rectangle(0, 0, 100, 100);
-        rectTitle = new Rectangle(0, 0, 100, 100);
-        rectAxisX = new Rectangle(0, 0, 100, 100);
-        rectAxisY = new Rectangle(0, 0, 100, 100);
+        rectLegend = new Rectangle();
+        rectTitle = new Rectangle();
+        rectAxisX = new Rectangle();
+        rectAxisY = new Rectangle();
+        rectCategories = new Rectangle[this.categories.length];
+        for (int i = 0; i < rectCategories.length; i++) {
+            rectCategories[i] = new Rectangle();
+        }
 
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -182,6 +173,21 @@ public class PanelBar extends javax.swing.JPanel {
                                 repaint();
                                 return;
                             }
+                        }
+                    }
+                    for (int i = 0; i < categories.length; i++) {
+                        if (rectCategories[i].contains(mousePos)) {
+                            String st = JOptionPane.showInputDialog(null, "set category as", categories[i]);
+                            if (st != null) {
+                                categories[i] = st;
+                            }
+                            JLabel lbl = new JLabel();
+                            Font temp = lbl.getFont();
+                            FontDialog.showDialog(lbl);
+                            if (!temp.equals(lbl.getFont())) {
+                                figureAttribute.setFontCategories(lbl.getFont());
+                            }
+                            repaint();
                         }
                     }
 //                    if (rectPlotCanvas.contains(mousePos)) {
@@ -354,18 +360,8 @@ public class PanelBar extends javax.swing.JPanel {
     }
 
     private void drawXAxis(Graphics gr, CPoint[][] mp, int[][] mappedVal, int x0, int taban, int w, int fromRight, float[][] d) {
-        //float min = FactoryUtils.getMinimum(cm.toFloatArray2D());
-        //float max = FactoryUtils.getMaximum(cm.toFloatArray2D());
-        //float pos_y = mappedVal[1][1] - FactoryUtils.map(0, min, max, mappedVal[1][0], mappedVal[1][1]) + 5;
-
         gr.setColor(Color.darkGray);
-        //float n = (Math.round(w / 150.0) >= d.length) ? d.length - 1 : Math.round(w / 150.0) - 1;
         float n = d.length;
-        //float incr = d.length / n;
-        if (d.length <= 10) {
-            //incr = 1;
-            n = d.length;
-        }
         int offset = 0;
         int rw = mappedVal[0][1] - mappedVal[0][0];
         float deltaX = 1.0f * rw / d.length;
@@ -386,10 +382,17 @@ public class PanelBar extends javax.swing.JPanel {
             gr.setColor(Color.darkGray);
         }
 
+        gr.setFont(figureAttribute.fontCategories[0]);
         for (int i = 0; i < n; i++) {
-            offset = mappedVal[0][0] + Math.round(i * deltaX + (deltaX - FactoryUtils.getGraphicsTextWidth(gr, labels[i] + "")) / 2);
-            gr.drawString(labels[i], offset, taban + 20);
+            offset = mappedVal[0][0] + Math.round(i * deltaX + (deltaX - FactoryUtils.getGraphicsTextWidth(gr, categories[i] + "")) / 2);
+            gr.drawString(categories[i], offset, taban + 20);
+            rectCategories[i].x = offset;
+            rectCategories[i].y = taban + 5;
+            rectCategories[i].width = FactoryUtils.getGraphicsTextWidth(gr, categories[i]);
+            rectCategories[i].height = FactoryUtils.getGraphicsTextHeight(gr, categories[i]);
+
         }
+        gr.setFont(FactoryUtils.getDefaultFont());
     }
 
     private void drawBars(Graphics2D gr, CPoint[][] mp, int[][] mpv, int taban, float[][] d) {
@@ -492,6 +495,9 @@ public class PanelBar extends javax.swing.JPanel {
                 }
             }
         }
+        if (d.length == 1) {
+            minX = fromLeft + 10;
+        }
         ret[0][0] = minX;
         ret[0][1] = maxX;
         ret[1][0] = minY;
@@ -511,12 +517,23 @@ public class PanelBar extends javax.swing.JPanel {
         }
         float deltaY = maxY - minY;
         float maxX = d.length;
-        float cellWidth = w / (maxX - 1);
+        float cellWidth = 0;
+        if (maxX == 1) {
+            cellWidth = w;
+        } else {
+            cellWidth = w / (maxX - 1);
+        }
+
+        //float cellWidth = w / maxX;
         float cellHeight = h / deltaY;
         for (int r = 0; r < d[0].length; r++) {
             for (int c = 0; c < d.length; c++) {
                 CPoint p = new CPoint();
-                p.column = (int) Math.round(fromLeft + (c) * cellWidth);
+                if (d.length == 1) {
+                    p.column = (int) Math.round(fromLeft + (c + 1) * cellWidth);
+                } else {
+                    p.column = (int) Math.round(fromLeft + (c) * cellWidth);
+                }
                 p.row = (int) Math.round((fromTop + h) - (d[c][r] - minY) * cellHeight);
                 p.weight = d[c][r];
                 ret[c][r] = p;
@@ -535,7 +552,7 @@ public class PanelBar extends javax.swing.JPanel {
 
     public void setMatrix(float[][] data, String[] labels) {
         this.data = data;
-        this.labels = labels;
+        this.categories = labels;
         rand_seed = System.currentTimeMillis();
         color = FactoryUtils.getRandomColors(data.length, rand_seed);
         figureAttribute.items = generateItemText(data.length);
@@ -543,7 +560,7 @@ public class PanelBar extends javax.swing.JPanel {
     }
 
     private String[] generateItemText(int n) {
-        if (figureAttribute.items!=null && figureAttribute.items.length != 0) {
+        if (figureAttribute.items != null && figureAttribute.items.length != 0) {
             return figureAttribute.items;
         }
         String[] ret = new String[n];
@@ -791,7 +808,6 @@ public class PanelBar extends javax.swing.JPanel {
     }
 
     public void setTranspose(boolean selected) {
-        isTransposed = selected;
         repaint();
     }
 

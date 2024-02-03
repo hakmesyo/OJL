@@ -30,32 +30,28 @@ public class FrameBar extends javax.swing.JFrame {
         }
     }
 
-    private float[][] data;
-    private String[] labels = null;
+    private float[][] data = null;
+    private String[] categories = null;
     private boolean isValueVisible = false;
     private String[] items = null;
     private TFigureAttribute attr = null;
 
-    public FrameBar(float[][] data, TFigureAttribute attr, String[] labels) {
+    public FrameBar(float[][] data, TFigureAttribute attr, String[] categories) {
         super("|Bar");
-        //cm.name += "|Bar";
-        //this.cm = cm.clone();
         this.attr = attr;
         this.data=data;
         if (attr == null) {
-            this.labels = labels;
+            this.categories = categories;
         }
         initComponents();
     }
 
     public FrameBar(float[][] data, TFigureAttribute attr, String[] labels, String[] items) {
         super("|Bar");
-        //cm.name += "|Bar";
-        //this.cm = cm.clone();
         this.data=data;
         this.attr = attr;
         if (attr == null) {
-            this.labels = labels;
+            this.categories = labels;
             this.items = items;
         }
         initComponents();
@@ -63,15 +59,13 @@ public class FrameBar extends javax.swing.JFrame {
 
     public FrameBar(float[][] data, TFigureAttribute attr) {
         super("|Bar");
-        //cm.name += "|Bar";
-        //this.cm = cm.clone();
         this.data=data;
         this.attr = attr;
         initComponents();
     }
 
-    public void setLabels(String... labels) {
-        this.labels = labels;
+    public void setCategories(String... labels) {
+        this.categories = labels;
     }
 
     /**
@@ -83,7 +77,7 @@ public class FrameBar extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel_bar = new jazari.gui.PanelBar(this,data,attr,labels,items,isValueVisible);
+        panel_bar = new jazari.gui.PanelBar(this,data,attr,categories,items);
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         btn_dataGrid = new javax.swing.JButton();

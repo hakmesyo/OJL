@@ -987,6 +987,18 @@ public final class FactoryMatrix implements Serializable {
         }
         return ret;
     }
+    
+    public static double[][] transpose(double[][] d) {
+        int nr = d.length;
+        int nc = d[0].length;
+        double[][] ret = new double[nc][nr];
+        for (int i = 0; i < nc; i++) {
+            for (int j = 0; j < nr; j++) {
+                ret[i][j] = d[j][i];
+            }
+        }
+        return ret;
+    }
 
 //    public static float[][] transpose(float[][] d) {
 //        int nr = d.length;
