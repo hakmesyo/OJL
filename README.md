@@ -5,26 +5,7 @@ Cite as : Ataş, M. (2016). Open Cezeri Library: A novel java based matrix and c
 
 1- Data Visualization Module
 
-1.1 Plot basic random points
-
-        CMatrix cm = CMatrix.getInstance()  
-                        .rand(1,100)  
-                        .plot()  
-                        ;
-                
-![image](https://github.com/hakmesyo/OJL/assets/3868513/c8a13b9b-5162-4bcf-afcc-e848d501871c)
-
-1.2 Plot 1D signal
-
-        float[] f={20.12f,50.13f,35f,62.67f,49.17f,21f,35f,41f,45f,52f};  
-        CMatrix cm = CMatrix.getInstance(f)  
-                        .transpose()  
-                        .plot()  
-                        ;  
-                
-![image](https://github.com/hakmesyo/OJL/assets/3868513/04b77c0e-1e33-4bf5-bc87-bde3b7ab9a46)
-
-1.3 Plot 2 different Perlin noise signals
+-- Plot 2 different Perlin noise signals
 
         int min = -200;  
         int max = 200;  
@@ -39,7 +20,7 @@ Cite as : Ataş, M. (2016). Open Cezeri Library: A novel java based matrix and c
 
 ![image](https://github.com/hakmesyo/OJL/assets/3868513/37d3b7d2-8658-4565-a62e-0b327261b924)
 
-1.4 Bar Plot Example with TFigureAttribute object
+-- Bar Plot Example with TFigureAttribute object
 
         TFigureAttribute attr=new TFigureAttribute(
                 "Lane Detection Performance Evaluation",
