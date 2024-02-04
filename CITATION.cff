@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Ataş"
+  given-names: "Musa"
+  orcid: "https://orcid.org/0000-0002-9406-0076"
+title: "Open Cezeri Library: A novel java based matrix and computer vision framework"
+version: 04.02.2024
+doi: https://doi.org/10.1002/cae.21745
+date-released: 2016-05-17
+url: "https://github.com/hakmesyo/OJL/tree/master"
