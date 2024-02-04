@@ -4,9 +4,9 @@ Open Jazari Library with Maven Support
 1- Data Visualization Module
 
 1.1 Plot basic random points
-CMatrix cm = CMatrix.getInstance()
-                .rand(1,100)
-                .plot()
+CMatrix cm = CMatrix.getInstance()\n
+                .rand(1,100)\n
+                .plot()\n
                 ;
                 
 ![image](https://github.com/hakmesyo/OJL/assets/3868513/93fc4c53-14dd-4062-88f8-988b002688aa)
