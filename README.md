@@ -10,7 +10,7 @@ Open Jazari Library with Maven Support
                         .plot()  
                         ;
                 
-![image](https://github.com/hakmesyo/OJL/assets/3868513/93fc4c53-14dd-4062-88f8-988b002688aa)
+![image](https://github.com/hakmesyo/OJL/assets/3868513/c8a13b9b-5162-4bcf-afcc-e848d501871c)
 
 1.2 Plot 1D signal
 
