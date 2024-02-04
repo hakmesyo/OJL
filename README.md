@@ -1,5 +1,5 @@
-# OJL
-Open Jazari Library with Maven Support
+# OJL [Open Jazari Library with Maven Support]
+OJL is a matrix, data visualization, image processing, computer vision, machine learning and deep learning framework developed entirely for JVM languages.
 
 1- Data Visualization Module
 
