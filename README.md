@@ -1,6 +1,8 @@
 # OJL [Open Jazari Library with Maven Support]
 OJL is a matrix, data visualization, image processing, computer vision, machine learning and deep learning framework developed entirely for JVM languages.
 
+Cite as : Ataş, M. (2016). Open Cezeri Library: A novel java based matrix and computer vision framework. Computer Applications in Engineering Education, 24(5), 736-743.
+
 1- Data Visualization Module
 
 1.1 Plot basic random points
