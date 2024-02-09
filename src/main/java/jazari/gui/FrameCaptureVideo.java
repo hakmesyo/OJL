@@ -4,6 +4,7 @@
  */
 package jazari.gui;
 
+import java.awt.AWTException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -13,6 +14,7 @@ import java.awt.Graphics2D;
 import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Robot;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -35,9 +37,15 @@ public class FrameCaptureVideo extends Frame {
     private final FrameScreenCapture frm;
     private boolean isMouseReleased = false;
     private boolean videoCaptureStop = false;
+    private Robot robot;
 
     public FrameCaptureVideo(FrameScreenCapture frm) {
         this.frm = frm;
+        try {
+            robot = new Robot();
+        } catch (AWTException ex) {
+            Logger.getLogger(FrameCaptureVideo.class.getName()).log(Level.SEVERE, null, ex);
+        }
         screenshot = FactoryUtils.captureWholeScreenWithRobot();
         originalImage = ImageProcess.clone(screenshot);
 
@@ -48,10 +56,10 @@ public class FrameCaptureVideo extends Frame {
         setAlwaysOnTop(true);
 
         panel = new Panel() {
+            //private static int cnt=0;
             @Override
             public void paint(Graphics g) {
-                Graphics2D gr=(Graphics2D)g;
-                super.paint(g);
+                Graphics2D gr = (Graphics2D) g;
                 if (!isMouseReleased) {
                     gr.drawImage(originalImage, 0, 0, null);
                 }
@@ -60,11 +68,12 @@ public class FrameCaptureVideo extends Frame {
                     gr.setStroke(new BasicStroke(3));
                     gr.drawRect(selection.x - 3, selection.y - 3, selection.width + 6, selection.height + 6);
                     gr.setColor(Color.black);
-                    gr.fillRect(selection.x-3, selection.y-25,200,20);
+                    gr.fillRect(selection.x - 3, selection.y - 25, 200, 20);
                     gr.setColor(Color.green);
-                    gr.drawString("Press ESC to stop recording", selection.x-3, selection.y-10);
+                    gr.drawString("Press ESC to stop recording", selection.x - 3, selection.y - 10);
                     //drawCorners(g);
                 }
+                super.paint(g);
 
             }
 
@@ -130,21 +139,22 @@ public class FrameCaptureVideo extends Frame {
     }
 
     private void captureScreenshots(Rectangle selection) {
-        double delay = 1000.0 / frm.fps;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (!videoCaptureStop) {
-                    screenshot = FactoryUtils.captureScreenWithRobot(new Rectangle(selection.x, selection.y, selection.width, selection.height));
+                    screenshot = FactoryUtils.captureScreenWithRobot(robot, new Rectangle(selection.x, selection.y, selection.width, selection.height));
                     frm.listImage.add(screenshot);
+                    //System.out.println("selection:"+selection);
                     //ImageProcess.saveImage(screenshot, "images/screen_capture/" + System.currentTimeMillis() + ".jpg");
                     try {
-                        Thread.sleep((long) delay);
+                        Thread.sleep((long) frm.tpf);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(FrameCaptureVideo.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
                 FactoryUtils.copyImage2ClipBoard(screenshot);
+                frm.setTitle("FrameScreenCapture  [number of frames=" + frm.listImage.size()+"]");
                 frm.setImage(screenshot);
                 frm.setState(Frame.NORMAL);
                 dispose();

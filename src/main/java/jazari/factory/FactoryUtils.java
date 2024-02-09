@@ -12,7 +12,6 @@ import jazari.utils.SerialType;
 import jazari.types.TDeviceState;
 import jazari.types.TWord;
 import jazari.types.TLearningType;
-import jazari.gui.FramePlot;
 import jazari.matrix.CMatrix;
 import jazari.matrix.CPoint;
 import jazari.types.TRoi;
@@ -23,17 +22,23 @@ import jazari.utils.UniqueRandomNumbers;
 import jazari.websocket.SocketServer;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.DisplayMode;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_INT_BGR;
+import static java.awt.image.ImageObserver.ABORT;
+import static java.awt.image.ImageObserver.HEIGHT;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -67,9 +72,6 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.IIOImage;
@@ -80,13 +82,17 @@ import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import jazari.utils.DataAnalytics;
 import jazari.gui.FrameImage;
 import jazari.image_processing.ImageProcess;
+import jazari.interfaces.call_back_interface.CallBackTrigger;
 import jazari.matrix.CRectangle;
 import jazari.utils.CopyImageToClipboard;
 import jazari.utils.PerlinNoise;
@@ -100,7 +106,6 @@ import jazari.utils.pascalvoc.PascalVocPolygon;
 import jazari.utils.pascalvoc.PascalVocSize;
 import jazari.utils.pascalvoc.PascalVocSource;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.comparator.NameFileComparator;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
@@ -255,7 +260,6 @@ public final class FactoryUtils {
 //    public static void plot(CMatrix cm) {
 //        new FramePlot(cm).setVisible(true);
 //    }
-
     public static ArrayList<Point> shuffleList(ArrayList<Point> lst) {
         long seed = System.nanoTime();
         Collections.shuffle(lst, new Random(seed));
@@ -1213,6 +1217,31 @@ public final class FactoryUtils {
     public static void showMessage(String str) {
         JOptionPane.showMessageDialog(null, str);
 //        System.out.println(str);
+    }
+
+    public static void showMessageTemp(String str, int delay, CallBackTrigger func) {
+        JFrame frame = new JFrame("Custom Message");
+        frame.setUndecorated(true);
+        JLabel label = new JLabel(str, SwingConstants.CENTER);
+        label.setFont(new Font("Arial", Font.PLAIN, 16));
+        frame.add(label);
+        frame.pack();
+        Dimension labelSize = label.getPreferredSize();
+        frame.setSize(labelSize.width + 50, labelSize.height + 50); // İstediğiniz ekstra boşlukları ekleyebilirsiniz
+        frame.setLocationRelativeTo(null); // Ekranın ortasına hizala
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Pencere kapatıldığında programı sonlandırma
+        frame.setVisible(true);
+        frame.repaint();
+        Timer timer = new Timer(delay, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                func.trigger();
+            }
+        });
+        timer.setRepeats(false);
+        timer.setDelay(delay);
+        timer.start();
     }
 
     public static String inputMessage(String message, String initialSelectionValue) {
@@ -5989,6 +6018,11 @@ public final class FactoryUtils {
         }
     }
 
+    public static boolean isImageFile(File file) {
+        String name = file.getName().toLowerCase();
+        return name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".gif") || name.endsWith(".bmp");
+    }
+
     public static float dotVector(float[][] d1, float[][] d2) {
         float ret = 0;
         float[] d_1 = toFloatArray1D(d1);
@@ -7164,6 +7198,10 @@ public final class FactoryUtils {
 //        return ret;
 //    }
 
+    public static int confirmMessage(String msg) {
+        return JOptionPane.showConfirmDialog(null, msg);
+    }
+
     public <T> List<T> toArrayList(T[][] twoDArray) {
         List<T> list = new ArrayList<T>();
         for (T[] array : twoDArray) {
@@ -8304,7 +8342,9 @@ public final class FactoryUtils {
     }
 
     public static Dimension getScreenSize() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        DisplayMode mode = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode();
+        //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension screenSize = new Dimension(mode.getWidth(), mode.getHeight());
         return screenSize;
     }
 
@@ -8314,14 +8354,12 @@ public final class FactoryUtils {
         return robot.createScreenCapture(new Rectangle(0, 0, width, height));
     }
 
-    public static BufferedImage captureScreenWithRobot(Rectangle rect) {
-        try {
-            Robot robot = new Robot();
+    public static BufferedImage captureScreenWithRobot(Robot robot, Rectangle rect) {
+        if (rect.width > 0 && rect.height > 0) {
             return robot.createScreenCapture(rect);
-        } catch (AWTException ex) {
-            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } else {
+            return null;
         }
-        return null;
     }
 
     public static boolean isFileExist(File file) {

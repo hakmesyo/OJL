@@ -7,6 +7,8 @@ package jazari.gui;
 
 import jazari.utils.DataAnalytics;
 import com.formdev.flatlaf.FlatDarkLaf;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import jazari.matrix.CMatrix;
@@ -15,9 +17,11 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jazari.image_processing.ImageProcess;
+import jazari.interfaces.call_back_interface.CallBackTrigger;
 
 /**
  *
@@ -38,6 +42,7 @@ public class FrameImage extends javax.swing.JFrame {
     int ph = 150;
     public String imagePath;
     public String imageFolderPath;
+    public String titleImageInfo;
 
     /**
      * Creates new form FrameImage
@@ -45,9 +50,8 @@ public class FrameImage extends javax.swing.JFrame {
     public FrameImage() {
         initComponents();
         eventListener();
-        //isSequence.setVisible(false);
-
-//        getPicturePanel().setFrame(this);
+        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     /**
@@ -60,13 +64,14 @@ public class FrameImage extends javax.swing.JFrame {
     public FrameImage(CMatrix cm, String imagePath, String caption) {
         initComponents();
         imageFolderPath = FactoryUtils.getFolderPath(imagePath);
-        if (caption!=null && !caption.isEmpty()) {
+        if (caption != null && !caption.isEmpty()) {
             setTitle(caption);
         }
         loadImage(cm, imagePath, caption);
         eventListener();
-        //isPolygon.setSelected(true);
-        isLabelVisible.setSelected(true);
+        chkLabelVisible.setSelected(true);
+        setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     public void setImage(BufferedImage img, String imagePath, String caption) {
@@ -77,7 +82,7 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().setFrame(this);
         //this.setSize(img.getWidth() + 300, img.getHeight() + 183);
         String[] s = FactoryUtils.splitPath(imagePath);
-        this.setTitle(s[s.length - 1]);
+        titleImageInfo = (s[s.length - 1]);
         //this.setTitle(imagePath + "/" + caption);
     }
 
@@ -102,13 +107,16 @@ public class FrameImage extends javax.swing.JFrame {
         btn_save = new javax.swing.JButton();
         txt_dpi = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        isBBox = new javax.swing.JCheckBox();
-        isSequence = new javax.swing.JCheckBox();
-        isPolygon = new javax.swing.JCheckBox();
+        chkBBox = new javax.swing.JCheckBox();
+        chkSequence = new javax.swing.JCheckBox();
+        chkPolygon = new javax.swing.JCheckBox();
         lbl_zoom_factor = new javax.swing.JLabel();
         btn_dashedLineColor = new javax.swing.JButton();
-        isLabelVisible = new javax.swing.JCheckBox();
+        chkLabelVisible = new javax.swing.JCheckBox();
         btn_analytics = new javax.swing.JButton();
+        chkLane = new javax.swing.JCheckBox();
+        btn_screen_capture = new javax.swing.JButton();
+        chk_stretch = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -145,6 +153,7 @@ public class FrameImage extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         btn_dataGrid.setText("Data Grid");
+        btn_dataGrid.setToolTipText("Show Pixels As Data Grid Table");
         btn_dataGrid.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_dataGridActionPerformed(evt);
@@ -152,6 +161,7 @@ public class FrameImage extends javax.swing.JFrame {
         });
 
         btn_save.setText("Save As");
+        btn_save.setToolTipText("Save Image As");
         btn_save.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_saveActionPerformed(evt);
@@ -162,60 +172,64 @@ public class FrameImage extends javax.swing.JFrame {
 
         jLabel2.setText("dpi");
 
-        isBBox.setText("bbox");
-        isBBox.addItemListener(new java.awt.event.ItemListener() {
+        chkBBox.setText("bbox");
+        chkBBox.setToolTipText("Activate Bounding Box for Object Detection");
+        chkBBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                isBBoxItemStateChanged(evt);
+                chkBBoxItemStateChanged(evt);
             }
         });
-        isBBox.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+        chkBBox.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
-                isBBoxMouseMoved(evt);
+                chkBBoxMouseMoved(evt);
             }
         });
-        isBBox.addActionListener(new java.awt.event.ActionListener() {
+        chkBBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                isBBoxActionPerformed(evt);
+                chkBBoxActionPerformed(evt);
             }
         });
 
-        isSequence.setText("sequence");
-        isSequence.addItemListener(new java.awt.event.ItemListener() {
+        chkSequence.setText("sequence");
+        chkSequence.setToolTipText("Remember previous lane, bbox or ploygons for fast annotations");
+        chkSequence.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                isSequenceItemStateChanged(evt);
+                chkSequenceItemStateChanged(evt);
             }
         });
-        isSequence.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+        chkSequence.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
-                isSequenceMouseMoved(evt);
+                chkSequenceMouseMoved(evt);
             }
         });
-        isSequence.addActionListener(new java.awt.event.ActionListener() {
+        chkSequence.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                isSequenceActionPerformed(evt);
+                chkSequenceActionPerformed(evt);
             }
         });
 
-        isPolygon.setText("polygon");
-        isPolygon.addItemListener(new java.awt.event.ItemListener() {
+        chkPolygon.setText("polygon");
+        chkPolygon.setToolTipText("Activate Polygonal Region Drawing for Semnatic Segmentation and Object Detection");
+        chkPolygon.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                isPolygonItemStateChanged(evt);
+                chkPolygonItemStateChanged(evt);
             }
         });
-        isPolygon.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+        chkPolygon.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
-                isPolygonMouseMoved(evt);
+                chkPolygonMouseMoved(evt);
             }
         });
-        isPolygon.addActionListener(new java.awt.event.ActionListener() {
+        chkPolygon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                isPolygonActionPerformed(evt);
+                chkPolygonActionPerformed(evt);
             }
         });
 
-        lbl_zoom_factor.setText("zoom factor:1");
+        lbl_zoom_factor.setText("zoom:1");
 
         btn_dashedLineColor.setText("color");
+        btn_dashedLineColor.setToolTipText("Change Dashed Line Color");
         btn_dashedLineColor.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 btn_dashedLineColorMouseMoved(evt);
@@ -227,19 +241,21 @@ public class FrameImage extends javax.swing.JFrame {
             }
         });
 
-        isLabelVisible.setText("show label");
-        isLabelVisible.addItemListener(new java.awt.event.ItemListener() {
+        chkLabelVisible.setText("label");
+        chkLabelVisible.setToolTipText("Show Specified Labels on Annotations");
+        chkLabelVisible.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                isLabelVisibleİtemStateChanged(evt);
+                chkLabelVisibleİtemStateChanged(evt);
             }
         });
-        isLabelVisible.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+        chkLabelVisible.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
-                isLabelVisibleMouseMoved(evt);
+                chkLabelVisibleMouseMoved(evt);
             }
         });
 
         btn_analytics.setText("analytics");
+        btn_analytics.setToolTipText("Show histogram of annotations for achieving balanced classes");
         btn_analytics.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 btn_analyticsMouseMoved(evt);
@@ -251,6 +267,34 @@ public class FrameImage extends javax.swing.JFrame {
             }
         });
 
+        chkLane.setText("lane");
+        chkLane.setToolTipText("Activate Lane Detection based on splines");
+        chkLane.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chkLaneİtemStateChanged(evt);
+            }
+        });
+        chkLane.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkLaneActionPerformed(evt);
+            }
+        });
+
+        btn_screen_capture.setText("Screen Capture");
+        btn_screen_capture.setToolTipText("Open Screen Capture App");
+        btn_screen_capture.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_screen_captureActionPerformed(evt);
+            }
+        });
+
+        chk_stretch.setText("stretch");
+        chk_stretch.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_stretchİtemStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -258,25 +302,31 @@ public class FrameImage extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(btn_dataGrid)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_save, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_screen_capture)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_save)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(42, 42, 42)
-                .addComponent(isBBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(isPolygon)
+                .addComponent(lbl_zoom_factor)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(isSequence)
+                .addComponent(chk_stretch)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
+                .addComponent(chkLane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(isLabelVisible)
+                .addComponent(chkBBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_dashedLineColor)
+                .addComponent(chkPolygon)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chkSequence)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chkLabelVisible)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_analytics)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(lbl_zoom_factor)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_dashedLineColor, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -287,13 +337,16 @@ public class FrameImage extends javax.swing.JFrame {
                     .addComponent(btn_save)
                     .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
-                    .addComponent(isBBox)
-                    .addComponent(isSequence)
-                    .addComponent(isPolygon)
+                    .addComponent(chkBBox)
+                    .addComponent(chkSequence)
+                    .addComponent(chkPolygon)
                     .addComponent(lbl_zoom_factor)
                     .addComponent(btn_dashedLineColor)
-                    .addComponent(isLabelVisible)
-                    .addComponent(btn_analytics))
+                    .addComponent(chkLabelVisible)
+                    .addComponent(btn_analytics)
+                    .addComponent(chkLane)
+                    .addComponent(btn_screen_capture)
+                    .addComponent(chk_stretch))
                 .addContainerGap(61, Short.MAX_VALUE))
         );
 
@@ -304,7 +357,7 @@ public class FrameImage extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelPicture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 845, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -318,13 +371,27 @@ public class FrameImage extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
-        CMatrix cm = CMatrix.getInstance(((PanelPicture) panelPicture).getImage());
-//        CMatrix cm = CMatrix.getInstance(img);
-        new FrameDataGrid(cm.toFloatArray2D()).setVisible(true);
+        FrameDataGrid frm = null;
+        BufferedImage img = null;
+        if (getPicturePanel().selectionRect == null) {
+            img = getPicturePanel().getImage();
+        } else {
+            img = getPicturePanel().selectionRectImage;
+        }
+        CMatrix cm = CMatrix.getInstance(img);
+        if (img.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            frm = new FrameDataGrid(cm.toFloatArray2D());
+        } else {
+            frm = new FrameDataGrid(cm.getARGB());
+        }
+        frm.setVisible(true);
+        //frm.setAlwaysOnTop(true);
+        //getPicturePanel().requestFocus();
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed
         saveImageAs();
+        getPicturePanel().requestFocus();
     }//GEN-LAST:event_btn_saveActionPerformed
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
@@ -335,75 +402,90 @@ public class FrameImage extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_panelPictureKeyPressed
 
-    private void isBBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_isBBoxItemStateChanged
-        getPicturePanel().activateBoundingBox = isBBox.isSelected();
-        getPicturePanel().activatePolygon = isPolygon.isSelected();
+    private void chkBBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkBBoxItemStateChanged
+        getPicturePanel().activateBoundingBox = chkBBox.isSelected();
+        getPicturePanel().activatePolygon = chkPolygon.isSelected();
+        getPicturePanel().activateLaneDetection = chkLane.isSelected();
+        getPicturePanel().activateCrop = !(chkLane.isSelected() || chkPolygon.isSelected() || chkBBox.isSelected());
         getPicturePanel().setImage(this.img, imagePath, this.getTitle());
-        //isSequence.setVisible(isBBox.isSelected());
         getPicturePanel().requestFocus();
-    }//GEN-LAST:event_isBBoxItemStateChanged
+    }//GEN-LAST:event_chkBBoxItemStateChanged
 
-    private void isBBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isBBoxActionPerformed
-        if (isBBox.isSelected()) {
-            //FactoryUtils.showMessage("Use Arrow Keys to locate prev and next images.\nPress S to save bboxes and go to next image.\nDouble click on bbox to change attributes");
-            isPolygon.setSelected(false);
+    private void chkBBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkBBoxActionPerformed
+        if (chkBBox.isSelected()) {
+            FactoryUtils.showMessageTemp("Use Arrow Keys to locate prev and next images.\n"
+                    + "Press S to save bboxes and go to next image.\nDouble click on bbox to change attributes",
+                    3000, new CallBackTrigger() {
+                @Override
+                public void trigger() {
+                }
+            });
+            chkPolygon.setSelected(false);
+            chkLane.setSelected(false);
         }
-    }//GEN-LAST:event_isBBoxActionPerformed
+    }//GEN-LAST:event_chkBBoxActionPerformed
 
-    private void isSequenceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isSequenceActionPerformed
+    private void chkSequenceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkSequenceActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_isSequenceActionPerformed
+    }//GEN-LAST:event_chkSequenceActionPerformed
 
-    private void isSequenceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_isSequenceItemStateChanged
-        getPicturePanel().isSeqenceVideoFrame = isSequence.isSelected();
+    private void chkSequenceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkSequenceItemStateChanged
+        getPicturePanel().isSeqenceVideoFrame = chkSequence.isSelected();
         getPicturePanel().requestFocus();
-    }//GEN-LAST:event_isSequenceItemStateChanged
+    }//GEN-LAST:event_chkSequenceItemStateChanged
 
-    private void isBBoxMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isBBoxMouseMoved
-        isBBox.setToolTipText("Activates BoundingBox annotation for object detection\nUse Arrow Keys to locate prev and next images.\nPress S to save bboxes and go to next image.\nDouble click on bbox to change attributes\nPress Delete key to delete");
-    }//GEN-LAST:event_isBBoxMouseMoved
+    private void chkBBoxMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chkBBoxMouseMoved
+        chkBBox.setToolTipText("Activates BoundingBox annotation for object detection\nUse Arrow Keys to locate prev and next images.\nPress S to save bboxes and go to next image.\nDouble click on bbox to change attributes\nPress Delete key to delete");
+    }//GEN-LAST:event_chkBBoxMouseMoved
 
-    private void isSequenceMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isSequenceMouseMoved
-        isSequence.setToolTipText("Check if your images are similar to the video sequences/frames.\nPreserves bboxes or polygons from previous image");
-    }//GEN-LAST:event_isSequenceMouseMoved
+    private void chkSequenceMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chkSequenceMouseMoved
+        chkSequence.setToolTipText("Check if your images are similar to the video sequences/frames.\nPreserves bboxes or polygons from previous image");
+    }//GEN-LAST:event_chkSequenceMouseMoved
 
-    private void isPolygonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_isPolygonItemStateChanged
-        getPicturePanel().activatePolygon = isPolygon.isSelected();
-        getPicturePanel().activateBoundingBox = isBBox.isSelected();
+    private void chkPolygonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkPolygonItemStateChanged
+        getPicturePanel().activatePolygon = chkPolygon.isSelected();
+        getPicturePanel().activateBoundingBox = chkBBox.isSelected();
+        getPicturePanel().activateLaneDetection = chkLane.isSelected();
+        getPicturePanel().activateCrop = !(chkLane.isSelected() || chkPolygon.isSelected() || chkBBox.isSelected());
         getPicturePanel().setImage(this.img, imagePath, this.getTitle());
         getPicturePanel().requestFocus();
-    }//GEN-LAST:event_isPolygonItemStateChanged
+    }//GEN-LAST:event_chkPolygonItemStateChanged
 
-    private void isPolygonMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isPolygonMouseMoved
-        isPolygon.setToolTipText("Activates Polygon annotation for image segmentation\nUse Arrow Keys to locate prev and next images.\nPress S to save polygon and go to next image.\nDouble click on polygon to change attributes\nPress Delete key to delete");
-    }//GEN-LAST:event_isPolygonMouseMoved
+    private void chkPolygonMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chkPolygonMouseMoved
+        chkPolygon.setToolTipText("Activates Polygon annotation for image segmentation\nUse Arrow Keys to locate prev and next images.\nPress S to save polygon and go to next image.\nDouble click on polygon to change attributes\nPress Delete key to delete");
+    }//GEN-LAST:event_chkPolygonMouseMoved
 
-    private void isPolygonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isPolygonActionPerformed
-        if (isPolygon.isSelected()) {
-            isBBox.setSelected(false);
+    private void chkPolygonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkPolygonActionPerformed
+        if (chkPolygon.isSelected()) {
+            FactoryUtils.showMessageTemp("Use Arrow Keys to locate prev and next images.\n"
+                    + "Press S to save polygons and go to next image.\nDouble click on polygons to change attributes",
+                    3000, () -> {
+                    });
+            chkBBox.setSelected(false);
+            chkLane.setSelected(false);
         }
-    }//GEN-LAST:event_isPolygonActionPerformed
+    }//GEN-LAST:event_chkPolygonActionPerformed
 
     private void btn_dashedLineColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dashedLineColorActionPerformed
         changeDashedLineColor();
     }//GEN-LAST:event_btn_dashedLineColorActionPerformed
 
-    private void isLabelVisibleMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_isLabelVisibleMouseMoved
-        isLabelVisible.setToolTipText("Hide or show labels on annotations");
-    }//GEN-LAST:event_isLabelVisibleMouseMoved
+    private void chkLabelVisibleMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chkLabelVisibleMouseMoved
+        chkLabelVisible.setToolTipText("Hide or show labels on annotations");
+    }//GEN-LAST:event_chkLabelVisibleMouseMoved
 
-    private void isLabelVisibleİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_isLabelVisibleİtemStateChanged
-        getPicturePanel().activateLabelVisibility = isLabelVisible.isSelected();
+    private void chkLabelVisibleİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkLabelVisibleİtemStateChanged
+        getPicturePanel().activateLabelVisibility = chkLabelVisible.isSelected();
         getPicturePanel().repaint();
         getPicturePanel().requestFocus();
-    }//GEN-LAST:event_isLabelVisibleİtemStateChanged
+    }//GEN-LAST:event_chkLabelVisibleİtemStateChanged
 
     private void btn_dashedLineColorMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_dashedLineColorMouseMoved
         btn_dashedLineColor.setToolTipText("Changes the dashed line color");
     }//GEN-LAST:event_btn_dashedLineColorMouseMoved
 
     private void btn_analyticsMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_analyticsMouseMoved
-        isPolygon.setToolTipText("show number of classes and percentages annotated so far");
+        chkPolygon.setToolTipText("show number of classes and percentages annotated so far");
     }//GEN-LAST:event_btn_analyticsMouseMoved
 
     private void btn_analyticsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_analyticsActionPerformed
@@ -416,8 +498,38 @@ public class FrameImage extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_analyticsActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        
+
     }//GEN-LAST:event_formWindowClosing
+
+    private void btn_screen_captureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_screen_captureActionPerformed
+        CMatrix.getInstance().robotCapture();
+        //getPicturePanel().requestFocus();
+    }//GEN-LAST:event_btn_screen_captureActionPerformed
+
+    private void chkLaneİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkLaneİtemStateChanged
+        getPicturePanel().activateLaneDetection = chkLane.isSelected();
+        getPicturePanel().activatePolygon = chkPolygon.isSelected();
+        getPicturePanel().activateBoundingBox = chkBBox.isSelected();
+        getPicturePanel().activateCrop = !(chkLane.isSelected() || chkPolygon.isSelected() || chkBBox.isSelected());
+        getPicturePanel().setImage(this.img, imagePath, this.getTitle());
+        getPicturePanel().requestFocus();
+    }//GEN-LAST:event_chkLaneİtemStateChanged
+
+    private void chkLaneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkLaneActionPerformed
+        if (chkLane.isSelected()) {
+            FactoryUtils.showMessageTemp("Use Arrow Keys to locate prev and next images.\n"
+                    + "Press S to save lanes and go to next image.\nDouble click on lane to change attributes",
+                    3000, () -> {
+                    });
+            chkPolygon.setSelected(false);
+            chkBBox.setSelected(false);
+        }
+    }//GEN-LAST:event_chkLaneActionPerformed
+
+    private void chk_stretchİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_stretchİtemStateChanged
+        stretchFrame();
+        getPicturePanel().requestFocus();
+    }//GEN-LAST:event_chk_stretchİtemStateChanged
 
     public PanelPicture getPicturePanel() {
         return ((PanelPicture) panelPicture);
@@ -425,8 +537,10 @@ public class FrameImage extends javax.swing.JFrame {
 
     public void saveImageAs() {
         String imagePath = FactoryUtils.saveImageAs(getPicturePanel().getImage(), txt_dpi.getText());
-        CMatrix cm = CMatrix.getInstance().imread(imagePath);
-        loadImage(cm, imagePath, imagePath);
+        if (imagePath != null && !imagePath.isEmpty()) {
+            CMatrix cm = CMatrix.getInstance().imread(imagePath);
+            loadImage(cm, imagePath, imagePath);
+        }
     }
 
     public void setZoomFactor(double z) {
@@ -473,10 +587,13 @@ public class FrameImage extends javax.swing.JFrame {
     private javax.swing.JButton btn_dashedLineColor;
     private javax.swing.JButton btn_dataGrid;
     private javax.swing.JButton btn_save;
-    private javax.swing.JCheckBox isBBox;
-    private javax.swing.JCheckBox isLabelVisible;
-    private javax.swing.JCheckBox isPolygon;
-    private javax.swing.JCheckBox isSequence;
+    private javax.swing.JButton btn_screen_capture;
+    private javax.swing.JCheckBox chkBBox;
+    private javax.swing.JCheckBox chkLabelVisible;
+    private javax.swing.JCheckBox chkLane;
+    private javax.swing.JCheckBox chkPolygon;
+    private javax.swing.JCheckBox chkSequence;
+    private javax.swing.JCheckBox chk_stretch;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -508,14 +625,13 @@ public class FrameImage extends javax.swing.JFrame {
 
     private void loadImage(CMatrix cm, String imagePath, String caption) {
         String[] s = FactoryUtils.splitPath(imagePath);
-        if (imagePath!=null && !imagePath.isEmpty()) {
-            this.setTitle(s[s.length - 1]);
+        if (imagePath != null && !imagePath.isEmpty()) {
+            titleImageInfo = (s[s.length - 1]);
         }
-        
 
         this.img = cm.getImage();
         this.imagePath = imagePath;
-        getPicturePanel().activateBoundingBox = isBBox.isSelected();
+        getPicturePanel().activateBoundingBox = chkBBox.isSelected();
         if (img.getHeight() > 950) {
             float zoom_factor = 950.0f / img.getHeight();
             int w = (int) (img.getWidth() * zoom_factor);
@@ -539,5 +655,22 @@ public class FrameImage extends javax.swing.JFrame {
                 getPicturePanel().updateImageLocation();
             }
         });
+    }
+
+    public void setPixelInfo(String str) {
+        setTitle(this.titleImageInfo + "  " + str);
+    }
+
+    public void stretchFrame() {
+        if (chk_stretch.isSelected()) {
+            int w = getPicturePanel().getImage().getWidth();
+            int h = getPicturePanel().getImage().getHeight() + 80;
+            setSize(new Dimension(w, h));
+        } else {
+            if ((getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH) {
+                setLocationRelativeTo(null);
+                setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }
+        }
     }
 }

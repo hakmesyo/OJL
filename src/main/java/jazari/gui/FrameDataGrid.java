@@ -8,17 +8,23 @@ package jazari.gui;
 import jazari.matrix.CMatrix;
 import jazari.utils.LineNumberTableRowHeader;
 import java.awt.Color;
-import java.security.SecureRandom;
-import java.text.DecimalFormat;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import jazari.factory.FactoryMatrix;
 import jazari.factory.FactoryUtils;
-import jazari.types.TFigureAttribute;
-//import org.ujmp.core.Matrix;
-//import org.ujmp.core.MatrixFactory;
 
 /**
  *
@@ -26,35 +32,75 @@ import jazari.types.TFigureAttribute;
  */
 public class FrameDataGrid extends javax.swing.JFrame {
 
-    private float[][] data;
+    private float[][] data2D;
+    private String dataType = "2D";//or 3D
 
     /**
-     * Creates new form DataGrid
+     *
+     * @param data
      */
-    public FrameDataGrid() {
-        initComponents();
-        LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
-        tableLineNumber.setBackground(Color.LIGHT_GRAY);
-        jScrollPane2.setRowHeaderView(tableLineNumber);
-    }
-
     public FrameDataGrid(float[][] data) {
+        dataType = "2D";
         initComponents();
+        setMatrix(data, ds_table);
         LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
-        //tableLineNumber.setBackground(Color.LIGHT_GRAY);
         jScrollPane2.setRowHeaderView(tableLineNumber);
-        setMatrix(data);
-        this.lbl_size.setText("[" + data.length + " x " + data[0].length + "]");
-        this.setTitle("DataGrid");
     }
 
-    public void setMatrix(float[][] data) {
-        this.data = data;
-        ds_table.setModel(getTableModelForArtificialData(data, false));
+    /**
+     *
+     * @param data
+     */
+    public FrameDataGrid(float[][][] data) {
+        dataType = "3D";
+        initComponents();
+        tabbedPane.removeAll();
+        String[] tabTitles = {"Alpha Channel", "Red Channel", "Green Channel", "Blue Channel"};
+        for (int i = 1; i < data.length; i++) {
+            JScrollPane scroll = new JScrollPane();
+            JTable table = new JTable();
+            setMatrix(data[i], table);
+            scroll.setViewportView(table);
+            LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(scroll, table);
+            scroll.setRowHeaderView(tableLineNumber);
+            tabbedPane.add(scroll);
+            tabbedPane.setTitleAt(i - 1, tabTitles[i]);
+            this.data2D = data[i];
+        }
+        tabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int selectedIndex = tabbedPane.getSelectedIndex();
+                data2D = data[selectedIndex + 1];
+            }
+        });
     }
 
-    public float[][] getMatrix() {
-        return data;
+    public void setMatrix(float[][] data, JTable table) {
+        this.data2D = data;
+        table.setModel(getTableModelForArtificialData(data, true));
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.setColumnSelectionAllowed(true);
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int clickedIndex = table.convertColumnIndexToModel(table.columnAtPoint(e.getPoint()));
+                table.setColumnSelectionInterval(clickedIndex, clickedIndex); //selects which column will have all its rows selected
+                table.setRowSelectionInterval(0, table.getRowCount() - 1); //once column has been selected, select all rows from 0 to the end of that column
+            }
+        });
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(JLabel.RIGHT); // Sağa dayalı hizalama
+        for (int j = 0; j < table.getColumnCount(); j++) {
+            table.getColumnModel().getColumn(j).setCellRenderer(rightRenderer);
+            table.getColumnModel().getColumn(j).setPreferredWidth(40);
+        }
+        this.setTitle("DataGrid for image, format is [ " + data.length + " x " + data[0].length+" ]");
+    }
+
+    public float[][] getMatrix2D() {
+        return data2D;
     }
 
     /**
@@ -66,83 +112,22 @@ public class FrameDataGrid extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel26 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        ds_table = new javax.swing.JTable();
-        lbl_size = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        jButton_buildArtificialDS = new javax.swing.JButton();
-        jTextField_colNumber = new javax.swing.JTextField();
-        jLabel29 = new javax.swing.JLabel();
-        jTextField_rowNumber = new javax.swing.JTextField();
-        jLabel30 = new javax.swing.JLabel();
-        jComboBox_randomType = new javax.swing.JComboBox();
         btn_visualize = new javax.swing.JButton();
         btn_plot = new javax.swing.JButton();
         btn_scatter = new javax.swing.JButton();
-        btn_visualize1 = new javax.swing.JButton();
-        btn_convert_2_int = new javax.swing.JButton();
+        btn_transpose = new javax.swing.JButton();
         btn_from_text = new javax.swing.JButton();
         btn_bar_plot = new javax.swing.JButton();
+        tabbedPane = new javax.swing.JTabbedPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        ds_table = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jPanel26.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        ds_table.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        ds_table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-        ds_table.setCellSelectionEnabled(true);
-        jScrollPane2.setViewportView(ds_table);
-
-        lbl_size.setText("5x5");
-
-        javax.swing.GroupLayout jPanel26Layout = new javax.swing.GroupLayout(jPanel26);
-        jPanel26.setLayout(jPanel26Layout);
-        jPanel26Layout.setHorizontalGroup(
-            jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2)
-            .addGroup(jPanel26Layout.createSequentialGroup()
-                .addComponent(lbl_size, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        jPanel26Layout.setVerticalGroup(
-            jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel26Layout.createSequentialGroup()
-                .addComponent(lbl_size)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE))
-        );
-
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jButton_buildArtificialDS.setText("Build Artificial Data Set");
-        jButton_buildArtificialDS.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton_buildArtificialDSActionPerformed(evt);
-            }
-        });
-
-        jTextField_colNumber.setText("11");
-
-        jLabel29.setText("ncols:");
-
-        jTextField_rowNumber.setText("100");
-
-        jLabel30.setText("nrows:");
-
-        jComboBox_randomType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Uniform Distribution", "Gaussian Distribution" }));
-
-        btn_visualize.setText("Visualize");
+        btn_visualize.setText("ImShow");
         btn_visualize.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_visualizeActionPerformed(evt);
@@ -163,17 +148,10 @@ public class FrameDataGrid extends javax.swing.JFrame {
             }
         });
 
-        btn_visualize1.setText("Transpose");
-        btn_visualize1.addActionListener(new java.awt.event.ActionListener() {
+        btn_transpose.setText("Transpose");
+        btn_transpose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_visualize1ActionPerformed(evt);
-            }
-        });
-
-        btn_convert_2_int.setText("Convert to Int");
-        btn_convert_2_int.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_convert_2_intActionPerformed(evt);
+                btn_transposeActionPerformed(evt);
             }
         });
 
@@ -196,81 +174,65 @@ public class FrameDataGrid extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jButton_buildArtificialDS, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(btn_bar_plot, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btn_visualize1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btn_from_text)
-                        .addGap(82, 82, 82))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel30)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField_rowNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel29)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField_colNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox_randomType, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btn_convert_2_int)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_bar_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_transpose, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_from_text)
+                .addContainerGap(82, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btn_visualize1, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btn_bar_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btn_from_text, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton_buildArtificialDS, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel30)
-                    .addComponent(jLabel29)
-                    .addComponent(jTextField_colNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField_rowNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox_randomType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btn_convert_2_int, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_transpose, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_bar_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_from_text, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        ds_table.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        ds_table.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        ds_table.setCellSelectionEnabled(true);
+        jScrollPane2.setViewportView(ds_table);
+
+        tabbedPane.addTab("Gray", jScrollPane2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel26, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(tabbedPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel26, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton_buildArtificialDSActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_buildArtificialDSActionPerformed
-        buildArtificialDataSet();
-    }//GEN-LAST:event_jButton_buildArtificialDSActionPerformed
-    private Vector<String> artificialDS = new Vector<String>();  //  @jve:decl-index=0:
 
     public TableModel getTableModelForArtificialData(float[][] data, boolean isInt) {
         if (data == null || data.length == 0) {
@@ -282,16 +244,13 @@ public class FrameDataGrid extends javax.swing.JFrame {
             for (int i = 0; i < colNumber; i++) {
                 columnNames[i] = "" + (i);
             }
-//            columnNames[colNumber - 1] = "Class Label";
             if (!isInt) {
                 String dataS[][] = FactoryUtils.toStringArray2D(data);
-                TableModel model = new DefaultTableModel(dataS, columnNames) {
-                };
+                TableModel model = new DefaultTableModel(dataS, columnNames);
                 return model;
             } else {
                 String dataS[][] = FactoryMatrix.toStringArray2DAsInt(data);
-                TableModel model = new DefaultTableModel(dataS, columnNames) {
-                };
+                TableModel model = new DefaultTableModel(dataS, columnNames);
                 return model;
             }
         } catch (Exception e) {
@@ -299,118 +258,94 @@ public class FrameDataGrid extends javax.swing.JFrame {
         }
     }
 
-    protected void buildArtificialDataSet() {
-        int nCols = Integer.parseInt(jTextField_colNumber.getText());
-        int nRows = Integer.parseInt(jTextField_rowNumber.getText());
-        String type = (jComboBox_randomType.getSelectedIndex() == 0) ? "uniform" : "gaussian";
-        artificialDS = getArtificialDataSet(nCols, nRows, type);
-        clearTable(ds_table);
-        ds_table.setModel(getTableModelForArtificialData(artificialDS));
-    }
-
-    public static Vector<String> getArtificialDataSet(int cols, int rows, String type) {
-        Vector<String> ret = new Vector<String>();
-        String str = "";
-        SecureRandom a = new SecureRandom();
-        for (int i = 0; i < rows; i++) {
-            str = (i < (rows / 2)) ? "0;" : "1;";
-            SecureRandom ms = new SecureRandom();
-            for (int j = 0; j < cols; j++) {
-                double f = 0;
-                if (type.equals("uniform")) {
-                    f = formatDouble(ms.nextDouble() - 0.5);
-                } else {
-                    f = formatDouble(ms.nextGaussian());
-                }
-                str = f + ";" + str;
-            }
-            ret.add(str);
-        }
-        return ret;
-    }
-
-    public static double formatDouble(double num) {
-        double q = 0;
-        try {
-            DecimalFormat df = new DecimalFormat("#.###");
-            q = Double.parseDouble(df.format(num).replace(",", "."));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return q;
-    }
-
     private void btn_visualizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_visualizeActionPerformed
-        plotMatrix(ds_table);
+        if (isDataSelectedFromTable()) {
+            float[][] f = getSelectedCells();
+            CMatrix.getInstance(f).transpose().imshow();
+        } else {
+            CMatrix.getInstance(data2D).imshow();
+        }
     }//GEN-LAST:event_btn_visualizeActionPerformed
 
-    private void btn_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_plotActionPerformed
-        if (getMatrix() != null) {
-            CMatrix.getInstance(data).plot();
-        } else {
-            double[][] d = tableToArray(ds_table);
-            CMatrix cm = CMatrix.getInstance(d);
-            setMatrix(cm.toFloatArray2D());
-            //TFigureAttribute attr = new TFigureAttribute();
-            //attr.items = cm.getColumnNamesArray();
-            cm.plot();
+    private JTable getSelectedTable() {
+        Component tabComponent = tabbedPane.getComponentAt(tabbedPane.getSelectedIndex());
+        if (tabComponent instanceof JScrollPane) {
+            JScrollPane scrollPane = (JScrollPane) tabComponent;
+            JViewport viewport = scrollPane.getViewport();
+            if (viewport.getView() instanceof JTable) {
+                return (JTable) viewport.getView();
+            }
         }
+        return null;
+    }
 
+    private void btn_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_plotActionPerformed
+        if (isDataSelectedFromTable()) {
+            float[][] f = getSelectedCells();
+            CMatrix.getInstance(f).plot();
+        } else {
+            if (data2D.length > 100 || data2D[0].length > 100) {
+                if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
+                    CMatrix.getInstance(data2D).plot();
+                }
+            }else{
+                CMatrix.getInstance(data2D).plot();
+            }
+        }
     }//GEN-LAST:event_btn_plotActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed
-        if (getMatrix()[0].length<2) {
-            System.err.println("number of columns should be at least 2");
-            return;
-        }
-        if (getMatrix() != null) {
-            CMatrix.getInstance(data).scatter();
+        if (isDataSelectedFromTable()) {
+            float[][] f = getSelectedCells();
+            CMatrix.getInstance(f).transpose().scatter();
         } else {
-            double[][] d = tableToArray(ds_table);
-            CMatrix cm = CMatrix.getInstance(d);
-            setMatrix(cm.toFloatArray2D());
-            cm.scatter();
+            if (data2D.length > 100 || data2D[0].length > 100) {
+                if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
+                    CMatrix.getInstance(data2D).transpose().scatter();
+                }
+            }else{
+                CMatrix.getInstance(data2D).transpose().scatter();
+            }
         }
     }//GEN-LAST:event_btn_scatterActionPerformed
 
-    private void btn_visualize1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_visualize1ActionPerformed
-        LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
-        tableLineNumber.setBackground(Color.LIGHT_GRAY);
-        jScrollPane2.setRowHeaderView(tableLineNumber);
-    }//GEN-LAST:event_btn_visualize1ActionPerformed
-
-    private void btn_convert_2_intActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_convert_2_intActionPerformed
-        ds_table.setModel(getTableModelForArtificialData(data, true));
-    }//GEN-LAST:event_btn_convert_2_intActionPerformed
+    private void btn_transposeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_transposeActionPerformed
+        float[][] f = null;
+        if (isDataSelectedFromTable()) {
+            f = getSelectedCells();
+        } else {
+            f = tableToArray(getSelectedTable());
+        }
+        f = FactoryMatrix.transpose(f);
+        setMatrix(f, getSelectedTable());
+    }//GEN-LAST:event_btn_transposeActionPerformed
 
     private void btn_from_textActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_from_textActionPerformed
         new FrameDataSetTextEditor().setVisible(true);
     }//GEN-LAST:event_btn_from_textActionPerformed
 
     private void btn_bar_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_bar_plotActionPerformed
-        if (getMatrix() != null) {
-            CMatrix.getInstance(data).bar();
+        if (isDataSelectedFromTable()) {
+            float[][] f = getSelectedCells();
+            CMatrix.getInstance(f).transpose().bar();
         } else {
-            double[][] d = tableToArray(ds_table);
-            CMatrix cm = CMatrix.getInstance(d);
-            setMatrix(cm.toFloatArray2D());
-            cm.bar();
+            if (data2D.length > 100 || data2D[0].length > 100) {
+                if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
+                    CMatrix.getInstance(data2D).transpose().bar();
+                }
+            }else{
+                CMatrix.getInstance(data2D).transpose().bar();
+            }
         }
     }//GEN-LAST:event_btn_bar_plotActionPerformed
 
-    public static void plotMatrix(JTable table) {
-        double[][] d = tableToArray(table);
-//        Matrix mm = MatrixFactory.importFromArray(d);
-//        mm.transpose().showGUI();
-    }
-
-    public static double[][] tableToArray(JTable table) {
+    public static float[][] tableToArray(JTable table) {
         int m = table.getRowCount();
         int n = table.getColumnCount();
-        double[][] ret = new double[m][n];
+        float[][] ret = new float[m][n];
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                ret[i][j] = Double.parseDouble(table.getValueAt(i, j).toString());
+                ret[i][j] = Float.parseFloat(table.getValueAt(i, j).toString());
             }
         }
         return ret;
@@ -420,6 +355,39 @@ public class FrameDataGrid extends javax.swing.JFrame {
         while (table.getRowCount() > 0) {
             ((DefaultTableModel) table.getModel()).removeRow(0);
         }
+    }
+
+    private boolean isDataSelectedFromTable() {
+        JTable tbl = getSelectedTable();
+        int[] selectedRows = tbl.getSelectedRows();
+        int[] selectedColumns = tbl.getSelectedColumns();
+        if (selectedRows.length > 1 && selectedColumns.length > 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private float[][] getSelectedCells() {
+        JTable tbl = getSelectedTable();
+        int[] selectedRows = tbl.getSelectedRows();
+        int[] selectedColumns = tbl.getSelectedColumns();
+        float[][] f = new float[selectedRows.length][selectedColumns.length];
+        for (int i = 0; i < f.length; i++) {
+            for (int j = 0; j < f[0].length; j++) {
+                f[i][j] = Float.parseFloat("" + tbl.getValueAt(selectedRows[i], selectedColumns[j]));
+            }
+        }
+        return f;
+    }
+
+    private String[] getColumnNames(float[][] data) {
+        int colNumber = data[0].length;
+        String[] columnNames = new String[colNumber];
+        for (int i = 0; i < colNumber; i++) {
+            columnNames[i] = "" + (i);
+        }
+        return columnNames;
     }
 
     /**
@@ -453,66 +421,22 @@ public class FrameDataGrid extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrameDataGrid().setVisible(true);
+                //new FrameDataGrid().setVisible(true);
             }
         });
     }
 
-    public TableModel getTableModelForArtificialData(Vector<String> v) {
-        if (v == null || v.size() == 0) {
-            return null;
-        }
-        try {
-            String[][] d = vectorToFullStringArray(v);
-            int colNumber = v.get(0).split(";").length;
-            String columnNames[] = new String[colNumber];
-            for (int i = 0; i < colNumber - 1; i++) {
-                columnNames[i] = "" + i;
-            }
-            columnNames[colNumber - 1] = "Class Label";
-            Object data[][] = d;
-            TableModel model = new DefaultTableModel(data, columnNames) {
-            };
-            return model;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static String[][] vectorToFullStringArray(Vector<String> v) {
-        String[][] ret = new String[v.size()][v.get(0).split(";").length];
-        for (int i = 0; i < v.size(); i++) {
-            String[] str = v.get(i).split(";");
-            for (int j = 0; j < str.length; j++) {
-                ret[i][j] = str[j];
-            }
-        }
-        return ret;
-    }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_bar_plot;
-    private javax.swing.JButton btn_convert_2_int;
     private javax.swing.JButton btn_from_text;
     private javax.swing.JButton btn_plot;
     private javax.swing.JButton btn_scatter;
+    private javax.swing.JButton btn_transpose;
     private javax.swing.JButton btn_visualize;
-    private javax.swing.JButton btn_visualize1;
     private javax.swing.JTable ds_table;
-    private javax.swing.JButton jButton_buildArtificialDS;
-    private javax.swing.JComboBox jComboBox_randomType;
-    private javax.swing.JLabel jLabel29;
-    private javax.swing.JLabel jLabel30;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel26;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField jTextField_colNumber;
-    private javax.swing.JTextField jTextField_rowNumber;
-    private javax.swing.JLabel lbl_size;
+    private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 
-    private void sortWithRespectToFirstRow() {
-//        getMatrix().sort()
-    }
 }

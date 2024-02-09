@@ -12,32 +12,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jazari.factory.FactoryUtils;
 import jazari.image_processing.ImageProcess;
+import jazari.interfaces.call_back_interface.CallBackTrigger;
 
 /**
  *
  * @author cezerilab
  */
 public class FrameScreenCapture extends javax.swing.JFrame {
+
     private BufferedImage screenshot;
     private PanelPicture panel;
     public List<BufferedImage> listImage;
-    public int fps = 10;
+    public int tpf = 300;
 
     /**
      * Creates new form FrameScreeCap
+     *
      * @param panel
      */
     public FrameScreenCapture(PanelPicture panel) {
-        this.fps = 10;
+        this.tpf = 300;
         this.initComponents();
         this.panel = panel;
         this.setLocationRelativeTo(null);
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -53,7 +58,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         btn_use = new javax.swing.JButton();
         btn_capture_video = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        txt_fps = new javax.swing.JTextField();
+        txt_tpf = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         canvas = new PanelScreenCapture();
 
@@ -63,13 +68,15 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         btn_capture_single_image.setText("Capture Image");
+        btn_capture_single_image.setToolTipText("Select region with mouse dragging");
         btn_capture_single_image.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_capture_single_imageActionPerformed(evt);
             }
         });
 
-        btn_save.setText("Save");
+        btn_save.setText("Save As");
+        btn_save.setToolTipText("Save image list to desired folder");
         btn_save.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_saveActionPerformed(evt);
@@ -77,22 +84,26 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         });
 
         btn_use.setText("Copy / Use");
+        btn_use.setToolTipText("You can copy image to clipboard and then use for other application by pasting there");
         btn_use.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_useActionPerformed(evt);
             }
         });
 
-        btn_capture_video.setText("Capture Video");
+        btn_capture_video.setText("Capture Sequence");
+        btn_capture_video.setToolTipText("Capture sequence images form videos or animations");
         btn_capture_video.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_capture_videoActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("fps:");
+        jLabel1.setText("TPF:");
+        jLabel1.setToolTipText("Sleep time per capture each frame");
 
-        txt_fps.setText("10");
+        txt_tpf.setText("300");
+        txt_tpf.setToolTipText("Sleep time per capture each frame");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -106,7 +117,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txt_fps, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txt_tpf, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btn_use)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -121,7 +132,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(btn_use, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel1)
-                        .addComponent(txt_fps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(txt_tpf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btn_capture_single_image, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -171,26 +182,29 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_capture_single_imageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_single_imageActionPerformed
-        if (listImage!=null) {
+        if (listImage != null) {
             listImage.clear();
         }
         setState(Frame.ICONIFIED);
         new FrameCaptureImage(this);
+        this.toFront();
     }//GEN-LAST:event_btn_capture_single_imageActionPerformed
 
     private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed
         if (listImage != null && listImage.size() > 0) {
             String path = FactoryUtils.browseDirectory().getAbsolutePath();
+            FactoryUtils.makeDirectory(path);
             for (BufferedImage img : listImage) {
                 ImageProcess.saveImage(img, path + "/" + System.currentTimeMillis() + ".jpg");
             }
             listImage.clear();
-            screenshot=null;
+            screenshot = null;
             FactoryUtils.showMessage("Captured Video Frames saved successfully");
         } else if (screenshot != null) {
-            ImageProcess.saveImage(screenshot);
-            screenshot=null;
-            FactoryUtils.showMessage("Captured Image saved successfully");
+            if (ImageProcess.saveImage(screenshot)) {
+                FactoryUtils.showMessage("Captured Image saved successfully");
+            }
+            screenshot = null;
         }
     }//GEN-LAST:event_btn_saveActionPerformed
 
@@ -201,13 +215,33 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_useActionPerformed
 
     private void btn_capture_videoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_videoActionPerformed
+        FrameScreenCapture scr = this;
+        FactoryUtils.showMessage("For capturing with a specified fps\n"
+                + "select a bounding box rectangle with mouse press --> drag --> release\n"
+                + "type esc if you want to stop");
         setState(Frame.ICONIFIED);
-        FactoryUtils.showMessage("For capturing with a specified fps\nselect a bounding box rectangle with mouse press --> drag --> release\ntype esc if you want to stop");
-        FactoryUtils.bekle(500);
         listImage = new ArrayList<>();
-        fps = Integer.parseInt(txt_fps.getText());
-        new FrameCaptureVideo(this);
+        tpf = Integer.parseInt(txt_tpf.getText());
+        FrameCaptureVideo frm = new FrameCaptureVideo(scr);
+        frm.setVisible(true);
         screenshot = null;
+
+//        FrameScreenCapture scr = this;
+//        FactoryUtils.showMessageTemp("For capturing with a specified fps"
+//                + "select a bounding box rectangle with mouse press --> drag --> release"
+//                + "type esc if you want to stop", 2000, new CallBackTrigger() {
+//            @Override
+//            public void trigger() {
+//                setState(Frame.ICONIFIED);
+//                listImage = new ArrayList<>();
+//                tpf = Integer.parseInt(txt_tpf.getText());
+//                FrameCaptureVideo frm = new FrameCaptureVideo(scr);
+//                frm.setVisible(true);
+//                screenshot = null;
+//            }
+//        });
+
+
     }//GEN-LAST:event_btn_capture_videoActionPerformed
 
     public void setImage(final BufferedImage screenshot) {
@@ -216,8 +250,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         this.getPanel().setImage(screenshot);
         if (screenshot.getWidth() > 480) {
             this.setPreferredSize(new Dimension(screenshot.getWidth() + 30, screenshot.getHeight() + 110));
-        }
-        else {
+        } else {
             this.setPreferredSize(new Dimension(500, 250));
         }
         this.invalidate();
@@ -225,9 +258,9 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         this.pack();
         this.setLocationRelativeTo(null);
     }
-    
+
     public PanelScreenCapture getPanel() {
-        return (PanelScreenCapture)this.canvas;
+        return (PanelScreenCapture) this.canvas;
     }
 
     /**
@@ -235,9 +268,8 @@ public class FrameScreenCapture extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         try {
-            UIManager.setLookAndFeel((LookAndFeel)new FlatDarkLaf());
-        }
-        catch (UnsupportedLookAndFeelException ex) {
+            UIManager.setLookAndFeel((LookAndFeel) new FlatDarkLaf());
+        } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(FrameScreenCapture.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -258,6 +290,6 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField txt_fps;
+    private javax.swing.JTextField txt_tpf;
     // End of variables declaration//GEN-END:variables
 }

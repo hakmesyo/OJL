@@ -54,7 +54,7 @@ public class TestMnistEnsemble {
         DataSetSDNN ds_valid = UtilsSNN.generateDataSetFromCsvFilterOneClass(PATH_VALID, filterClassIndex, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
         DataSetSDNN ds_test = UtilsSNN.generateDataSetFromCsvFilterOneClass(PATH_TEST, 6, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
         trainAndSaveModel(ds_train, ds_valid);
-//        testModel(ds_test);
+        testModel(ds_test);
 //        visualizeModel(ds_test);
 //        visualizeLearningMetrics();
     }

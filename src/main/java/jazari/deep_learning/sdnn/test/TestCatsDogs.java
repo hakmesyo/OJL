@@ -33,17 +33,17 @@ public class TestCatsDogs {
     private static final String PATH_MODEL = "D:\\ai\\djl\\cats_dogs";
 
     public static void main(String[] args) {
-        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TRAIN,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_VALID,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TEST,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+//        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TRAIN,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+//        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_VALID,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+//        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImageFilterOneClass(PATH_TEST,0,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
         
-//        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImage(PATH_TRAIN,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-//        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImage(PATH_VALID,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
-//        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImage(PATH_TEST,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_train=UtilsSNN.generateDataSetFromImage(PATH_TRAIN,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_valid=UtilsSNN.generateDataSetFromImage(PATH_VALID,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
+        DataSetSDNN ds_test=UtilsSNN.generateDataSetFromImage(PATH_TEST,NUM_CHANNELS,IMG_WIDTH,IMG_HEIGHT);
 
-//        trainAndSaveModel(ds_train, ds_valid);
-//        testModel(ds_test);
-        visualizeModel(ds_test);
+        trainAndSaveModel(ds_train, ds_valid);
+        testModel(ds_test);
+//        visualizeModel(ds_test);
 //        visualizeLearningMetrics();
         int a = 1;
 

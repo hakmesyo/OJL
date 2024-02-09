@@ -67,7 +67,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="txt_fps" min="-2" pref="36" max="-2" attributes="0"/>
+                  <Component id="txt_tpf" min="-2" pref="46" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
                   <Component id="btn_use" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -84,7 +84,7 @@
                       <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                           <Component id="btn_use" alignment="3" max="32767" attributes="0"/>
                           <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="txt_fps" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="txt_tpf" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -104,6 +104,7 @@
         <Component class="javax.swing.JButton" name="btn_capture_single_image">
           <Properties>
             <Property name="text" type="java.lang.String" value="Capture Image"/>
+            <Property name="toolTipText" type="java.lang.String" value="Select region with mouse dragging"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_capture_single_imageActionPerformed"/>
@@ -114,7 +115,8 @@
         </Component>
         <Component class="javax.swing.JButton" name="btn_save">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Save"/>
+            <Property name="text" type="java.lang.String" value="Save As"/>
+            <Property name="toolTipText" type="java.lang.String" value="Save image list to desired folder"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_saveActionPerformed"/>
@@ -123,6 +125,7 @@
         <Component class="javax.swing.JButton" name="btn_use">
           <Properties>
             <Property name="text" type="java.lang.String" value="Copy / Use"/>
+            <Property name="toolTipText" type="java.lang.String" value="You can copy image to clipboard and then use for other application by pasting there"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_useActionPerformed"/>
@@ -130,7 +133,8 @@
         </Component>
         <Component class="javax.swing.JButton" name="btn_capture_video">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Capture Video"/>
+            <Property name="text" type="java.lang.String" value="Capture Sequence"/>
+            <Property name="toolTipText" type="java.lang.String" value="Capture sequence images form videos or animations"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_capture_videoActionPerformed"/>
@@ -138,12 +142,14 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="fps:"/>
+            <Property name="text" type="java.lang.String" value="TPF:"/>
+            <Property name="toolTipText" type="java.lang.String" value="Sleep time per capture each frame"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JTextField" name="txt_fps">
+        <Component class="javax.swing.JTextField" name="txt_tpf">
           <Properties>
-            <Property name="text" type="java.lang.String" value="10"/>
+            <Property name="text" type="java.lang.String" value="300"/>
+            <Property name="toolTipText" type="java.lang.String" value="Sleep time per capture each frame"/>
           </Properties>
         </Component>
       </SubComponents>

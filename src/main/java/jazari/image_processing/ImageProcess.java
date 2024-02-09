@@ -540,7 +540,7 @@ public final class ImageProcess {
     public static BufferedImage cropImage(BufferedImage src, int px, int py, int width, int height) {
         if (src.getType() == BufferedImage.TYPE_BYTE_GRAY) {
             return src.getSubimage(px, py, width, height);
-        } else if(src.getType() == BufferedImage.TYPE_4BYTE_ABGR){
+        } else if (src.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
             return src.getSubimage(px, py, width, height);
         } else {
             return toBGR(src.getSubimage(px, py, width, height));
@@ -986,47 +986,20 @@ public final class ImageProcess {
         if (img.getColorModel().getNumComponents() == 4) {
             img = convertToBufferedImageTypes(img, 5);
             ret = convertBufferedImageTo2D(img);
-
-//            WritableRaster raster = img.getRaster();
-//            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-//            byte[] d = data.getData();
-//            float[] r = FactoryUtils.byte2Double(d);
-//            float[] t = new float[r.length / 4];
-//            int size = t.length;
-//            for (int i = 0; i < size; i++) {
-//                t[i] = (int) ((r[4 * i + 1] + r[4 * i + 2] + r[4 * i + 3]) / 3);
-//            }
-//            ret = FactoryMatrix.reshapeBasedOnRows(t, img.getHeight(), img.getWidth());
-//            return ret;
         } else if (img.getColorModel().getNumComponents() == 1 && !img.getColorModel().hasAlpha()) {
-//            int w=img.getWidth();
-//            int h=img.getHeight();
-//            byte[] imageBytes=new byte[w*h];
-//            img.getRaster().setDataElements(0, 0, w, h, imageBytes);
-            WritableRaster raster = img.getRaster();
-            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-            byte[] d = data.getData();
-            float[] r = FactoryUtils.byte2Float(d);
-            if (r.length != img.getWidth() * img.getHeight()) {
-                System.out.println("farklı");
+            float[] pixelValues = new float[img.getWidth() * img.getHeight()];
+            int idx = 0;
+            for (int y = 0; y < img.getHeight(); y++) {
+                for (int x = 0; x < img.getWidth(); x++) {
+                    int grayValue = img.getRaster().getSample(x, y, 0);
+                    pixelValues[idx++] = grayValue;
+                }
             }
-            ret = FactoryMatrix.reshapeBasedOnRows(r, img.getHeight(), img.getWidth());
+            ret = FactoryMatrix.reshapeBasedOnRows(pixelValues, img.getHeight(), img.getWidth());
             return ret;
         } else if (img.getColorModel().getNumComponents() == 3 && !img.getColorModel().hasAlpha()) {
             img = convertToBufferedImageTypes(img, 5);
             ret = convertBufferedImageTo2D(img);
-//            WritableRaster raster = img.getRaster();
-//            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-//            int[] rgb = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
-//
-//            byte[] d = data.getData();
-//            float[] r = FactoryUtils.byte2Double(d);
-//            float[] t = new float[r.length / 3];
-//            int size = t.length;
-//            for (int i = 0; i < size; i++) {
-//                t[i] = (int) ((r[3 * i] + r[3 * i + 1] + r[3 * i + 2]) / 3);
-//            }
-//            ret = FactoryMatrix.reshapeBasedOnRows(t, img.getHeight(), img.getWidth());
             return ret;
         }
         return ret;
@@ -1695,7 +1668,8 @@ public final class ImageProcess {
     }
 
     /**
-     * Resizes an image using a Graphics2D BufferedImage. Width or Height might w and/or h
+     * Resizes an image using a Graphics2D BufferedImage. Width or Height might
+     * w and/or h
      *
      * @param src - source image to scale
      * @param w - desired width
@@ -1729,9 +1703,9 @@ public final class ImageProcess {
 //        return resizedImg;
         return img;
     }
-    
+
     /**
-     * Resizes an image using a Graphics2D BufferedImage. 
+     * Resizes an image using a Graphics2D BufferedImage.
      *
      * @param src - source image to scale
      * @param minimumSize - desired width
@@ -3838,25 +3812,12 @@ public final class ImageProcess {
     }
 
     public static BufferedImage overlayImage(BufferedImage bgImage, BufferedImage fgImage, Point p, float alpha) {
-        int w = bgImage.getWidth();
-        int h = bgImage.getHeight();
-        BufferedImage newImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = newImg.createGraphics();
-
-// Clear the image (optional)
-        g.setComposite(AlphaComposite.Clear);
-        g.fillRect(0, 0, w, h);
-
-// Draw the background image
-        g.setComposite(AlphaComposite.SrcOver);
-        g.drawImage(bgImage, 0, 0, null);
-
-// Draw the overlay image
-        g.setComposite(AlphaComposite.SrcOver.derive((float) alpha));
-        g.drawImage(fgImage, p.x, p.y, null);
-
-        g.dispose();
-        return newImg;
+        BufferedImage combinedImage = new BufferedImage(bgImage.getWidth(), bgImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = combinedImage.createGraphics();
+        g2d.drawImage(bgImage, 0, 0, null);
+        g2d.drawImage(fgImage, p.x, p.y, null);
+        g2d.dispose();
+        return combinedImage;
     }
 
     public static BufferedImage drawText(BufferedImage bf, String str, int x, int y, Color col) {
@@ -4380,13 +4341,13 @@ public final class ImageProcess {
     }
 
     public static BufferedImage[][] tileImage(BufferedImage img, int nr, int nc) {
-        BufferedImage[][] ret=new BufferedImage[nr][nc];
-        int w=img.getWidth()/nc;
-        int h=img.getHeight()/nr;
+        BufferedImage[][] ret = new BufferedImage[nr][nc];
+        int w = img.getWidth() / nc;
+        int h = img.getHeight() / nr;
         for (int i = 0; i < nc; i++) {
             System.out.println("");
             for (int j = 0; j < nr; j++) {
-                ret[j][i]=ImageProcess.cropImage(img, i*w,j*h,w,h);
+                ret[j][i] = ImageProcess.cropImage(img, i * w, j * h, w, h);
                 //System.out.println((i*w)+":"+(j*h)+":"+ret[i][j].getWidth()+":"+ret[i][j].getHeight()+"");
             }
         }

@@ -257,10 +257,10 @@ public class TestPlot {
     }
 
     private static void testSimplePlot() {
-        float[] f={20.12f,50.13f,35f,62.67f,49.17f,21f,35f,41f,45f,52f};
+        float[] f={0,20.12f,50.13f,35f,62.67f,49.17f,21f,35f,41f,45f,52f};
         //f=CMatrix.getInstance().linspace(-30, 150, 180).toFloatArray1D();
         CMatrix cm = CMatrix.getInstance(f)
-                //.transpose()
+                .transpose()
                 //.plot()
                 //.perlinNoise(0.03f)
                 //.shape()
@@ -269,7 +269,7 @@ public class TestPlot {
                 //.plot(CMatrix.getInstance().linspace(-3, 3, 10).toFloatArray1D())
                 //.plot(CMatrix.getInstance().linspace(-3, 3, 10).toFloatArray1D())
                 //.plot(f)
-                .rand(1, 100)
+                //.rand(1, 100)
                 .plot()
                 ;
     }

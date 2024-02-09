@@ -63,6 +63,7 @@ import ai.djl.training.dataset.RandomAccessDataset;
 import ai.djl.training.loss.Loss;
 import ai.djl.translate.TranslateException;
 import ai.djl.translate.Translator;
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamListener;
 import jazari.interfaces.call_back_interface.CallBackDataBase;
@@ -138,7 +139,11 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.stream.IntStream;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import jazari.gui.FlatLaf;
 import jazari.gui.FrameDataSetTextEditor;
+import jazari.gui.FrameScreenCapture;
 import jazari.interfaces.call_back_interface.CallBackAppend;
 import jazari.utils.DataAugmentationOpt;
 import jazari.utils.PerlinNoise2D;
@@ -158,6 +163,14 @@ import weka.core.matrix.SingularValueDecomposition;
  * @author BAP1
  */
 public final class CMatrix implements Serializable {
+
+    static {
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     public String name = "Matrix";
 //    private float[][] array;
@@ -2063,8 +2076,8 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plot(float[] xAxis) {
         array = Nd4j.create(FactoryUtils.RemoveNaNToZero(array.toFloatMatrix()));
-        if (getRowNumber()==xAxis.length) {
-           array=transpose().array;
+        if (getRowNumber() == xAxis.length) {
+            array = transpose().array;
         }
         TFigureAttribute attr = new TFigureAttribute();
         attr.items = getRowNamesArray();
@@ -2221,7 +2234,7 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix plotRefresh(int thread_sleep, boolean fromAnimated) {
         if (framePlot == null) {
-            framePlot = new FramePlot(this.toFloatArray2D(),true);
+            framePlot = new FramePlot(this.toFloatArray2D(), true);
             framePlot.setVisible(true);
             framePlot.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
@@ -2308,8 +2321,9 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * plot the bar of each row as group and each columns as items
-     * it could be interpreted as each row is model and each colum is an experiment on that model
+     * plot the bar of each row as group and each columns as items it could be
+     * interpreted as each row is model and each colum is an experiment on that
+     * model
      *
      * @return CMatrix
      */
@@ -2341,16 +2355,16 @@ public final class CMatrix implements Serializable {
         frm.setVisible(true);
         return this;
     }
-    
+
     /**
      * plot the bar of each column in the matrix
      *
-     * @param categories      :set of group names
-     * @param columnNames :set of column names 
+     * @param categories :set of group names
+     * @param columnNames :set of column names
      * @return CMatrix
      */
     public CMatrix bar(String[] categories, String[] columnNames) {
-        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, categories,columnNames);
+        FrameBar frm = new FrameBar(this.toFloatArray2D(), null, categories, columnNames);
         frm.setVisible(true);
         return this;
     }
@@ -2784,7 +2798,7 @@ public final class CMatrix implements Serializable {
     public CMatrix imhist(String title) {
         CMatrix ret = this.clone();
 
-        if (ret.image == null || ret.image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+        if (ret.image == null){// || ret.image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
             ret.image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         }
         CMatrix cc = ImageProcess.getHistogram(ret);
@@ -4961,10 +4975,23 @@ public final class CMatrix implements Serializable {
     /**
      * Matlab and Python compatible command::read image file
      *
+     * @param file
      * @return CMatrix
      */
     public CMatrix imread(File file) {
-        this.readImage(file.getAbsolutePath());
+        if (file.isDirectory()) {
+            File[] fileList = FactoryUtils.getFileArrayInFolderForImages(file.getAbsolutePath());
+            if (fileList != null) {
+                for (File innerFile : fileList) {
+                    if (FactoryUtils.isImageFile(innerFile)) {
+                        this.readImage(innerFile.getAbsolutePath());
+                        break;
+                    }
+                }
+            }
+        } else if (file.isFile()) {
+            this.readImage(file.getAbsolutePath());
+        }
         return this;
     }
 
@@ -7713,7 +7740,7 @@ public final class CMatrix implements Serializable {
         }
         return ret;
     }
-    
+
     public String[] getRowNamesArray() {
         String[] ret = new String[getRowNumber()];
         for (int i = 0; i < ret.length; i++) {
@@ -9862,6 +9889,14 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    /**
+     * open animated plot interface
+     *
+     * @param loopNumber
+     * @param threadSleep
+     * @param function : you can write any algortihm or call a function
+     * @return
+     */
     public CMatrix plotAnimated(int loopNumber, int threadSleep, CallBackAppend function) {
         new Thread(new Runnable() {
             @Override
@@ -9882,6 +9917,18 @@ public final class CMatrix implements Serializable {
                 }
             }
         }).start();
+        return this;
+    }
+
+    /**
+     * capture still image or sequence training image from running video or
+     * image for computer vision problems
+     *
+     * @return
+     */
+    public CMatrix robotCapture() {
+        FrameScreenCapture capture = new FrameScreenCapture(null);
+        capture.setVisible(true);
         return this;
     }
 }

@@ -31,7 +31,7 @@ import jazari.utils.DataSet;
  */
 public class TestMnist {
 
-    private static final int EPOCHS = 10;
+    private static final int EPOCHS = 20;
     private static final int BATCH_SIZE = 1;
     private static final float LEARNING_RATE = 1E-4f;
     private static final int NUMBER_OF_CLASSES = 10;
@@ -53,8 +53,8 @@ public class TestMnist {
         DataSetSDNN ds_valid = UtilsSNN.generateDataSetFromCSV(PATH_VALID, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
         DataSetSDNN ds_test = UtilsSNN.generateDataSetFromCSV(PATH_TEST, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
 
-        //UtilsSNN.trainAndSaveModel(opt,ds_train, ds_valid);
-        //UtilsSNN.testModel(opt,ds_test);
+        UtilsSNN.trainAndSaveModel(opt,ds_train, ds_valid);
+        UtilsSNN.testModel(opt,ds_test);
         //UtilsSNN.visualizeModel(opt,ds_test);
 //        UtilsSNN.visualizeLearningMetrics(opt);
     }

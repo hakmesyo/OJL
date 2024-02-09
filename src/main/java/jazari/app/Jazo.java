@@ -1,7 +1,6 @@
 package jazari.app;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Component;
 import javax.swing.TransferHandler;
 import jazari.factory.FactoryUtils;
@@ -12,10 +11,6 @@ import javax.swing.JButton;
 import java.awt.Image;
 import java.io.File;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -34,7 +29,8 @@ public class Jazo extends javax.swing.JFrame {
     public Jazo() {
         initComponents();
         btn_open.setTransferHandler(new ImageTransferHandler());
-        this.setTitle("Jazari Annotation Tool  [27.05.2023]");
+        this.setTitle("Jazari Annotation Tool  [07.02.2024]");
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -52,7 +48,7 @@ public class Jazo extends javax.swing.JFrame {
         setTitle("Jazari Annotation Tool V:10.05.2023");
 
         btn_open.setFont(new java.awt.Font("Tahoma", 1, 36)); // NOI18N
-        btn_open.setText("Open | Drag & Drop Image");
+        btn_open.setText("Open | Drag & Drop Image|Folder");
         btn_open.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_openActionPerformed(evt);
@@ -93,36 +89,6 @@ public class Jazo extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         FlatDarculaLaf.setup();
-//        try {
-//            UIManager.setLookAndFeel(new FlatDarkLaf());
-//        } catch (UnsupportedLookAndFeelException ex) {
-//            Logger.getLogger(Jazo.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-////        /* Set the Nimbus look and feel */
-////        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-////        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-////         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-////         */
-////        try {
-////            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-////                if ("Nimbus".equals(info.getName())) {
-////                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-////                    break;
-////                }
-////            }
-////        } catch (ClassNotFoundException ex) {
-////            java.util.logging.Logger.getLogger(Jazo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-////        } catch (InstantiationException ex) {
-////            java.util.logging.Logger.getLogger(Jazo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-////        } catch (IllegalAccessException ex) {
-////            java.util.logging.Logger.getLogger(Jazo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-////        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-////            java.util.logging.Logger.getLogger(Jazo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-////        }
-////        //</editor-fold>
-////        //</editor-fold>
-////
-////        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 Jazo jazo = new Jazo();
@@ -137,7 +103,7 @@ public class Jazo extends javax.swing.JFrame {
 
     public static class ImageTransferHandler extends TransferHandler {
 
-        public static final DataFlavor[] SUPPORTED_DATA_FLAVORS = new DataFlavor[]{
+        public static final DataFlavor[] SUPPORTED_DATA_FLAVORS = new DataFlavor[]{            
             DataFlavor.javaFileListFlavor,
             DataFlavor.imageFlavor
         };

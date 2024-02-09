@@ -28,7 +28,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="panelPicture" alignment="0" max="32767" attributes="0"/>
-          <Component id="jScrollPane1" alignment="0" pref="845" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -92,25 +92,31 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="btn_dataGrid" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btn_save" min="-2" pref="91" max="-2" attributes="0"/>
+                      <Component id="btn_screen_capture" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="btn_save" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="txt_dpi" min="-2" pref="45" max="-2" attributes="0"/>
+                      <Component id="txt_dpi" min="-2" pref="31" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel2" min="-2" pref="25" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
-                      <Component id="isBBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="isPolygon" min="-2" max="-2" attributes="0"/>
+                      <Component id="lbl_zoom_factor" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="isSequence" min="-2" max="-2" attributes="0"/>
+                      <Component id="chk_stretch" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="69" max="32767" attributes="0"/>
+                      <Component id="chkLane" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="isLabelVisible" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkBBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btn_dashedLineColor" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkPolygon" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="chkSequence" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="chkLabelVisible" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btn_analytics" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="lbl_zoom_factor" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btn_dashedLineColor" min="-2" pref="75" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -123,13 +129,16 @@
                           <Component id="btn_save" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="txt_dpi" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="isBBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="isSequence" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="isPolygon" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkBBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkSequence" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkPolygon" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="lbl_zoom_factor" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btn_dashedLineColor" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="isLabelVisible" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkLabelVisible" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btn_analytics" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkLane" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="btn_screen_capture" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chk_stretch" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace pref="61" max="32767" attributes="0"/>
                   </Group>
@@ -140,6 +149,7 @@
             <Component class="javax.swing.JButton" name="btn_dataGrid">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Data Grid"/>
+                <Property name="toolTipText" type="java.lang.String" value="Show Pixels As Data Grid Table"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_dataGridActionPerformed"/>
@@ -148,6 +158,7 @@
             <Component class="javax.swing.JButton" name="btn_save">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Save As"/>
+                <Property name="toolTipText" type="java.lang.String" value="Save Image As"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_saveActionPerformed"/>
@@ -163,66 +174,99 @@
                 <Property name="text" type="java.lang.String" value="dpi"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="isBBox">
+            <Component class="javax.swing.JCheckBox" name="chkBBox">
               <Properties>
                 <Property name="text" type="java.lang.String" value="bbox"/>
+                <Property name="toolTipText" type="java.lang.String" value="Activate Bounding Box for Object Detection"/>
               </Properties>
               <Events>
-                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="isBBoxItemStateChanged"/>
-                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="isBBoxMouseMoved"/>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="isBBoxActionPerformed"/>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkBBoxItemStateChanged"/>
+                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="chkBBoxMouseMoved"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkBBoxActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="isSequence">
+            <Component class="javax.swing.JCheckBox" name="chkSequence">
               <Properties>
                 <Property name="text" type="java.lang.String" value="sequence"/>
+                <Property name="toolTipText" type="java.lang.String" value="Remember previous lane, bbox or ploygons for fast annotations"/>
               </Properties>
               <Events>
-                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="isSequenceItemStateChanged"/>
-                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="isSequenceMouseMoved"/>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="isSequenceActionPerformed"/>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkSequenceItemStateChanged"/>
+                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="chkSequenceMouseMoved"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkSequenceActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="isPolygon">
+            <Component class="javax.swing.JCheckBox" name="chkPolygon">
               <Properties>
                 <Property name="text" type="java.lang.String" value="polygon"/>
+                <Property name="toolTipText" type="java.lang.String" value="Activate Polygonal Region Drawing for Semnatic Segmentation and Object Detection"/>
               </Properties>
               <Events>
-                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="isPolygonItemStateChanged"/>
-                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="isPolygonMouseMoved"/>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="isPolygonActionPerformed"/>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkPolygonItemStateChanged"/>
+                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="chkPolygonMouseMoved"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkPolygonActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="lbl_zoom_factor">
               <Properties>
-                <Property name="text" type="java.lang.String" value="zoom factor:1"/>
+                <Property name="text" type="java.lang.String" value="zoom:1"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="btn_dashedLineColor">
               <Properties>
                 <Property name="text" type="java.lang.String" value="color"/>
+                <Property name="toolTipText" type="java.lang.String" value="Change Dashed Line Color"/>
               </Properties>
               <Events>
                 <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="btn_dashedLineColorMouseMoved"/>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_dashedLineColorActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="isLabelVisible">
+            <Component class="javax.swing.JCheckBox" name="chkLabelVisible">
               <Properties>
-                <Property name="text" type="java.lang.String" value="show label"/>
+                <Property name="text" type="java.lang.String" value="label"/>
+                <Property name="toolTipText" type="java.lang.String" value="Show Specified Labels on Annotations"/>
               </Properties>
               <Events>
-                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="isLabelVisible&#x130;temStateChanged"/>
-                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="isLabelVisibleMouseMoved"/>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkLabelVisible&#x130;temStateChanged"/>
+                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="chkLabelVisibleMouseMoved"/>
               </Events>
             </Component>
             <Component class="javax.swing.JButton" name="btn_analytics">
               <Properties>
                 <Property name="text" type="java.lang.String" value="analytics"/>
+                <Property name="toolTipText" type="java.lang.String" value="Show histogram of annotations for achieving balanced classes"/>
               </Properties>
               <Events>
                 <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="btn_analyticsMouseMoved"/>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_analyticsActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkLane">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="lane"/>
+                <Property name="toolTipText" type="java.lang.String" value="Activate Lane Detection based on splines"/>
+              </Properties>
+              <Events>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkLane&#x130;temStateChanged"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chkLaneActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="btn_screen_capture">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Screen Capture"/>
+                <Property name="toolTipText" type="java.lang.String" value="Open Screen Capture App"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_screen_captureActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chk_stretch">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="stretch"/>
+              </Properties>
+              <Events>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chk_stretch&#x130;temStateChanged"/>
               </Events>
             </Component>
           </SubComponents>

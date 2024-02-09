@@ -65,7 +65,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private Point mousePosTopRight = new Point(0, 0);
     private Point mousePosBottomLeft = new Point(0, 0);
     private Point mousePosBottomRight = new Point(0, 0);
-    private JLabel lbl = null;
     private boolean lblShow = true;
     private boolean showRegion = false;
     private BufferedImage currBufferedImage;
@@ -83,7 +82,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private boolean activateRedChannel = false;
     private boolean activateRevert = false;
     private boolean activateBinarize = false;
-    private boolean activateCrop = false;
+    public boolean activateCrop = false;
     private boolean activateScreenCapture = false;
     private boolean activateCmd = false;
     private boolean isCropStarted = false;
@@ -149,7 +148,37 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private boolean isFirstClickOutside;
     boolean activateLabelVisibility = false;
     private Rectangle currentBoundingBox;
+    public boolean activateLaneDetection = false;
+    private int flag_once = 0;
+    private int prev_width = 500;
+    private int prev_height = 500;
+    public boolean isBBoxCancelled = false;
+    private boolean isPolygonCancelled = false;
+    private boolean isBBoxDragged = false;
+    private Point referenceDragPos;
+    private Point relativeDragPosFromTop = new Point();
+    private boolean isPolygonDragged = false;
+    private Point referencePolygonDragPos;
+    private Point relativePolygonDragPosFromTop = new Point();
+    private int img_width;
+    private int img_height;
+    private AffineTransform afft = new AffineTransform();
+    private AffineTransform temp_afft = new AffineTransform();
+    private AffineTransform inverseScale = new AffineTransform();
+    private float zoom_factor = 1;
+    public float original_zoom_factor = 1;
+    public Rectangle selectionRect;
+    public BufferedImage selectionRectImage;
+    private int setImageCounter = 0;
+    private Graphics2D gr2d;
+    private int incrMouseX;
+    private int incrMouseY;
 
+    /**
+     * There exists two constructors
+     *
+     * @param frame
+     */
     public PanelPicture(FrameImage frame) {
         this.frame = frame;
         initialize();
@@ -161,12 +190,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         initialize();
         this.addMouseWheelListener(this);
     }
-
-    public PanelPicture() {
-        this.frame = (FrameImage) frame;
-        initialize();
-        this.addMouseWheelListener(this);
-    }
+    //***************************************************************************
 
     private void setImagePath(String path) {
         if (path == null || path.equals("")) {
@@ -187,9 +211,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         }
         frame.imagePath = imagePath;
         String[] s = FactoryUtils.splitPath(imagePath);
-        frame.setTitle(s[s.length - 1]);
-
-        //frame.setTitle(imagePath);
+        frame.titleImageInfo = (s[s.length - 1]);
     }
 
     public File[] sortFileListByNumber(File[] files) {
@@ -206,7 +228,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 try {
                     String number = name.split("_")[0];
                     i = Integer.parseInt(number);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                     i = 0; // if filename does not match the format
                     // then default to 0
                 }
@@ -220,7 +242,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     public BufferedImage rawImage;
 
     public void setImage(BufferedImage image, String imagePath, String caption, boolean isClearBbox) {
-        System.gc();
+        if (setImageCounter++ > 50) {
+            setImageCounter = 0;
+            System.gc();
+        }
         this.caption = caption;
         String folderName = FactoryUtils.getFolderPath(imagePath);
         currentFolderName = folderName;
@@ -248,15 +273,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         originalBufferedImage = ImageProcess.clone(image);
         originalBufferedImageTemp = ImageProcess.clone(image);
         imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
-        lbl.setText(getImageSize() + "X:Y");
-        lbl.setOpaque(true);
-        lbl.setBackground(Color.BLACK);
         if (activateStatistics) {
             currBufferedImage = ImageProcess.toGrayLevel(originalBufferedImage);
             imgData = ImageProcess.imageToPixelsFloat(currBufferedImage);
             stat = TStatistics.getStatistics(currBufferedImage);
         }
-        //setPreferredSize(new Dimension(originalBufferedImage.getWidth() + 100, originalBufferedImage.getHeight() + 100));
         zoom_factor = original_zoom_factor;
 
         updateImagePosition();
@@ -292,12 +313,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         }
 
         currBufferedImage = image;
-        //updateImagePosition();
         imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
-        lbl.setText(getImageSize() + "X:Y");
-        lbl.setOpaque(true);
-        lbl.setBackground(Color.BLACK);
-        //setPreferredSize(new Dimension(originalBufferedImage.getWidth() + 100, originalBufferedImage.getHeight() + 100));
         repaint();
         if (!this.imagePath.equals(imagePath)) {
             setImagePath(imagePath);
@@ -313,30 +329,14 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         return stat;
     }
 
-    FrameImage frm = null;
-
     public void setFrame(FrameImage frm) {
-        this.frm = frm;
+        this.frame = frm;
     }
-
-    int flag_once = 0;
-    int prev_width = 500;
-    int prev_height = 500;
-    public boolean isBBoxCancelled = false;
-    private boolean isPolygonCancelled = false;
-    private boolean isBBoxDragged = false;
-    private Point referenceDragPos;
-    private Point relativeDragPosFromTop = new Point();
-
-    private boolean isPolygonDragged = false;
-    private Point referencePolygonDragPos;
-    private Point relativePolygonDragPosFromTop = new Point();
-    private int img_width;
-    private int img_height;
 
     @Override
     public void paint(Graphics g) {
         Graphics2D gr = (Graphics2D) g;
+        gr2d = gr;
 
         RenderingHints rh = new RenderingHints(
                 RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -359,8 +359,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         int wPanel = this.getWidth();
         int hPanel = this.getHeight();
 
-//        img_width = currBufferedImage.getWidth();
-//        img_height = currBufferedImage.getHeight();
         if (currBufferedImage != null) {
             img_width = (int) (0.8 * currBufferedImage.getWidth());
             img_height = (int) (0.8 * currBufferedImage.getHeight());
@@ -370,7 +368,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             paintIfImageAutoSized(gr);
 
             gr.drawImage(currBufferedImage, fromLeft, fromTop, this);
-            //gr.drawImage(currBufferedImage, fromLeft, fromTop, img_width, img_height, this);
 
             gr.setColor(Color.blue);
             gr.drawRect(fromLeft, fromTop, currBufferedImage.getWidth(), currBufferedImage.getHeight());
@@ -388,6 +385,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     paintPolygons(gr);
                 } else if (activateCrop && isCropStarted) {
                     paintCrop(gr);
+                } else if (activateCrop && selectionRect != null) {
+                    paintSelectionRect(gr);
                 }
             }
             if (isMouseInCanvas()) {
@@ -499,6 +498,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     private void initialize() {
 
+        activateCrop = true;
         addKeyListener(this);
         setFocusable(true);
         requestFocus();
@@ -540,18 +540,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             itemsGroup.add(items[i]);
             items[i].addActionListener(handler);
         }
-        //setComponentPopupMenu(popupMenu);
         setComponentPopupMenu(null);
 
-        lbl = new JLabel("X:Y");
-        lbl.setBackground(Color.black);
-
-        this.add(lbl);
-        lbl.setBounds(new Rectangle(10, 2, 700, 30));
-        lbl.setOpaque(true);
-        lbl.setBackground(Color.BLACK);
-        lbl.setForeground(Color.GREEN);
-        lbl.setVisible(true);
         this.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         this.updateUI();
 
@@ -581,53 +571,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 if (e.getClickCount() == 2 && !e.isConsumed()) {
                     e.consume();
                     if (activateBoundingBox && selectedBBox != null) {
-                        new FrameObjectProperties(frm, selectedBBox.name, "bbox").setVisible(true);
-                        //updateObjectProperties("");
-                        /*
-                        String ret = setBoundingBoxProperties(selectedBBox.name);
-                        mapBBoxColor = buildHashMap(currentFolderName + "/class_labels.txt");
-                        if (ret != null && !ret.split(":")[0].isEmpty()) {
-                        lastSelectedClassName = ret.split(":")[0];
-                        lastSelectedBoundingBoxColor = buildColor(ret.split(":")[1]);
-                        selectedPascalVocObject.name = lastSelectedClassName;
-                        isBBoxCancelled = false;
-                        selectedBBox.name = lastSelectedClassName;
-                        } else {
-                        isBBoxCancelled = true;
-                        }
-                        repaint();
-                        return;
-                         */
+                        new FrameObjectProperties(frame, selectedBBox.name, "bbox").setVisible(true);
                     } else if (activatePolygon && selectedPolygon != null) {
-                        new FrameObjectProperties(frm, selectedPolygon.name, "polygon").setVisible(true);
-                        /*
-                        String ret = setBoundingBoxProperties(selectedPolygon.name);
-                        if (ret == null) {
-                        return;
-                        }
-                        mapBBoxColor = buildHashMap(currentFolderName + "/class_labels.txt");
-                        if (ret.split(":").length == 0) {
-                        System.err.println("MyDialog dan gelen mesaj ikiye bölünemedi");
-                        }
-                        lastSelectedClassName = ret.split(":")[0];
-                        lastSelectedPolygonColor = buildColor(ret.split(":")[1]);
-                        //System.out.println("updated classLabel = " + selectedClass);
-                        if (!(lastSelectedClassName == null || lastSelectedClassName.isEmpty())) {
-                        isPolygonCancelled = false;
-                        selectedPolygon.name = lastSelectedClassName;
-                        selectedPolygon.color = lastSelectedPolygonColor;
-                        for (PascalVocObject pvo : listPascalVocObject) {
-                        if (pvo.polygonContainer.equals(selectedPolygon)) {
-                        pvo.name = lastSelectedClassName;
-                        if (pvo.bndbox != null) {
-                        pvo.bndbox.name = pvo.name;
-                        }
-                        }
-                        }
-                        repaint();
-                        return;
-                        }
-                         */
+                        new FrameObjectProperties(frame, selectedPolygon.name, "polygon").setVisible(true);
                     } else {
                         currBufferedImage = ImageProcess.clone(originalBufferedImage);
                         adjustImageToPanel(currBufferedImage, false);
@@ -640,7 +586,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     if (activatePolygon && selectedPolygon != null) {
                         Point p = new Point(e.getPoint().x - fromLeft, e.getPoint().y - fromTop);
                         int node_index = isClickedOnPolygonEdge(selectedPolygon.polygon, p);
-                        //System.out.println("node_index = " + node_index);
                         if (node_index != -1) {
                             Point point = constraintMousePosition(e);
                             point.x = unScaleWithZoomFactor(point.x - fromLeft);
@@ -653,6 +598,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
 
             public void mousePressed(java.awt.event.MouseEvent e) {
+                requestFocus();
+                /**
+                 * eğer mouse orta tekerleğine bastıysa zoom edilmiş imge
+                 * hareket ettirilmek isteniyorsa
+                 */
                 if (e.getButton() == MouseEvent.BUTTON2) {
                     if (currBufferedImage.getWidth() > getWidth() || currBufferedImage.getHeight() > getHeight()) {
                         isMouseDraggedForImageMovement = true;
@@ -664,14 +614,23 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     }
                 }
 
+                mousePosTopLeft = constraintMousePosition(e);
+
+                /**
+                 * eğer annotation checkboxları seçilmeden resmin bir bölgesi
+                 * seçilmek isteniyorsa
+                 */
                 if (activateCrop && e.getButton() == MouseEvent.BUTTON1) {
                     showRegion = true;
-                    isCropStarted = true;
+                    //isCropStarted = true;
                     mousePosTopLeft = constraintMousePosition(e);
-                    repaint();
+                    selectionRect = new Rectangle(mousePosTopLeft.x, mousePosTopLeft.y, 0, 0);
+                    //repaint();
                     return;
                 }
-
+                /**
+                 * eğer bbox annoation yapılmak isteniyorsa
+                 */
                 if (activateBoundingBox && e.getButton() == MouseEvent.BUTTON1) {
                     showRegion = true;
                     mousePosTopLeft = constraintMousePosition(e);
@@ -707,6 +666,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         isBBoxCancelled = false;
                         isBBoxDragged = false;
                     }
+                    /**
+                     * eğer polygonal annoation yapılmak isteniyorsa
+                     */
                 } else if (activatePolygon) {
                     showRegion = true;
                     isPolygonPressed = true;
@@ -752,6 +714,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         isPolygonCancelled = false;
                         isPolygonDragged = false;
                     }
+
+                    //eğer lane detection için splines tabanlı bir annotation yapılmak isteniyorsa
+                } else if (activateLaneDetection) {
+
                 }
                 if (activatePolygon && isPolygonPressed && SwingUtilities.isRightMouseButton(e)) {
                     isCancelledPolygon = true;
@@ -792,8 +758,15 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
                 if (activateCrop) {
                     isCropStarted = false;
-                    mousePosBottomRight = constraintMousePosition(e);
-                    cropImage();
+                    if (selectionRect != null) {
+                        if (selectionRect.width < 2 || selectionRect.height < 2) {
+                            selectionRect = null;
+                        } else {
+                            Rectangle rect = new Rectangle(selectionRect.x - fromLeft, selectionRect.y - fromTop, selectionRect.width, selectionRect.height);
+                            selectionRectImage = ImageProcess.cropImage(currBufferedImage, rect);
+                        }
+                    }
+                    repaint();
                 } else if (activatePolygon && polygon.npoints > 0 && SwingUtilities.isRightMouseButton(e)) {
                     isPolygonPressed = false;
                     isCancelledPolygon = false;
@@ -826,23 +799,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         Point p = constraintMousePosition(e);
                         if (isReleasedNearStartPolygon(p, polygon)) {
                             if (lastSelectedClassName == null || lastSelectedClassName.isEmpty()) {
-                                new FrameObjectProperties(frm, null, "polygon").setVisible(true);
+                                new FrameObjectProperties(frame, null, "polygon").setVisible(true);
                                 return;
-                                /*
-                                String ret = setBoundingBoxProperties("");
-                                mapBBoxColor = buildHashMap(currentFolderName + "/class_labels.txt");
-                                if (ret != null && !ret.split(":")[0].isEmpty()) {
-                                    lastSelectedClassName = ret.split(":")[0];
-                                    lastSelectedPolygonColor = buildColor(ret.split(":")[1]);
-                                    Polygon pol = FactoryUtils.clone(polygon);
-                                    pol = unScaleWithZoomFactor(pol);
-                                    PascalVocPolygon poly = new PascalVocPolygon(lastSelectedClassName, pol, 0, 0, lastSelectedPolygonColor);
-                                    selectedPolygon = poly;
-                                    listPascalVocObject.add(new PascalVocObject(selectedPolygon.name, "Unspecified", 0, 0, 0, null, selectedPolygon, null));
-                                } else {
-                                    isPolygonCancelled = true;
-                                }
-                                 */
                             } else {
                                 Polygon pol = FactoryUtils.clone(polygon);
                                 pol = unScaleWithZoomFactor(pol);
@@ -914,23 +872,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         currentBoundingBox = new Rectangle(unScaleWithZoomFactor(mousePosTopLeft.x - fromLeft), unScaleWithZoomFactor(mousePosTopLeft.y - fromTop), w, h);
 
                         if (lastSelectedClassName == null || lastSelectedClassName.isEmpty()) {
-                            new FrameObjectProperties(frm, null, "bbox").setVisible(true);
+                            new FrameObjectProperties(frame, null, "bbox").setVisible(true);
                             return;
-//                            String ret = setBoundingBoxProperties("");
-//                            mapBBoxColor = buildHashMap(currentFolderName + "/class_labels.txt");
-//                            if (ret != null && !ret.split(":")[0].isEmpty()) {
-//                                lastSelectedClassName = ret.split(":")[0];
-//                                lastSelectedBoundingBoxColor = buildColor(ret.split(":")[1]);
-//                                isBBoxCancelled = false;
-//                            } else {
-//                                isBBoxCancelled = true;
-//                                selectedBBox = null;
-//                                repaint();
-//                                return;
-//                            }
                         }
 
-                        //System.out.println("fromLeft:"+fromLeft+" fromTop:"+fromTop);
                         if (selectedBBox == null) {
                             Rectangle r = new Rectangle(unScaleWithZoomFactor(mousePosTopLeft.x - fromLeft), unScaleWithZoomFactor(mousePosTopLeft.y - fromTop), w, h);
                             PascalVocBoundingBox bbox = new PascalVocBoundingBox(lastSelectedClassName, r, 0, 0, lastSelectedBoundingBoxColor);
@@ -985,7 +930,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             public void mouseMoved(java.awt.event.MouseEvent e) {
                 isMouseDraggedForPolygonMovement = isMouseDraggedForBoundingBoxMovement = false;
                 mousePos = e.getPoint();
-                isCropStarted = false;
                 if (activateBoundingBox && selectedBBox != null) {
                     Point p = new Point(e.getPoint().x - fromLeft, e.getPoint().y - fromTop);
                     int t = 4;
@@ -1022,26 +966,48 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
 
             public void mouseDragged(java.awt.event.MouseEvent e) {
+                incrMouseX = constraintMousePosition(e).x - mousePos.x;
+                incrMouseY = constraintMousePosition(e).y - mousePos.y;
+                mousePos = constraintMousePosition(e);
                 if (activateBoundingBox || activateCrop || activatePolygon) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         isMouseDraggedForPolygonMovement = isMouseDraggedForBoundingBoxMovement = true;
-                        mousePos = constraintMousePosition(e);
-                        //System.out.println("mousePos = " + mousePos);
+                        if (activateCrop) {
+                            mousePosBottomRight = constraintMousePosition(e);
+                            isCropStarted = true;
+                            int width = 0;
+                            int height = 0;
+                            if (mousePosBottomRight.x > mousePosTopLeft.x) {
+                                width = mousePosBottomRight.x - mousePosTopLeft.x;
+                                if (mousePosBottomRight.y > mousePosTopLeft.y) {
+                                    height = mousePosBottomRight.y - mousePosTopLeft.y;
+                                } else {
+                                    height = mousePosTopLeft.y - mousePosBottomRight.y;
+                                    selectionRect.y += incrMouseY;
+                                }
+                                selectionRect.setSize(width, height);
+                                repaint();
+                                return;
+                            } else {
+                                width = mousePosTopLeft.x - mousePosBottomRight.x;
+                                selectionRect.x += incrMouseX;
+                                if (mousePosBottomRight.y > mousePosTopLeft.y) {
+                                    height = mousePosBottomRight.y - mousePosTopLeft.y;
+                                } else {
+                                    height = mousePosTopLeft.y - mousePosBottomRight.y;
+                                    selectionRect.y += incrMouseY;
+                                }
+                                selectionRect.setSize(width, height);
+                                repaint();
+                                return;
+                            }
+                        }
                     }
                 } else if (activatePolygon && isPolygonPressed && selectedPolygon == null) {
                     //setDefaultCursor();
                     mousePos = constraintMousePosition(e);
                 }
 
-//                if (selectedPolygon != null && selectedNodeIndexLeftMouse != -1) {
-//                    //mousePos = constraintMousePosition(e);
-//                    setDefaultCursor();
-//                    mousePos = constraintMousePosition(e);
-//                    //selectedPolygon.polygon.xpoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorX(mousePos.x) - fromLeft;
-//                    //selectedPolygon.polygon.ypoints[selectedNodeIndexLeftMouse] = unScaleWithZoomFactorY(mousePos.y) - fromTop;
-//                    repaint();
-//                    return;
-//                }
                 if (SwingUtilities.isMiddleMouseButton(e)) {
                     if (currBufferedImage.getWidth() > getWidth() || currBufferedImage.getHeight() > getHeight()) {
                         isMouseDraggedForImageMovement = true;
@@ -1139,25 +1105,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     private void cropImage() {
-        mousePosTopLeft.x -= fromLeft;
-        mousePosTopLeft.y -= fromTop;
-        mousePosBottomRight.x -= fromLeft;
-        mousePosBottomRight.y -= fromTop;
-        CRectangle cr = new CRectangle(mousePosTopLeft.y, mousePosTopLeft.x,
-                Math.abs(mousePosBottomRight.x - mousePosTopLeft.x), Math.abs(mousePosBottomRight.y - mousePosTopLeft.y));
-        if (cr.width <= 0 || cr.height <= 0) {
-            return;
-        }
-        BufferedImage bf = ImageProcess.cropImage(currBufferedImage, cr);
+        Rectangle rect = new Rectangle(selectionRect.x - fromLeft, selectionRect.y - fromTop, selectionRect.width, selectionRect.height);
+        BufferedImage bf = ImageProcess.cropImage(currBufferedImage, rect);
         ImageProcess.saveImage(bf, imageFolder + "/cropped_image.jpg");
         new FrameImage(CMatrix.getInstance(bf), imageFolder + "/cropped_image.jpg", "").setVisible(true);
     }
-
-    private AffineTransform afft = new AffineTransform();
-    private AffineTransform temp_afft = new AffineTransform();
-    private AffineTransform inverseScale = new AffineTransform();
-    float zoom_factor = 1;
-    float original_zoom_factor = 1;
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
@@ -1174,8 +1126,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             w = (1.0f * rawImage.getWidth() * zoom_factor);
             h = (1.0f * rawImage.getHeight() * zoom_factor);
         }
-        //System.out.println(e.getWheelRotation()+" zoom factor:"+zoom_factor);
-        frm.setZoomFactor(zoom_factor);
+        frame.setZoomFactor(zoom_factor);
 
         currBufferedImage = ImageProcess.resizeAspectRatio(originalBufferedImage, (int) w, (int) h);
         setZoomImage(currBufferedImage, imagePath, caption);
@@ -1299,8 +1250,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             gr.setColor(col);
             int sp1_x = (p1.x);
             int sp1_y = (p1.y);
-//            int sp2_x = (p2.x);
-//            int sp2_y = (p2.y);
 
             int width = gr.getFontMetrics().stringWidth(bbox.name) + 8;
             gr.fillRect(sp1_x - 1, sp1_y - 22, width, 22);
@@ -1311,8 +1260,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             gr.drawString(bbox.name, sp1_x + 2, sp1_y - 5);
             int w = scaleWithZoomFactor(bbox.xmax - bbox.xmin);
             int h = scaleWithZoomFactor(bbox.ymax - bbox.ymin);
-//            int w = (sp2_x - sp1_x);
-//            int h = (sp2_y - sp1_y);
             gr.setStroke(new BasicStroke(stroke));
             gr.setColor(col);
             gr.drawRect(sp1_x, sp1_y, w, h);
@@ -1362,8 +1309,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             gr.setColor(col);
             int sp1_x = scaleWithZoomFactorX(p1.x);
             int sp1_y = scaleWithZoomFactorY(p1.y);
-            int sp2_x = scaleWithZoomFactorX(p2.x);
-            int sp2_y = scaleWithZoomFactorY(p2.y);
 
             if (activateLabelVisibility) {
                 int width = gr.getFontMetrics().stringWidth(bbox.name) + 8;
@@ -1474,7 +1419,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             gr.drawPolygon(poly);
             gr.setColor(col);
             gr.fillPolygon(poly);
-            //drawPolygonNodesAsCircle(gr, poly, w, mapBBoxColor.get(pvo.name));
 
             if (activateLabelVisibility) {
                 gr.setColor(Color.white);
@@ -1529,18 +1473,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 0);
         gr.setStroke(dashed);
         gr.setColor(colorDashedLine);
-
-//        gr.setStroke(new BasicStroke(3));
-//        gr.setColor(Color.blue);
-        int w = Math.abs(mousePos.x - mousePosTopLeft.x);
-        int h = Math.abs(mousePos.y - mousePosTopLeft.y);
-        gr.drawRect(mousePosTopLeft.x, mousePosTopLeft.y, w, h);
-        gr.setColor(Color.red);
-        int wx = 5;
-        gr.drawRect(mousePosTopLeft.x - 2, mousePosTopLeft.y - 2, wx, wx);
-        gr.drawRect(mousePosTopLeft.x - 2 + w, mousePosTopLeft.y - 2, wx, wx);
-        gr.drawRect(mousePosTopLeft.x - 2 + w, mousePosTopLeft.y - 2 + h, wx, wx);
-        gr.drawRect(mousePosTopLeft.x - 2, mousePosTopLeft.y - 2 + h, wx, wx);
+        //gr.setColor(Color.red);
+        gr.drawRect(selectionRect.x, selectionRect.y, selectionRect.width, selectionRect.height);
+        //System.out.println("dragged:"+selectionRect);
         gr.setStroke(new BasicStroke(1));
     }
 
@@ -1598,19 +1533,19 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             p.x = mousePos.x - fromLeft;
             p.y = mousePos.y - fromTop;
             if (currBufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY) {
-                lbl.setText(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + imgData[p.y][p.x] + " Img Type=TYPE_BYTE_GRAY");
+                frame.setPixelInfo(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + imgData[p.y][p.x] + " Img Type=TYPE_BYTE_GRAY");
             } else if (currBufferedImage.getType() == BufferedImage.TYPE_INT_RGB) {
                 String s = "" + new Color((int) imgData[p.y][p.x], true);
                 s = s.replace("java.awt.Color", "");
-                lbl.setText(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=TYPE_INT_RGB");// + " RGB=" + "(" + r + "," + g + "," + b + ")");
+                frame.setPixelInfo(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=TYPE_INT_RGB");// + " RGB=" + "(" + r + "," + g + "," + b + ")");
             } else if (currBufferedImage.getType() == BufferedImage.TYPE_3BYTE_BGR) {
                 String s = "" + new Color((int) imgData[p.y][p.x], true);
                 s = s.replace("java.awt.Color", "");
-                lbl.setText(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=TYPE_3BYTE_BGR");// + " RGB=" + "(" + r + "," + g + "," + b + ")");
+                frame.setPixelInfo(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=TYPE_3BYTE_BGR");// + " RGB=" + "(" + r + "," + g + "," + b + ")");
             } else {
                 String s = "" + new Color((int) imgData[p.y][p.x], true);
                 s = s.replace("java.awt.Color", "");
-                lbl.setText(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=" + currBufferedImage.getType());// + " RGB=" + "(" + r + "," + g + "," + b + ")");
+                frame.setPixelInfo(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=" + currBufferedImage.getType());// + " RGB=" + "(" + r + "," + g + "," + b + ")");
             }
         }
     }
@@ -1619,12 +1554,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         if (activateAutoSize) {
             currBufferedImage = ImageProcess.resize(originalBufferedImage, this.getWidth() - 2 * panWidth, this.getHeight() - 2 * panWidth);
             imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
-            lbl.setText(getImageSize() + "X:Y");
+            frame.setPixelInfo(getImageSize() + "X:Y");
         } else if (activateAutoSizeAspect) {
             if (this.getWidth() - 2 * panWidth > 5 && this.getHeight() - 2 * panWidth > 5) {
                 currBufferedImage = ImageProcess.resizeAspectRatio(originalBufferedImageTemp, this.getWidth() - 2 * panWidth, this.getHeight() - 2 * panWidth);
                 imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
-                lbl.setText(getImageSize() + "X:Y");
+                frame.setPixelInfo(getImageSize() + "X:Y");
 
             }
         }
@@ -1645,15 +1580,15 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             float zoom_factor = 950.0f / bf.getHeight();
             int w = (int) (bf.getWidth() * zoom_factor);
             int h = (int) (bf.getHeight() * zoom_factor);
-            frm.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
+            frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
             original_zoom_factor = FactoryUtils.formatFloat(zoom_factor, 4);
             zoom_factor = original_zoom_factor;
             bf = ImageProcess.resizeAspectRatio(bf, w, h);
         } else {
             zoom_factor = original_zoom_factor = 1.0f;
-            frm.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
+            frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
         }
-        frm.setTitle(imageFiles[imageIndex].getName() + "      [ " + (imageIndex + 1) + " / " + imageFiles.length + " ]");
+        frame.titleImageInfo = (imageFiles[imageIndex].getName() + "      [ " + (imageIndex + 1) + " / " + imageFiles.length + " ]");
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
 
@@ -1663,12 +1598,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 selectedBBox = null;
             }
         }
-
-        //setDefaultValues();
         setImage(bf, imagePath, caption, isClearBbox);
-        //frm.setFrameSize(bf);
-        frm.img = bf;
-        frm.imagePath = imagePath;
+        frame.img = bf;
+        frame.imagePath = imagePath;
+        frame.stretchFrame();
         return bf;
     }
 
@@ -1709,10 +1642,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         return new Point(unScaleWithZoomFactorX(val.x), unScaleWithZoomFactorY(val.y));
     }
 
-//
-//    private Point unScaleWithZoomFactor(Point val) {
-//        return new Point(unScaleWithZoomFactorX(val.x), unScaleWithZoomFactorY(val.y));
-//    }
     private Rectangle scaleWithZoomFactor(Rectangle p) {
         return new Rectangle(scaleWithZoomFactor(p.x), scaleWithZoomFactor(p.y), scaleWithZoomFactor(p.width), scaleWithZoomFactor(p.height));
     }
@@ -1826,7 +1755,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         Point p2 = new Point(p2x, p2y);
         ret[0] = p1;
         ret[1] = p2;
-        //System.out.println("fromLeft:"+fromLeft+" width:"+currBufferedImage.getWidth()+" tot:"+(fromLeft+currBufferedImage.getWidth())+" p1:"+p1+" p2:"+p2);
         return ret;
 
     }
@@ -1857,13 +1785,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         colorDashedLine = JColorChooser.showDialog(null, "Choose Color for BoundingBox", colorDashedLine);
     }
 
-//    private void drawPolygonNodesAsCircle(Graphics2D gr, Polygon poly, int r, Color color) {
-//        gr.setColor(color);
-//        int n = poly.npoints;
-//        for (int i = 0; i < n; i++) {
-//            gr.fillOval(poly.xpoints[i] - r / 2, poly.ypoints[i] - r / 2, r, r);
-//        }
-//    }
     private void drawSelectedPolygonNode(Graphics2D gr, Polygon poly, int r) {
         int n = poly.npoints;
         gr.setColor(Color.green);
@@ -1880,6 +1801,16 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     public void updateImageLocation() {
         //System.out.println("burası tetiklendi");
         updateImagePosition();
+    }
+
+    private void paintSelectionRect(Graphics2D gr) {
+        //System.out.println("mouse released:"+selectionRect);
+        gr.setColor(new Color(255, 255, 255, 128)); // Semi-transparent white color
+        gr.fill(selectionRect);
+        gr.setColor(Color.RED);
+        gr.setStroke(new BasicStroke(3));
+        gr.draw(selectionRect);
+        gr.setStroke(new BasicStroke(1));
     }
 
     private class ItemHandler implements ActionListener {
@@ -1917,16 +1848,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         setImage(bf, imagePath, caption, true);
                         frame.img = originalBufferedImage;
 
-//                        currBufferedImage = (originalBufferedImage);
-//                        imagePath = fl.getAbsolutePath();
-//                        imageFolder = FactoryUtils.getFolderPath(imagePath);
-//                        fileName = fl.getName();
-////                    fileList = FactoryUtils.getFileListInFolder(imageFolder);
-////                    currentImageIndex = getCurrentImageIndex();
-//                        imgData = ImageProcess.imageToPixelsFloat(currBufferedImage);
-//                        if (activateStatistics) {
-//                            stat = TStatistics.getStatistics(currBufferedImage);
-//                        }
                     } else {
                         return;
                     }
@@ -1934,19 +1855,13 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     ImageProcess.imwrite(currBufferedImage);
                 } else if (obj.getText().equals("Histogram")) {
                     activateHistogram = true;
-                    if (isRedChannel) {
-                        BufferedImage temp = ImageProcess.getRedChannelGray(currBufferedImage);
-                        CMatrix.getInstance(temp).imhist();
-                    } else if (isGreenChannel) {
-                        BufferedImage temp = ImageProcess.getGreenChannelGray(currBufferedImage);
-                        CMatrix.getInstance(temp).imhist();
-                    } else if (isBlueChannel) {
-                        BufferedImage temp = ImageProcess.getBlueChannelGray(currBufferedImage);
-                        CMatrix.getInstance(temp).imhist();
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        CMatrix.getInstance(selectionRectImage).imhist();
                     } else {
                         CMatrix.getInstance(currBufferedImage).imhist();
-                        //CMatrix.getInstance(currBufferedImage).ocv_imhist("");
                     }
+
                 } else if (obj.getText().equals("Statistics")) {
                     activateStatistics = true;
                     currBufferedImage = ImageProcess.toGrayLevel(originalBufferedImage);
@@ -1955,64 +1870,140 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else if (obj.getText().equals("Original")) {
                     activateOriginal = true;
                     activateStatistics = false;
-//                originalBufferedImage = ImageProcess.resizeAspectRatio(originalBufferedImage, getWidth() - 2 * panWidth, getHeight() - 2 * panWidth);
                     currBufferedImage = ImageProcess.clone(originalBufferedImage);
                     originalBufferedImageTemp = ImageProcess.clone(originalBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                     repaint();
                 } else if (obj.getText().equals("Revert")) {
                     activateRevert = true;
-                    currBufferedImage = ImageProcess.revert(currBufferedImage);
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.revert(selectionRectImage);
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 1f);
+                    } else {
+                        currBufferedImage = ImageProcess.revert(currBufferedImage);
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
-                    imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
+                    imgData = ImageProcess.bufferedImageToArray2D(originalBufferedImageTemp);
                 } else if (obj.getText().equals("Binarize")) {
                     activateBinarize = true;
-                    currBufferedImage = ImageProcess.binarizeColorImage(currBufferedImage);
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.binarizeColorImage(selectionRectImage);
+                        selectionRectImage = ImageProcess.convertToBufferedImageTypes(selectionRectImage, currBufferedImage.getType());
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        if (currBufferedImage.getType() != 10) {
+                            currBufferedImage = ImageProcess.rgb2gray(currBufferedImage);
+                        }
+                        currBufferedImage = ImageProcess.binarizeColorImage(currBufferedImage);
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("Gray")) {
                     activateGray = true;
-                    currBufferedImage = ImageProcess.rgb2gray(currBufferedImage);
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.rgb2gray(selectionRectImage);
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        currBufferedImage = ImageProcess.rgb2gray(currBufferedImage);
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("HSV")) {
                     activateHSV = true;
-                    currBufferedImage = ImageProcess.toHSVColorSpace(currBufferedImage);
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.toHSVColorSpace(selectionRectImage);
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        currBufferedImage = ImageProcess.toHSVColorSpace(currBufferedImage);
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("Red")) {
                     isRedChannel = true;
                     isBlueChannel = isGreenChannel = false;
                     activateRedChannel = true;
-                    currBufferedImage = ImageProcess.isolateChannel(currBufferedImage, "red");
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.isolateChannel(selectionRectImage, "red");
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        currBufferedImage = ImageProcess.isolateChannel(currBufferedImage, "red");
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("Green")) {
                     isGreenChannel = true;
                     isRedChannel = isBlueChannel = false;
                     activateGreenChannel = true;
-                    currBufferedImage = ImageProcess.isolateChannel(currBufferedImage, "green");
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.isolateChannel(selectionRectImage, "green");
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        currBufferedImage = ImageProcess.isolateChannel(currBufferedImage, "green");
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("Blue")) {
                     isBlueChannel = true;
                     isRedChannel = isGreenChannel = false;
                     activateBlueChannel = true;
-                    currBufferedImage = ImageProcess.isolateChannel(currBufferedImage, "blue");
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.isolateChannel(selectionRectImage, "blue");
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        currBufferedImage = ImageProcess.isolateChannel(currBufferedImage, "blue");
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("Equalize")) {
                     activateEqualize = true;
-                    currBufferedImage = ImageProcess.equalizeHistogram(ImageProcess.rgb2gray(currBufferedImage));
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.equalizeHistogram(selectionRectImage);
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        currBufferedImage = ImageProcess.equalizeHistogram(ImageProcess.rgb2gray(currBufferedImage));
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("Edge")) {
                     activateEdge = true;
-                    currBufferedImage = ImageProcess.edgeDetectionCanny(currBufferedImage, 0.3f, 1.0f, 2.5f, 3, false);
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.edgeDetectionCanny(selectionRectImage, 0.3f, 1.0f, 2.5f, 3, false);
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        if (currBufferedImage.getType() != 10) {
+                            currBufferedImage = ImageProcess.rgb2gray(currBufferedImage);
+                        }
+                        currBufferedImage = ImageProcess.edgeDetectionCanny(currBufferedImage, 0.3f, 1.0f, 2.5f, 3, false);
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("Smooth")) {
-                    currBufferedImage = ImageProcess.filterGaussian(currBufferedImage, 3);
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.filterGaussian(selectionRectImage, 3);
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        currBufferedImage = ImageProcess.filterGaussian(currBufferedImage, 3);
+                    }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("AutoSize")) {
@@ -2024,6 +2015,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     activateAutoSizeAspect = true;
                 } else if (obj.getText().equals("Crop")) {
                     activateCrop = true;
+                    cropImage();
                 } else if (obj.getText().equals("Screen Capture")) {
                     activateScreenCapture = true;
                 } else if (obj.getText().equals("Command Interpreter")) {
@@ -2045,10 +2037,15 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     }
 
+    private BufferedImage getCroppedImage() {
+        Rectangle rect = new Rectangle(selectionRect.x - fromLeft, selectionRect.y - fromTop, selectionRect.width, selectionRect.height);
+        BufferedImage bf = ImageProcess.cropImage(currBufferedImage, rect);
+        return bf;
+    }
+
     private void newScreenCaptureInstance() {
         FrameScreenCapture frm = new FrameScreenCapture(this);
         frm.setVisible(true);
-        //frm.btn_capture_single_image.doClick();
     }
 
     private void loadNextImage() {
@@ -2062,18 +2059,13 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         }
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
         setImage(bf, imagePath, caption, true);
-        frm.setTitle(imageFiles[imageIndex].getPath());
-        //frm.setFrameSize(bf);
+        System.out.println("activateCrop:" + activateCrop);
+        frame.titleImageInfo = (imageFiles[imageIndex].getPath());
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
     }
 
     private void loadPrevImage() {
-//        imageIndex--;
-//        if (imageIndex < 0) {
-//            imageIndex++;
-//            return;
-//        }
         if (imageIndex > 0) {
             imageIndex--;
         }
@@ -2084,8 +2076,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         }
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
         setImage(bf, imagePath, caption, true);
-        frm.setTitle(imageFiles[imageIndex].getPath());
-        //frm.setFrameSize(bf);
+        frame.titleImageInfo = (imageFiles[imageIndex].getPath());
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
     }
@@ -2117,20 +2108,13 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(file.getName()) + ".xml");
             }
         }
-        //loadNextImage();
-
     }
 
     public void setActivateStatistics(boolean activateStatistics) {
         this.activateStatistics = activateStatistics;
-//        currBufferedImage = ImageProcess.toGrayLevel(originalBufferedImage);
-//        imgData = ImageProcess.imageToPixels255(currBufferedImage);
-        //stat = TStatistics.getStatistics(currBufferedImage);
-        //repaint();
     }
 
     private void setDefaultValues() {
-        activateCrop = false;
         activateScreenCapture = false;
         activateBoundingBox = false;
         activateSaveImage = false;
@@ -2236,9 +2220,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         }
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
         rawImage = ImageProcess.clone(bf);
-//        if (!(activateBoundingBox || activatePolygon)) {
-//            adjustImageToPanel(bf, true);
-//        }
         adjustImageToPanel(bf, true);
 
         e.consume();
