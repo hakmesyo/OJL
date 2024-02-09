@@ -263,6 +263,10 @@ public class FrameDataGrid extends javax.swing.JFrame {
             float[][] f = getSelectedCells();
             CMatrix.getInstance(f).transpose().imshow();
         } else {
+            float[][] f = getSelectedCells();
+            if (f.length==1 && f[0].length==1) {
+                return;
+            }
             CMatrix.getInstance(data2D).imshow();
         }
     }//GEN-LAST:event_btn_visualizeActionPerformed
@@ -283,7 +287,11 @@ public class FrameDataGrid extends javax.swing.JFrame {
         if (isDataSelectedFromTable()) {
             float[][] f = getSelectedCells();
             CMatrix.getInstance(f).plot();
-        } else {
+        } else{
+            float[][] f = getSelectedCells();
+            if (f.length==1 && f[0].length==1) {
+                return;
+            }
             if (data2D.length > 100 || data2D[0].length > 100) {
                 if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
                     CMatrix.getInstance(data2D).plot();
@@ -299,6 +307,10 @@ public class FrameDataGrid extends javax.swing.JFrame {
             float[][] f = getSelectedCells();
             CMatrix.getInstance(f).transpose().scatter();
         } else {
+            float[][] f = getSelectedCells();
+            if (f.length==1 && f[0].length==1) {
+                return;
+            }
             if (data2D.length > 100 || data2D[0].length > 100) {
                 if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
                     CMatrix.getInstance(data2D).transpose().scatter();
@@ -314,6 +326,10 @@ public class FrameDataGrid extends javax.swing.JFrame {
         if (isDataSelectedFromTable()) {
             f = getSelectedCells();
         } else {
+            f = getSelectedCells();
+            if (f.length==1 && f[0].length==1) {
+                return;
+            }
             f = tableToArray(getSelectedTable());
         }
         f = FactoryMatrix.transpose(f);
@@ -329,6 +345,10 @@ public class FrameDataGrid extends javax.swing.JFrame {
             float[][] f = getSelectedCells();
             CMatrix.getInstance(f).transpose().bar();
         } else {
+            float[][] f = getSelectedCells();
+            if (f.length==1 && f[0].length==1) {
+                return;
+            }
             if (data2D.length > 100 || data2D[0].length > 100) {
                 if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
                     CMatrix.getInstance(data2D).transpose().bar();
@@ -361,10 +381,10 @@ public class FrameDataGrid extends javax.swing.JFrame {
         JTable tbl = getSelectedTable();
         int[] selectedRows = tbl.getSelectedRows();
         int[] selectedColumns = tbl.getSelectedColumns();
-        if (selectedRows.length > 1 && selectedColumns.length > 1) {
+        if ((selectedRows.length == 0 && selectedColumns.length == 0) || (selectedRows.length ==1 && selectedColumns.length ==1)) {
+            return false;        
+        }else{
             return true;
-        } else {
-            return false;
         }
     }
 
