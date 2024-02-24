@@ -7,17 +7,18 @@ package jazari.gui;
 
 import jazari.matrix.CMatrix;
 import jazari.utils.LineNumberTableRowHeader;
-import java.awt.Color;
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Vector;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -25,6 +26,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import jazari.factory.FactoryMatrix;
 import jazari.factory.FactoryUtils;
+import jazari.image_processing.ImageProcess;
 
 /**
  *
@@ -32,17 +34,23 @@ import jazari.factory.FactoryUtils;
  */
 public class FrameDataGrid extends javax.swing.JFrame {
 
-    private float[][] data2D;
+    public float[][] data2D;
+    public float[][][] data3D;
     private String dataType = "2D";//or 3D
+    public FrameImage frameImage;
+    public boolean isInt;
 
     /**
      *
      * @param data
+     * @param isInt
      */
-    public FrameDataGrid(float[][] data) {
+    public FrameDataGrid(float[][] data,boolean isInt) {
+        this.isInt=isInt;
+        data2D = data;
         dataType = "2D";
         initComponents();
-        setMatrix(data, ds_table);
+        setMatrix(data2D, ds_table,isInt);
         LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(jScrollPane2, ds_table);
         jScrollPane2.setRowHeaderView(tableLineNumber);
     }
@@ -53,32 +61,36 @@ public class FrameDataGrid extends javax.swing.JFrame {
      */
     public FrameDataGrid(float[][][] data) {
         dataType = "3D";
+        this.isInt=true;
+        data3D = data;
         initComponents();
         tabbedPane.removeAll();
         String[] tabTitles = {"Alpha Channel", "Red Channel", "Green Channel", "Blue Channel"};
-        for (int i = 1; i < data.length; i++) {
+        for (int i = 0; i < data3D.length; i++) {
             JScrollPane scroll = new JScrollPane();
             JTable table = new JTable();
-            setMatrix(data[i], table);
+            setMatrix(data3D[i], table,isInt);
             scroll.setViewportView(table);
             LineNumberTableRowHeader tableLineNumber = new LineNumberTableRowHeader(scroll, table);
             scroll.setRowHeaderView(tableLineNumber);
             tabbedPane.add(scroll);
-            tabbedPane.setTitleAt(i - 1, tabTitles[i]);
+            tabbedPane.setTitleAt(i, tabTitles[i]);
             this.data2D = data[i];
         }
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        data2D = data3D[selectedIndex];
         tabbedPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 int selectedIndex = tabbedPane.getSelectedIndex();
-                data2D = data[selectedIndex + 1];
+                data2D = data3D[selectedIndex];
             }
         });
     }
 
-    public void setMatrix(float[][] data, JTable table) {
+    public void setMatrix(float[][] data, JTable table,boolean isInt) {
         this.data2D = data;
-        table.setModel(getTableModelForArtificialData(data, true));
+        table.setModel(getTableModelForArtificialData(data, isInt));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setColumnSelectionAllowed(true);
@@ -90,13 +102,73 @@ public class FrameDataGrid extends javax.swing.JFrame {
                 table.setRowSelectionInterval(0, table.getRowCount() - 1); //once column has been selected, select all rows from 0 to the end of that column
             }
         });
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    String newValue = JOptionPane.showInputDialog("Set pixel value:");
+                    try {
+                        int value = Integer.parseInt(newValue);
+                        for (int row : table.getSelectedRows()) {
+                            for (int col : table.getSelectedColumns()) {
+                                table.setValueAt(value, row, col);
+                                data2D[row][col] = value;
+                            }
+                        }
+                        if (frameImage != null) {
+                            if (dataType.equals("2D")) {
+                                if (frameImage.getPicturePanel().selectionRectImage == null) {
+                                    frameImage.getPicturePanel().setMatrixData(data2D);
+                                } else {
+                                    updateSelectedData2D(frameImage.getPicturePanel().imgData);
+                                    frameImage.getPicturePanel().setMatrixData(frameImage.getPicturePanel().imgData);
+                                }
+                            } else {
+                                if (frameImage.getPicturePanel().selectionRectImage == null) {
+                                    frameImage.getPicturePanel().setMatrixData(data3D);
+                                } else {
+                                    float[][][] dt = updateSelectedData3D(ImageProcess.imageToPixelsColorFloatFaster(frameImage.getPicturePanel().getImage()));
+                                    frameImage.getPicturePanel().setMatrixData(dt);
+                                }
+                            }
+
+                        }
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "Geçersiz değer! Lütfen bir rakam giriniz.");
+                    }
+                }
+            }
+
+        });
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
         rightRenderer.setHorizontalAlignment(JLabel.RIGHT); // Sağa dayalı hizalama
         for (int j = 0; j < table.getColumnCount(); j++) {
             table.getColumnModel().getColumn(j).setCellRenderer(rightRenderer);
             table.getColumnModel().getColumn(j).setPreferredWidth(40);
         }
-        this.setTitle("DataGrid for image, format is [ " + data.length + " x " + data[0].length+" ]");
+        this.setTitle("DataGrid for image, format is [ " + data.length + " x " + data[0].length + " ]");
+    }
+
+    private float[][] updateSelectedData2D(float[][] orgData) {
+        Point rect = frameImage.getPicturePanel().getRelativeSelectedRectangleTopLeft();
+        for (int i = 0; i < frameImage.getPicturePanel().selectionRect.height; i++) {
+            for (int j = 0; j < frameImage.getPicturePanel().selectionRect.width; j++) {
+                orgData[i + rect.y][j + rect.x] = data2D[i][j];
+            }
+        }
+        return orgData;
+    }
+
+    private float[][][] updateSelectedData3D(float[][][] orgData) {
+        Point rect = frameImage.getPicturePanel().getRelativeSelectedRectangleTopLeft();
+        for (int k = 0; k < data3D.length; k++) {
+            for (int i = 0; i < frameImage.getPicturePanel().selectionRect.height; i++) {
+                for (int j = 0; j < frameImage.getPicturePanel().selectionRect.width; j++) {
+                    orgData[k][i + rect.y][j + rect.x] = data3D[k][i][j];
+                }
+            }
+        }
+        return orgData;
     }
 
     public float[][] getMatrix2D() {
@@ -260,14 +332,22 @@ public class FrameDataGrid extends javax.swing.JFrame {
 
     private void btn_visualizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_visualizeActionPerformed
         if (isDataSelectedFromTable()) {
-            float[][] f = getSelectedCells();
-            CMatrix.getInstance(f).transpose().imshow();
-        } else {
-            float[][] f = getSelectedCells();
-            if (f.length==1 && f[0].length==1) {
-                return;
+            if (dataType.equals("2D")) {
+                float[][] f = getSelectedCells();
+                CMatrix.getInstance(f).transpose().imshow();
+            } else {
+                float[][][] f = getSelected3DCells();
+                CMatrix.getInstance(f).transpose().imshow();
             }
-            CMatrix.getInstance(data2D).imshow();
+        } else {
+            if (dataType.equals("2D")) {
+                data2D = getSelectedTableData();
+                CMatrix.getInstance(data2D).imshow();
+            } else {
+                data3D = getTablesData();
+                CMatrix.getInstance(data3D).imshow();
+            }
+
         }
     }//GEN-LAST:event_btn_visualizeActionPerformed
 
@@ -283,20 +363,32 @@ public class FrameDataGrid extends javax.swing.JFrame {
         return null;
     }
 
+    private JTable getTable(int index) {
+        Component tabComponent = tabbedPane.getComponentAt(index);
+        if (tabComponent instanceof JScrollPane) {
+            JScrollPane scrollPane = (JScrollPane) tabComponent;
+            JViewport viewport = scrollPane.getViewport();
+            if (viewport.getView() instanceof JTable) {
+                return (JTable) viewport.getView();
+            }
+        }
+        return null;
+    }
+
     private void btn_plotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_plotActionPerformed
         if (isDataSelectedFromTable()) {
             float[][] f = getSelectedCells();
             CMatrix.getInstance(f).plot();
-        } else{
+        } else {
             float[][] f = getSelectedCells();
-            if (f.length==1 && f[0].length==1) {
+            if (f.length == 1 && f[0].length == 1) {
                 return;
             }
             if (data2D.length > 100 || data2D[0].length > 100) {
                 if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
                     CMatrix.getInstance(data2D).plot();
                 }
-            }else{
+            } else {
                 CMatrix.getInstance(data2D).plot();
             }
         }
@@ -308,14 +400,14 @@ public class FrameDataGrid extends javax.swing.JFrame {
             CMatrix.getInstance(f).transpose().scatter();
         } else {
             float[][] f = getSelectedCells();
-            if (f.length==1 && f[0].length==1) {
+            if (f.length == 1 && f[0].length == 1) {
                 return;
             }
             if (data2D.length > 100 || data2D[0].length > 100) {
                 if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
                     CMatrix.getInstance(data2D).transpose().scatter();
                 }
-            }else{
+            } else {
                 CMatrix.getInstance(data2D).transpose().scatter();
             }
         }
@@ -327,13 +419,13 @@ public class FrameDataGrid extends javax.swing.JFrame {
             f = getSelectedCells();
         } else {
             f = getSelectedCells();
-            if (f.length==1 && f[0].length==1) {
+            if (f.length == 1 && f[0].length == 1) {
                 return;
             }
             f = tableToArray(getSelectedTable());
         }
         f = FactoryMatrix.transpose(f);
-        setMatrix(f, getSelectedTable());
+        setMatrix(f, getSelectedTable(),isInt);
     }//GEN-LAST:event_btn_transposeActionPerformed
 
     private void btn_from_textActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_from_textActionPerformed
@@ -346,14 +438,14 @@ public class FrameDataGrid extends javax.swing.JFrame {
             CMatrix.getInstance(f).transpose().bar();
         } else {
             float[][] f = getSelectedCells();
-            if (f.length==1 && f[0].length==1) {
+            if (f.length == 1 && f[0].length == 1) {
                 return;
             }
             if (data2D.length > 100 || data2D[0].length > 100) {
                 if (FactoryUtils.confirmMessage("The matrix size is too big to visualize. Would you like to proceed?") == JOptionPane.YES_OPTION) {
                     CMatrix.getInstance(data2D).transpose().bar();
                 }
-            }else{
+            } else {
                 CMatrix.getInstance(data2D).transpose().bar();
             }
         }
@@ -381,9 +473,9 @@ public class FrameDataGrid extends javax.swing.JFrame {
         JTable tbl = getSelectedTable();
         int[] selectedRows = tbl.getSelectedRows();
         int[] selectedColumns = tbl.getSelectedColumns();
-        if ((selectedRows.length == 0 && selectedColumns.length == 0) || (selectedRows.length ==1 && selectedColumns.length ==1)) {
-            return false;        
-        }else{
+        if ((selectedRows.length == 0 && selectedColumns.length == 0) || (selectedRows.length == 1 && selectedColumns.length == 1)) {
+            return false;
+        } else {
             return true;
         }
     }
@@ -399,6 +491,22 @@ public class FrameDataGrid extends javax.swing.JFrame {
             }
         }
         return f;
+    }
+
+    private float[][][] getSelected3DCells() {
+        JTable tblSelected = getSelectedTable();
+        int[] selectedRows = tblSelected.getSelectedRows();
+        int[] selectedColumns = tblSelected.getSelectedColumns();
+        float[][][] ret = new float[4][selectedRows.length][selectedColumns.length];
+        for (int index = 0; index < 4; index++) {
+            JTable tbl = getTable(index);
+            for (int i = 0; i < selectedRows.length; i++) {
+                for (int j = 0; j < selectedColumns.length; j++) {
+                    ret[index][i][j] = Float.parseFloat("" + tbl.getValueAt(selectedRows[i], selectedColumns[j]));
+                }
+            }
+        }
+        return ret;
     }
 
     private String[] getColumnNames(float[][] data) {
@@ -458,5 +566,30 @@ public class FrameDataGrid extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
+
+    private float[][] getSelectedTableData() {
+        JTable tbl = getSelectedTable();
+        float[][] f = new float[data2D.length][data2D[0].length];
+        for (int i = 0; i < f.length; i++) {
+            for (int j = 0; j < f[0].length; j++) {
+                f[i][j] = Float.parseFloat("" + tbl.getValueAt(i, j));
+            }
+        }
+        return f;
+    }
+
+    private float[][][] getTablesData() {
+        float[][][] ret = new float[data3D.length][data3D[0].length][data3D[0][0].length];
+        //ret[0]=FactoryMatrix.values(ret[0].length, ret[0][0].length, 255);
+        for (int index = 0; index < ret.length; index++) {
+            JTable tbl = getTable(index);
+            for (int i = 0; i < ret[0].length; i++) {
+                for (int j = 0; j < ret[0][0].length; j++) {
+                    ret[index][i][j] = Float.parseFloat("" + tbl.getValueAt(i, j));
+                }
+            }
+        }
+        return ret;
+    }
 
 }

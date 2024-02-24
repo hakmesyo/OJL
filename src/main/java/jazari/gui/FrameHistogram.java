@@ -147,7 +147,7 @@ public class FrameHistogram extends javax.swing.JFrame {
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
         CMatrix cm = getHistogramPanel().getMatrix();
-        new FrameDataGrid(cm.toFloatArray2D()).setVisible(true);
+        new FrameDataGrid(cm.toFloatArray2D(),true).setVisible(true);
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed

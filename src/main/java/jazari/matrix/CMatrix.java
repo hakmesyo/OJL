@@ -828,6 +828,18 @@ public final class CMatrix implements Serializable {
     }
 
     /**
+     * generate a matrix with 3D ARGB image Data
+     *
+     * @param d: float array of int
+     * @return CMatrix float type
+     */
+    public static CMatrix getInstance(float[][][] d) {
+        CMatrix cm=new CMatrix();
+        cm.setArray(d);
+        return cm;
+    }
+
+    /**
      * generate a matrix that has d.length of rows and d[0].length of columns
      *
      * @param d: float array of int
@@ -3049,7 +3061,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix showDataGrid() {
-        FrameDataGrid frm = new FrameDataGrid(this.toFloatArray2D());
+        FrameDataGrid frm = new FrameDataGrid(this.toFloatArray2D(),false);
         frm.setVisible(true);
         return this;
     }
@@ -7681,8 +7693,9 @@ public final class CMatrix implements Serializable {
 
     public CMatrix fromARGB(float[][][] argb) {
         BufferedImage img = ImageProcess.pixelsToImageColorArgbFormat(argb);
-        img = ImageProcess.convertToBufferedImageTypes(img, BufferedImage.TYPE_3BYTE_BGR);
-        return new CMatrix(img);
+        this.image = ImageProcess.convertToBufferedImageTypes(img, BufferedImage.TYPE_4BYTE_ABGR);
+        this.array = Nd4j.create(ImageProcess.imageToPixelsFloat(img));
+        return this;//new CMatrix(img);
     }
 
     public CMatrix fromARGB(CMatrix[] cms) {

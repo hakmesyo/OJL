@@ -3339,7 +3339,7 @@ public final class FactoryMatrix implements Serializable {
         float[][] ret = new float[nr][nc];
         for (int i = 0; i < nr; i++) {
             for (int j = 0; j < nc; j++) {
-                ret[i][j] = PerlinNoise.noise(i * scale, j * scale, 1.44f);
+                ret[i][j] = PerlinNoise.noise(d[i][j] * scale, j * scale, 1.44f);
             }
         }
         return ret;

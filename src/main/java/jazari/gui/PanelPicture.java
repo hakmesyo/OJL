@@ -59,7 +59,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private Point p = new Point();
     public boolean isChainProcessing = false;
     private Point mousePos = new Point(0, 0);
-    private CPoint drawableMousePos = new CPoint(0, 0);
+    //private CPoint drawableMousePos = new CPoint(0, 0);
     private boolean isPolygonPressed = false;
     private Point mousePosTopLeft = new Point(0, 0);
     private Point mousePosTopRight = new Point(0, 0);
@@ -70,7 +70,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private BufferedImage currBufferedImage;
     private BufferedImage originalBufferedImage;
     private BufferedImage originalBufferedImageTemp;
-    private TimeWatch watch = TimeWatch.start();
+    //private TimeWatch watch = TimeWatch.start();
     private JRadioButtonMenuItem items[];
     private final JPopupMenu popupMenu = new JPopupMenu();
     private int fromLeft = 10;
@@ -107,7 +107,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private String imagePath = "-1";
     private String imageFolder;
     private String fileName;
-    private float[][] imgData;
+    public float[][] imgData;
     private FrameImageHistogram histFrame = null;
     private final int panWidth = 50;
     private boolean isRedChannel = false;
@@ -138,7 +138,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private Point referenceMousePositionForImageMovement;
     private Point currentMousePositionForImageMovement;
     private int defaultStrokeWidth = 2;
-    private int indexOfCurrentImageFile = 0;
+    //private int indexOfCurrentImageFile = 0;
     private Color colorDashedLine = new Color(255, 255, 0);
     private Point lastPolygonPoint = new Point(0, 0);
     private Polygon polygon = new Polygon();
@@ -162,9 +162,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private Point relativePolygonDragPosFromTop = new Point();
     private int img_width;
     private int img_height;
-    private AffineTransform afft = new AffineTransform();
-    private AffineTransform temp_afft = new AffineTransform();
-    private AffineTransform inverseScale = new AffineTransform();
+    //private AffineTransform afft = new AffineTransform();
+    //private AffineTransform temp_afft = new AffineTransform();
+    //private AffineTransform inverseScale = new AffineTransform();
     private float zoom_factor = 1;
     public float original_zoom_factor = 1;
     public Rectangle selectionRect;
@@ -173,6 +173,14 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private Graphics2D gr2d;
     private int incrMouseX;
     private int incrMouseY;
+    private double scale = 1.0;
+    private Point zoomPoint = new Point(0, 0);
+
+    public PanelPicture() {
+        this.frame = new FrameImage();
+        initialize();
+        this.addMouseWheelListener(this);
+    }
 
     /**
      * There exists two constructors
@@ -186,7 +194,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     public PanelPicture(JFrame frame) {
-        this.frame = (FrameImage) frame;
+        if (frame instanceof FrameImage) {
+            this.frame = (FrameImage) frame;
+        }
         initialize();
         this.addMouseWheelListener(this);
     }
@@ -1021,6 +1031,18 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         );
     }
 
+    public void setMatrixData(float[][] data) {
+        currBufferedImage = ImageProcess.pixelsToImageGray(data);
+        imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
+        repaint();
+    }
+    
+    public void setMatrixData(float[][][] data) {
+        currBufferedImage = ImageProcess.pixelsToImageColorArgbFormat(data);
+        imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
+        repaint();
+    }
+
     private void removePointFromPolygon(Polygon poly, int index) {
         List<Integer> xList = new ArrayList();
         List<Integer> yList = new ArrayList();
@@ -1052,6 +1074,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         for (int i = 0; i < n + 1; i++) {
             poly.addPoint(xList.get(i), yList.get(i));
         }
+    }
+    
+    public Point getRelativeSelectedRectangleTopLeft(){
+        return new Point(selectionRect.x-fromLeft,selectionRect.y-fromTop);
     }
 
     private int isClickedOnPolygonEdge(Polygon poly, Point p) {

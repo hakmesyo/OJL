@@ -43,6 +43,7 @@ public class FrameImage extends javax.swing.JFrame {
     public String imagePath;
     public String imageFolderPath;
     public String titleImageInfo;
+    public CMatrix cm;
 
     /**
      * Creates new form FrameImage
@@ -378,13 +379,19 @@ public class FrameImage extends javax.swing.JFrame {
         } else {
             img = getPicturePanel().selectionRectImage;
         }
-        CMatrix cm = CMatrix.getInstance(img);
+        if (cm==null) {
+            cm=CMatrix.getInstance(img);
+        }else{
+            cm=cm.setImage(img);
+        }        
         if (img.getType() == BufferedImage.TYPE_BYTE_GRAY) {
-            frm = new FrameDataGrid(cm.toFloatArray2D());
+            frm = new FrameDataGrid(cm.toFloatArray2D(),true);            
         } else {
             frm = new FrameDataGrid(cm.getARGB());
         }
+        frm.frameImage=this;
         frm.setVisible(true);
+        
         //frm.setAlwaysOnTop(true);
         //getPicturePanel().requestFocus();
     }//GEN-LAST:event_btn_dataGridActionPerformed

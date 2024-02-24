@@ -21,7 +21,50 @@ public class Sil {
     private static INDArray array;
 
     public static void main(String[] args) {
-
+        CMatrix cm1 = CMatrix.getInstance()
+                .range(0,500)
+                .perlinNoise(0.01f)
+                ;
+        CMatrix cm2 = CMatrix.getInstance()
+                .range(-250,250)
+                .perlinNoise(0.01f)
+                ;
+        CMatrix cm3 = CMatrix.getInstance()
+                .range(-500,0)
+                .perlinNoise(0.01f)
+                ;
+        CMatrix cm = cm1.cat(1, cm2).cat(1, cm3).transpose().plot();
+        
+//        float[] ses=CMatrix.getInstance()
+//                .range(0,500)
+//                //.range(-250,250)
+//                //.range(-500,0)
+//                .perlinNoise(0.01f)
+//                //.println()
+//                .transpose()
+//                .plot()
+//                .toFloatArray1D()
+//                
+//                ;
+        
+        
+        
+//        CMatrix cmx = CMatrix.getInstance()
+//                .range(0, 255)
+//                .reshape(1,255)
+//                .println()
+////                .imread("images/bf.jpg")
+////                //.println()
+////                .printlnFull()
+////                //.imshow()
+//                ;
+//        float[] f=cmx.toFloatArray1D();
+//        for (int i = 0; i < 10; i++) {
+//            f[i]+=3*i;
+//            System.out.println("f["+i+"] = " + f[i]);
+//        }
+//        cmx.setArray(f).transpose().println();
+ 
 //        int n=10000;
 //        long t1=FactoryUtils.tic();
 //        float[][] d=new float[n][n];

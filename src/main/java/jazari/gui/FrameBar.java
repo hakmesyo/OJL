@@ -304,7 +304,7 @@ public class FrameBar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
-        new FrameDataGrid(data).setVisible(true);
+        new FrameDataGrid(data,false).setVisible(true);
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed

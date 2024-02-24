@@ -349,7 +349,7 @@ public class FramePlot extends javax.swing.JFrame {
 
     private void btn_dataGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataGridActionPerformed
         //CMatrix cm = getPlotPanel().getMatrix();
-        new FrameDataGrid(data).setVisible(true);
+        new FrameDataGrid(data,false).setVisible(true);
     }//GEN-LAST:event_btn_dataGridActionPerformed
 
     private void btn_scatterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_scatterActionPerformed
