@@ -24,6 +24,7 @@ public class Sil {
         CMatrix cm1 = CMatrix.getInstance()
                 .range(0,500)
                 .perlinNoise(0.01f)
+                .timesScalar(30.14f)
                 ;
         CMatrix cm2 = CMatrix.getInstance()
                 .range(-250,250)

@@ -34,6 +34,7 @@ import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_INT_BGR;
@@ -8473,6 +8474,21 @@ public final class FactoryUtils {
         } else {
             ret = 0;
         }
+        return ret;
+    }
+    
+    /**
+     * convert gps coordinate to decimal (double)
+     * @param longt :  37°57'43.60"K --> 37:57:43.60:N 
+     * @param lat   :  41°51'4.61"D  --> 41:51:4.61:E
+     * @return
+     */
+    public static Point2D.Double GpsToDecimalCoordinate(String longt,String lat){
+        Point2D.Double ret=new Point2D.Double();
+        String[] x=longt.split(":");
+        ret.x=Double.parseDouble(x[0])+Double.parseDouble(x[1])/60.0+Double.parseDouble(x[2])/3600.0;
+        String[] y=lat.split(":");
+        ret.y=Double.parseDouble(y[0])+Double.parseDouble(y[1])/60.0+Double.parseDouble(y[2])/3600.0;
         return ret;
     }
 
