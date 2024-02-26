@@ -8476,19 +8476,26 @@ public final class FactoryUtils {
         }
         return ret;
     }
-    
+
     /**
      * convert gps coordinate to decimal (double)
-     * @param longt :  37°57'43.60"K --> 37:57:43.60:N 
-     * @param lat   :  41°51'4.61"D  --> 41:51:4.61:E
+     *
+     * @param longt : 37°57'43.60"K --> 37:57:43.60:N
+     * @param lat : 41°51'4.61"D --> 41:51:4.61:E
      * @return
      */
-    public static Point2D.Double GpsToDecimalCoordinate(String longt,String lat){
-        Point2D.Double ret=new Point2D.Double();
-        String[] x=longt.split(":");
-        ret.x=Double.parseDouble(x[0])+Double.parseDouble(x[1])/60.0+Double.parseDouble(x[2])/3600.0;
-        String[] y=lat.split(":");
-        ret.y=Double.parseDouble(y[0])+Double.parseDouble(y[1])/60.0+Double.parseDouble(y[2])/3600.0;
+    public static Point2D.Double GpsToDecimalCoordinate(String longt, String lat) {
+        Point2D.Double ret = new Point2D.Double();
+        String[] x = longt.split(":");
+        ret.x = Double.parseDouble(x[0]) + Double.parseDouble(x[1]) / 60.0 + Double.parseDouble(x[2]) / 3600.0;
+        if (x[3].equals("S")) {
+            ret.x=-ret.x;
+        }
+        String[] y = lat.split(":");
+        ret.y = Double.parseDouble(y[0]) + Double.parseDouble(y[1]) / 60.0 + Double.parseDouble(y[2]) / 3600.0;
+        if (y[3].equals("W")) {
+            ret.y=-ret.y;
+        }
         return ret;
     }
 
