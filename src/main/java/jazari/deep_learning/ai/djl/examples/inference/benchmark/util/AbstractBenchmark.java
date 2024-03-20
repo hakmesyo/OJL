@@ -39,7 +39,10 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Abstract class that encapsulate command line options for example project. */
+/**
+ *Abstract class that encapsulate command line options for example project.
+ * @author cezerilab
+ */
 public abstract class AbstractBenchmark {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractBenchmark.class);

@@ -39,7 +39,7 @@ import java.io.InputStream;
    decomposition classes.  These decompositions are accessed by the Matrix
    class to compute solutions of simultaneous linear equations, determinants,
    inverses and other matrix functions.  The five decompositions are:
-<P><UL>
+<UL>
    <LI>Cholesky Decomposition of symmetric, positive definite matrices.
    <LI>LU Decomposition of rectangular matrices.
    <LI>QR Decomposition of rectangular matrices.
@@ -49,7 +49,7 @@ import java.io.InputStream;
 <DL>
 <DT><B>Example of use:</B></DT>
 <DD>Solve a linear system A x = b and compute the residual norm, ||b - A x||.
-<P><PRE>
+<PRE>
       double[][] vals = {{1.,2.,3},{4.,5.,6.},{7.,8.,10.}};
       Matrix A = new Matrix(vals);
       Matrix b = Matrix.random(3,1);

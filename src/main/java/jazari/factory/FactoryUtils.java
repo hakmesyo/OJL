@@ -202,8 +202,6 @@ public final class FactoryUtils {
      *
      * @param fileName
      * @return
-     * @throws java.io.IOException
-     * @throws java.lang.ClassNotFoundException
      */
     public static Object deserialize(String fileName) {
         FileInputStream fis = null;
@@ -6702,13 +6700,13 @@ public final class FactoryUtils {
      * try to divide image into 2D cropped images and save them on target folder
      * with specified image format
      *
+     * @param img
      * @param nr : number of rows
      * @param nc : number of columns
      * @param destinationFolder : cropped images stored in that folder
      * @param fileCaption : cropped image prefix name
      * @param imageExtension : cropped images extension ie "jpg", "png"
      * @param isShow : boolean isVisibile
-     * @return void
      */
     public static void cropImageArray2D(BufferedImage img, int nr, int nc, String destinationFolder, String fileCaption, String imageExtension, boolean isShow) {
         int w = img.getWidth() / nc;
@@ -6731,13 +6729,13 @@ public final class FactoryUtils {
      * try to divide image into 2D cropped images and save them on target folder
      * with specified image format
      *
-     * @param nr : number of rows
-     * @param nc : number of columns
+     * @param img
+     * @param width
      * @param destinationFolder : cropped images stored in that folder
+     * @param height
      * @param fileCaption : cropped image prefix name
      * @param imageExtension : cropped images extension ie "jpg", "png"
      * @param isShow : boolean isVisibile
-     * @return void
      */
     public static void cropImageArray2DByCropSize(BufferedImage img, int width, int height, String destinationFolder, String fileCaption, String imageExtension, boolean isShow) {
         int nr = img.getWidth() / width;
@@ -7955,7 +7953,8 @@ public final class FactoryUtils {
 
     /**
      *
-     * @param srcPath
+     * @param srcDirectory
+     * @param labels
      * @return
      */
     public static String convertPascalVoc2DJLFormat(String srcDirectory, Map<String, Integer> labels) {
@@ -8142,8 +8141,10 @@ public final class FactoryUtils {
      * type (detection or segmentation)
      *
      * @param mainFolderPath
-     * @param type : detection or segmentation
+     * @param subfolderName
      * @param classIndex : String array of class_index:class_name pairs
+     * @param detectionType
+     * @return 
      */
     public static String convertPascalVoc2YoloFormatBatch(String mainFolderPath, String subfolderName, String detectionType, String[] classIndex) {
         File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "xml");
@@ -8457,6 +8458,11 @@ public final class FactoryUtils {
         return PerlinNoise.noise(value * scale, value * scale, 1.44f);
     }
 
+    /**
+     *
+     * @param val
+     * @return
+     */
     public static int getDigitSensitivity(float val) {
         int ret = 0;
         if (val < 0.001) {
@@ -8479,12 +8485,13 @@ public final class FactoryUtils {
 
     /**
      * convert gps coordinate to decimal (double)
+     * <a href="https://coordinates-converter.com/en/decimal/37.965177,41.851559?karte=OpenStreetMap&zoom=16"> link </a>
      *
-     * @param longt : 37°57'43.60"K --> 37:57:43.60:N
-     * @param lat : 41°51'4.61"D --> 41:51:4.61:E
+     * @param lat   : (Y axis, Parallel) 41°51'4.61"D --> 41:51:4.61:E
+     * @param longt : (X axis, Meridian) 37°57'43.60"K --> 37:57:43.60:N
      * @return
      */
-    public static Point2D.Double GpsToDecimalCoordinate(String longt, String lat) {
+    public static Point2D.Double gpsToDecimalCoordinate(String lat, String longt) {
         Point2D.Double ret = new Point2D.Double();
         String[] x = longt.split(":");
         ret.x = Double.parseDouble(x[0]) + Double.parseDouble(x[1]) / 60.0 + Double.parseDouble(x[2]) / 3600.0;
@@ -8497,6 +8504,31 @@ public final class FactoryUtils {
             ret.y=-ret.y;
         }
         return ret;
+    }
+    
+    /**
+     *
+     * @param from
+     * @param to
+     * @return
+     */
+    public static double getDirectionFromGPSPoints(Point2D.Double from, Point2D.Double to){
+        double dLon = Math.toRadians(to.x - from.x);
+
+        double lat1 = Math.toRadians(from.y);
+        double lat2 = Math.toRadians(to.y);
+        double lon1 = Math.toRadians(from.x);
+
+        double y = Math.sin(dLon) * Math.cos(lat2);
+        double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+        double bearing = Math.toDegrees(Math.atan2(y, x));
+
+        // Normalize the bearing to range from 0 to 360 degrees
+        bearing = (bearing + 360) % 360;
+
+        return bearing;
+        
     }
 
 }

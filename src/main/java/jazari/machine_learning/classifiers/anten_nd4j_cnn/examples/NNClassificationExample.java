@@ -16,10 +16,12 @@ public class NNClassificationExample {
     /**
      * Performs classification of Handwritten digits,
      * using a subset (1000 rows) from the Kaggle Digits competition.
-     * <br></br>
+     * <br>
      * Uses file /example_data/Kaggle_Digits_1000.csv
      *
-     * @see <a href="http://www.kaggle.com/c/digit-recognizer">http://www.kaggle.com/c/digit-recognizer</a></a>
+     * <a href="http://www.kaggle.com/c/digit-recognizer">http://www.kaggle.com/c/digit-recognizer</a>
+     * @param useConvolution
+     * @throws java.lang.Exception
      */
     public static void runKaggleDigitsClassification(boolean useConvolution) throws Exception {
         if (useConvolution) {
@@ -78,14 +80,15 @@ public class NNClassificationExample {
     /**
      * Performs classification of titanic survivors/casualties,
      * using a cleaned dataset from the Kaggle Digits competition.
-     * <br></br>
+     * <br>
      * Dataset have been cleaned by removing some string attributes,
      * converting some string attributes to nominal (replacing string values with numeric indexes)
      * and by filling in missing values with mean/mode values.
-     * <br></br>
+     * <br>
      * Uses file /example_data/Kaggle_Titanic_cleaned.csv
      *
-     * @see <a href="http://www.kaggle.com/c/titanic-gettingStarted">http://www.kaggle.com/c/titanic-gettingStarted</a></a>
+     * <a href="http://www.kaggle.com/c/titanic-gettingStarted">http://www.kaggle.com/c/titanic-gettingStarted</a>
+     * @throws java.lang.Exception
      */
     public static void runKaggleTitanicClassification() throws Exception {
         System.out.println("Running classification on Kaggle Titanic dataset...\n");

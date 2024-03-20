@@ -26,7 +26,7 @@ import java.nio.charset.Charset;
  * So, unpickling an arbitrary pickle, using the Python's stdlib pickle module
  * can cause arbitrary code execution.
  * 
- * Pickle format has evolved with Python, later protocols add opcodes & types.
+ * Pickle format has evolved with Python, later protocols add opcodes types.
  * Later Python releases can pickle to or unpickle from any earlier protocol.
  * 
  * * Protocol 0: ASCII clean, no explicit version, fields are '\n' terminated.
@@ -778,11 +778,11 @@ public class PythonPickle extends KaitaiStruct {
      * Length prefixed string, between 0 and 2**31-1 bytes long. Encoding is
      * unspecified.
      * 
-     * Although the len field is signed, any length < 0 will raise an exception
+     * Although the len field is signed, any length 0 will raise an exception
      * during unpickling.
      * 
      * See the documentation for `string1` for further detail about encodings.
-     * @see <a href="https://github.com/python/cpython/blob/bb8071a4/Lib/pickle.py#L486-L495">Source</a>
+     * https://github.com/python/cpython/blob/bb8071a4/Lib/pickle.py#L486-L495
      */
     public static class String4 extends KaitaiStruct {
         public static String4 fromFile(String fileName) throws IOException {

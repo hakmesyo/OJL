@@ -11,9 +11,4 @@
  * and limitations under the License.
  */
 
-/**
- * Contains inference benchmarking examples and code.
- *
- * <p>See the inference benchmarking utilities in {@link ai.djl.examples.inference.benchmark.util}.
- */
 package jazari.deep_learning.ai.djl.examples.inference.benchmark;

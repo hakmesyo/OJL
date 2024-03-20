@@ -1277,7 +1277,7 @@ public final class CMatrix implements Serializable {
      * set the array of current matrix note that clone is not calling so,
      * current matrix structure is changed
      *
-     * @param a : float[]
+     * @param d: float array or ...
      * @return CMatrix
      */
     public CMatrix setArray(float... d) {
@@ -1289,7 +1289,7 @@ public final class CMatrix implements Serializable {
      * set the array of current matrix note that clone is not calling so,
      * current matrix structure is changed
      *
-     * @param a : float[]
+     * @param lst
      * @return CMatrix
      */
     public CMatrix setArray(List<Float> lst) {
@@ -1326,7 +1326,7 @@ public final class CMatrix implements Serializable {
      * set the array of current matrix note that clone is not calling anymore,
      * current matrix structure will be changed
      *
-     * @param a : int[]
+     * @param dd: int array
      * @return CMatrix
      */
     public CMatrix setArray(int... dd) {
@@ -1341,11 +1341,11 @@ public final class CMatrix implements Serializable {
      * set the array of current matrix note that clone is not calling anymore,
      * current matrix structure will be changed
      *
-     * @param a : int[][]
+     * @param d: 2d int array
      * @return CMatrix
      */
     public CMatrix setArray(int[][] d) {
-        this.array = Nd4j.create(d);;
+        this.array = Nd4j.create(d);
         return this;
     }
 
@@ -1353,7 +1353,7 @@ public final class CMatrix implements Serializable {
      * set the array of current matrix note that clone is not calling anymore,
      * current matrix structure will be changed
      *
-     * @param array : float[][]
+     * @param d:2d float array
      * @return CMatrix
      */
     public CMatrix setArray(float[][] d) {
@@ -1881,8 +1881,8 @@ public final class CMatrix implements Serializable {
      * series of trends in any assets which provides us to inspect time series
      * signals in 1D
      *
-     * @param r
-     * @param c
+     * @param nr
+     * @param nc
      * @param min
      * @param max
      * @return
@@ -1922,8 +1922,8 @@ public final class CMatrix implements Serializable {
     /**
      * Generates rxc matrix with normal distribution
      *
-     * @param r
-     * @param c
+     * @param nr
+     * @param nc
      * @return
      */
     public CMatrix randn(int nr, int nc) {
@@ -1934,8 +1934,8 @@ public final class CMatrix implements Serializable {
     /**
      * Generates rxc matrix with normal distribution within max upper bound
      *
-     * @param r
-     * @param c
+     * @param nr
+     * @param nc
      * @param max
      * @return
      */
@@ -1947,8 +1947,8 @@ public final class CMatrix implements Serializable {
     /**
      * Generates rxc matrix with normal distribution within [min...max] bounds
      *
-     * @param r
-     * @param c
+     * @param nr
+     * @param nc
      * @param min
      * @param max
      * @return
@@ -1962,8 +1962,8 @@ public final class CMatrix implements Serializable {
      * With a given mean and variance generates rxc matrix with normal
      * distribution return variance*x+mean
      *
-     * @param r
-     * @param c
+     * @param nr
+     * @param nc
      * @param mean
      * @param var
      * @return
@@ -2005,6 +2005,7 @@ public final class CMatrix implements Serializable {
      * Another usage is an overloaded scatter method which takes two vector as
      * an input parameter or two CMatrix objects.
      *
+     * @param attr
      * @return CMatrix
      */
     public CMatrix scatterBlob(TFigureAttribute attr) {
@@ -2018,6 +2019,8 @@ public final class CMatrix implements Serializable {
      * Another usage is an overloaded scatter method which takes two vector as
      * an input parameter or two CMatrix objects.
      *
+     * @param columns
+     * @param attr
      * @return CMatrix
      */
     public CMatrix scatterBlob(String columns, TFigureAttribute attr) {
@@ -2033,6 +2036,8 @@ public final class CMatrix implements Serializable {
      *
      * Notification: two vectors should be the same size
      *
+     * @param x
+     * @param y
      * @return CMatrix
      */
     public CMatrix scatter(float[] x, float[] y) {
@@ -3833,7 +3838,6 @@ public final class CMatrix implements Serializable {
      * get the indexes of maximum values along dim if dim=0 means column-wised
      * if dim=1 means row-wised
      *
-     * @param dim : either 0 (column) or 1 (row)
      * @return float[]
      */
     public float argMin() {
@@ -4321,8 +4325,7 @@ public final class CMatrix implements Serializable {
      * based on the specified matrix operator logical conditions returns cloned
      * matrix indeed found indexes are provided in int[] d parameter object
      *
-     * @param op:logical criteria
-     * @param x :Target value or matching constant number
+     * @param p
      * @return
      */
     public CMatrix findItemsByIndex(int... p) {
@@ -4334,8 +4337,7 @@ public final class CMatrix implements Serializable {
      * based on the specified matrix operator logical conditions returns cloned
      * matrix indeed found indexes are provided in int[] d parameter object
      *
-     * @param op:logical criteria
-     * @param x :Target value or matching constant number
+     * @param cm
      * @return
      */
     public CMatrix findItemsByIndex(CMatrix cm) {
@@ -4347,8 +4349,7 @@ public final class CMatrix implements Serializable {
      * based on the specified matrix operator logical conditions returns cloned
      * matrix indeed found indexes are provided in int[] d parameter object
      *
-     * @param op:logical criteria
-     * @param x :Target value or matching constant number
+     * @param cm
      * @return
      */
     public CMatrix findValuesByIndex(CMatrix cm) {
@@ -4370,6 +4371,8 @@ public final class CMatrix implements Serializable {
      *
      * @param op:logical criteria
      * @param x :Target value or matching constant number
+     * @param p1
+     * @param p2
      * @return
      */
     public CMatrix findIndex(TMatrixOperator op, float x, String p1, String p2) {
@@ -4386,6 +4389,8 @@ public final class CMatrix implements Serializable {
      * are provided in int[] d parameter object
      *
      * @param op:logical criteria
+     * @param t1
+     * @param t2
      * @return
      */
     public CMatrix findIndex(TMatrixOperator op, float t1, float t2) {
@@ -5816,7 +5821,6 @@ public final class CMatrix implements Serializable {
     /**
      * apply mean filter
      *
-     * @param window_size
      * @return
      */
     public CMatrix filterMotionBlur() {
@@ -6199,7 +6203,7 @@ public final class CMatrix implements Serializable {
      * resize image keeping aspect ratio but for the desired square size which
      * is suitable for example mobilenet 224x224 input images
      *
-     * @param ratio
+     * @param size
      * @return
      */
     public CMatrix imresizeWithAspectRatio(int size) {
@@ -6244,26 +6248,12 @@ public final class CMatrix implements Serializable {
         return overlay(cm, cp);
     }
 
-    /**
-     * Matlab compatible command:Resize the matrix to desired width and height
-     * values
-     *
-     * @param w:width
-     * @param h:height
-     * @return CMatrix //
-     */
-//    public CMatrix resize(int w, int h) {
-//        return imresize(w, h);
-//    }
     public CMatrix resize(int n) {
         float[][] d = FactoryMatrix.resize(array.toFloatMatrix(), n);
         setArray(d);
         return this;
     }
 
-//    public CMatrix resize(CSize c) {
-//        return imresize(c.width, c.height);
-//    }
     /**
      * Matlab compatible command: rotate image with desired theta angle
      *
@@ -8887,7 +8877,6 @@ public final class CMatrix implements Serializable {
     /**
      * is current matrix is Vector or not
      *
-     * @param cm
      * @return
      */
     public boolean isVector() {
@@ -9373,7 +9362,11 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * Image Data Augmentation For Deep & Machine Learning
+     * Image Data Augmentation For Deep Learning and Machine Learning
+     * @param n
+     * @param imgs
+     * @param opt
+     * @return 
      */
     public List<BufferedImage> imDataAug(int n, List<BufferedImage> imgs, DataAugmentationOpt opt) {
         List<BufferedImage> ret = new ArrayList();

@@ -34,7 +34,7 @@ public class FrameCanvas extends javax.swing.JFrame {
     /**
      * Draws A Picture Frame
      *
-     * @param img : image to be drawn
+     * @param cm
      * @param title : Caption of the frame
      */
     public FrameCanvas(CMatrix cm, String title) {

@@ -32,7 +32,7 @@ import java.net.URL;
  *
  * Sample Usage with an instantiation DATAEXAMPLE(baseurl,"DataExamples.zip","data-dir",md5,size):
  *
- * DATAEXAMPLE.Download() & DATAEXAMPLE.Download(true)
+ * 
  * Will download DataExamples.zip from baseurl/DataExamples.zip to a temp directory,
  * Unzip it to ~/dl4j-example-data/data-dir
  * Return the string "~/dl4j-example-data/data-dir/DataExamples"

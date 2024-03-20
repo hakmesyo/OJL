@@ -27,8 +27,6 @@ package jazari.utils;
  *
  * $Id: JarClassLoader.java,v 1.39 2016/04/24 17:25:30 mg Exp $
  */
-import java.applet.AppletContext;
-import java.applet.AppletStub;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -66,7 +64,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import javax.swing.JApplet;
+//import javax.swing.JApplet;
 
 /**
  * This class loader loads classes, native libraries and resources from
@@ -247,7 +245,7 @@ public class JarClassLoader extends ClassLoader {
     private LogLevel logLevel;
     private Set<LogArea> hsLogArea;
     private boolean bLogConsole;
-    private JApplet applet;
+//    private JApplet applet;
     
     /**
      * Default constructor.
@@ -815,39 +813,39 @@ public class JarClassLoader extends ClassLoader {
      * @throws Throwable wrapper for many exceptions thrown while applet 
      * instantiation and calling init() method.
      */
-    public void initApplet(String sClass, final JApplet appletParent) throws Throwable {
-        Class<?> clazz = loadClass(sClass);
-        logInfo(LogArea.CONFIG, "initApplet() --> %s.init(); Loader: %s", sClass, clazz.getClassLoader());
-        applet = (JApplet)clazz.newInstance();
-        applet.setStub(new AppletStub() {
-            @Override
-            public boolean isActive() {
-                return appletParent.isActive();
-            }
-            @Override
-            public URL getDocumentBase() {
-                return appletParent.getDocumentBase();
-            }
-            @Override
-            public URL getCodeBase() {
-                return appletParent.getCodeBase();
-            }
-            @Override
-            public String getParameter(String name) {
-                return appletParent.getParameter(name);
-            }
-            @Override
-            public AppletContext getAppletContext() {
-                return appletParent.getAppletContext();
-            }
-            @Override
-            public void appletResize(int width, int height) {
-                appletParent.resize(width, height);
-            }
-        });
-        applet.init();
-        appletParent.setContentPane(applet.getContentPane());
-    } // initApplet()
+//    public void initApplet(String sClass, final JApplet appletParent) throws Throwable {
+//        Class<?> clazz = loadClass(sClass);
+//        logInfo(LogArea.CONFIG, "initApplet() --> %s.init(); Loader: %s", sClass, clazz.getClassLoader());
+//        applet = (JApplet)clazz.newInstance();
+//        applet.setStub(new AppletStub() {
+//            @Override
+//            public boolean isActive() {
+//                return appletParent.isActive();
+//            }
+//            @Override
+//            public URL getDocumentBase() {
+//                return appletParent.getDocumentBase();
+//            }
+//            @Override
+//            public URL getCodeBase() {
+//                return appletParent.getCodeBase();
+//            }
+//            @Override
+//            public String getParameter(String name) {
+//                return appletParent.getParameter(name);
+//            }
+//            @Override
+//            public AppletContext getAppletContext() {
+//                return appletParent.getAppletContext();
+//            }
+//            @Override
+//            public void appletResize(int width, int height) {
+//                appletParent.resize(width, height);
+//            }
+//        });
+//        applet.init();
+//        appletParent.setContentPane(applet.getContentPane());
+//    } // initApplet()
     
     /**
      * Call this method to start the applet from your launcher class 
@@ -855,8 +853,8 @@ public class JarClassLoader extends ClassLoader {
      */
     public void startApplet() {
         checkApplet();
-        logInfo(LogArea.CONFIG, "startApplet() --> %s.start()", applet.getClass().getName());
-        applet.start();
+        //logInfo(LogArea.CONFIG, "startApplet() --> %s.start()", applet.getClass().getName());
+        //applet.start();
     }
     
     /**
@@ -865,8 +863,8 @@ public class JarClassLoader extends ClassLoader {
      */
     public void stopApplet() {
         checkApplet();
-        logInfo(LogArea.CONFIG, "stopApplet() --> %s.stop()", applet.getClass().getName());
-        applet.stop();
+        //logInfo(LogArea.CONFIG, "stopApplet() --> %s.stop()", applet.getClass().getName());
+        //applet.stop();
     }
     
     /**
@@ -875,8 +873,8 @@ public class JarClassLoader extends ClassLoader {
      */
     public void destroyApplet() {
         checkApplet();
-        logInfo(LogArea.CONFIG, "destroyApplet() --> %s.destroy()", applet.getClass().getName());
-        applet.destroy();
+        //logInfo(LogArea.CONFIG, "destroyApplet() --> %s.destroy()", applet.getClass().getName());
+        //applet.destroy();
     }
     
     //--------------------------------separator--------------------------------
@@ -999,7 +997,7 @@ public class JarClassLoader extends ClassLoader {
     /**
      * @see java.lang.ClassLoader#findResources(java.lang.String)
      *
-     * @return  An enumeration of {@link java.net.URL <tt>URL</tt>} objects for
+     * @return  An enumeration of {@link java.net.URL URL} objects for
      *          the resources
      */
     @Override
@@ -1107,10 +1105,10 @@ public class JarClassLoader extends ClassLoader {
     }
 
     private void checkApplet() {
-        if (applet == null) {
-            throw new IllegalStateException("Applet is not inited. " +
-            		"Please call JarClassLoader.initApplet() first.");
-        }
+//        if (applet == null) {
+//            throw new IllegalStateException("Applet is not inited. " +
+//            		"Please call JarClassLoader.initApplet() first.");
+//        }
     }
     private void logDebug(LogArea area, String sMsg, Object ... obj) {
         log(LogLevel.DEBUG, area, sMsg, obj);

@@ -15,8 +15,9 @@ public class NNRegressionExample {
 
     /**
      * Performs regression on a dataset of car prices for cars with different features.
-     * <br></br>
+     * <br>
      * Uses file /example_data/Car_Prices.csv
+     * @throws java.lang.Exception
      */
     public static void runCarPricesRegression() throws Exception {
         System.out.println("Running regression on Car Prices dataset...\n");

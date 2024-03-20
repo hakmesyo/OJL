@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * @author Clint Mullins
- * @referenced Javascript version of JPS by aniero / https://github.com/aniero
+ * Javascript version of JPS by aniero / https://github.com/aniero
  */
 public class JPS {
 
@@ -244,7 +244,7 @@ public class JPS {
      * relation to the given node.
      *
      * @param node (Node) node which has a parent (not the start node)
-     * @return (ArrayList<Node>) list of nodes that will be jumped
+     * @return (ArrayList(Node)) list of nodes that will be jumped
      */
     public int[][] getNeighborsPrune(Node node) {
         Node parent = node.parent;    //the parent node is retrieved for x,y values
