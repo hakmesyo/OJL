@@ -29,7 +29,7 @@ public class Jazo extends javax.swing.JFrame {
     public Jazo() {
         initComponents();
         btn_open.setTransferHandler(new ImageTransferHandler());
-        this.setTitle("Jazari Annotation Tool  [07.02.2024]");
+        this.setTitle("Jazari Annotation Tool  [21.03.2024]");
         setLocationRelativeTo(null);
     }
 

@@ -4,10 +4,7 @@ import java.awt.BasicStroke;
 import jazari.image_processing.ImageProcess;
 import jazari.types.TStatistics;
 import jazari.matrix.CMatrix;
-import jazari.matrix.CPoint;
-import jazari.matrix.CRectangle;
 import jazari.factory.FactoryUtils;
-import jazari.utils.TimeWatch;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -27,7 +24,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -41,11 +37,11 @@ import java.util.Map;
 import javax.swing.ButtonGroup;
 import javax.swing.JColorChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
+import jazari.interfaces.call_back_interface.CallBackTrigger;
 import jazari.utils.MyDialog;
 import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
 import jazari.utils.pascalvoc.PascalVocAttribute;
@@ -89,6 +85,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private boolean isMouseDraggedForImageMovement;
     public boolean activateBoundingBox = false;
     public boolean activatePolygon = false;
+    public boolean activateLaneDetection = false;
     private boolean activateGreenChannel = false;
     private boolean activateBlueChannel = false;
     private boolean activateRGB = false;
@@ -148,7 +145,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private boolean isFirstClickOutside;
     boolean activateLabelVisibility = false;
     private Rectangle currentBoundingBox;
-    public boolean activateLaneDetection = false;
     private int flag_once = 0;
     private int prev_width = 500;
     private int prev_height = 500;
@@ -162,9 +158,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private Point relativePolygonDragPosFromTop = new Point();
     private int img_width;
     private int img_height;
-    //private AffineTransform afft = new AffineTransform();
-    //private AffineTransform temp_afft = new AffineTransform();
-    //private AffineTransform inverseScale = new AffineTransform();
     private float zoom_factor = 1;
     public float original_zoom_factor = 1;
     public Rectangle selectionRect;
@@ -175,6 +168,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private int incrMouseY;
     private double scale = 1.0;
     private Point zoomPoint = new Point(0, 0);
+    public BufferedImage rawImage;
 
     public PanelPicture() {
         this.frame = new FrameImage();
@@ -239,8 +233,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     String number = name.split("_")[0];
                     i = Integer.parseInt(number);
                 } catch (NumberFormatException e) {
-                    i = 0; // if filename does not match the format
-                    // then default to 0
+                    i = 0; 
                 }
                 return i;
             }
@@ -249,7 +242,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     }
 
-    public BufferedImage rawImage;
 
     public void setImage(BufferedImage image, String imagePath, String caption, boolean isClearBbox) {
         if (setImageCounter++ > 50) {
@@ -259,7 +251,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         this.caption = caption;
         String folderName = FactoryUtils.getFolderPath(imagePath);
         currentFolderName = folderName;
-        if ((activateBoundingBox || activatePolygon) && imagePath != null && !imagePath.isEmpty()) {
+        if ((activateBoundingBox || activatePolygon || activateLaneDetection) && imagePath != null && !imagePath.isEmpty()) {
             String fileName = FactoryUtils.getFileName(imagePath) + ".xml";
             xmlFileName = folderName + "/" + fileName;
             boolean checkXML = new File(folderName, fileName).exists();
@@ -535,8 +527,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Equalize",
             "Smooth",
             "Sharpen",
-            "Crop", //"Generate Segmentation Masks",
-            "Resize Images"
+            "Crop",
+            "Resize Images",
+            "Convert VOC XML to Yolo"
         };
 
         ButtonGroup itemsGroup = new ButtonGroup();
@@ -1036,7 +1029,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
         repaint();
     }
-    
+
     public void setMatrixData(float[][][] data) {
         currBufferedImage = ImageProcess.pixelsToImageColorArgbFormat(data);
         imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
@@ -1075,9 +1068,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             poly.addPoint(xList.get(i), yList.get(i));
         }
     }
-    
-    public Point getRelativeSelectedRectangleTopLeft(){
-        return new Point(selectionRect.x-fromLeft,selectionRect.y-fromTop);
+
+    public Point getRelativeSelectedRectangleTopLeft() {
+        return new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop);
     }
 
     private int isClickedOnPolygonEdge(Polygon poly, Point p) {
@@ -2042,8 +2035,14 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else if (obj.getText().equals("Crop")) {
                     activateCrop = true;
                     cropImage();
-                } else if (obj.getText().equals("Screen Capture")) {
-                    activateScreenCapture = true;
+                } else if (obj.getText().equals("Convert VOC XML to Yolo")) {
+                    String subFolder = FactoryUtils.inputMessage("set subfolder name");
+                    String msg = FactoryUtils.convertPascalVoc2YoloFormatBatch(imageFolder, subFolder, "detection");
+                    FactoryUtils.showMessageTemp("Pascal VOC XMLs converted to Yolo format at "+msg, 3000, new CallBackTrigger() {
+                        @Override
+                        public void trigger() {
+                        }
+                    });
                 } else if (obj.getText().equals("Command Interpreter")) {
                     activateCmd = true;
                     FrameScriptEditor frm = new FrameScriptEditor();

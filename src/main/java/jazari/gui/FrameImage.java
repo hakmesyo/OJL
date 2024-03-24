@@ -543,7 +543,7 @@ public class FrameImage extends javax.swing.JFrame {
     }
 
     public void saveImageAs() {
-        String imagePath = FactoryUtils.saveImageAs(getPicturePanel().getImage(), txt_dpi.getText());
+        imagePath = FactoryUtils.saveImageAs(getPicturePanel().getImage(), txt_dpi.getText());
         if (imagePath != null && !imagePath.isEmpty()) {
             CMatrix cm = CMatrix.getInstance().imread(imagePath);
             loadImage(cm, imagePath, imagePath);

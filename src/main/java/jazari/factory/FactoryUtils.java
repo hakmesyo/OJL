@@ -38,8 +38,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_INT_BGR;
-import static java.awt.image.ImageObserver.ABORT;
-import static java.awt.image.ImageObserver.HEIGHT;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -129,6 +127,7 @@ public final class FactoryUtils {
     public static final AtomicBoolean running = new AtomicBoolean(false);
     public static int nAttempts = 0;
     public static Robot robot;
+    public static String saveImageFolder=FactoryUtils.getDefaultDirectory();
 
     static {
         try {
@@ -1213,11 +1212,21 @@ public final class FactoryUtils {
         return d;
     }
 
+    /**
+     * Open Message Information Dialog Box
+     * @param str:Message to show
+     */
     public static void showMessage(String str) {
         JOptionPane.showMessageDialog(null, str);
 //        System.out.println(str);
     }
 
+    /**
+     * Open Message Information Dialog Box for a specified time
+     * @param str
+     * @param delay : time to wait in ms
+     * @param func
+     */
     public static void showMessageTemp(String str, int delay, CallBackTrigger func) {
         JFrame frame = new JFrame("Custom Message");
         frame.setUndecorated(true);
@@ -6277,8 +6286,10 @@ public final class FactoryUtils {
         int dpi = Integer.parseInt(str_dpi);
         float scale = dpi / 96.0f;
         img = ImageProcess.resizeAspectRatio(img, (int) (img.getWidth() * scale), (int) (img.getHeight() * scale));
-        File file = FactoryUtils.getFileFromChooserSave();
+        File file=FactoryUtils.getFileFromChooserSave(saveImageFolder);
+        //File file = FactoryUtils.getFileFromChooserSave();
         if (file != null) {
+            saveImageFolder=FactoryUtils.getFolderPath(file.getAbsolutePath());
             ImageProcess.saveImage(img, file.getAbsolutePath());
             return file.getAbsolutePath();
         } else {
@@ -6857,6 +6868,12 @@ public final class FactoryUtils {
         return ret;
     }
 
+    /**
+     * 
+     * @param path
+     * @param refList
+     * @return
+     */
     public static String convertPascalVoc2YoloFormatDetectionSingle(String path, String[] refList) {
         AnnotationPascalVOCFormat bbp = deserializePascalVocXML(path);
         int w = bbp.size.width;
@@ -8111,17 +8128,20 @@ public final class FactoryUtils {
 
     /**
      * convert all pascalvoc xml annotation files to yolo txt format based on
-     * type (detection or segmentation)
+     * type (detection or segmentation) You only need to specify mainFolderPath and
+     * subFolderName
      *
      * @param mainFolderPath
-     * @param detectionType : detection or segmentation
+     * @param subFolderName
+     * @param type : "detection" or "segmentation"
+     * @return String mainFolderPath + "/" + subfolderName
      */
-    public static String convertPascalVoc2YoloFormatBatch(String mainFolderPath, String yoloVersion, String detectionType) {
+    public static String convertPascalVoc2YoloFormatBatch(String mainFolderPath, String subFolderName, String type) {
         String[] classIndex = getClassIndexArray(mainFolderPath + "/class_labels.txt");
-        if (detectionType.equals("detection")) {
-            return convertPascalVoc2YoloFormatBatch(mainFolderPath, yoloVersion, detectionType, classIndex);
-        } else if (detectionType.equals("segmentation")) {
-            return convertPascalVoc2YoloFormatBatch(mainFolderPath, yoloVersion, detectionType, classIndex);
+        if (type.equals("detection")) {
+            return convertPascalVoc2YoloFormatBatch(mainFolderPath, subFolderName, type, classIndex);
+        } else if (type.equals("segmentation")) {
+            return convertPascalVoc2YoloFormatBatch(mainFolderPath, subFolderName, type, classIndex);
         } else {
             return null;
         }
@@ -8184,7 +8204,7 @@ public final class FactoryUtils {
             }
         }
         System.out.println("convertPascalVoc2YoloFormatPolygon finished");
-        return mainFolderPath + "/" + subfolderName;
+        return mainFolderPath + "\\" + subfolderName;
     }
 
     /**
