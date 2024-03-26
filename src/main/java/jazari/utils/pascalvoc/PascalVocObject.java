@@ -5,9 +5,6 @@
  */
 package jazari.utils.pascalvoc;
 
-import java.awt.Color;
-import jazari.utils.pascalvoc.PascalVocAttribute;
-import jazari.utils.pascalvoc.PascalVocBoundingBox;
 import java.util.List;
 
 /**

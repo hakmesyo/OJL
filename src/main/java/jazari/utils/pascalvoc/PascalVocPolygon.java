@@ -6,12 +6,8 @@
 package jazari.utils.pascalvoc;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.util.List;
-import java.util.Objects;
-import jazari.factory.FactoryUtils;
 
 /**
  *

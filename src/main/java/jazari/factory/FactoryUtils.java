@@ -93,6 +93,7 @@ import jazari.gui.FrameImage;
 import jazari.image_processing.ImageProcess;
 import jazari.interfaces.call_back_interface.CallBackTrigger;
 import jazari.matrix.CRectangle;
+import jazari.types.TGapIndex;
 import jazari.utils.CopyImageToClipboard;
 import jazari.utils.PerlinNoise;
 import jazari.utils.WindowsLikeComparator;
@@ -6104,6 +6105,30 @@ public final class FactoryUtils {
         }
 
     }
+    
+    /**
+     * generate color from known color set
+     * @param colorIndex
+     * @return
+     */
+    public static Color getColorForLaneDetection(int colorIndex){
+        switch (colorIndex) {
+            case 1:
+                return Color.BLUE;
+            case 2:
+                return Color.CYAN;
+            case 3:
+                return Color.MAGENTA;
+            case 4:
+                return Color.ORANGE;
+            case 5:
+                return Color.PINK;
+            case 6:
+                return Color.RED;
+            default: 
+                return Color.BLACK;
+        }
+    }
 
     public static Color[] getRandomColors(int n, long random_seed) {
         Random rnd = new Random(random_seed);
@@ -7217,6 +7242,70 @@ public final class FactoryUtils {
     public static int confirmMessage(String msg) {
         return JOptionPane.showConfirmDialog(null, msg);
     }
+
+    public static String removeLastChar(String content) {
+        return content.substring(0, content.length()-1);
+    }
+
+    public static String buildJsonFileAsTuSimpleFormat(String imageFolder) {
+        String ret="";
+        File[] images=FactoryUtils.getFileArrayInFolderByExtension(imageFolder+"/seg_label", "png");
+        int[] rowIndex=CMatrix.getInstance().range(240, 720, 10).toIntArray1D();
+        
+        for (File image : images) {
+            BufferedImage img=ImageProcess.imread(image);
+            img=ImageProcess.rgb2gray(img);
+            int[][] m=ImageProcess.imageToPixelsInt(img);
+            boolean firstNonZero=false;
+            for (int i = 0; i < rowIndex.length; i++) {
+                int[] row=m[rowIndex[i]];
+                //ArrayList<TGapIndex>[] lanes=new ArrayList[4];
+                HashMap<Integer,Integer> lanes=new HashMap();
+                String[] strLane=new String[4];
+                ArrayList<TGapIndex> lst=null;
+                int z=0;
+                for (int j = row.length-1; j > 0; j--) {
+                    if (row[j]!=0) {
+                        if (!firstNonZero){                            
+                            firstNonZero=true;
+                        }
+                        lst=new ArrayList();
+                        int k=1;
+                        int gap=0;
+                        while(true){
+                            int top=m[i-k][j];
+                            int bottom=m[i+k][j];
+                            if (top!=0 && bottom!=0) {
+                               gap=2*k; 
+                            }else{
+                               break; 
+                            }
+                            k++;
+                        }
+                        lst.add(new TGapIndex(j, gap));
+                    }else{
+                        if (firstNonZero) {
+                            firstNonZero=false;
+                            int max=0;
+                            int index=0;
+                            for (TGapIndex gp : lst) {
+                                if (max<gp.gap) {
+                                    max=gp.gap;
+                                    index=gp.index;
+                                }
+                            }
+                            //lanes.put(z++, index);
+                            strLane[z++]+=index+",";
+                        }
+                    }
+                }
+                
+            }
+            
+        }
+        return ret;
+    }
+    
 
     public <T> List<T> toArrayList(T[][] twoDArray) {
         List<T> list = new ArrayList<T>();

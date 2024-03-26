@@ -66,7 +66,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
         if (objName == null || objName.equals("")) {
             this.objName = "class_name";
             objects = FactoryUtils.readFile(folderPath + "/class_labels.txt").split("\n");
-            selectedIndex = -1;
+           selectedIndex = -1;
         } else {
             this.objName = objName;
             objects = FactoryUtils.readFile(folderPath + "/class_labels.txt").split("\n");

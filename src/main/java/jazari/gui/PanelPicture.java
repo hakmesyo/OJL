@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DecimalFormat;
@@ -46,6 +47,7 @@ import jazari.utils.MyDialog;
 import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
 import jazari.utils.pascalvoc.PascalVocAttribute;
 import jazari.utils.pascalvoc.PascalVocBoundingBox;
+import jazari.utils.pascalvoc.PascalVocLane;
 import jazari.utils.pascalvoc.PascalVocObject;
 import jazari.utils.pascalvoc.PascalVocPolygon;
 import jazari.utils.pascalvoc.PascalVocSource;
@@ -130,6 +132,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private String currentFolderName;
     private PascalVocObject selectedPascalVocObject;
     private PascalVocPolygon selectedPolygon;
+    private PascalVocLane selectedLane;
     private Point[] lastPositionOfDraggedBBox;
     private Point[] lastPositionOfDraggedPolygon;
     private Point referenceMousePositionForImageMovement;
@@ -169,6 +172,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private double scale = 1.0;
     private Point zoomPoint = new Point(0, 0);
     public BufferedImage rawImage;
+    private Point selectedSplinePoint;
+    private ArrayList<PascalVocLane> splines = new ArrayList();
 
     public PanelPicture() {
         this.frame = new FrameImage();
@@ -233,7 +238,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     String number = name.split("_")[0];
                     i = Integer.parseInt(number);
                 } catch (NumberFormatException e) {
-                    i = 0; 
+                    i = 0;
                 }
                 return i;
             }
@@ -241,7 +246,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         return files;
 
     }
-
 
     public void setImage(BufferedImage image, String imagePath, String caption, boolean isClearBbox) {
         if (setImageCounter++ > 50) {
@@ -269,6 +273,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 showRegion = true;
                 //activateBoundingBox = true;
                 source = bb.source;
+            }
+            if (activateLaneDetection) {
+                readLanesFromTxt();
             }
         }
         currBufferedImage = ImageProcess.clone(image);
@@ -380,11 +387,16 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             if (activateStatistics && stat != null) {
                 paintStatistics(gr);
             }
+//            System.out.println("activateLaneDetection:"+activateLaneDetection);
+//            System.out.println("showRegion:"+showRegion);
+
             if (showRegion) {
                 if (activateBoundingBox) {
                     paintBoundingBoxes(gr);
                 } else if (activatePolygon) {
                     paintPolygons(gr);
+                } else if (activateLaneDetection) {
+                    paintLaneSpline(gr);
                 } else if (activateCrop && isCropStarted) {
                     paintCrop(gr);
                 } else if (activateCrop && selectionRect != null) {
@@ -529,7 +541,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Sharpen",
             "Crop",
             "Resize Images",
-            "Convert VOC XML to Yolo"
+            "Convert VOC XML to Yolo",
+            "Build JSON as TuSimple"
         };
 
         ButtonGroup itemsGroup = new ButtonGroup();
@@ -577,6 +590,19 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         new FrameObjectProperties(frame, selectedBBox.name, "bbox").setVisible(true);
                     } else if (activatePolygon && selectedPolygon != null) {
                         new FrameObjectProperties(frame, selectedPolygon.name, "polygon").setVisible(true);
+                    } else if (activateLaneDetection && selectedLane != null) {
+                        //new FrameObjectProperties(frame, selectedLane.name, "lane").setVisible(true);
+                        String laneClass = FactoryUtils.inputMessage("Set lane class index", "write numeric value from 1 to 5");
+                        int laneClassIndex = Integer.parseInt(laneClass);
+                        if (laneClassIndex >= 1 && laneClassIndex <= 5) {
+                            PascalVocLane tempLane = selectedLane.clone();
+                            tempLane.name = laneClass;
+                            tempLane.color = FactoryUtils.getColorForLaneDetection(laneClassIndex);
+                            if (!tempLane.spline.isEmpty()) {
+                                splines.add(tempLane);
+                                selectedLane.spline.clear();
+                            }
+                        }
                     } else {
                         currBufferedImage = ImageProcess.clone(originalBufferedImage);
                         adjustImageToPanel(currBufferedImage, false);
@@ -596,6 +622,13 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                             insertPointOnPolygonAt(selectedPolygon.polygon, point, node_index);
                             repaint();
                         }
+                    } else if (activateLaneDetection && e.getButton()==MouseEvent.BUTTON1) {
+                        if (selectedLane == null) {
+                            selectedLane = new PascalVocLane("", new ArrayList<Point>(), Color.blue);
+                        }
+                        selectedLane.spline.add(e.getPoint());
+                        showRegion = true;
+                        repaint();
                     }
                 }
             }
@@ -631,6 +664,14 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     //repaint();
                     return;
                 }
+                
+                /**
+                 * eğer activateLaneDetection ise ve mouse sağ tuşuna basıldıysa o anki lane işini iptal et
+                 */
+                if (activateLaneDetection && e.getButton()==MouseEvent.BUTTON3) {
+                    selectedLane.spline.clear();                    
+                }
+                
                 /**
                  * eğer bbox annoation yapılmak isteniyorsa
                  */
@@ -718,9 +759,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         isPolygonDragged = false;
                     }
 
-                    //eğer lane detection için splines tabanlı bir annotation yapılmak isteniyorsa
                 } else if (activateLaneDetection) {
-
+                    //eğer lane detection için splines tabanlı bir annotation yapılmak isteniyorsa
+                    selectedSplinePoint = findSelectedSplinePoint(e.getPoint());
                 }
                 if (activatePolygon && isPolygonPressed && SwingUtilities.isRightMouseButton(e)) {
                     isCancelledPolygon = true;
@@ -737,6 +778,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         repaint();
                         return;
                     }
+                }
+
+                if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON1) {
+                    selectedSplinePoint = null;
                 }
 
                 if (activatePolygon && e.getButton() == MouseEvent.BUTTON1) {
@@ -896,7 +941,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         return;
                     }
                     repaint();
+                } else if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON1) {
+                    setDefaultCursor();
+                    mousePos = constraintMousePosition(e);
+                    selectedSplinePoint = null;
                 }
+
                 checkForTriggerEvent(e);
 
             }
@@ -972,6 +1022,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 incrMouseX = constraintMousePosition(e).x - mousePos.x;
                 incrMouseY = constraintMousePosition(e).y - mousePos.y;
                 mousePos = constraintMousePosition(e);
+                if (activateLaneDetection) {
+                    if (selectedSplinePoint != null) {
+                        selectedSplinePoint.setLocation(e.getPoint());
+                        repaint();
+                    }
+                }
                 if (activateBoundingBox || activateCrop || activatePolygon) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         isMouseDraggedForPolygonMovement = isMouseDraggedForBoundingBoxMovement = true;
@@ -1022,6 +1078,17 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
         }
         );
+    }
+
+    private Point findSelectedSplinePoint(Point mousePoint) {
+        for (PascalVocLane lane : splines) {
+            for (Point point : lane.spline) {
+                if (point.distance(mousePoint) <= 5) { // Assuming a point is selected if it's within 5 pixels
+                    return point;
+                }
+            }
+        }
+        return null;
     }
 
     public void setMatrixData(float[][] data) {
@@ -1482,6 +1549,53 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     }
 
+    private void paintLaneSpline(Graphics2D gr) {
+        //System.out.println("çiziyor");
+        gr.setStroke(new BasicStroke(20, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        for (PascalVocLane lane : splines) {
+            gr.setColor(lane.color);
+            if (lane.spline.size() > 1) {
+                drawSpline(gr, lane.spline);
+            }
+
+            // Draw clicked points
+            gr.setColor(Color.RED);
+            for (Point point : lane.spline) {
+                gr.fillOval(point.x - 5, point.y - 5, 10, 10);
+            }
+        }
+
+        if (selectedLane != null) {
+            // Draw current spline
+            gr.setColor(Color.LIGHT_GRAY);
+            if (selectedLane.spline.size() > 1) {
+                drawSpline(gr, selectedLane.spline);
+            }
+
+            // Draw clicked points for current spline
+            gr.setColor(Color.RED);
+            for (Point point : selectedLane.spline) {
+                gr.fillOval(point.x - 5, point.y - 5, 10, 10);
+            }
+        }
+    }
+
+    private void drawSpline(Graphics2D g2d, ArrayList<Point> spline) {
+        Path2D path = new Path2D.Double();
+        path.moveTo(spline.get(0).getX(), spline.get(0).getY());
+
+        for (int i = 0; i < spline.size() - 1; i++) {
+            double xAvg = (spline.get(i).getX() + spline.get(i + 1).getX()) / 2;
+            double yAvg = (spline.get(i).getY() + spline.get(i + 1).getY()) / 2;
+            path.quadTo(spline.get(i).getX(), spline.get(i).getY(), xAvg, yAvg);
+        }
+
+        Point lastPoint = spline.get(spline.size() - 1);
+        path.lineTo(lastPoint.getX(), lastPoint.getY());
+
+        g2d.draw(path);
+    }
+
     private void paintCrop(Graphics2D gr) {
 
         Stroke dashed = new BasicStroke(3,
@@ -1832,6 +1946,22 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         gr.setStroke(new BasicStroke(1));
     }
 
+    private void saveLanesAsMask() {
+        BufferedImage img = CMatrix.getInstance()
+                .zeros(currBufferedImage.getHeight(), currBufferedImage.getWidth())                
+                .getImage()
+                ;
+        Graphics2D gr=(Graphics2D)img.getGraphics();
+        gr.setStroke(new BasicStroke(20, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        for (PascalVocLane lane : splines) {
+            int col=Integer.parseInt(lane.name);
+            gr.setColor(new Color(col,col,col));
+            drawSpline(gr,lane.spline);
+        }
+        FactoryUtils.makeDirectory(imageFolder + "/seg_label");
+        CMatrix.getInstance(img).imsave(imageFolder + "/seg_label/" + FactoryUtils.getFileName(fileName) + ".png");        
+    }
+
     private class ItemHandler implements ActionListener {
 
         @Override
@@ -2038,11 +2168,13 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else if (obj.getText().equals("Convert VOC XML to Yolo")) {
                     String subFolder = FactoryUtils.inputMessage("set subfolder name");
                     String msg = FactoryUtils.convertPascalVoc2YoloFormatBatch(imageFolder, subFolder, "detection");
-                    FactoryUtils.showMessageTemp("Pascal VOC XMLs converted to Yolo format at "+msg, 3000, new CallBackTrigger() {
+                    FactoryUtils.showMessageTemp("Pascal VOC XMLs converted to Yolo format at " + msg, 3000, new CallBackTrigger() {
                         @Override
                         public void trigger() {
                         }
                     });
+                } else if (activateLaneDetection && obj.getText().equals("Build JSON as TuSimple")) {
+                    String str=FactoryUtils.buildJsonFileAsTuSimpleFormat(imageFolder);
                 } else if (obj.getText().equals("Command Interpreter")) {
                     activateCmd = true;
                     FrameScriptEditor frm = new FrameScriptEditor();
@@ -2135,6 +2267,42 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         }
     }
 
+    private void saveLanesAsTxt() {
+        String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".txt";
+        String content = "";
+        for (PascalVocLane lane : splines) {
+            String s = "lane:" + lane.name + ":";
+            for (Point p : lane.spline) {
+                s += p.x + "," + p.y + ":";
+            }
+            s = FactoryUtils.removeLastChar(s);
+            content += s + "\n";
+        }
+        FactoryUtils.writeToFile(txtFilePath, content);
+    }
+
+    private void readLanesFromTxt() {
+        splines.clear();
+        showRegion=true;
+        String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".txt";
+        if (!FactoryUtils.isFileExist(txtFilePath)) {
+            return;
+        }
+
+        String content = FactoryUtils.readFile(txtFilePath);
+        String[] rows = content.split("\n");
+        for (String row : rows) {
+            String[] str = row.split(":");
+            ArrayList<Point> spline = new ArrayList<>();
+            for (int i = 2; i < str.length; i++) {
+                String[] pnt = str[i].split(",");
+                spline.add(new Point(Integer.parseInt(pnt[0]), Integer.parseInt(pnt[1])));
+            }
+            PascalVocLane lane = new PascalVocLane(str[1], spline, null);
+            splines.add(lane);
+        }
+    }
+
     public void setActivateStatistics(boolean activateStatistics) {
         this.activateStatistics = activateStatistics;
     }
@@ -2195,6 +2363,16 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 if (!isSeqenceVideoFrame) {
                     listPascalVocObject.clear();
                     selectedPolygon = null;
+                }
+                imageIndex++;
+                BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                rawImage = ImageProcess.clone(bf);
+                adjustImageToPanel(bf, true);
+            } else if (activateLaneDetection) {
+                saveLanesAsTxt();
+                saveLanesAsMask();
+                if (imageIndex + 1 >= imageFiles.length) {
+                    return;
                 }
                 imageIndex++;
                 BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);

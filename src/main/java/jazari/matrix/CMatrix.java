@@ -259,6 +259,9 @@ public final class CMatrix implements Serializable {
     }
 
     public BufferedImage getImage() {
+        if (image==null) {
+            image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
+        }
         return image;
     }
 
