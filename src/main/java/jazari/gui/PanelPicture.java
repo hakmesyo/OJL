@@ -1952,14 +1952,24 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 .getImage()
                 ;
         Graphics2D gr=(Graphics2D)img.getGraphics();
+        System.out.println("fromLeft:"+fromLeft);
+        System.out.println("fromTop:"+fromTop);
         gr.setStroke(new BasicStroke(20, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         for (PascalVocLane lane : splines) {
             int col=Integer.parseInt(lane.name);
             gr.setColor(new Color(col,col,col));
-            drawSpline(gr,lane.spline);
+            drawSpline(gr,shiftLanePos(lane.spline));
         }
         FactoryUtils.makeDirectory(imageFolder + "/seg_label");
         CMatrix.getInstance(img).imsave(imageFolder + "/seg_label/" + FactoryUtils.getFileName(fileName) + ".png");        
+    }
+    
+    private ArrayList<Point> shiftLanePos(ArrayList<Point> spline){
+        ArrayList<Point> ret=new ArrayList();
+        for (Point p : spline) {
+            ret.add(new Point(p.x-fromLeft,p.y-fromTop));
+        }
+        return ret;
     }
 
     private class ItemHandler implements ActionListener {
