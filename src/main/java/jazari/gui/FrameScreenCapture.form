@@ -9,6 +9,10 @@
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
+  <Events>
+    <EventHandler event="windowClosed" listener="java.awt.event.WindowListener" parameters="java.awt.event.WindowEvent" handler="formWindowClosed"/>
+    <EventHandler event="windowClosing" listener="java.awt.event.WindowListener" parameters="java.awt.event.WindowEvent" handler="formWindowClosing"/>
+  </Events>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -27,7 +31,7 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jScrollPane1" alignment="1" pref="0" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="1" max="32767" attributes="0"/>
                   <Component id="jPanel1" alignment="1" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -40,7 +44,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="243" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -61,17 +65,17 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btn_capture_single_image" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="btn_capture_video" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="txt_tpf" min="-2" pref="46" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Component id="btn_use" min="-2" max="-2" attributes="0"/>
+                  <Component id="txt_fps" min="-2" pref="46" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btn_save" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
+                  <Component id="btn_capture_single_image" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="btn_use" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -80,20 +84,13 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                          <Component id="btn_use" alignment="3" max="32767" attributes="0"/>
-                          <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="txt_tpf" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="btn_capture_single_image" alignment="0" max="32767" attributes="0"/>
-                              <Component id="btn_capture_video" alignment="0" max="32767" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      </Group>
-                      <Component id="btn_save" alignment="0" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="btn_use" alignment="3" max="32767" attributes="0"/>
+                      <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="txt_fps" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btn_capture_single_image" alignment="3" max="32767" attributes="0"/>
+                      <Component id="btn_capture_video" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btn_save" alignment="3" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -115,7 +112,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btn_save">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Save As"/>
+            <Property name="text" type="java.lang.String" value="Save Images"/>
             <Property name="toolTipText" type="java.lang.String" value="Save image list to desired folder"/>
           </Properties>
           <Events>
@@ -133,7 +130,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btn_capture_video">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Capture Sequence"/>
+            <Property name="text" type="java.lang.String" value="Capture from video"/>
             <Property name="toolTipText" type="java.lang.String" value="Capture sequence images form videos or animations"/>
           </Properties>
           <Events>
@@ -142,13 +139,13 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="TPF:"/>
+            <Property name="text" type="java.lang.String" value="FPS:"/>
             <Property name="toolTipText" type="java.lang.String" value="Sleep time per capture each frame"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JTextField" name="txt_tpf">
+        <Component class="javax.swing.JTextField" name="txt_fps">
           <Properties>
-            <Property name="text" type="java.lang.String" value="300"/>
+            <Property name="text" type="java.lang.String" value="10"/>
             <Property name="toolTipText" type="java.lang.String" value="Sleep time per capture each frame"/>
           </Properties>
         </Component>
@@ -173,12 +170,12 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="591" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="773" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="380" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="439" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>

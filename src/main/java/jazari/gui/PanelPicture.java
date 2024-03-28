@@ -2211,7 +2211,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     private void newScreenCaptureInstance() {
-        FrameScreenCapture frm = new FrameScreenCapture(this);
+        FrameScreenCapture frm = new FrameScreenCapture();
         frm.setVisible(true);
     }
 

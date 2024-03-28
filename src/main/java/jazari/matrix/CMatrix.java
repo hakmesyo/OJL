@@ -9936,7 +9936,7 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public CMatrix robotCapture() {
-        FrameScreenCapture capture = new FrameScreenCapture(null);
+        FrameScreenCapture capture = new FrameScreenCapture();
         capture.setVisible(true);
         return this;
     }

@@ -93,6 +93,7 @@ import jazari.gui.FrameImage;
 import jazari.image_processing.ImageProcess;
 import jazari.interfaces.call_back_interface.CallBackTrigger;
 import jazari.matrix.CRectangle;
+import jazari.types.TBoundingBox;
 import jazari.types.TGapIndex;
 import jazari.utils.CopyImageToClipboard;
 import jazari.utils.PerlinNoise;
@@ -8638,6 +8639,35 @@ public final class FactoryUtils {
 
         return bearing;
         
+    }
+    
+    public static TBoundingBox getBoundingBox(int[][] maskImage) {
+        return findBoundingBox(maskImage);
+    }
+    
+    public static TBoundingBox findBoundingBox(int[][] maskImage) {
+        int rows = maskImage.length;
+        int cols = maskImage[0].length;
+
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (maskImage[i][j] == 255) { 
+                    minX = Math.min(minX, j);
+                    minY = Math.min(minY, i);
+                    maxX = Math.max(maxX, j);
+                    maxY = Math.max(maxY, i);
+                }
+            }
+        }
+        Point topLeft = new Point(minX, minY);
+        Point bottomRight = new Point(maxX, maxY);
+        TBoundingBox boundingBox = new TBoundingBox(topLeft, bottomRight);
+        return boundingBox;
     }
 
 }

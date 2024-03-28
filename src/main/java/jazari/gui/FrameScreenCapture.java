@@ -8,6 +8,7 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -27,19 +28,21 @@ import jazari.interfaces.call_back_interface.CallBackTrigger;
 public class FrameScreenCapture extends javax.swing.JFrame {
 
     private BufferedImage screenshot;
-    private PanelPicture panel;
+    //private PanelPicture panel;
     public List<BufferedImage> listImage;
-    public int tpf = 300;
+    public int fps = 10;
+    public boolean isCaptureFromVideo = false;
+    String tempDirName="a";
 
     /**
      * Creates new form FrameScreeCap
      *
      * @param panel
      */
-    public FrameScreenCapture(PanelPicture panel) {
-        this.tpf = 300;
+    public FrameScreenCapture() {
+        this.fps = 300;
         this.initComponents();
-        this.panel = panel;
+        //this.panel = panel;
         this.setLocationRelativeTo(null);
     }
 
@@ -58,12 +61,20 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         btn_use = new javax.swing.JButton();
         btn_capture_video = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        txt_tpf = new javax.swing.JTextField();
+        txt_fps = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         canvas = new PanelScreenCapture();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("FrameScreenCapture");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -75,7 +86,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
             }
         });
 
-        btn_save.setText("Save As");
+        btn_save.setText("Save Images");
         btn_save.setToolTipText("Save image list to desired folder");
         btn_save.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -91,7 +102,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
             }
         });
 
-        btn_capture_video.setText("Capture Sequence");
+        btn_capture_video.setText("Capture from video");
         btn_capture_video.setToolTipText("Capture sequence images form videos or animations");
         btn_capture_video.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -99,11 +110,11 @@ public class FrameScreenCapture extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("TPF:");
+        jLabel1.setText("FPS:");
         jLabel1.setToolTipText("Sleep time per capture each frame");
 
-        txt_tpf.setText("300");
-        txt_tpf.setToolTipText("Sleep time per capture each frame");
+        txt_fps.setText("10");
+        txt_fps.setToolTipText("Sleep time per capture each frame");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -111,33 +122,29 @@ public class FrameScreenCapture extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btn_capture_single_image)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_capture_video)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txt_tpf, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btn_use)
+                .addComponent(txt_fps, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_save)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btn_capture_single_image)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_use)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btn_use, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel1)
-                        .addComponent(txt_tpf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(btn_capture_single_image, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btn_capture_video, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_use, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1)
+                    .addComponent(txt_fps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_capture_single_image, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btn_capture_video)
                     .addComponent(btn_save, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -148,11 +155,11 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         canvas.setLayout(canvasLayout);
         canvasLayout.setHorizontalGroup(
             canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 591, Short.MAX_VALUE)
+            .addGap(0, 773, Short.MAX_VALUE)
         );
         canvasLayout.setVerticalGroup(
             canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 380, Short.MAX_VALUE)
+            .addGap(0, 439, Short.MAX_VALUE)
         );
 
         jScrollPane1.setViewportView(canvas);
@@ -164,7 +171,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -174,7 +181,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                .addComponent(jScrollPane1)
                 .addContainerGap())
         );
 
@@ -182,6 +189,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_capture_single_imageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_single_imageActionPerformed
+        isCaptureFromVideo = false;
         if (listImage != null) {
             listImage.clear();
         }
@@ -191,13 +199,18 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_capture_single_imageActionPerformed
 
     private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed
-        if (listImage != null && listImage.size() > 0) {
+        if (isCaptureFromVideo) {
             String path = FactoryUtils.browseDirectory().getAbsolutePath();
             FactoryUtils.makeDirectory(path);
-            for (BufferedImage img : listImage) {
-                ImageProcess.saveImage(img, path + "/" + System.currentTimeMillis() + ".jpg");
+            File[] images = FactoryUtils.getFileArrayInFolderByExtension("images/temp/" + tempDirName, "jpg");
+            for (File image : images) {
+                FactoryUtils.copyFile(image, new File(path + "/" + image.getName()));
             }
-            listImage.clear();
+//            for (BufferedImage img : listImage) {
+//                ImageProcess.saveImage(img, path + "/" + System.currentTimeMillis() + ".jpg");
+//            }
+            //listImage.clear();
+            FactoryUtils.removeDirectory("images/temp/" + tempDirName);
             screenshot = null;
             FactoryUtils.showMessage("Captured Video Frames saved successfully");
         } else if (screenshot != null) {
@@ -209,20 +222,23 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_saveActionPerformed
 
     private void btn_useActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_useActionPerformed
-        panel.setImage(screenshot);
+        //panel.setImage(screenshot);
         FactoryUtils.copyImage2ClipBoard(screenshot);
         dispose();
     }//GEN-LAST:event_btn_useActionPerformed
 
     private void btn_capture_videoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_videoActionPerformed
-        FrameScreenCapture scr = this;
+        isCaptureFromVideo = true;
+        tempDirName=System.currentTimeMillis()+"";
+        FactoryUtils.makeDirectory("images/temp/"+tempDirName);
+        FrameScreenCapture frame = this;
         FactoryUtils.showMessage("For capturing with a specified fps\n"
                 + "select a bounding box rectangle with mouse press --> drag --> release\n"
                 + "type esc if you want to stop");
         setState(Frame.ICONIFIED);
         listImage = new ArrayList<>();
-        tpf = Integer.parseInt(txt_tpf.getText());
-        FrameCaptureVideo frm = new FrameCaptureVideo(scr);
+        fps = Integer.parseInt(txt_fps.getText());
+        FrameCaptureVideo frm = new FrameCaptureVideo(frame);
         frm.setVisible(true);
         screenshot = null;
 
@@ -241,8 +257,15 @@ public class FrameScreenCapture extends javax.swing.JFrame {
 //            }
 //        });
 
-
     }//GEN-LAST:event_btn_capture_videoActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        FactoryUtils.removeDirectory("images/temp/" + tempDirName);
+    }//GEN-LAST:event_formWindowClosing
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        FactoryUtils.removeDirectory("images/temp/" + tempDirName);
+    }//GEN-LAST:event_formWindowClosed
 
     public void setImage(final BufferedImage screenshot) {
         this.setState(0);
@@ -276,7 +299,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrameScreenCapture(null).setVisible(true);
+                new FrameScreenCapture().setVisible(true);
             }
         });
     }
@@ -290,6 +313,6 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField txt_tpf;
+    private javax.swing.JTextField txt_fps;
     // End of variables declaration//GEN-END:variables
 }

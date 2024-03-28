@@ -66,6 +66,7 @@ import javax.swing.GrayFilter;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import static jazari.factory.FactoryUtils.getDefaultDirectory;
+import jazari.types.TBoundingBox;
 //import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 //import org.opencv.core.Core;
 //import org.opencv.core.CvType;
@@ -4353,5 +4354,6 @@ public final class ImageProcess {
         }
         return ret;
     }
+    
 
 }
