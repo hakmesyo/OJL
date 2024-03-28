@@ -230,6 +230,8 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     private void btn_capture_videoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_videoActionPerformed
         isCaptureFromVideo = true;
         tempDirName=System.currentTimeMillis()+"";
+        FactoryUtils.makeDirectory("images");
+        FactoryUtils.makeDirectory("images/temp");
         FactoryUtils.makeDirectory("images/temp/"+tempDirName);
         FrameScreenCapture frame = this;
         FactoryUtils.showMessage("For capturing with a specified fps\n"
