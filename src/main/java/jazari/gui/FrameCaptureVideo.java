@@ -39,7 +39,7 @@ public class FrameCaptureVideo extends Frame {
     private boolean isMouseReleased = false;
     private boolean videoCaptureStop = false;
     private Robot robot;
-    private int cnt=0;
+    private int cnt = 0;
 
     public FrameCaptureVideo(FrameScreenCapture frm) {
         this.frm = frm;
@@ -70,10 +70,13 @@ public class FrameCaptureVideo extends Frame {
                     gr.setStroke(new BasicStroke(3));
                     gr.drawRect(selection.x - 3, selection.y - 3, selection.width + 6, selection.height + 6);
                     gr.setColor(Color.black);
-                    gr.fillRect(selection.x - 3, selection.y - 25, 200, 20);
+                    gr.fillRect(selection.x - 3, selection.y - 25, 250, 20);
                     gr.setColor(Color.green);
-                    gr.drawString("Press ESC to stop recording nFrames:"+cnt, selection.x - 3, selection.y - 10);
-                    //drawCorners(g);
+                    String s="Press ESC to stop recording";
+                    //String s=Math.random()+"";
+                    gr.drawString( s, selection.x - 3, selection.y - 10);
+                    //System.out.println(s);
+//drawCorners(g);
                 }
                 super.paint(g);
 
@@ -144,13 +147,13 @@ public class FrameCaptureVideo extends Frame {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                long dt=1000/frm.fps;
-                cnt=0;
+                long dt = 1000 / frm.fps;
+                cnt = 0;
                 while (!videoCaptureStop) {
                     cnt++;
                     screenshot = FactoryUtils.captureScreenWithRobot(robot, new Rectangle(selection.x, selection.y, selection.width, selection.height));
                     //frm.listImage.add(screenshot);
-                    ImageProcess.saveImage(screenshot, "images/temp/"+frm.tempDirName+"/"+System.currentTimeMillis()+".jpg");
+                    ImageProcess.saveImage(screenshot, "images/temp/" + frm.tempDirName + "/" + System.currentTimeMillis() + ".jpg");
                     //System.out.println("selection:"+selection);
                     //ImageProcess.saveImage(screenshot, "images/screen_capture/" + System.currentTimeMillis() + ".jpg");
                     panel.repaint();
@@ -159,11 +162,11 @@ public class FrameCaptureVideo extends Frame {
                     } catch (InterruptedException ex) {
                         Logger.getLogger(FrameCaptureVideo.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
+
                 }
                 FactoryUtils.copyImage2ClipBoard(screenshot);
-                File[] files=FactoryUtils.getFileArrayInFolderByExtension("images/temp/"+frm.tempDirName, "jpg");
-                frm.setTitle("FrameScreenCapture  [number of frames=" + files.length+"]");
+                File[] files = FactoryUtils.getFileArrayInFolderByExtension("images/temp/" + frm.tempDirName, "jpg");
+                frm.setTitle("FrameScreenCapture  [number of frames=" + files.length + "]");
                 frm.setImage(screenshot);
                 frm.setState(Frame.NORMAL);
                 dispose();

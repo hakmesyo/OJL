@@ -37,7 +37,6 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     /**
      * Creates new form FrameScreeCap
      *
-     * @param panel
      */
     public FrameScreenCapture() {
         this.fps = 300;
@@ -262,10 +261,12 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_capture_videoActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        FactoryUtils.removeDirectory("images/temp/" + tempDirName);
+        //FactoryUtils.bekle(1000);
+        //FactoryUtils.removeDirectory("images/temp/" + tempDirName);
     }//GEN-LAST:event_formWindowClosing
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        FactoryUtils.bekle(2000);
         FactoryUtils.removeDirectory("images/temp/" + tempDirName);
     }//GEN-LAST:event_formWindowClosed
 
