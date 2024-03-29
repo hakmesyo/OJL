@@ -131,7 +131,7 @@
         <Component class="javax.swing.JButton" name="btn_capture_video">
           <Properties>
             <Property name="text" type="java.lang.String" value="Capture from video"/>
-            <Property name="toolTipText" type="java.lang.String" value="Capture sequence images form videos or animations"/>
+            <Property name="toolTipText" type="java.lang.String" value="Capture sequence images from videos or animations"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_capture_videoActionPerformed"/>

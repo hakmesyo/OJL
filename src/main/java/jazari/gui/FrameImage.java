@@ -44,6 +44,7 @@ public class FrameImage extends javax.swing.JFrame {
     public String imageFolderPath;
     public String titleImageInfo;
     public CMatrix cm;
+    public String caption="";
 
     /**
      * Creates new form FrameImage
@@ -64,6 +65,7 @@ public class FrameImage extends javax.swing.JFrame {
      */
     public FrameImage(CMatrix cm, String imagePath, String caption) {
         initComponents();
+        this.caption=caption;
         imageFolderPath = FactoryUtils.getFolderPath(imagePath);
         if (caption != null && !caption.isEmpty()) {
             setTitle(caption);
@@ -665,7 +667,11 @@ public class FrameImage extends javax.swing.JFrame {
     }
 
     public void setPixelInfo(String str) {
-        setTitle(this.titleImageInfo + "  " + str);
+        if ("".equals(caption) || caption==null) {
+            setTitle(this.titleImageInfo + "  " + str);
+        } else {
+            setTitle("["+caption+"] "+this.titleImageInfo + "  " + str);
+        }        
     }
 
     public void stretchFrame() {

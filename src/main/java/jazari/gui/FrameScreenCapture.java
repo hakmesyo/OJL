@@ -103,7 +103,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
         });
 
         btn_capture_video.setText("Capture from video");
-        btn_capture_video.setToolTipText("Capture sequence images form videos or animations");
+        btn_capture_video.setToolTipText("Capture sequence images from videos or animations");
         btn_capture_video.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_capture_videoActionPerformed(evt);

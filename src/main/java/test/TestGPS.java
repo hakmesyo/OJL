@@ -6,6 +6,7 @@ package test;
 
 import java.awt.geom.Point2D;
 import jazari.factory.FactoryUtils;
+import jazari.matrix.CMatrix;
 
 //https://coordinates-converter.com/en/decimal/51.000000,10.000000?karte=OpenStreetMap&zoom=8
 
@@ -15,6 +16,8 @@ import jazari.factory.FactoryUtils;
  */
 public class TestGPS {
     public static void main(String[] args) {
+        
+        
         Point2D.Double p=FactoryUtils.gpsToDecimalCoordinate("37:57:43.5852:N","41:51:4.5684:E");
         System.out.println("p = " + p);
         
