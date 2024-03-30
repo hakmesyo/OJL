@@ -39,6 +39,7 @@ import java.util.Map;
 import javax.swing.ButtonGroup;
 import javax.swing.JColorChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
@@ -694,8 +695,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     if (selectedLane == null) {
                         selectedLane = new PascalVocLane("", new ArrayList<Point>(), Color.blue);
                     }
-                    int n=selectedLane.spline.size();
-                    if (n>0 && selectedLane.spline.get(n-1).x==e.getPoint().x && selectedLane.spline.get(n-1).y==e.getPoint().y) {
+                    int n = selectedLane.spline.size();
+                    if (n > 0 && selectedLane.spline.get(n - 1).x == e.getPoint().x && selectedLane.spline.get(n - 1).y == e.getPoint().y) {
                         return;
                     }
                     selectedLane.spline.add(e.getPoint());
@@ -1999,6 +2000,19 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         return ret;
     }
 
+    private void deleteCurrentImage() {
+        if (FactoryUtils.confirmMessage("do you really want to delete this image file from the disk permanently?") == JOptionPane.YES_OPTION) {
+            FactoryUtils.deleteFile(imagePath);
+            imageFiles = FactoryUtils.getFileArrayInFolderForImages(imageFolder);
+            if (activateLaneDetection) {
+                FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".txt");
+                FactoryUtils.deleteFile(imageFolder + "/seg_label/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".png");
+                splines.clear();
+                selectedLane = null;
+            }
+        }
+    }
+
     private class ItemHandler implements ActionListener {
 
         @Override
@@ -2436,7 +2450,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     }
                     selectedBBox = null;
                 } else {
-                    listPascalVocObject.clear();
+                    //listPascalVocObject.clear();
+                    deleteCurrentImage();
+                    BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                    rawImage = ImageProcess.clone(bf);
+                    adjustImageToPanel(bf, true);
+                    e.consume();
                 }
             } else if (activatePolygon) {
                 if (selectedPolygon != null) {
@@ -2454,14 +2473,31 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     }
                     selectedPolygon = null;
                 } else {
-                    listPascalVocObject.clear();
+                    //listPascalVocObject.clear();
+                    deleteCurrentImage();
+                    BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                    rawImage = ImageProcess.clone(bf);
+                    adjustImageToPanel(bf, true);
+                    e.consume();
                 }
 
-            }else if (activateLaneDetection) {
-                if (selectedLane!=null) {
+            } else if (activateLaneDetection) {
+                if (selectedLane != null) {
                     splines.remove(selectedLane);
-                    selectedLane=null;
+                    selectedLane = null;
+                } else {
+                    deleteCurrentImage();
+                    BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                    rawImage = ImageProcess.clone(bf);
+                    adjustImageToPanel(bf, true);
+                    e.consume();
                 }
+            } else {
+                deleteCurrentImage();
+                BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                rawImage = ImageProcess.clone(bf);
+                adjustImageToPanel(bf, true);
+                e.consume();
             }
             repaint();
             return;
