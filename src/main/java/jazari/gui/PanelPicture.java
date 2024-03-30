@@ -674,8 +674,14 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 /**
                  * eğer activateLaneDetection ise ve mouse sol tuşuna basıldıysa
                  * yeni lane pointi ekle
-                 */                
+                 */         
+                
+                
                 else if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON1) {
+                    selectedSplinePoint = findSelectedSplinePoint(e.getPoint());
+                    if (selectedSplinePoint!=null) {
+                        return;
+                    }
                     if (selectedLane == null) {
                         selectedLane = new PascalVocLane("", new ArrayList<Point>(), Color.blue);
                     }
@@ -770,10 +776,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         isPolygonDragged = false;
                     }
 
-                } else if (activateLaneDetection) {
-                    //eğer lane detection için splines tabanlı bir annotation yapılmak isteniyorsa
-                    selectedSplinePoint = findSelectedSplinePoint(e.getPoint());
-                }
+                } 
                 if (activatePolygon && isPolygonPressed && SwingUtilities.isRightMouseButton(e)) {
                     isCancelledPolygon = true;
                 }
