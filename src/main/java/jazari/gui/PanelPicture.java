@@ -2417,6 +2417,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
                 rawImage = ImageProcess.clone(bf);
                 adjustImageToPanel(bf, true);
+                selectedLane = null;
 
             }
             return;
@@ -2456,6 +2457,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     listPascalVocObject.clear();
                 }
 
+            }else if (activateLaneDetection) {
+                if (selectedLane!=null) {
+                    splines.remove(selectedLane);
+                    selectedLane=null;
+                }
             }
             repaint();
             return;
