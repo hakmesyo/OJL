@@ -2004,11 +2004,16 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         if (FactoryUtils.confirmMessage("do you really want to delete this image file from the disk permanently?") == JOptionPane.YES_OPTION) {
             FactoryUtils.deleteFile(imagePath);
             imageFiles = FactoryUtils.getFileArrayInFolderForImages(imageFolder);
+            if (imageFiles.length>0 && imageIndex==imageFiles.length) {
+                imageIndex--;
+            }
             if (activateLaneDetection) {
                 FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".txt");
                 FactoryUtils.deleteFile(imageFolder + "/seg_label/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".png");
                 splines.clear();
                 selectedLane = null;
+            }else if(activateBoundingBox || activatePolygon){
+                FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".xml");
             }
         }
     }
