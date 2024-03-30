@@ -209,6 +209,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
 //                ImageProcess.saveImage(img, path + "/" + System.currentTimeMillis() + ".jpg");
 //            }
             //listImage.clear();
+            FactoryUtils.bekle(2000);
             FactoryUtils.removeDirectory("images/temp/" + tempDirName);
             screenshot = null;
             FactoryUtils.showMessage("Captured Video Frames saved successfully");

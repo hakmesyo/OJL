@@ -6,7 +6,6 @@ package test;
 
 import java.awt.geom.Point2D;
 import jazari.factory.FactoryUtils;
-import jazari.matrix.CMatrix;
 
 //https://coordinates-converter.com/en/decimal/51.000000,10.000000?karte=OpenStreetMap&zoom=8
 

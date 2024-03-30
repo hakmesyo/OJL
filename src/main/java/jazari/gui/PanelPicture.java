@@ -593,7 +593,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     } else if (activateLaneDetection && selectedLane != null) {
                         //new FrameObjectProperties(frame, selectedLane.name, "lane").setVisible(true);
                         String laneClass = FactoryUtils.inputMessage("Set lane class index", "write numeric value from 1 to 5");
-                        int laneClassIndex = Integer.parseInt(laneClass);
+                        int laneClassIndex=2;
+                        try {
+                            laneClassIndex = Integer.parseInt(laneClass);
+                        } catch (Exception ex) {
+                        }
+                         
                         if (laneClassIndex >= 1 && laneClassIndex <= 5) {
                             PascalVocLane tempLane = selectedLane.clone();
                             tempLane.name = laneClass;
@@ -622,13 +627,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                             insertPointOnPolygonAt(selectedPolygon.polygon, point, node_index);
                             repaint();
                         }
-                    } else if (activateLaneDetection && e.getButton()==MouseEvent.BUTTON1) {
-                        if (selectedLane == null) {
-                            selectedLane = new PascalVocLane("", new ArrayList<Point>(), Color.blue);
-                        }
-                        selectedLane.spline.add(e.getPoint());
-                        showRegion = true;
-                        repaint();
                     }
                 }
             }
@@ -664,14 +662,27 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     //repaint();
                     return;
                 }
+
+                /**
+                 * eğer activateLaneDetection ise ve mouse sağ tuşuna basıldıysa
+                 * o anki lane işini iptal et
+                 */
+                if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON3) {
+                    selectedLane.spline.clear();
+                } 
                 
                 /**
-                 * eğer activateLaneDetection ise ve mouse sağ tuşuna basıldıysa o anki lane işini iptal et
-                 */
-                if (activateLaneDetection && e.getButton()==MouseEvent.BUTTON3) {
-                    selectedLane.spline.clear();                    
+                 * eğer activateLaneDetection ise ve mouse sol tuşuna basıldıysa
+                 * yeni lane pointi ekle
+                 */                
+                else if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON1) {
+                    if (selectedLane == null) {
+                        selectedLane = new PascalVocLane("", new ArrayList<Point>(), Color.blue);
+                    }
+                    selectedLane.spline.add(e.getPoint());
+                    showRegion = true;
+                    repaint();
                 }
-                
                 /**
                  * eğer bbox annoation yapılmak isteniyorsa
                  */
@@ -1948,26 +1959,25 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     private void saveLanesAsMask() {
         BufferedImage img = CMatrix.getInstance()
-                .zeros(currBufferedImage.getHeight(), currBufferedImage.getWidth())                
-                .getImage()
-                ;
-        Graphics2D gr=(Graphics2D)img.getGraphics();
-        System.out.println("fromLeft:"+fromLeft);
-        System.out.println("fromTop:"+fromTop);
+                .zeros(currBufferedImage.getHeight(), currBufferedImage.getWidth())
+                .getImage();
+        Graphics2D gr = (Graphics2D) img.getGraphics();
+        System.out.println("fromLeft:" + fromLeft);
+        System.out.println("fromTop:" + fromTop);
         gr.setStroke(new BasicStroke(20, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         for (PascalVocLane lane : splines) {
-            int col=Integer.parseInt(lane.name);
-            gr.setColor(new Color(col,col,col));
-            drawSpline(gr,shiftLanePos(lane.spline));
+            int col = Integer.parseInt(lane.name);
+            gr.setColor(new Color(col, col, col));
+            drawSpline(gr, shiftLanePos(lane.spline));
         }
         FactoryUtils.makeDirectory(imageFolder + "/seg_label");
-        CMatrix.getInstance(img).imsave(imageFolder + "/seg_label/" + FactoryUtils.getFileName(fileName) + ".png");        
+        CMatrix.getInstance(img).imsave(imageFolder + "/seg_label/" + FactoryUtils.getFileName(fileName) + ".png");
     }
-    
-    private ArrayList<Point> shiftLanePos(ArrayList<Point> spline){
-        ArrayList<Point> ret=new ArrayList();
+
+    private ArrayList<Point> shiftLanePos(ArrayList<Point> spline) {
+        ArrayList<Point> ret = new ArrayList();
         for (Point p : spline) {
-            ret.add(new Point(p.x-fromLeft,p.y-fromTop));
+            ret.add(new Point(p.x - fromLeft, p.y - fromTop));
         }
         return ret;
     }
@@ -2184,7 +2194,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         }
                     });
                 } else if (activateLaneDetection && obj.getText().equals("Build JSON as TuSimple")) {
-                    String str=FactoryUtils.buildJsonFileAsTuSimpleFormat(imageFolder);
+                    String str = FactoryUtils.buildJsonFileAsTuSimpleFormat(imageFolder);
                 } else if (obj.getText().equals("Command Interpreter")) {
                     activateCmd = true;
                     FrameScriptEditor frm = new FrameScriptEditor();
@@ -2293,7 +2303,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     private void readLanesFromTxt() {
         splines.clear();
-        showRegion=true;
+        showRegion = true;
         String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".txt";
         if (!FactoryUtils.isFileExist(txtFilePath)) {
             return;
