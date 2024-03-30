@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ButtonGroup;
@@ -593,12 +594,15 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     } else if (activateLaneDetection && selectedLane != null) {
                         //new FrameObjectProperties(frame, selectedLane.name, "lane").setVisible(true);
                         String laneClass = FactoryUtils.inputMessage("Set lane class index", "write numeric value from 1 to 5");
-                        int laneClassIndex=2;
+                        if (laneClass == null) {
+                            return;
+                        }
+                        int laneClassIndex = 2;
                         try {
                             laneClassIndex = Integer.parseInt(laneClass);
                         } catch (Exception ex) {
                         }
-                         
+
                         if (laneClassIndex >= 1 && laneClassIndex <= 5) {
                             PascalVocLane tempLane = selectedLane.clone();
                             tempLane.name = laneClass;
@@ -606,6 +610,13 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                             if (!tempLane.spline.isEmpty()) {
                                 splines.add(tempLane);
                                 selectedLane.spline.clear();
+                            }
+                        }
+                        Iterator<PascalVocLane> iterator = splines.iterator();
+                        while (iterator.hasNext()) {
+                            PascalVocLane lane = iterator.next();
+                            if (lane.spline.isEmpty()) {
+                                iterator.remove();
                             }
                         }
                     } else {
@@ -669,21 +680,23 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                  */
                 if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON3) {
                     selectedLane.spline.clear();
-                } 
-                
-                /**
+                } /**
                  * eğer activateLaneDetection ise ve mouse sol tuşuna basıldıysa
                  * yeni lane pointi ekle
-                 */         
-                
-                
+                 */
                 else if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON1) {
+                    //eğer herhangi bir lane deki bir pointin üzerine basmışsam ilgili lane i gri yaparak seçildiğini göster.
                     selectedSplinePoint = findSelectedSplinePoint(e.getPoint());
-                    if (selectedSplinePoint!=null) {
+                    if (selectedSplinePoint != null) {
+                        repaint();
                         return;
                     }
                     if (selectedLane == null) {
                         selectedLane = new PascalVocLane("", new ArrayList<Point>(), Color.blue);
+                    }
+                    int n=selectedLane.spline.size();
+                    if (n>0 && selectedLane.spline.get(n-1).x==e.getPoint().x && selectedLane.spline.get(n-1).y==e.getPoint().y) {
+                        return;
                     }
                     selectedLane.spline.add(e.getPoint());
                     showRegion = true;
@@ -776,7 +789,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         isPolygonDragged = false;
                     }
 
-                } 
+                }
                 if (activatePolygon && isPolygonPressed && SwingUtilities.isRightMouseButton(e)) {
                     isCancelledPolygon = true;
                 }
@@ -1098,6 +1111,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         for (PascalVocLane lane : splines) {
             for (Point point : lane.spline) {
                 if (point.distance(mousePoint) <= 5) { // Assuming a point is selected if it's within 5 pixels
+                    selectedLane = lane;
                     return point;
                 }
             }
@@ -2359,10 +2373,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_UP) {
             if (imageIndex < imageFiles.length - 1) {
                 imageIndex++;
+                selectedLane = null;
             }
         } else if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_DOWN) {
             if (imageIndex > 0) {
                 imageIndex--;
+                selectedLane = null;
             }
         } else if (key == KeyEvent.VK_S) {
             if (activateBoundingBox) {
@@ -2442,6 +2458,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
             }
             repaint();
+            return;
+        } else {
             return;
         }
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
