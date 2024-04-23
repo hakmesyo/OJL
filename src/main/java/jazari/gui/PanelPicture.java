@@ -44,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
+import static jazari.factory.FactoryUtils.getClassIndexArray;
 import jazari.interfaces.call_back_interface.CallBackTrigger;
 import jazari.utils.MyDialog;
 import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
@@ -99,7 +100,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private boolean activateEqualize = false;
     private boolean activateAutoSize = false;
     private AnnotationPascalVOCFormat pascalVocXML;
-    private List<PascalVocObject> listPascalVocObject = new ArrayList();
+    public List<PascalVocObject> listPascalVocObject = new ArrayList();
     private PascalVocSource source = new PascalVocSource();
     private PascalVocBoundingBox selectedBBox = null;
     private boolean activateAutoSizeAspect = false;
@@ -131,6 +132,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     public boolean isSeqenceVideoFrame;
     public Map<String, Color> mapBBoxColor = new HashMap();
     private String xmlFileName;
+    private String yoloTxtFileName;
     private String currentFolderName;
     private PascalVocObject selectedPascalVocObject;
     private PascalVocPolygon selectedPolygon;
@@ -258,23 +260,39 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         String folderName = FactoryUtils.getFolderPath(imagePath);
         currentFolderName = folderName;
         if ((activateBoundingBox || activatePolygon || activateLaneDetection) && imagePath != null && !imagePath.isEmpty()) {
-            String fileName = FactoryUtils.getFileName(imagePath) + ".xml";
-            xmlFileName = folderName + "/" + fileName;
-            boolean checkXML = new File(folderName, fileName).exists();
-            if (checkXML) {
-                if (FactoryUtils.isFileExist(folderName + "/class_labels.txt")) {
-                    mapBBoxColor = buildHashMap(folderName + "/class_labels.txt");
+            if (frame.combo_format.getSelectedIndex() == 0) {
+                //String fileName = FactoryUtils.getFileName(imagePath) + ".xml";
+                xmlFileName = folderName + "/" + FactoryUtils.getFileName(imagePath) + ".xml";
+                //boolean checkXML = new File(folderName, fileName).exists();
+                boolean checkXML = new File(xmlFileName).exists();
+                if (checkXML) {
+                    if (FactoryUtils.isFileExist(folderName + "/class_labels.txt")) {
+                        mapBBoxColor = buildHashMap(folderName + "/class_labels.txt");
+                    }
+                    AnnotationPascalVOCFormat bb = FactoryUtils.deserializePascalVocXML(xmlFileName);
+                    if (isClearBbox) {
+                        listPascalVocObject.clear();
+                        listPascalVocObject = bb.lstObjects;
+                    }
+                    showRegion = true;
+                    source = bb.source;
                 }
-                AnnotationPascalVOCFormat bb = FactoryUtils.deserializePascalVocXML(folderName + "/" + fileName);
-                //if (isClearBbox && !isSeqenceVideoFrame) {
-                if (isClearBbox) {
-                    listPascalVocObject.clear();
-                    listPascalVocObject = bb.lstObjects;
+            } else if (frame.combo_format.getSelectedIndex() == 1) {
+                yoloTxtFileName = folderName + "/" + FactoryUtils.getFileName(imagePath) + ".txt";
+                boolean checkYoloTxt = new File(yoloTxtFileName).exists();
+                if (checkYoloTxt) {
+                    if (FactoryUtils.isFileExist(folderName + "/class_labels.txt")) {
+                        mapBBoxColor = buildHashMap(folderName + "/class_labels.txt");
+                    }
+                    AnnotationPascalVOCFormat bb = FactoryUtils.deserializeYoloTxt(fromLeft,fromTop,image,yoloTxtFileName);
+                    
+                    if (isClearBbox) {
+                        listPascalVocObject.clear();
+                        listPascalVocObject = bb.lstObjects;
+                    }
+                    showRegion = true;
+                    source = bb.source;
                 }
-
-                showRegion = true;
-                //activateBoundingBox = true;
-                source = bb.source;
             }
             if (activateLaneDetection) {
                 readLanesFromTxt();
@@ -543,7 +561,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Sharpen",
             "Crop",
             "Resize Images",
-            "Convert VOC XML to Yolo",
+            "VocXML to Yolo Batch",
+            "Yolo to VocXML Batch",
             "Build JSON as TuSimple"
         };
 
@@ -965,9 +984,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         return;
                     }
 //                    if (!isBBoxDragged) {
-                        selectedBBox = isMouseClickedOnBoundingBox();
-                        repaint();
-                        return;
+                    selectedBBox = isMouseClickedOnBoundingBox();
+                    repaint();
+                    return;
 //                    }
 //                    repaint();
                 } else if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON1) {
@@ -1025,7 +1044,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                             ret = listVocObject.get(n - 1).bndbox;
                         }
                     }
-                    isBBoxDragged=false;
+                    isBBoxDragged = false;
                     return ret;
                 }
             }
@@ -2039,7 +2058,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 splines.clear();
                 selectedLane = null;
             } else if (activateBoundingBox || activatePolygon) {
-                FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".xml");
+                if (frame.combo_format.getSelectedIndex() == 0) {
+                    FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".xml");
+                } else if (frame.combo_format.getSelectedIndex() == 1) {
+                    FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".txt");
+                }
             }
         }
     }
@@ -2247,7 +2270,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else if (obj.getText().equals("Crop")) {
                     activateCrop = true;
                     cropImage();
-                } else if (obj.getText().equals("Convert VOC XML to Yolo")) {
+                } else if (obj.getText().equals("VocXML to Yolo Batch")) {
                     String subFolder = FactoryUtils.inputMessage("set subfolder name");
                     String msg = FactoryUtils.convertPascalVoc2YoloFormatBatch(imageFolder, subFolder, "detection");
                     FactoryUtils.showMessageTemp("Pascal VOC XMLs converted to Yolo format at " + msg, 3000, new CallBackTrigger() {
@@ -2318,6 +2341,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         frame.titleImageInfo = (imageFiles[imageIndex].getPath());
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
+    }
+
+    private void saveYoloTxt() {
+        String[] classIndex = FactoryUtils.getClassIndexArray(imageFolder + "/class_labels.txt");
+        String yoloTxt = FactoryUtils.convertPascalVoc2Yolo(currBufferedImage.getWidth(), currBufferedImage.getHeight(), listPascalVocObject, classIndex);
+        FactoryUtils.writeToFile(imageFolder + "/" + FactoryUtils.getFileName(new File(imagePath).getName()) + ".txt", yoloTxt);
     }
 
     private void savePascalVocXML() {
@@ -2427,7 +2456,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
         } else if (key == KeyEvent.VK_S) {
             if (activateBoundingBox) {
-                savePascalVocXML();
+                if (frame.combo_format.getSelectedIndex() == 0) {
+                    savePascalVocXML();
+                } else if (frame.combo_format.getSelectedIndex() == 1) {
+                    saveYoloTxt();
+                }
+
                 if (imageIndex + 1 >= imageFiles.length) {
                     return;
                 }

@@ -132,7 +132,7 @@ public final class FactoryUtils {
     public static final AtomicBoolean running = new AtomicBoolean(false);
     public static int nAttempts = 0;
     public static Robot robot;
-    public static String saveImageFolder=FactoryUtils.getDefaultDirectory();
+    public static String saveImageFolder = FactoryUtils.getDefaultDirectory();
 
     static {
         try {
@@ -1219,6 +1219,7 @@ public final class FactoryUtils {
 
     /**
      * Open Message Information Dialog Box
+     *
      * @param str:Message to show
      */
     public static void showMessage(String str) {
@@ -1228,6 +1229,7 @@ public final class FactoryUtils {
 
     /**
      * Open Message Information Dialog Box for a specified time
+     *
      * @param str
      * @param delay : time to wait in ms
      * @param func
@@ -6120,13 +6122,14 @@ public final class FactoryUtils {
         }
 
     }
-    
+
     /**
      * generate color from known color set
+     *
      * @param colorIndex
      * @return
      */
-    public static Color getColorForLaneDetection(int colorIndex){
+    public static Color getColorForLaneDetection(int colorIndex) {
         switch (colorIndex) {
             case 1:
                 return Color.BLUE;
@@ -6140,7 +6143,7 @@ public final class FactoryUtils {
                 return Color.PINK;
             case 6:
                 return Color.RED;
-            default: 
+            default:
                 return Color.BLACK;
         }
     }
@@ -6326,10 +6329,10 @@ public final class FactoryUtils {
         int dpi = Integer.parseInt(str_dpi);
         float scale = dpi / 96.0f;
         img = ImageProcess.resizeAspectRatio(img, (int) (img.getWidth() * scale), (int) (img.getHeight() * scale));
-        File file=FactoryUtils.getFileFromChooserSave(saveImageFolder);
+        File file = FactoryUtils.getFileFromChooserSave(saveImageFolder);
         //File file = FactoryUtils.getFileFromChooserSave();
         if (file != null) {
-            saveImageFolder=FactoryUtils.getFolderPath(file.getAbsolutePath());
+            saveImageFolder = FactoryUtils.getFolderPath(file.getAbsolutePath());
             ImageProcess.saveImage(img, file.getAbsolutePath());
             return file.getAbsolutePath();
         } else {
@@ -6457,7 +6460,7 @@ public final class FactoryUtils {
 
     public static void generateObjectDetectionDataSetYolo(String pathSource, String pathTarget, float trainRatio, float valRatio, float testRatio, boolean shuffle, int seed, String extension, String[] classLabels) {
         //FactoryUtils.balanceDatasetBasedOnFileExt(pathSource,"txt","jpg","xml");
-        FactoryUtils.convertPascalVoc2YoloFormatBndBox(pathSource, classLabels);
+        FactoryUtils.convertPascalVoc2YoloFormatBatchProcess(pathSource, classLabels);
         FactoryUtils.deleteEmptyFiles(pathSource, new String[]{"txt", "xml", "jpg"});
 
         File[] imgFiles = getFileArrayInFolderByExtension(pathSource, extension);
@@ -6909,7 +6912,7 @@ public final class FactoryUtils {
     }
 
     /**
-     * 
+     *
      * @param path
      * @param refList
      * @return
@@ -7259,64 +7262,64 @@ public final class FactoryUtils {
     }
 
     public static String removeLastChar(String content) {
-        return content.substring(0, content.length()-1);
+        return content.substring(0, content.length() - 1);
     }
 
     public static String buildJsonFileAsTuSimpleFormat(String imageFolder) {
-        String ret="";
-        File[] images=FactoryUtils.getFileArrayInFolderByExtension(imageFolder+"/seg_label", "png");
-        int[] rowIndex=CMatrix.getInstance().range(240, 720, 10).toIntArray1D();
-        
+        String ret = "";
+        File[] images = FactoryUtils.getFileArrayInFolderByExtension(imageFolder + "/seg_label", "png");
+        int[] rowIndex = CMatrix.getInstance().range(240, 720, 10).toIntArray1D();
+
         for (File image : images) {
-            BufferedImage img=ImageProcess.imread(image);
-            img=ImageProcess.rgb2gray(img);
-            int[][] m=ImageProcess.imageToPixelsInt(img);
-            boolean firstNonZero=false;
+            BufferedImage img = ImageProcess.imread(image);
+            img = ImageProcess.rgb2gray(img);
+            int[][] m = ImageProcess.imageToPixelsInt(img);
+            boolean firstNonZero = false;
             for (int i = 0; i < rowIndex.length; i++) {
-                int[] row=m[rowIndex[i]];
+                int[] row = m[rowIndex[i]];
                 //ArrayList<TGapIndex>[] lanes=new ArrayList[4];
-                HashMap<Integer,Integer> lanes=new HashMap();
-                String[] strLane=new String[4];
-                ArrayList<TGapIndex> lst=null;
-                int z=0;
-                for (int j = row.length-1; j > 0; j--) {
-                    if (row[j]!=0) {
-                        if (!firstNonZero){                            
-                            firstNonZero=true;
+                HashMap<Integer, Integer> lanes = new HashMap();
+                String[] strLane = new String[4];
+                ArrayList<TGapIndex> lst = null;
+                int z = 0;
+                for (int j = row.length - 1; j > 0; j--) {
+                    if (row[j] != 0) {
+                        if (!firstNonZero) {
+                            firstNonZero = true;
                         }
-                        lst=new ArrayList();
-                        int k=1;
-                        int gap=0;
-                        while(true){
-                            int top=m[i-k][j];
-                            int bottom=m[i+k][j];
-                            if (top!=0 && bottom!=0) {
-                               gap=2*k; 
-                            }else{
-                               break; 
+                        lst = new ArrayList();
+                        int k = 1;
+                        int gap = 0;
+                        while (true) {
+                            int top = m[i - k][j];
+                            int bottom = m[i + k][j];
+                            if (top != 0 && bottom != 0) {
+                                gap = 2 * k;
+                            } else {
+                                break;
                             }
                             k++;
                         }
                         lst.add(new TGapIndex(j, gap));
-                    }else{
+                    } else {
                         if (firstNonZero) {
-                            firstNonZero=false;
-                            int max=0;
-                            int index=0;
+                            firstNonZero = false;
+                            int max = 0;
+                            int index = 0;
                             for (TGapIndex gp : lst) {
-                                if (max<gp.gap) {
-                                    max=gp.gap;
-                                    index=gp.index;
+                                if (max < gp.gap) {
+                                    max = gp.gap;
+                                    index = gp.index;
                                 }
                             }
                             //lanes.put(z++, index);
-                            strLane[z++]+=index+",";
+                            strLane[z++] += index + ",";
                         }
                     }
                 }
-                
+
             }
-            
+
         }
         return ret;
     }
@@ -7325,41 +7328,42 @@ public final class FactoryUtils {
         Set<Character> ret = new HashSet<>();
         for (char c : str.toCharArray()) {
             ret.add(c);
-        }        
+        }
         return ret;
     }
 
     /**
      * return current date as 21.03.2024
-     * @return 
+     *
+     * @return
      */
     public static String currentDate() {
-        LocalDateTime now=java.time.LocalDateTime.now();
-        String ret=now.getDayOfMonth()+"."+now.getMonthValue()+"."+now.getYear();
+        LocalDateTime now = java.time.LocalDateTime.now();
+        String ret = now.getDayOfMonth() + "." + now.getMonthValue() + "." + now.getYear();
         return ret;
     }
-    
+
     /**
      * return current date time as 21.03.2024:12:05:45
-     * @return 
+     *
+     * @return
      */
     public static String currentDateTime() {
-        LocalDateTime now=java.time.LocalDateTime.now();
-        String ret=now.getDayOfMonth()+"."+now.getMonthValue()+"."+now.getYear()+":"+now.getHour()+":"+now.getMinute()+":"+now.getSecond();
+        LocalDateTime now = java.time.LocalDateTime.now();
+        String ret = now.getDayOfMonth() + "." + now.getMonthValue() + "." + now.getYear() + ":" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond();
         return ret;
     }
-    
+
     /**
      * return current time as 12:05:45
-     * @return 
+     *
+     * @return
      */
     public static String currentTime() {
-        LocalDateTime now=java.time.LocalDateTime.now();
-        String ret=now.getHour()+":"+now.getMinute()+":"+now.getSecond();
+        LocalDateTime now = java.time.LocalDateTime.now();
+        String ret = now.getHour() + ":" + now.getMinute() + ":" + now.getSecond();
         return ret;
     }
-    
-    
 
     public <T> List<T> toArrayList(T[][] twoDArray) {
         List<T> list = new ArrayList<T>();
@@ -8111,6 +8115,65 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static AnnotationPascalVOCFormat deserializeYoloTxt(int fromLeft,int fromTop,BufferedImage img, String filePath) {
+        String str = FactoryUtils.readFile(filePath);
+        AnnotationPascalVOCFormat ret = new AnnotationPascalVOCFormat();
+        File file = new File(filePath);
+        ret.folder = file.getParent();
+        String fileName = FactoryUtils.getFileName(file.getName()) + ".jpg";
+        ret.fileName = fileName;
+        ret.imagePath = ret.folder + "/" + ret.fileName;
+        ret.source = new PascalVocSource();
+        int w = img.getWidth();
+        int h = img.getHeight();
+        PascalVocSize size = new PascalVocSize(w, h, 3);
+        ret.size = size;
+
+        List<PascalVocObject> lstObjects = new ArrayList();
+        String[] rows = str.split("\n");
+        String[] classNames = FactoryUtils.getClassIndexArray(ret.folder + "/class_labels.txt");
+
+        Map<Integer, String> map = new HashMap();
+        for (String name : classNames) {
+            String s = name.split(":")[1];
+            int i = Integer.parseInt(name.split(":")[0]);
+            map.put(i, s);
+        }
+
+        int x1, y1, x2, y2;
+        float px1, px2, py1, py2;
+
+        for (String row : rows) {
+            String[] e = row.split(" ");
+            int classIndex = Integer.parseInt(e[0]);
+            String name = map.get(classIndex);
+            /*
+            x1 = pv.bndbox.xmin;
+            y1 = pv.bndbox.ymin;
+            x2 = pv.bndbox.xmax;
+            y2 = pv.bndbox.ymax;
+            px1 = (x1 + x2) / 2.0f / w; --> x1+x2=2*px1*w  --> x2=(2*px1*w+px2*w)/2
+            py1 = (y1 + y2) / 2.0f / h; --> y1+y2=2*py1*h
+            px2 = (x2 - x1) * 1.0f / w; --> x2-x1=px2*w
+            py2 = (y2 - y1) * 1.0f / h; --> y2-y1=py2*h
+            */
+            px1 = Float.parseFloat(e[1]);
+            py1 = Float.parseFloat(e[2]);
+            px2 = Float.parseFloat(e[3]);
+            py2 = Float.parseFloat(e[4]);
+            x2 = Math.round((px1 * w * 2 + px2 * w) / 2);
+            y2 = Math.round((py1 * h * 2 + py2 * h) / 2);
+            x1 = Math.round(x2-px2 * w);
+            y1 = Math.round(y2-py2 * h);
+            PascalVocBoundingBox bbox = new PascalVocBoundingBox(name, new Rectangle(x1, y1, x2 - x1, y2 - y1), fromLeft, fromTop, null);
+            List<PascalVocAttribute> attributeList = null;
+            PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, attributeList);
+            lstObjects.add(obj);
+        }
+        ret.lstObjects = lstObjects;
+        return ret;
+    }
+
     /**
      *
      * @param srcDirectory
@@ -8216,6 +8279,35 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static String convertPascalVoc2Yolo(int w, int h, List<PascalVocObject> listVoc, String[] classIndex) {
+        Map<String, Integer> map = new HashMap();
+        for (String str : classIndex) {
+            String s = str.split(":")[1];
+            int i = Integer.parseInt(str.split(":")[0]);
+            map.put(s, i);
+        }
+        int x1, x2, y1, y2, n, class_index;
+        float px1, px2, py1, py2;
+        String ret = "";
+        for (PascalVocObject pv : listVoc) {
+            x1 = pv.bndbox.xmin;
+            y1 = pv.bndbox.ymin;
+            x2 = pv.bndbox.xmax;
+            y2 = pv.bndbox.ymax;
+            px1 = (x1 + x2) / 2.0f / w;
+            py1 = (y1 + y2) / 2.0f / h;
+            px2 = (x2 - x1) * 1.0f / w;
+            py2 = (y2 - y1) * 1.0f / h;
+            //System.out.println(pv.name);
+            if (!map.containsKey(pv.name)) {
+                continue;
+            }
+            class_index = map.get(pv.name);
+            ret += class_index + " " + px1 + " " + py1 + " " + px2 + " " + py2 + "\n";
+        }
+        return ret;
+    }
+
     /**
      * yolo format needs relative coordinate therefore this method convert real
      * boundingbox point position to image size relative position. It needs main
@@ -8224,7 +8316,7 @@ public final class FactoryUtils {
      * @param mainFolderPath
      * @param refList : String array of class_index:class_name pairs
      */
-    public static void convertPascalVoc2YoloFormatBndBox(String mainFolderPath, String[] refList) {
+    public static void convertPascalVoc2YoloFormatBatchProcess(String mainFolderPath, String[] refList) {
         File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "xml");
         int x1, x2, y1, y2, w, h, n, class_index;
         float px1, px2, py1, py2;
@@ -8271,8 +8363,8 @@ public final class FactoryUtils {
 
     /**
      * convert all pascalvoc xml annotation files to yolo txt format based on
-     * type (detection or segmentation) You only need to specify mainFolderPath and
-     * subFolderName
+     * type (detection or segmentation) You only need to specify mainFolderPath
+     * and subFolderName
      *
      * @param mainFolderPath
      * @param subFolderName
@@ -8307,7 +8399,7 @@ public final class FactoryUtils {
      * @param subfolderName
      * @param classIndex : String array of class_index:class_name pairs
      * @param detectionType
-     * @return 
+     * @return
      */
     public static String convertPascalVoc2YoloFormatBatch(String mainFolderPath, String subfolderName, String detectionType, String[] classIndex) {
         File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "xml");
@@ -8648,9 +8740,10 @@ public final class FactoryUtils {
 
     /**
      * convert gps coordinate to decimal (double)
-     * <a href="https://coordinates-converter.com/en/decimal/37.965177,41.851559?karte=OpenStreetMap&zoom=16"> link </a>
+     * <a href="https://coordinates-converter.com/en/decimal/37.965177,41.851559?karte=OpenStreetMap&zoom=16">
+     * link </a>
      *
-     * @param lat   : (Y axis, Parallel) 41°51'4.61"D --> 41:51:4.61:E
+     * @param lat : (Y axis, Parallel) 41°51'4.61"D --> 41:51:4.61:E
      * @param longt : (X axis, Meridian) 37°57'43.60"K --> 37:57:43.60:N
      * @return
      */
@@ -8659,23 +8752,23 @@ public final class FactoryUtils {
         String[] x = longt.split(":");
         ret.x = Double.parseDouble(x[0]) + Double.parseDouble(x[1]) / 60.0 + Double.parseDouble(x[2]) / 3600.0;
         if (x[3].equals("S")) {
-            ret.x=-ret.x;
+            ret.x = -ret.x;
         }
         String[] y = lat.split(":");
         ret.y = Double.parseDouble(y[0]) + Double.parseDouble(y[1]) / 60.0 + Double.parseDouble(y[2]) / 3600.0;
         if (y[3].equals("W")) {
-            ret.y=-ret.y;
+            ret.y = -ret.y;
         }
         return ret;
     }
-    
+
     /**
      *
      * @param from
      * @param to
      * @return
      */
-    public static double getDirectionFromGPSPoints(Point2D.Double from, Point2D.Double to){
+    public static double getDirectionFromGPSPoints(Point2D.Double from, Point2D.Double to) {
         double dLon = Math.toRadians(to.x - from.x);
 
         double lat1 = Math.toRadians(from.y);
@@ -8691,13 +8784,13 @@ public final class FactoryUtils {
         bearing = (bearing + 360) % 360;
 
         return bearing;
-        
+
     }
-    
+
     public static TBoundingBox getBoundingBox(int[][] maskImage) {
         return findBoundingBox(maskImage);
     }
-    
+
     public static TBoundingBox findBoundingBox(int[][] maskImage) {
         int rows = maskImage.length;
         int cols = maskImage[0].length;
@@ -8709,7 +8802,7 @@ public final class FactoryUtils {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                if (maskImage[i][j] == 255) { 
+                if (maskImage[i][j] == 255) {
                     minX = Math.min(minX, j);
                     minY = Math.min(minY, i);
                     maxX = Math.max(maxX, j);

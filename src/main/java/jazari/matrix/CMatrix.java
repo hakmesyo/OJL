@@ -9659,7 +9659,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix convertPascalVoc2Yolo(String pathFolder, String[] labels) {
-        FactoryUtils.convertPascalVoc2YoloFormatBndBox(pathFolder, labels);
+        FactoryUtils.convertPascalVoc2YoloFormatBatchProcess(pathFolder, labels);
         return this;
     }
 

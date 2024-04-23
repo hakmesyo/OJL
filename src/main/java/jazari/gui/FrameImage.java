@@ -43,7 +43,7 @@ public class FrameImage extends javax.swing.JFrame {
     public String imageFolderPath;
     public String titleImageInfo;
     public CMatrix cm;
-    public String caption="";
+    public String caption = "";
 
     /**
      * Creates new form FrameImage
@@ -64,7 +64,7 @@ public class FrameImage extends javax.swing.JFrame {
      */
     public FrameImage(CMatrix cm, String imagePath, String caption) {
         initComponents();
-        this.caption=caption;
+        this.caption = caption;
         imageFolderPath = FactoryUtils.getFolderPath(imagePath);
         if (caption != null && !caption.isEmpty()) {
             setTitle(caption);
@@ -119,6 +119,7 @@ public class FrameImage extends javax.swing.JFrame {
         chkLane = new javax.swing.JCheckBox();
         btn_screen_capture = new javax.swing.JButton();
         chk_stretch = new javax.swing.JCheckBox();
+        combo_format = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -297,6 +298,13 @@ public class FrameImage extends javax.swing.JFrame {
             }
         });
 
+        combo_format.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PascalVOC", "Yolo" }));
+        combo_format.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                combo_formatİtemStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -315,7 +323,9 @@ public class FrameImage extends javax.swing.JFrame {
                 .addComponent(lbl_zoom_factor)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chk_stretch)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 76, Short.MAX_VALUE)
+                .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chkLane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chkBBox)
@@ -348,7 +358,8 @@ public class FrameImage extends javax.swing.JFrame {
                     .addComponent(btn_analytics)
                     .addComponent(chkLane)
                     .addComponent(btn_screen_capture)
-                    .addComponent(chk_stretch))
+                    .addComponent(chk_stretch)
+                    .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(61, Short.MAX_VALUE))
         );
 
@@ -359,7 +370,7 @@ public class FrameImage extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelPicture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1089, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -380,19 +391,19 @@ public class FrameImage extends javax.swing.JFrame {
         } else {
             img = getPicturePanel().selectionRectImage;
         }
-        if (cm==null) {
-            cm=CMatrix.getInstance(img);
-        }else{
-            cm=cm.setImage(img);
-        }        
+        if (cm == null) {
+            cm = CMatrix.getInstance(img);
+        } else {
+            cm = cm.setImage(img);
+        }
         if (img.getType() == BufferedImage.TYPE_BYTE_GRAY) {
-            frm = new FrameDataGrid(cm.toFloatArray2D(),true);            
+            frm = new FrameDataGrid(cm.toFloatArray2D(), true);
         } else {
             frm = new FrameDataGrid(cm.getARGB());
         }
-        frm.frameImage=this;
+        frm.frameImage = this;
         frm.setVisible(true);
-        
+
         //frm.setAlwaysOnTop(true);
         //getPicturePanel().requestFocus();
     }//GEN-LAST:event_btn_dataGridActionPerformed
@@ -539,6 +550,12 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().requestFocus();
     }//GEN-LAST:event_chk_stretchİtemStateChanged
 
+    private void combo_formatİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_combo_formatİtemStateChanged
+        getPicturePanel().listPascalVocObject.clear();
+        getPicturePanel().setImage(this.img, imagePath, this.getTitle());
+        getPicturePanel().requestFocus();
+    }//GEN-LAST:event_combo_formatİtemStateChanged
+
     public PanelPicture getPicturePanel() {
         return ((PanelPicture) panelPicture);
     }
@@ -602,6 +619,7 @@ public class FrameImage extends javax.swing.JFrame {
     private javax.swing.JCheckBox chkPolygon;
     private javax.swing.JCheckBox chkSequence;
     private javax.swing.JCheckBox chk_stretch;
+    public javax.swing.JComboBox<String> combo_format;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -666,11 +684,11 @@ public class FrameImage extends javax.swing.JFrame {
     }
 
     public void setPixelInfo(String str) {
-        if ("".equals(caption) || caption==null) {
+        if ("".equals(caption) || caption == null) {
             setTitle(this.titleImageInfo + "  " + str);
         } else {
-            setTitle("["+caption+"] "+this.titleImageInfo + "  " + str);
-        }        
+            setTitle("[" + caption + "] " + this.titleImageInfo + "  " + str);
+        }
     }
 
     public void stretchFrame() {
