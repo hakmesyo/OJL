@@ -586,6 +586,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                //eğer çift tıklandıysa
                 if (e.getClickCount() == 2 && !e.isConsumed()) {
                     e.consume();
                     if (activateBoundingBox && selectedBBox != null) {
@@ -963,12 +964,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
                         return;
                     }
-                    if (!isBBoxDragged) {
+//                    if (!isBBoxDragged) {
                         selectedBBox = isMouseClickedOnBoundingBox();
                         repaint();
                         return;
-                    }
-                    repaint();
+//                    }
+//                    repaint();
                 } else if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON1) {
                     setDefaultCursor();
                     mousePos = constraintMousePosition(e);
@@ -992,14 +993,39 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 if (listPascalVocObject.size() == 0) {
                     return null;
                 } else {
+                    selectedPascalVocObject = null;
+                    PascalVocBoundingBox desiredBbox = null;
+                    List<PascalVocObject> listVocObject = new ArrayList();
                     for (PascalVocObject obj : listPascalVocObject) {
                         PascalVocBoundingBox bbox = obj.bndbox;
                         if (FactoryUtils.isPointInROI(relativeMousePos, scaleWithZoomFactor(bbox.getRectangle(5)))) {
-                            ret = bbox;
-                            selectedPascalVocObject = obj;
-                            return ret;
+                            if (desiredBbox == null) {
+                                desiredBbox = bbox;
+                                listVocObject.add(obj);
+                                selectedPascalVocObject = obj;
+                                continue;
+                            }
+                            Rectangle current = bbox.getRectangle(0);
+                            Rectangle desired = desiredBbox.getRectangle(0);
+                            if (desired.contains(current)) {
+                                selectedPascalVocObject = obj;
+                            }
+                            listVocObject.add(obj);
+//                            ret = bbox;
+//                            selectedPascalVocObject = obj;
+//                            return ret;
                         }
                     }
+                    if (selectedPascalVocObject != null) {
+                        ret = selectedPascalVocObject.bndbox;
+                    } else {
+                        int n = listVocObject.size();
+                        if (n > 0) {
+                            selectedPascalVocObject = listVocObject.get(n - 1);
+                            ret = listVocObject.get(n - 1).bndbox;
+                        }
+                    }
+                    isBBoxDragged=false;
                     return ret;
                 }
             }
@@ -1738,8 +1764,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     private BufferedImage adjustImageToPanel(BufferedImage bf, boolean isClearBbox) {
-        if (bf.getHeight() > 950) {
-            float zoom_factor = 950.0f / bf.getHeight();
+        if (bf.getHeight() > 850) {
+            float zoom_factor = 850.0f / bf.getHeight();
             int w = (int) (bf.getWidth() * zoom_factor);
             int h = (int) (bf.getHeight() * zoom_factor);
             frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
@@ -2004,7 +2030,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         if (FactoryUtils.confirmMessage("do you really want to delete this image file from the disk permanently?") == JOptionPane.YES_OPTION) {
             FactoryUtils.deleteFile(imagePath);
             imageFiles = FactoryUtils.getFileArrayInFolderForImages(imageFolder);
-            if (imageFiles.length>0 && imageIndex==imageFiles.length) {
+            if (imageFiles.length > 0 && imageIndex == imageFiles.length) {
                 imageIndex--;
             }
             if (activateLaneDetection) {
@@ -2012,7 +2038,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 FactoryUtils.deleteFile(imageFolder + "/seg_label/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".png");
                 splines.clear();
                 selectedLane = null;
-            }else if(activateBoundingBox || activatePolygon){
+            } else if (activateBoundingBox || activatePolygon) {
                 FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".xml");
             }
         }

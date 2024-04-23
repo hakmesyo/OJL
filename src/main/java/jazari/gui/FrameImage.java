@@ -8,7 +8,6 @@ package jazari.gui;
 import jazari.utils.DataAnalytics;
 import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import jazari.matrix.CMatrix;
@@ -641,8 +640,8 @@ public class FrameImage extends javax.swing.JFrame {
         this.img = cm.getImage();
         this.imagePath = imagePath;
         getPicturePanel().activateBoundingBox = chkBBox.isSelected();
-        if (img.getHeight() > 950) {
-            float zoom_factor = 950.0f / img.getHeight();
+        if (img.getHeight() > 850) {
+            float zoom_factor = 850.0f / img.getHeight();
             int w = (int) (img.getWidth() * zoom_factor);
             int h = (int) (img.getHeight() * zoom_factor);
             this.lbl_zoom_factor.setText("zoom factor:" + FactoryUtils.formatFloat(zoom_factor, 4));

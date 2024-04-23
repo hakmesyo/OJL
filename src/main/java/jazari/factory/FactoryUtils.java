@@ -56,15 +56,18 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.Vector;
@@ -3721,7 +3724,7 @@ public final class FactoryUtils {
     }
 
     /**
-     * get File Array in folder
+     * get File Array in folder with WindowsLikeComparator Sorting
      *
      * @param imageFolder
      * @return
@@ -3734,7 +3737,18 @@ public final class FactoryUtils {
         List lst = Arrays.asList(list);
         Collections.sort(lst, new WindowsLikeComparator());
         lst.toArray(list);
+        return list;
+    }
 
+    /**
+     * get File Array in folder no sorting
+     *
+     * @param imageFolder
+     * @return
+     */
+    public static File[] getFileArrayInFolderNoSorting(String imageFolder) {
+        File dir = new File(imageFolder);
+        File[] list = dir.listFiles();
         return list;
     }
 
@@ -7306,6 +7320,45 @@ public final class FactoryUtils {
         }
         return ret;
     }
+
+    public static Set<Character> str2set(String str) {
+        Set<Character> ret = new HashSet<>();
+        for (char c : str.toCharArray()) {
+            ret.add(c);
+        }        
+        return ret;
+    }
+
+    /**
+     * return current date as 21.03.2024
+     * @return 
+     */
+    public static String currentDate() {
+        LocalDateTime now=java.time.LocalDateTime.now();
+        String ret=now.getDayOfMonth()+"."+now.getMonthValue()+"."+now.getYear();
+        return ret;
+    }
+    
+    /**
+     * return current date time as 21.03.2024:12:05:45
+     * @return 
+     */
+    public static String currentDateTime() {
+        LocalDateTime now=java.time.LocalDateTime.now();
+        String ret=now.getDayOfMonth()+"."+now.getMonthValue()+"."+now.getYear()+":"+now.getHour()+":"+now.getMinute()+":"+now.getSecond();
+        return ret;
+    }
+    
+    /**
+     * return current time as 12:05:45
+     * @return 
+     */
+    public static String currentTime() {
+        LocalDateTime now=java.time.LocalDateTime.now();
+        String ret=now.getHour()+":"+now.getMinute()+":"+now.getSecond();
+        return ret;
+    }
+    
     
 
     public <T> List<T> toArrayList(T[][] twoDArray) {

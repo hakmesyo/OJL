@@ -30,6 +30,7 @@ import org.apache.commons.io.comparator.NameFileComparator;
  * @author cezerilab
  */
 public class Deneme {
+
     static String path = "D:\\Dropbox\\NetbeansProjects\\LaserWeedingImageAcquisitionApp\\images\\ds";
 
     public static boolean intersects(Point k, Point z, Point p) {
@@ -40,20 +41,92 @@ public class Deneme {
         return new Line2D.Double(x_from, y_from, x_to, y_to).ptLineDist(p) <= 3;
     }
 
-
     public static void main(String[] args) {
-        float f=0;
-        long t1=FactoryUtils.tic();
-        for (int i = 0; i < 100; i++) {            
-            f=FactoryUtils.perlinNoise(i, 0.05f);
-            t1=FactoryUtils.toc(t1);
+        float[][] k1=new float[10][10];
+        float[][] k2=new float[10][10];
+        float[][] k3=new float[10][10];
+        float[][] k4=new float[10][10];
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < i; j++) {
+                k1[i][10-j]=255;
+                k2[i][j]=255;
+                k2[i][j]=255;
+            }
         }
         
-        CMatrix cm1 = CMatrix.getInstance().range(-360, 360).toRadians().sin();
-        CMatrix cm2 = CMatrix.getInstance().range(-360, 360).toRadians().cos();
-        CMatrix cm3 = CMatrix.getInstance().range(-360, 360).toRadians().timesScalar(3).cos();
-        //CMatrix cm = cm1.cat(1,cm2).cat(1, cm3).plot(new String[]{"Sin-Cos Functions","angle","value"},new String[]{"sin","cos","cos(3x)"});
-        CMatrix cm = cm1.cat(1,cm2).cat(1, cm3).plot(CMatrix.getInstance().range(-360,360).toFloatArray1D());
+        
+        
+//        float[][] d = new float[160][160];
+//        for (int i = 0; i < 8; i++) {
+//            for (int j = 0; j < 8; j++) {
+//                if ((i+j)%2==0) {
+//                    
+//                }
+//                if (j % 2 == 0) {
+//                    if (i % 2 == 0) {
+//                        for (int k = 0; k < 20; k++) {
+//                            for (int l = 0; l < 20; l++) {
+//                                d[i*20+k][j*20+l]=255;
+//                            }
+//                        }
+//                    }else{
+//                        for (int k = 0; k < 20; k++) {
+//                            for (int l = 0; l < 20; l++) {
+//                                d[i*20+k][(j+1)*20+l]=255;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        CMatrix cm = CMatrix.getInstance(d).imshow();
+        //        CMatrix cm_1 = CMatrix.getInstance().zeros(20,20);
+        //        CMatrix cm_2 = CMatrix.getInstance().ones(20,20).timesScalar(255);
+        //        CMatrix cm = cm_1
+        //                .clone().cat(1, cm_2.clone()).cat(2, cm_2.clone().cat(1, cm_1.clone()))                
+        //                .imshow()
+        //                .replicateColumn(4)
+        //                .replicateRow(4)
+        //                .imshow()
+        //                
+//                        ;
+//                CMatrix cm = CMatrix.getInstance(40,40,0)
+//                        .setValue("0:20", "0:20", 255)
+//                        .setValue("20:40", "20:40", 255)
+//                        .replicateColumn(4)
+//                        .replicateRow(4)
+//                        .imshow()
+//                        
+//                        ;
+//                int size=8;
+//                int pixels=20;
+//                CMatrix cm = CMatrix.getInstance().zeros(size*pixels,size*pixels);
+//                float[][] d=new float[160][160];
+//                for (int i = 0; i < size*pixels; i++) {
+//                    for (int j = 0; j < size*pixels; j++) {
+//                        if ((i/pixels)+(j/pixels)%2==0) {
+//                            cm.setValue(i, j, 255);
+//                            //d[i][j]=255;
+//                        }else{
+//                            cm.setValue(i,j,0);
+//                            //d[i][j]=0;
+//                        }
+//                    }
+//                }
+//                //cm.setArray(d);
+//                cm.imshow();
+        //        float f=0;
+        //        long t1=FactoryUtils.tic();
+        //        for (int i = 0; i < 100; i++) {            
+        //            f=FactoryUtils.perlinNoise(i, 0.05f);
+        //            t1=FactoryUtils.toc(t1);
+        //        }
+        //        
+        //        CMatrix cm1 = CMatrix.getInstance().range(-360, 360).toRadians().sin();
+        //        CMatrix cm2 = CMatrix.getInstance().range(-360, 360).toRadians().cos();
+        //        CMatrix cm3 = CMatrix.getInstance().range(-360, 360).toRadians().timesScalar(3).cos();
+        //        //CMatrix cm = cm1.cat(1,cm2).cat(1, cm3).plot(new String[]{"Sin-Cos Functions","angle","value"},new String[]{"sin","cos","cos(3x)"});
+        //        CMatrix cm = cm1.cat(1,cm2).cat(1, cm3).plot(CMatrix.getInstance().range(-360,360).toFloatArray1D());
         //        System.out.println(Math.log(Math.E));
         //        List<File> filenames = Arrays.asList(new File[]{
         //            new File("filename01.jpg"),
