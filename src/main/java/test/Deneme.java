@@ -42,17 +42,34 @@ public class Deneme {
     }
 
     public static void main(String[] args) {
-        float[][] k1=new float[10][10];
-        float[][] k2=new float[10][10];
-        float[][] k3=new float[10][10];
-        float[][] k4=new float[10][10];
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < i; j++) {
-                k1[i][10-j]=255;
-                k2[i][j]=255;
-                k2[i][j]=255;
+        String path="C:\\Users\\dell_lab\\Desktop\\perihan\\crop_v2\\crop_v2";
+        File[] dirs=FactoryUtils.getDirectories(path);
+        for (File dir : dirs) {
+            File[] drs=FactoryUtils.getDirectories(path+"/"+dir.getName());
+            for (File dr : drs) {
+                File[] files=FactoryUtils.getFileArrayInFolderByExtension(path+"/"+dir.getName()+"/"+dr.getName(), "jpg");
+                for (File file : files) {
+//                    FactoryUtils.copyFile(file, new File("C:\\Users\\dell_lab\\Desktop\\perihan\\yolo_ds/"+file.getName()));
+//                    File xmlFile=new File(file.getParent()+"/"+FactoryUtils.getFileName(file.getName())+".xml");
+//                    FactoryUtils.copyFile(xmlFile, new File("C:\\Users\\dell_lab\\Desktop\\perihan\\yolo_ds/"+xmlFile.getName()));
+                    String txtFilePath=file.getParent()+"/"+FactoryUtils.getFileName(file.getName())+".txt";
+                    FactoryUtils.deleteFile(txtFilePath);
+                }
             }
+            
         }
+        
+//        float[][] k1=new float[10][10];
+//        float[][] k2=new float[10][10];
+//        float[][] k3=new float[10][10];
+//        float[][] k4=new float[10][10];
+//        for (int i = 0; i < 10; i++) {
+//            for (int j = 0; j < i; j++) {
+//                k1[i][10-j]=255;
+//                k2[i][j]=255;
+//                k2[i][j]=255;
+//            }
+//        }
         
         
         

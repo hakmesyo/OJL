@@ -284,8 +284,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     if (FactoryUtils.isFileExist(folderName + "/class_labels.txt")) {
                         mapBBoxColor = buildHashMap(folderName + "/class_labels.txt");
                     }
-                    AnnotationPascalVOCFormat bb = FactoryUtils.deserializeYoloTxt(fromLeft,fromTop,image,yoloTxtFileName);
-                    
+                    AnnotationPascalVOCFormat bb = FactoryUtils.deserializeYoloTxt(fromLeft, fromTop, image, yoloTxtFileName);
+
                     if (isClearBbox) {
                         listPascalVocObject.clear();
                         listPascalVocObject = bb.lstObjects;
@@ -423,8 +423,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     paintSelectionRect(gr);
                 }
             }
+            paintPixelInfo(gr, currBufferedImage.getWidth(), currBufferedImage.getHeight());
             if (isMouseInCanvas()) {
-                paintPixelInfo(gr, currBufferedImage.getWidth(), currBufferedImage.getHeight());
                 paintMouseDashedLines(gr, wPanel, hPanel, colorDashedLine);
             }
 
@@ -561,9 +561,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Sharpen",
             "Crop",
             "Resize Images",
-            "VocXML to Yolo Batch",
-            "Yolo to VocXML Batch",
-            "Build JSON as TuSimple"
+            "Build YOLO DataSet", //"VocXML to Yolo Batch",
+        //"Yolo to VocXML Batch"
+        //"Build JSON as TuSimple"
         };
 
         ButtonGroup itemsGroup = new ButtonGroup();
@@ -1754,6 +1754,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 s = s.replace("java.awt.Color", "");
                 frame.setPixelInfo(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=" + currBufferedImage.getType());// + " RGB=" + "(" + r + "," + g + "," + b + ")");
             }
+        }else{
+            frame.setPixelInfo(getImageSize() + " Pos=(" + 0 + ":" + 0 + ") Value=" + 0 + " Img Type=" + currBufferedImage.getType());
         }
     }
 
@@ -2270,14 +2272,15 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else if (obj.getText().equals("Crop")) {
                     activateCrop = true;
                     cropImage();
-                } else if (obj.getText().equals("VocXML to Yolo Batch")) {
-                    String subFolder = FactoryUtils.inputMessage("set subfolder name");
-                    String msg = FactoryUtils.convertPascalVoc2YoloFormatBatch(imageFolder, subFolder, "detection");
-                    FactoryUtils.showMessageTemp("Pascal VOC XMLs converted to Yolo format at " + msg, 3000, new CallBackTrigger() {
-                        @Override
-                        public void trigger() {
-                        }
-                    });
+                } else if (obj.getText().equals("Build YOLO DataSet")) {
+                    new FrameBuildYoloDataSet(frame).setVisible(true);
+//                    String subFolder = FactoryUtils.inputMessage("set subfolder name");
+//                    String msg = FactoryUtils.convertPascalVoc2YoloFormatBatch(imageFolder, subFolder, "detection");
+//                    FactoryUtils.showMessageTemp("Pascal VOC XMLs converted to Yolo format at " + msg, 3000, new CallBackTrigger() {
+//                        @Override
+//                        public void trigger() {
+//                        }
+//                    });
                 } else if (activateLaneDetection && obj.getText().equals("Build JSON as TuSimple")) {
                     String str = FactoryUtils.buildJsonFileAsTuSimpleFormat(imageFolder);
                 } else if (obj.getText().equals("Command Interpreter")) {
@@ -2322,7 +2325,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
         setImage(bf, imagePath, caption, true);
         System.out.println("activateCrop:" + activateCrop);
-        frame.titleImageInfo = (imageFiles[imageIndex].getPath());
+        //frame.titleImageInfo = (imageFiles[imageIndex].getPath());
+        frame.titleImageInfo = (imageFiles[imageIndex].getName() + "      [ " + (imageIndex + 1) + " / " + imageFiles.length + " ]");
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
     }
@@ -2338,7 +2342,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         }
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
         setImage(bf, imagePath, caption, true);
-        frame.titleImageInfo = (imageFiles[imageIndex].getPath());
+        //frame.titleImageInfo = (imageFiles[imageIndex].getPath());
+        frame.titleImageInfo = (imageFiles[imageIndex].getName() + "      [ " + (imageIndex + 1) + " / " + imageFiles.length + " ]");
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
     }
@@ -2379,7 +2384,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     private void saveLanesAsTxt() {
-        String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".txt";
+        String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".lane";
         String content = "";
         for (PascalVocLane lane : splines) {
             String s = "lane:" + lane.name + ":";
@@ -2395,7 +2400,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private void readLanesFromTxt() {
         splines.clear();
         showRegion = true;
-        String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".txt";
+        String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".lane";
         if (!FactoryUtils.isFileExist(txtFilePath)) {
             return;
         }

@@ -14,8 +14,11 @@ public class ATest1 {
     public static void main(String[] args) {
         CMatrix cm = CMatrix.getInstance()
                 .imread("images/bf.png")
+                .imread("images/blob.jpg")
                 .rgb2gray()
-                .cmd("0:2:end",":")
+                //.cmd("0:2:end",":")
+                //.imshow()
+                .addNoisePartial(10,0.7f)
                 .imshow()
                 
                 

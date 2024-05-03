@@ -509,7 +509,7 @@ public class FrameImage extends javax.swing.JFrame {
 
     private void btn_analyticsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_analyticsActionPerformed
         if (FactoryUtils.isFileExist(imageFolderPath + "/class_labels.txt")) {
-            List<DataAnalytics> lst = FactoryUtils.getDataAnalytics(imageFolderPath);
+            List<DataAnalytics> lst = FactoryUtils.getDataAnalytics(imageFolderPath,(combo_format.getSelectedIndex()==0)?"xml":"txt");
             FrameDataAnalytics frm = new FrameDataAnalytics(this, imageFolderPath, lst);
             frm.setVisible(true);
 
@@ -613,10 +613,10 @@ public class FrameImage extends javax.swing.JFrame {
     private javax.swing.JButton btn_dataGrid;
     private javax.swing.JButton btn_save;
     private javax.swing.JButton btn_screen_capture;
-    private javax.swing.JCheckBox chkBBox;
+    public javax.swing.JCheckBox chkBBox;
     private javax.swing.JCheckBox chkLabelVisible;
-    private javax.swing.JCheckBox chkLane;
-    private javax.swing.JCheckBox chkPolygon;
+    public javax.swing.JCheckBox chkLane;
+    public javax.swing.JCheckBox chkPolygon;
     private javax.swing.JCheckBox chkSequence;
     private javax.swing.JCheckBox chk_stretch;
     public javax.swing.JComboBox<String> combo_format;

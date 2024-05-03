@@ -981,8 +981,9 @@ public final class FactoryUtils {
         StringBuilder builder = new StringBuilder("");
         File file = new File(fileName);
         if (!file.exists()) {
-            showMessage(fileName + " isminde bir dosya yok");
-            return ret;
+            showMessageTemp(fileName + " isminde bir dosya yok", nAttempts, null);
+            //showMessage(fileName + " isminde bir dosya yok");
+            return null;
         }
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String s;
@@ -6877,17 +6878,28 @@ public final class FactoryUtils {
         return ret;
     }
 
+    /**
+     *
+     * @param s
+     * @return
+     */
     public static int toInt(String s) {
         return Integer.parseInt(s);
     }
 
-    public static String convertPascalVoc2YoloFormatPolygonSingle(String path, String[] refList) {
+    /**
+     *
+     * @param path
+     * @param classIndex
+     * @return
+     */
+    public static String convertPascalVoc2YoloFormatPolygonSingle(String path, String[] classIndex) {
         AnnotationPascalVOCFormat bbp = deserializePascalVocXML(path);
         int w = bbp.size.width;
         int h = bbp.size.height;
         String ret = "";
         Map<String, Integer> map = new HashMap();
-        for (String str : refList) {
+        for (String str : classIndex) {
             String s = str.split(":")[1];
             int i = Integer.parseInt(str.split(":")[0]);
             map.put(s, i);
@@ -6914,10 +6926,10 @@ public final class FactoryUtils {
     /**
      *
      * @param path
-     * @param refList
+     * @param classIndex
      * @return
      */
-    public static String convertPascalVoc2YoloFormatDetectionSingle(String path, String[] refList) {
+    public static String convertPascalVoc2YoloFormatDetectionSingle(String path, String[] classIndex) {
         AnnotationPascalVOCFormat bbp = deserializePascalVocXML(path);
         int w = bbp.size.width;
         int h = bbp.size.height;
@@ -6925,7 +6937,7 @@ public final class FactoryUtils {
         int x1, x2, y1, y2, n, class_index;
         float px1, px2, py1, py2;
         Map<String, Integer> map = new HashMap();
-        for (String str : refList) {
+        for (String str : classIndex) {
             String s = str.split(":")[1];
             int i = Integer.parseInt(str.split(":")[0]);
             map.put(s, i);
@@ -6948,7 +6960,7 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static List<DataAnalytics> getDataAnalytics(String imageFolderPath) {
+    public static List<DataAnalytics> getDataAnalytics(String imageFolderPath, String extension) {
         List<String> classNames = getClassNamesFromClassLabelsTxtFile(imageFolderPath);
         if (classNames == null) {
             return null;
@@ -6957,22 +6969,40 @@ public final class FactoryUtils {
         for (String className : classNames) {
             ret.add(new DataAnalytics(className));
         }
-
-        File[] files = getFileArrayInFolderByExtension(imageFolderPath, "xml");
-        if (files.length == 0) {
-            return null;
-        }
         int total = 0;
-        for (File file : files) {
-            if (checkIntegrityOfXmlFileWithCorrespondingImages(file)) {
-                AnnotationPascalVOCFormat apv = FactoryUtils.deserializePascalVocXML(file.getAbsolutePath());
-                List<PascalVocObject> lst = apv.lstObjects;
-                for (PascalVocObject pvo : lst) {
-                    if (classNames.contains(pvo.name)) {
-                        DataAnalytics da = getDataAnalyticItem(ret, pvo.name);
+
+        if (extension.equals("xml")) {
+            File[] files = getFileArrayInFolderByExtension(imageFolderPath, "xml");
+            if (files.length == 0) {
+                return null;
+            }
+            for (File file : files) {
+                if (checkIntegrityOfXmlFileWithCorrespondingImages(file)) {
+                    AnnotationPascalVOCFormat apv = FactoryUtils.deserializePascalVocXML(file.getAbsolutePath());
+                    List<PascalVocObject> lst = apv.lstObjects;
+                    for (PascalVocObject pvo : lst) {
+                        if (classNames.contains(pvo.name)) {
+                            DataAnalytics da = getDataAnalyticItem(ret, pvo.name);
+                            da.frequency++;
+                            total++;
+                        }
+                    }
+                }
+            }
+        } else if (extension.equals("txt")) {
+            File[] files = getFileArrayInFolderByExtension(imageFolderPath, "txt");
+            if (files.length == 0) {
+                return null;
+            }
+            for (File file : files) {
+                String[] rows = FactoryUtils.readFile(file.getAbsolutePath()).split("\n");
+                for (String row : rows) {
+                    if (classNames.contains(row.split(" ")[0])) {
+                        DataAnalytics da = getDataAnalyticItem(ret, row.split(" ")[0]);
                         da.frequency++;
                         total++;
                     }
+
                 }
             }
         }
@@ -7324,10 +7354,58 @@ public final class FactoryUtils {
         return ret;
     }
 
+    /**
+     * convert string to set (set contains individual elements)
+     *
+     * @param str
+     * @return Set Character
+     */
     public static Set<Character> str2set(String str) {
         Set<Character> ret = new HashSet<>();
         for (char c : str.toCharArray()) {
             ret.add(c);
+        }
+        return ret;
+    }
+
+    /**
+     * convert int array to set (set contains individual elements)
+     *
+     * @param param:int array
+     * @return Set Integer
+     */
+    public static Set<Integer> array2set(int[] param) {
+        Set<Integer> ret = new HashSet<>();
+        for (int p : param) {
+            ret.add(p);
+        }
+        return ret;
+    }
+
+    /**
+     * convert float array to set (set contains individual elements)
+     *
+     * @param param:float array
+     * @return Set Float
+     */
+    public static Set<Float> array2set(float[] param) {
+        Set<Float> ret = new HashSet<>();
+        for (float p : param) {
+            ret.add(p);
+        }
+        return ret;
+    }
+
+    /**
+     * convert byte array to set (set contains individual elements)
+     *
+     * @param param:byte array
+     * @return Set Byte
+     */
+    public static Set<Byte> array2set(byte[] param) {
+        Set<Byte> ret = new HashSet<>();
+        for (byte p : param) {
+            ret.add(p);
         }
         return ret;
     }
@@ -8115,7 +8193,7 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static AnnotationPascalVOCFormat deserializeYoloTxt(int fromLeft,int fromTop,BufferedImage img, String filePath) {
+    public static AnnotationPascalVOCFormat deserializeYoloTxt(int fromLeft, int fromTop, BufferedImage img, String filePath) {
         String str = FactoryUtils.readFile(filePath);
         AnnotationPascalVOCFormat ret = new AnnotationPascalVOCFormat();
         File file = new File(filePath);
@@ -8133,20 +8211,26 @@ public final class FactoryUtils {
         String[] rows = str.split("\n");
         String[] classNames = FactoryUtils.getClassIndexArray(ret.folder + "/class_labels.txt");
 
-        Map<Integer, String> map = new HashMap();
-        for (String name : classNames) {
-            String s = name.split(":")[1];
-            int i = Integer.parseInt(name.split(":")[0]);
-            map.put(i, s);
-        }
-
         int x1, y1, x2, y2;
         float px1, px2, py1, py2;
+        Map<Integer, String> map = new HashMap();
+        if (classNames != null) {
+            for (String name : classNames) {
+                String s = name.split(":")[1];
+                int i = Integer.parseInt(name.split(":")[0]);
+                map.put(i, s);
+            }
+        }
 
         for (String row : rows) {
             String[] e = row.split(" ");
             int classIndex = Integer.parseInt(e[0]);
-            String name = map.get(classIndex);
+            String name = (classNames != null) ? map.get(classIndex) : "" + classIndex;
+
+            if (name == null) {
+                name = "" + classIndex;
+            }
+
             /*
             x1 = pv.bndbox.xmin;
             y1 = pv.bndbox.ymin;
@@ -8156,15 +8240,15 @@ public final class FactoryUtils {
             py1 = (y1 + y2) / 2.0f / h; --> y1+y2=2*py1*h
             px2 = (x2 - x1) * 1.0f / w; --> x2-x1=px2*w
             py2 = (y2 - y1) * 1.0f / h; --> y2-y1=py2*h
-            */
+             */
             px1 = Float.parseFloat(e[1]);
             py1 = Float.parseFloat(e[2]);
             px2 = Float.parseFloat(e[3]);
             py2 = Float.parseFloat(e[4]);
             x2 = Math.round((px1 * w * 2 + px2 * w) / 2);
             y2 = Math.round((py1 * h * 2 + py2 * h) / 2);
-            x1 = Math.round(x2-px2 * w);
-            y1 = Math.round(y2-py2 * h);
+            x1 = Math.round(x2 - px2 * w);
+            y1 = Math.round(y2 - py2 * h);
             PascalVocBoundingBox bbox = new PascalVocBoundingBox(name, new Rectangle(x1, y1, x2 - x1, y2 - y1), fromLeft, fromTop, null);
             List<PascalVocAttribute> attributeList = null;
             PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, attributeList);
@@ -8362,33 +8446,108 @@ public final class FactoryUtils {
     }
 
     /**
+     * prepare yolov8 format dataset folder structure and generate yaml file
+     *
+     * @param classIndex
+     * @param targetFolderName
+     * @param r_train
+     * @param r_val
+     * @param r_test
+     */
+    public static void prepareYoloDataSet(String[] classIndex, String targetFolderName, int r_train, int r_val, int r_test) {
+        removeDirectoryRecursively(targetFolderName);
+        FactoryUtils.makeDirectory(targetFolderName);
+        FactoryUtils.makeDirectory(targetFolderName + "/images");
+        FactoryUtils.makeDirectory(targetFolderName + "/images/train");
+        FactoryUtils.makeDirectory(targetFolderName + "/images/val");
+        FactoryUtils.makeDirectory(targetFolderName + "/images/test");
+        FactoryUtils.makeDirectory(targetFolderName + "/labels");
+        FactoryUtils.makeDirectory(targetFolderName + "/labels/train");
+        FactoryUtils.makeDirectory(targetFolderName + "/labels/val");
+        FactoryUtils.makeDirectory(targetFolderName + "/labels/test");
+        String str_yaml = "";
+        if (r_test != 0) {
+            str_yaml
+                    = "# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]\n"
+                    + "path:  # dataset root dir (leave empty for HUB)\n"
+                    + "train: images/train # train images (relative to 'path')\n"
+                    + "val: images/val # validation images (relative to 'path')\n"
+                    + "test: images/test # test images (relative to 'path')\n"
+                    + "# Classes\n"
+                    + "names:\n";
+        }else{
+            str_yaml
+                    = "# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]\n"
+                    + "path:  # dataset root dir (leave empty for HUB)\n"
+                    + "train: images/train # train images (relative to 'path')\n"
+                    + "val: images/val # validation images (relative to 'path')\n"
+                    + "test:  # test images (optional)\n"
+                    + "# Classes\n"
+                    + "names:\n";
+        }
+        for (int i = 0; i < classIndex.length; i++) {
+            str_yaml += "   " + i + ": " + classIndex[i].split(":")[1] + "\n";
+        }
+        File dir = new File(targetFolderName);
+        FactoryUtils.writeToFile(targetFolderName + "/" + dir.getName() + ".yaml", str_yaml);
+    }
+
+    /**
      * convert all pascalvoc xml annotation files to yolo txt format based on
      * type (detection or segmentation) You only need to specify mainFolderPath
      * and subFolderName
      *
-     * @param mainFolderPath
-     * @param subFolderName
-     * @param type : "detection" or "segmentation"
+     * @param mainFolderPath : original image folder path
+     * @param targetFolderName: target folder path
+     * @param detectionType : "detection", "segmentation" or "lane"
+     * @param image_extension: "jpg", "png", "bmp", "gif" etc.
+     * @param r_train: int ratio from 0 to 100
+     * @param r_val: int ratio from 0 to 100
+     * @param r_test: int ratio from 0 to 100
      * @return String mainFolderPath + "/" + subfolderName
      */
-    public static String convertPascalVoc2YoloFormatBatch(String mainFolderPath, String subFolderName, String type) {
+    public static String convertPascalVoc2YoloFormatBatch(
+            String mainFolderPath,
+            String targetFolderName,
+            String detectionType,
+            String image_extension,
+            int r_train,
+            int r_val,
+            int r_test
+    ) {
         String[] classIndex = getClassIndexArray(mainFolderPath + "/class_labels.txt");
-        if (type.equals("detection")) {
-            return convertPascalVoc2YoloFormatBatch(mainFolderPath, subFolderName, type, classIndex);
-        } else if (type.equals("segmentation")) {
-            return convertPascalVoc2YoloFormatBatch(mainFolderPath, subFolderName, type, classIndex);
-        } else {
-            return null;
+        prepareYoloDataSet(classIndex, targetFolderName, r_train, r_val, r_test);
+        int k = -1;
+        File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "xml");
+        files = FactoryUtils.shuffle(files, 121);
+        int n = files.length;
+        int n_train = (int) Math.round(r_train / 100.0 * n);
+        int n_val = (int) Math.round(r_val / 100.0 * n);
+        int n_test = (int) Math.round(r_test / 100.0 * n);
+        for (File f : files) {
+            if (f.isFile() && !FactoryUtils.getFileName(f.getName()).contains("class_labels")) {
+                k++;
+                File imgFile = new File(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + "." + image_extension);
+                String yolo_txt = "";
+                if (detectionType.equals("detection")) {
+                    yolo_txt = convertPascalVoc2YoloFormatDetectionSingle(f.getAbsolutePath(), classIndex);
+                } else if (detectionType.equals("segmentation")) {
+                    yolo_txt = convertPascalVoc2YoloFormatPolygonSingle(f.getAbsolutePath(), classIndex);
+                }
+                if (k < n_train) {
+                    FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/train/" + imgFile.getName()));
+                    FactoryUtils.writeToFile(targetFolderName + "/labels/train/" + FactoryUtils.getFileName(f.getName()) + ".txt", yolo_txt);
+                } else if (k < n_train + n_val) {
+                    FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/val/" + imgFile.getName()));
+                    FactoryUtils.writeToFile(targetFolderName + "/labels/val/" + FactoryUtils.getFileName(f.getName()) + ".txt", yolo_txt);
+                } else if (k < n_train + n_val + n_test) {
+                    FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/test/" + imgFile.getName()));
+                    FactoryUtils.writeToFile(targetFolderName + "/labels/test/" + FactoryUtils.getFileName(f.getName()) + ".txt", yolo_txt);
+                }
+            }
         }
-    }
-
-    public static String[] getClassIndexArray(String mainFolderPath) {
-        String[] s = FactoryUtils.readFile(mainFolderPath).split("\n");
-        String[] ret = new String[s.length];
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = i + ":" + s[i].split(":")[0];
-        }
-        return ret;
+        System.out.println("convertPascalVoc2YoloFormatPolygon finished");
+        return "dataset b. generated successfully";
     }
 
     /**
@@ -8396,128 +8555,63 @@ public final class FactoryUtils {
      * type (detection or segmentation)
      *
      * @param mainFolderPath
-     * @param subfolderName
-     * @param classIndex : String array of class_index:class_name pairs
+     * @param targetFolderName
      * @param detectionType
+     * @param image_extension : String imagefile extension "jpg", "png", .....
+     * @param r_train : int from 0 to 100%
+     * @param r_val: int from 0 to 100%
+     * @param r_test:int from 0 to 100%
      * @return
      */
-    public static String convertPascalVoc2YoloFormatBatch(String mainFolderPath, String subfolderName, String detectionType, String[] classIndex) {
-        File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "xml");
-        //String[] refList = FactoryUtils.readFile(mainFolderPath + "/" + labels_map_file).split("\n");
-        removeDirectoryRecursively(mainFolderPath + "/" + subfolderName);
-        FactoryUtils.makeDirectory(mainFolderPath + "/" + subfolderName);
-        FactoryUtils.makeDirectory(mainFolderPath + "/" + subfolderName + "/" + detectionType);
-        FactoryUtils.makeDirectory(mainFolderPath + "/" + subfolderName + "/" + detectionType + "/images");
-        FactoryUtils.makeDirectory(mainFolderPath + "/" + subfolderName + "/" + detectionType + "/labels");
-        String str_yaml = "train: " + mainFolderPath + "/" + subfolderName + "/train/" + "\n"
-                + "val: " + mainFolderPath + "/" + subfolderName + "/test/" + "\n"
-                + "nc: " + classIndex.length + "\n"
-                + "names: [";
-        for (int i = 0; i < classIndex.length; i++) {
-            str_yaml += "'" + classIndex[i].split(":")[1] + "',";
-        }
-        str_yaml = str_yaml.substring(0, str_yaml.length() - 1);
-        str_yaml += "]\n";
-        FactoryUtils.writeToFile(mainFolderPath + "/" + subfolderName + "/dataset.yaml", str_yaml);
-        int k = 0;
+    public static String convert2YoloFormatBatch(
+            String mainFolderPath,
+            String targetFolderName,
+            String detectionType,
+            String image_extension,
+            int r_train,
+            int r_val,
+            int r_test
+    ) {
+        String[] classIndex = getClassIndexArray(mainFolderPath + "/class_labels.txt");
+        prepareYoloDataSet(classIndex, targetFolderName,r_train,r_val,r_test);
+        int k = -1;
+        File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "txt");
+        files = FactoryUtils.shuffle(files, 121);
+        int n = files.length - 1; //class_labels.txt yi çıkardık
+        int n_train = (int) Math.round(r_train / 100.0 * n);
+        int n_val = (int) Math.round(r_val / 100.0 * n);
+        int n_test = (int) Math.round(r_test / 100.0 * n);
         for (File f : files) {
-            if (f.isFile() && FactoryUtils.getFileExtension(f).equals("xml")) {
-                System.out.println("k:" + k++);
-                String ret = "";
-                if (detectionType.equals("detection")) {
-                    ret = convertPascalVoc2YoloFormatDetectionSingle(f.getAbsolutePath(), classIndex);
-                } else if (detectionType.equals("segmentation")) {
-                    ret = convertPascalVoc2YoloFormatPolygonSingle(f.getAbsolutePath(), classIndex);
+            if (f.isFile() && !FactoryUtils.getFileName(f.getName()).contains("class_labels")) {
+                k++;
+                File imgFile = new File(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + "." + image_extension);
+                if (k < n_train) {
+                    FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/train/" + imgFile.getName()));
+                    FactoryUtils.copyFile(f, new File(targetFolderName + "/labels/train/" + f.getName()));
+                } else if (k < n_train + n_val) {
+                    FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/val/" + imgFile.getName()));
+                    FactoryUtils.copyFile(f, new File(targetFolderName + "/labels/val/" + f.getName()));
+                } else if (k < n_train + n_val + n_test) {
+                    FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/test/" + imgFile.getName()));
+                    FactoryUtils.copyFile(f, new File(targetFolderName + "/labels/test/" + f.getName()));
                 }
-                if (FactoryUtils.isFileExist(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + ".jpg")) {
-                    FactoryUtils.copyFile(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + ".jpg", mainFolderPath + "/" + subfolderName + "/" + detectionType + "/images/" + FactoryUtils.getFileName(f.getName()) + ".jpg");
-                } else if (FactoryUtils.isFileExist(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + ".png")) {
-                    FactoryUtils.copyFile(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + ".png", mainFolderPath + "/" + subfolderName + "/" + detectionType + "/images/" + FactoryUtils.getFileName(f.getName()) + ".png");
-                }
-
-                FactoryUtils.writeToFile(mainFolderPath + "/" + subfolderName + "/" + detectionType + "/labels/" + FactoryUtils.getFileName(f.getName()) + ".txt", ret);
             }
         }
-        System.out.println("convertPascalVoc2YoloFormatPolygon finished");
-        return mainFolderPath + "\\" + subfolderName;
+        System.out.println("convert2YoloFormat finished");
+        return "dataset b. generated successfully";
     }
 
-    /**
-     *
-     * @param path
-     * @param yoloVersion
-     * @param detectionType
-     * @param seed : seed of random function (if seed==-1 means random seed or
-     * no seed)
-     */
-    public static void generateYoloSegmentationDataSet(String path, String yoloVersion, String detectionType, int seed) {
-        String folderPath = FactoryUtils.convertPascalVoc2YoloFormatBatch(path, yoloVersion, detectionType);
-        float trainRatio = 0.8f;
-        float valRatio = 0.2f;
-        File[] imgFiles = getFileArrayInFolder(folderPath + "/" + detectionType + "/images");
-        File[] txtFiles = getFileArrayInFolder(folderPath + "/" + detectionType + "/labels");
-        if (seed == -1) {
-            FactoryUtils.shuffle(imgFiles);
-            FactoryUtils.shuffle(txtFiles);
-        } else {
-            FactoryUtils.shuffle(imgFiles, seed);
-            FactoryUtils.shuffle(txtFiles, seed);
+    public static String[] getClassIndexArray(String mainFolderPath) {
+        String str = FactoryUtils.readFile(mainFolderPath);
+        if (str == null) {
+            return null;
         }
-        removeDirectoryRecursively(folderPath + "/train");
-        removeDirectoryRecursively(folderPath + "/test");
-        makeDirectory(folderPath + "/train");
-        makeDirectory(folderPath + "/train/images");
-        makeDirectory(folderPath + "/train/labels");
-        makeDirectory(folderPath + "/test");
-        makeDirectory(folderPath + "/test/images");
-        makeDirectory(folderPath + "/test/labels");
-        int n = imgFiles.length;
-        int nTrain = Math.round(n * trainRatio);
-        int nTest = n - nTrain;
-        for (int i = 0; i < nTrain; i++) {
-            copyFile(imgFiles[i], new File(folderPath + "/train/images/" + imgFiles[i].getName()));
-            copyFile(txtFiles[i], new File(folderPath + "/train/labels/" + txtFiles[i].getName()));
+        String[] s = str.split("\n");
+        String[] ret = new String[s.length];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = i + ":" + s[i].split(":")[0];
         }
-        for (int i = 0; i < nTest; i++) {
-            copyFile(imgFiles[i + nTrain], new File(folderPath + "/test/images/" + imgFiles[i + nTrain].getName()));
-            copyFile(txtFiles[i + nTrain], new File(folderPath + "/test/labels/" + txtFiles[i + nTrain].getName()));
-        }
-        //zip(folderPath, path+"/ds.zip");
-    }
-
-    public static void generateYoloDetectionDataSet(String path, String yoloVersion, String detectionType, int seed) {
-        String folderPath = FactoryUtils.convertPascalVoc2YoloFormatBatch(path, yoloVersion, detectionType);
-        float trainRatio = 0.8f;
-        float valRatio = 0.2f;
-        File[] imgFiles = getFileArrayInFolder(folderPath + "/" + detectionType + "/images");
-        File[] txtFiles = getFileArrayInFolder(folderPath + "/" + detectionType + "/labels");
-        if (seed == -1) {
-            FactoryUtils.shuffle(imgFiles);
-            FactoryUtils.shuffle(txtFiles);
-        } else {
-            FactoryUtils.shuffle(imgFiles, seed);
-            FactoryUtils.shuffle(txtFiles, seed);
-        }
-        removeDirectoryRecursively(folderPath + "/train");
-        removeDirectoryRecursively(folderPath + "/test");
-        makeDirectory(folderPath + "/train");
-        makeDirectory(folderPath + "/train/images");
-        makeDirectory(folderPath + "/train/labels");
-        makeDirectory(folderPath + "/test");
-        makeDirectory(folderPath + "/test/images");
-        makeDirectory(folderPath + "/test/labels");
-        int n = imgFiles.length;
-        int nTrain = Math.round(n * trainRatio);
-        int nTest = n - nTrain;
-        for (int i = 0; i < nTrain; i++) {
-            copyFile(imgFiles[i], new File(folderPath + "/train/images/" + imgFiles[i].getName()));
-            copyFile(txtFiles[i], new File(folderPath + "/train/labels/" + txtFiles[i].getName()));
-        }
-        for (int i = 0; i < nTest; i++) {
-            copyFile(imgFiles[i + nTrain], new File(folderPath + "/test/images/" + imgFiles[i + nTrain].getName()));
-            copyFile(txtFiles[i + nTrain], new File(folderPath + "/test/labels/" + txtFiles[i + nTrain].getName()));
-        }
-        //zip(folderPath, path+"/ds.zip");
+        return ret;
     }
 
     public static void getFileListRecursively(List<String> fileList, File directory) {
@@ -8568,14 +8662,6 @@ public final class FactoryUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void generateYoloSegmentationDataSet(String folderPath, String yoloVersion, String detectionType) {
-        generateYoloSegmentationDataSet(folderPath, yoloVersion, detectionType, -1);
-    }
-
-    public static void generateYoloDetectionDataSet(String folderPath, String yoloVersion, String detectionType) {
-        generateYoloDetectionDataSet(folderPath, yoloVersion, detectionType, -1);
     }
 
     public static String formatFloatDot2Comma(float p) {
@@ -8639,8 +8725,10 @@ public final class FactoryUtils {
             }
 
             return false;
+
         } catch (IOException ex) {
-            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FactoryUtils.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
         return ret;
     }
@@ -8649,8 +8737,10 @@ public final class FactoryUtils {
         if (isProcessRunning(serviceName)) {
             try {
                 Runtime.getRuntime().exec("taskkill /F /IM " + serviceName);
+
             } catch (IOException ex) {
-                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(FactoryUtils.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -8675,9 +8765,11 @@ public final class FactoryUtils {
                         ret = Runtime.getRuntime().exec("cmd /c start cmd.exe /K http-server " + PATH + " -p " + HTTP_PORT + " -c1 --cors");
                     } else if (OS.contains("LINUX")) {
                         ret = Runtime.getRuntime().exec("/bin/bash -c http-server " + PATH + "-p " + HTTP_PORT);
+
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(Deneme.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Deneme.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }).start();

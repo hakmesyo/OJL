@@ -22,7 +22,7 @@ public class TestConvertJsonToPascalVoc {
         //String filePath = folderPath + "\\butterfly (1).xml";
         //CMatrix cm = CMatrix.getInstance().annotateImagesByFolderPath(folderPath);
         
-        String path=FactoryUtils.convertPascalVoc2YoloFormatBatch(folderPath,"yolov8","segmentation");
+        //String path=FactoryUtils.convertPascalVoc2YoloFormatBatch(folderPath,"yolov8","segmentation");
         
         //String ret = FactoryUtils.convertPascalVoc2YoloFormatPolygonBatch(filePath, new String[]{"0:butterfly"});
         //FactoryUtils.writeToFile(folderPath + "/" + FactoryUtils.getFileName(filePath) + ".txt", ret);

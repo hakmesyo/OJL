@@ -26,6 +26,6 @@ public class Deneme_dental {
                 //.imshow()
                 ;
         String folderPath = "C:\\Users\\cezerilab\\Desktop\\dataset\\pistachio\\train\\all";
-        FactoryUtils.generateYoloDetectionDataSet(folderPath, "yolov8_pistachio", "detection");
+        //FactoryUtils.generateYoloDetectionDataSet(folderPath, "yolov8_pistachio", "detection");
     }
 }

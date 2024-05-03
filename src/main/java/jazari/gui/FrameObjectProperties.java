@@ -49,6 +49,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
     List<DataAnalytics> listDA = null;
     float totalNumberOfObjects = 0;
     private String objectType = "bbox"; //or polygon
+    private final String format;
 
     /**
      * Creates new form FrameObjectProperties
@@ -61,20 +62,32 @@ public class FrameObjectProperties extends javax.swing.JFrame {
         this.objectType = objectType;
         this.frm = frame;
         this.folderPath = frame.imageFolderPath;
-        this.listDA = FactoryUtils.getDataAnalytics(folderPath);
+        this.format=(frame.combo_format.getSelectedIndex()==0)?"xml":"txt";
+        this.listDA = FactoryUtils.getDataAnalytics(folderPath,this.format);
         this.totalNumberOfObjects = getTotalNumberOfObjects();
         if (objName == null || objName.equals("")) {
             this.objName = "class_name";
             objects = FactoryUtils.readFile(folderPath + "/class_labels.txt").split("\n");
-           selectedIndex = -1;
+            selectedIndex = -1;
         } else {
             this.objName = objName;
-            objects = FactoryUtils.readFile(folderPath + "/class_labels.txt").split("\n");
-            selectedIndex = getSelectedIndex(objects, objName);
-            if (selectedIndex == -1) {
-                System.err.println("böyle bir nesne adı class_labels.txt dosyasında yok");
-                dispose();
-                return;
+            String str = FactoryUtils.readFile(folderPath + "/class_labels.txt");
+            if (this.objName != null && this.objName != "" && str == null) {
+                objects = new String[]{"0:Color 255 255 0"};
+                selectedIndex = getSelectedIndex(objects, objName);
+            } else {
+                objects = str.split("\n");
+                if (objects != null) {
+                    selectedIndex = getSelectedIndex(objects, objName);
+                    if (selectedIndex == -1) {
+                        selectedIndex = 0;
+                        //System.err.println("böyle bir nesne adı class_labels.txt dosyasında yok");
+                        //dispose();
+                        //return;
+                    }
+                } else {
+                    selectedIndex = 0;
+                }
             }
         }
         initComponents();
@@ -351,7 +364,7 @@ public class FrameObjectProperties extends javax.swing.JFrame {
     private void btn_add_newActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_add_newActionPerformed
         if (!checkSimilar(txt_obj_name.getText())) {
             List<String> list = getArrayList(objects);
-            if (list.contains("")){
+            if (list.contains("")) {
                 list.remove("");
             }
             list.add(txt_obj_name.getText() + ":" + selectedColorName);

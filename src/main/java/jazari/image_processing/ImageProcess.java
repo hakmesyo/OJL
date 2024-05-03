@@ -4354,6 +4354,87 @@ public final class ImageProcess {
         }
         return ret;
     }
-    
+
+    public static BufferedImage addNoise2D(BufferedImage image, float range) {
+        float[][] data = imageToPixelsFloat(image);
+        data = addNoise2D(data, range);
+        return pixelsToImageGray(data);
+    }
+
+    public static float[][] addNoise2D(float[][] data, float range) {
+        int nr = data.length;
+        int nc = data[0].length;
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                float n = (float) (new Random().nextGaussian() * range);
+                data[i][j] = data[i][j] + n;
+            }
+        }
+        return data;
+    }
+
+    public static BufferedImage addNoisePartial2D(BufferedImage image, float range, float probability) {
+        float[][] data = imageToPixelsFloat(image);
+        data = addNoisePartial2D(data, range, probability);
+        return pixelsToImageGray(data);
+    }
+
+    public static float[][] addNoisePartial2D(float[][] data, float range, float probability) {
+        int nr = data.length;
+        int nc = data[0].length;
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                if (Math.random() < probability) {
+                    float n = (float) (new Random().nextGaussian() * range);
+                    data[i][j] = data[i][j] + n;
+                }
+            }
+        }
+        return data;
+    }
+
+    public static BufferedImage addNoise3D(BufferedImage image, float range) {
+        float[][][] data = imageToPixelsColorFloatFaster(image);
+        data = addNoise3D(data, range);
+        return pixelsToImageColor(data);
+    }
+
+    public static float[][][] addNoise3D(float[][][] data, float range) {
+        int nch = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        for (int i = 1; i < nch; i++) {  //first element is alpha so skip it
+            for (int j = 0; j < nr; j++) {
+                for (int k = 0; k < nc; k++) {
+                    float n = (float) (new Random().nextGaussian() * range);
+                    data[i][j][k] = data[i][j][k] + n;
+                }
+            }
+        }
+        return data;
+    }
+
+    public static BufferedImage addNoisePartial3D(BufferedImage image, float range, float probability) {
+        float[][][] data = imageToPixelsColorFloatFaster(image);
+        data = addNoisePartial3D(data, range, probability);
+        return pixelsToImageColor(data);
+    }
+
+    public static float[][][] addNoisePartial3D(float[][][] data, float range, float probability) {
+        int nch = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        for (int i = 1; i < nch; i++) {  //first element is alpha so skip it
+            for (int j = 0; j < nr; j++) {
+                for (int k = 0; k < nc; k++) {
+                    if (Math.random() < probability) {
+                        float n = (float) (new Random().nextGaussian() * range);
+                        data[i][j][k] = data[i][j][k] + n;
+                    }
+                }
+            }
+        }
+        return data;
+    }
 
 }

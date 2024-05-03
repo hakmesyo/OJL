@@ -4901,26 +4901,44 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix jitter(float range) {
-        float[][] r = this.toFloatArray2D();// array.dup().toFloatMatrix();
-        for (int i = 0; i < getRowNumber(); i++) {
-            for (int j = 0; j < getColumnNumber(); j++) {
-                float n = (float) (new Random().nextGaussian() * range);
-                r[i][j] = r[i][j] + n;
-            }
+        if (getImage().getType()==BufferedImage.TYPE_BYTE_GRAY){
+            setArray(ImageProcess.addNoise2D(this.toFloatArray2D(),range));
+            //alttaki daha yavaş çünkü iki defa conversion yapıyor
+            //setImage(ImageProcess.addNoise2D(this.getImage(),range));
+        }else{
+            setArray(ImageProcess.addNoise3D(this.toFloatArray3D(),range));
         }
-        setArray(r);
         return this;
     }
 
     /**
-     * add certain noise on the matrix elements
+     * add certain noise on all matrix elements
      *
-     * @param range: how much noise
+     * @param range: float noise amount range should be 0 from 50  
      *
      * @return CMatrix
      */
     public CMatrix addNoise(float range) {
         return jitter(range);
+    }
+
+    /**
+     * add certain noise on some matrix elements with a given probability
+     *
+     * @param range: float noise amount range should be 0 from 50  
+     * @param probability : float spatial noise probability ranges from 0 to 1 
+     *
+     * @return CMatrix
+     */
+    public CMatrix addNoisePartial(float range, float probability) {
+        if (getImage().getType()==BufferedImage.TYPE_BYTE_GRAY){
+            setArray(ImageProcess.addNoisePartial2D(this.toFloatArray2D(),range,probability));
+            //alttaki daha yavaş çünkü iki defa conversion yapıyor
+            //setImage(ImageProcess.addNoisePartial2D(this.getImage(),range));
+        }else{
+            setArray(ImageProcess.addNoisePartial3D(this.toFloatArray3D(),range,probability));
+        }
+        return this;
     }
 
     /**
