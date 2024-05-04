@@ -3210,7 +3210,8 @@ public final class FactoryMatrix implements Serializable {
         float[][] ret = new float[nr][nc];
         for (int i = 0; i < nr; i++) {
             for (int j = 0; j < nc; j++) {
-                ret[i][j] = (float) Math.pow(10, Math.log(d[i][j] + 1));
+                //ret[i][j] = (float) Math.pow(10, Math.log(d[i][j] + 1));
+                ret[i][j] = (float) Math.exp(d[i][j]);
             }
         }
         return ret;

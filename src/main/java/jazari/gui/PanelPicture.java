@@ -623,6 +623,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                             laneClassIndex = Integer.parseInt(laneClass);
                         } catch (Exception ex) {
                         }
+                        laneClass=""+laneClassIndex;
 
                         if (laneClassIndex >= 1 && laneClassIndex <= 5) {
                             PascalVocLane tempLane = selectedLane.clone();
@@ -828,9 +829,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     }
                 }
 
-                if (activateLaneDetection && e.getButton() == MouseEvent.BUTTON1) {
-                    selectedSplinePoint = null;
-                }
 
                 if (activatePolygon && e.getButton() == MouseEvent.BUTTON1) {
                     Point p = constraintMousePosition(e);
@@ -993,8 +991,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     setDefaultCursor();
                     mousePos = constraintMousePosition(e);
                     selectedSplinePoint = null;
+//                    selectedLane=null;
+//                    repaint();
+//                    return;
                 }
-
                 checkForTriggerEvent(e);
 
             }
@@ -2389,7 +2389,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         for (PascalVocLane lane : splines) {
             String s = "lane:" + lane.name + ":";
             for (Point p : lane.spline) {
-                s += p.x + "," + p.y + ":";
+                s += (p.x-fromLeft) + "," + (p.y-fromTop) + ":";
             }
             s = FactoryUtils.removeLastChar(s);
             content += s + "\n";
@@ -2412,7 +2412,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             ArrayList<Point> spline = new ArrayList<>();
             for (int i = 2; i < str.length; i++) {
                 String[] pnt = str[i].split(",");
-                spline.add(new Point(Integer.parseInt(pnt[0]), Integer.parseInt(pnt[1])));
+                spline.add(new Point(Integer.parseInt(pnt[0])+fromLeft, Integer.parseInt(pnt[1])+fromTop));
             }
             PascalVocLane lane = new PascalVocLane(str[1], spline, null);
             splines.add(lane);
