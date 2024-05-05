@@ -12,7 +12,7 @@ import java.awt.Image;
 import java.io.File;
 import java.util.List;
 import jazari.gui.FrameScreenCapture;
-//474,221
+
 
 /*
  * To change this license header, choose License Headers in Project Properties.

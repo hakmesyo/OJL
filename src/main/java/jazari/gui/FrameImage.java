@@ -80,8 +80,8 @@ public class FrameImage extends javax.swing.JFrame {
         this.img = img;
         this.imagePath = imagePath;
         imageFolderPath = FactoryUtils.getFolderPath(imagePath);
-        getPicturePanel().setImage(this.img, imagePath, caption);
         getPicturePanel().setFrame(this);
+        getPicturePanel().setImage(this.img, imagePath, caption);
         //this.setSize(img.getWidth() + 300, img.getHeight() + 183);
         String[] s = FactoryUtils.splitPath(imagePath);
         titleImageInfo = (s[s.length - 1]);
@@ -120,6 +120,8 @@ public class FrameImage extends javax.swing.JFrame {
         btn_screen_capture = new javax.swing.JButton();
         chk_stretch = new javax.swing.JCheckBox();
         combo_format = new javax.swing.JComboBox<>();
+        slider = new javax.swing.JSlider();
+        lbl_index = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -148,7 +150,7 @@ public class FrameImage extends javax.swing.JFrame {
         );
         panelPictureLayout.setVerticalGroup(
             panelPictureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 564, Short.MAX_VALUE)
+            .addGap(0, 545, Short.MAX_VALUE)
         );
 
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -305,40 +307,63 @@ public class FrameImage extends javax.swing.JFrame {
             }
         });
 
+        slider.setValue(0);
+        slider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                sliderStateChanged(evt);
+            }
+        });
+        slider.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+                sliderCaretPositionChanged(evt);
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+            }
+        });
+
+        lbl_index.setText("...");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(btn_dataGrid)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_screen_capture)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_save)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lbl_zoom_factor)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chk_stretch)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 76, Short.MAX_VALUE)
-                .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkLane)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkBBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkPolygon)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkSequence)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkLabelVisible)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_analytics)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_dashedLineColor, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(btn_dataGrid)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_screen_capture)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_save)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txt_dpi, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lbl_zoom_factor)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chk_stretch)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 76, Short.MAX_VALUE)
+                        .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chkLane)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chkBBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chkPolygon)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chkSequence)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chkLabelVisible)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_analytics)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_dashedLineColor, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lbl_index, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(slider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(13, 13, 13)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -360,7 +385,11 @@ public class FrameImage extends javax.swing.JFrame {
                     .addComponent(btn_screen_capture)
                     .addComponent(chk_stretch)
                     .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(slider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lbl_index))
+                .addContainerGap(35, Short.MAX_VALUE))
         );
 
         jScrollPane1.setViewportView(jPanel2);
@@ -375,7 +404,7 @@ public class FrameImage extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelPicture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -509,7 +538,7 @@ public class FrameImage extends javax.swing.JFrame {
 
     private void btn_analyticsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_analyticsActionPerformed
         if (FactoryUtils.isFileExist(imageFolderPath + "/class_labels.txt")) {
-            List<DataAnalytics> lst = FactoryUtils.getDataAnalytics(imageFolderPath,(combo_format.getSelectedIndex()==0)?"xml":"txt");
+            List<DataAnalytics> lst = FactoryUtils.getDataAnalytics(imageFolderPath, (combo_format.getSelectedIndex() == 0) ? "xml" : "txt");
             FrameDataAnalytics frm = new FrameDataAnalytics(this, imageFolderPath, lst);
             frm.setVisible(true);
 
@@ -555,6 +584,24 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().setImage(this.img, imagePath, this.getTitle());
         getPicturePanel().requestFocus();
     }//GEN-LAST:event_combo_formatİtemStateChanged
+
+    boolean isFirst=true;
+    private void sliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sliderStateChanged
+        if (isFirst) {
+            isFirst=false;
+            return;
+        }
+        //System.out.println("slider index:"+slider.getValue());
+        getPicturePanel().imageIndex = slider.getValue();
+        BufferedImage bf = ImageProcess.readImageFromFile(getPicturePanel().imageFiles[getPicturePanel().imageIndex]);
+        getPicturePanel().rawImage = ImageProcess.clone(bf);
+        getPicturePanel().adjustImageToPanel(bf, true);
+        lbl_index.setText("[ "+getPicturePanel().imageIndex+" / "+getPicturePanel().imageFiles.length+" ]");
+    }//GEN-LAST:event_sliderStateChanged
+
+    private void sliderCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_sliderCaretPositionChanged
+        //System.out.println("caret pos slider index:"+slider.getValue());
+    }//GEN-LAST:event_sliderCaretPositionChanged
 
     public PanelPicture getPicturePanel() {
         return ((PanelPicture) panelPicture);
@@ -623,8 +670,10 @@ public class FrameImage extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lbl_index;
     private javax.swing.JLabel lbl_zoom_factor;
     private javax.swing.JPanel panelPicture;
+    public javax.swing.JSlider slider;
     private javax.swing.JTextField txt_dpi;
     // End of variables declaration//GEN-END:variables
 
@@ -672,6 +721,9 @@ public class FrameImage extends javax.swing.JFrame {
         //setFrameSize(img);
         getPicturePanel().setFocusable(true);
         getPicturePanel().requestFocusInWindow();
+        titleImageInfo = (getPicturePanel().imageFiles[getPicturePanel().imageIndex].getName() + "      [ " + (getPicturePanel().imageIndex + 1) + " / " + getPicturePanel().imageFiles.length + " ]");
+        slider.setMaximum(getPicturePanel().imageFiles.length);
+        slider.setValue(getPicturePanel().imageIndex);
         //isSequence.setVisible(false);
     }
 

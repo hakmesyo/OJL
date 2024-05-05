@@ -555,16 +555,40 @@ public final class FactoryUtils {
 
     }
 
-    public static void writeToFile(String path, String row) {
+    public static void saveFile(File file, String content) {
+        writeToFile(file, content);
+    }
+
+    /**
+     * write/save content to a new file from filePath
+     *
+     * @param filePath
+     * @param content
+     */
+    public static void saveFile(String filePath, String content) {
+        writeToFile(filePath, content);
+    }
+
+    public static void writeToFile(File file, String content) {
+        writeToFile(file.getAbsolutePath(), content);
+    }
+
+    /**
+     * write/save content to a new file from filePath
+     *
+     * @param filePath
+     * @param content
+     */
+    public static void writeToFile(String filePath, String content) {
         Writer out = null;
         try {
             try {
                 out = new BufferedWriter(new OutputStreamWriter(
-                        new FileOutputStream(path), "UTF-8"));
+                        new FileOutputStream(filePath), "UTF-8"));
                 try {
                     try {
-                        if (!(row == null || row.equals(""))) {
-                            out.write(row);
+                        if (!(content == null || content.equals(""))) {
+                            out.write(content);
                         }
                         Thread.sleep(5);
                         out.close();
@@ -581,10 +605,6 @@ public final class FactoryUtils {
                     }
                 }
             } catch (FileNotFoundException ex) {
-//                new File(path).delete();
-//                System.out.println("FactoryUtils.writeToFile(path,row) metodunda hata oldu");
-//                writeToFile(path, row);
-                //Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
@@ -966,9 +986,9 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static List<String> readFileAsList(String fileName) {
+    public static List<String> readFileAsList(String filePath) {
         List<String> ret = new ArrayList<>();
-        String[] s = readFile(fileName).split("\n");
+        String[] s = readFile(filePath).split("\n");
         int n = s.length;
         for (int i = 0; i < n; i++) {
             ret.add(s[i]);
@@ -976,16 +996,36 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static String readFile(String fileName) {
+    public static List<String> readFileAsList(File file) {
+        return readFileAsList(file.getAbsolutePath());
+    }
+
+    /**
+     * read file from file and return file content as String
+     *
+     * @param file
+     * @return
+     */
+    public static String readFile(File file) {
+        return readFile(file.getAbsolutePath());
+    }
+
+    /**
+     * read file from file path and return file content as String
+     *
+     * @param filePath : String absoulte file path
+     * @return
+     */
+    public static String readFile(String filePath) {
         String ret = "";
         StringBuilder builder = new StringBuilder("");
-        File file = new File(fileName);
+        File file = new File(filePath);
         if (!file.exists()) {
-            showMessageTemp(fileName + " isminde bir dosya yok", nAttempts, null);
+            showMessageTemp(filePath + " isminde bir dosya yok", nAttempts, null);
             //showMessage(fileName + " isminde bir dosya yok");
             return null;
         }
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String s;
             while ((s = br.readLine()) != null) {
                 //ret = ret + s + "\n";
@@ -1009,12 +1049,16 @@ public final class FactoryUtils {
         return readFile(fileName);
     }
 
-    public static String readFileUntil(String fileName, int index) {
+    public static String readFileUntil(File file, int index) {
+        return readFileUntil(file.getAbsolutePath(), index);
+    }
+
+    public static String readFileUntil(String filePath, int index) {
         String ret = "";
         StringBuilder sBuilder = new StringBuilder();
-        File file = new File(fileName);
+        File file = new File(filePath);
         if (!file.exists()) {
-            showMessage(fileName + " isminde bir dosya yok");
+            showMessage(filePath + " isminde bir dosya yok");
             return ret;
         }
         try {
@@ -6610,9 +6654,13 @@ public final class FactoryUtils {
         System.out.println(k + " files were deleted successfully.");
     }
 
-    public static String readJSONFile(String path) {
+    public static String readJSONFile(File file) {
+        return readJSONFile(file.getAbsolutePath());
+    }
+
+    public static String readJSONFile(String filePath) {
         try {
-            return FileUtils.readFileToString(new File(path), StandardCharsets.UTF_8);
+            return FileUtils.readFileToString(new File(filePath), StandardCharsets.UTF_8);
         } catch (IOException ex) {
             Logger.getLogger(Deneme.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -8475,7 +8523,7 @@ public final class FactoryUtils {
                     + "test: images/test # test images (relative to 'path')\n"
                     + "# Classes\n"
                     + "names:\n";
-        }else{
+        } else {
             str_yaml
                     = "# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]\n"
                     + "path:  # dataset root dir (leave empty for HUB)\n"
@@ -8573,7 +8621,7 @@ public final class FactoryUtils {
             int r_test
     ) {
         String[] classIndex = getClassIndexArray(mainFolderPath + "/class_labels.txt");
-        prepareYoloDataSet(classIndex, targetFolderName,r_train,r_val,r_test);
+        prepareYoloDataSet(classIndex, targetFolderName, r_train, r_val, r_test);
         int k = -1;
         File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "txt");
         files = FactoryUtils.shuffle(files, 121);

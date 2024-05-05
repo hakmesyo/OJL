@@ -119,8 +119,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private boolean isBBoxResizeTopRight = false;
     private boolean isBBoxResizeBottomLeft = false;
     private boolean isBBoxResizeBottomRight = false;
-    private File[] imageFiles;
-    private int imageIndex = 0;
+    public File[] imageFiles;
+    public int imageIndex = 0;
     private FrameImage frame;
     private String caption;
     private String lastSelectedClassName;
@@ -1784,7 +1784,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         return ret;
     }
 
-    private BufferedImage adjustImageToPanel(BufferedImage bf, boolean isClearBbox) {
+    public BufferedImage adjustImageToPanel(BufferedImage bf, boolean isClearBbox) {
         if (bf.getHeight() > 850) {
             float zoom_factor = 850.0f / bf.getHeight();
             int w = (int) (bf.getWidth() * zoom_factor);
