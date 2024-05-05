@@ -1798,7 +1798,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             zoom_factor = original_zoom_factor = 1.0f;
             frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
         }
-        frame.titleImageInfo = (imageFiles[imageIndex].getName() + "      [ " + (imageIndex + 1) + " / " + imageFiles.length + " ]");
+        //frame.titleImageInfo = (imageFiles[imageIndex].getName() + "      [ " + (imageIndex + 1) + " / " + imageFiles.length + " ]");
+        frame.titleImageInfo = (imageFiles[imageIndex].getName());
         fileName = imageFiles[imageIndex].getName();
         imagePath = imageFiles[imageIndex].getAbsolutePath();
 
@@ -2503,8 +2504,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 rawImage = ImageProcess.clone(bf);
                 adjustImageToPanel(bf, true);
                 selectedLane = null;
-
             }
+            frame.slider.setValue(imageIndex);
             return;
         } else if (key == KeyEvent.VK_DELETE || key == 8) { //key==8 maco işletim sistemi için eklendi VK_DELETE i görmüyordu
             if (activateBoundingBox) {
@@ -2570,6 +2571,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 adjustImageToPanel(bf, true);
                 e.consume();
             }
+            frame.slider.setValue(imageIndex);
             repaint();
             return;
         } else {
@@ -2578,7 +2580,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
         rawImage = ImageProcess.clone(bf);
         adjustImageToPanel(bf, true);
-
+        frame.slider.setValue(imageIndex);
         e.consume();
     }
 
