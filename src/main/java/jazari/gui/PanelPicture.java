@@ -622,6 +622,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         try {
                             laneClassIndex = Integer.parseInt(laneClass);
                         } catch (Exception ex) {
+                            return;
                         }
                         laneClass=""+laneClassIndex;
 
