@@ -6946,11 +6946,13 @@ public final class FactoryUtils {
         int w = bbp.size.width;
         int h = bbp.size.height;
         String ret = "";
+        int k=0;
         Map<String, Integer> map = new HashMap();
         for (String str : classIndex) {
-            String s = str.split(":")[1];
-            int i = Integer.parseInt(str.split(":")[0]);
-            map.put(s, i);
+            String s = str.split(":")[0];
+            //int i = Integer.parseInt(str.split(":")[0]);
+            map.put(s, k);
+            k++;
         }
         for (PascalVocObject pv : bbp.lstObjects) {
             int np = pv.polygonContainer.polygon.npoints;
@@ -6984,11 +6986,13 @@ public final class FactoryUtils {
         String ret = "";
         int x1, x2, y1, y2, n, class_index;
         float px1, px2, py1, py2;
+        int k=0;
         Map<String, Integer> map = new HashMap();
         for (String str : classIndex) {
-            String s = str.split(":")[1];
-            int i = Integer.parseInt(str.split(":")[0]);
-            map.put(s, i);
+            String s = str.split(":")[0];
+            //int i = Integer.parseInt(str.split(":")[0]);
+            map.put(s, k);
+            k++;
         }
         for (PascalVocObject pv : bbp.lstObjects) {
             x1 = pv.bndbox.xmin;
@@ -7043,6 +7047,9 @@ public final class FactoryUtils {
                 return null;
             }
             for (File file : files) {
+                if (file.getName().contains("class_labels")) {
+                    continue;
+                }
                 String[] rows = FactoryUtils.readFile(file.getAbsolutePath()).split("\n");
                 for (String row : rows) {
                     if (classNames.contains(row.split(" ")[0])) {
@@ -8257,22 +8264,30 @@ public final class FactoryUtils {
 
         List<PascalVocObject> lstObjects = new ArrayList();
         String[] rows = str.split("\n");
+        //String[] classNames = FactoryUtils.getClassIndexArray(ret.folder + "/class_labels.txt");
         String[] classNames = FactoryUtils.getClassIndexArray(ret.folder + "/class_labels.txt");
 
         int x1, y1, x2, y2;
         float px1, px2, py1, py2;
-        Map<Integer, String> map = new HashMap();
+//        Map<Integer, String> map = new HashMap();
+//        if (classNames != null) {
+//            for (String name : classNames) {
+//                String s = name.split(":")[1];
+//                int i = Integer.parseInt(name.split(":")[0]);
+//                map.put(i, s);
+//            }
+//        }
+        Map<String, String> map = new HashMap();
         if (classNames != null) {
             for (String name : classNames) {
-                String s = name.split(":")[1];
-                int i = Integer.parseInt(name.split(":")[0]);
-                map.put(i, s);
+                String s = name.split(":")[0];
+                map.put(s, s);
             }
         }
-
+        String classIndex="";
         for (String row : rows) {
             String[] e = row.split(" ");
-            int classIndex = Integer.parseInt(e[0]);
+            classIndex = e[0];
             String name = (classNames != null) ? map.get(classIndex) : "" + classIndex;
 
             if (name == null) {
@@ -8453,14 +8468,16 @@ public final class FactoryUtils {
         int x1, x2, y1, y2, w, h, n, class_index;
         float px1, px2, py1, py2;
         //String[] refList = FactoryUtils.readFile(mainFolderPath + "/" + labels_map_file).split("\n");
+        int k=0;
         Map<String, Integer> map = new HashMap();
         for (String str : refList) {
-            String s = str.split(":")[1];
-            int i = Integer.parseInt(str.split(":")[0]);
-            map.put(s, i);
+            String s = str.split(":")[0];
+            //int i = Integer.parseInt(str.split(":")[0]);
+            map.put(s, k);
+            k++;
         }
         String globalRet = "";
-        int k = 0;
+        k = 0;
         for (File f : files) {
             if (f.isFile() && FactoryUtils.getFileExtension(f).equals("xml")) {
                 System.out.println("k:" + k++);
@@ -8508,11 +8525,16 @@ public final class FactoryUtils {
         FactoryUtils.makeDirectory(targetFolderName + "/images");
         FactoryUtils.makeDirectory(targetFolderName + "/images/train");
         FactoryUtils.makeDirectory(targetFolderName + "/images/val");
-        FactoryUtils.makeDirectory(targetFolderName + "/images/test");
+        if (r_test>0) {
+            FactoryUtils.makeDirectory(targetFolderName + "/images/test");
+        }        
         FactoryUtils.makeDirectory(targetFolderName + "/labels");
         FactoryUtils.makeDirectory(targetFolderName + "/labels/train");
         FactoryUtils.makeDirectory(targetFolderName + "/labels/val");
-        FactoryUtils.makeDirectory(targetFolderName + "/labels/test");
+        if (r_test>0) {
+            FactoryUtils.makeDirectory(targetFolderName + "/labels/test");
+        }
+        
         String str_yaml = "";
         if (r_test != 0) {
             str_yaml
@@ -8534,7 +8556,8 @@ public final class FactoryUtils {
                     + "names:\n";
         }
         for (int i = 0; i < classIndex.length; i++) {
-            str_yaml += "   " + i + ": " + classIndex[i].split(":")[1] + "\n";
+            //str_yaml += "   " + i + ": " + classIndex[i].split(":")[1] + "\n";
+            str_yaml += "   " + i + ": " + classIndex[i].split(":")[0] + "\n";
         }
         File dir = new File(targetFolderName);
         FactoryUtils.writeToFile(targetFolderName + "/" + dir.getName() + ".yaml", str_yaml);
@@ -8657,7 +8680,8 @@ public final class FactoryUtils {
         String[] s = str.split("\n");
         String[] ret = new String[s.length];
         for (int i = 0; i < ret.length; i++) {
-            ret[i] = i + ":" + s[i].split(":")[0];
+            //ret[i] = i + ":" + s[i].split(":")[0];
+            ret[i] = s[i].split(":")[0];
         }
         return ret;
     }

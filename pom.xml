@@ -242,7 +242,14 @@
             <groupId>org.jcodec</groupId>
             <artifactId>jcodec-javase</artifactId>
             <version>0.2.5</version>
-        </dependency>        
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.processing/core -->
+        <dependency>
+            <groupId>org.processing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.3.6</version>
+        </dependency>
+
     </dependencies>
     
     <build>

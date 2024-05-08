@@ -2276,6 +2276,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     cropImage();
                 } else if (obj.getText().equals("Build YOLO DataSet")) {
                     new FrameBuildYoloDataSet(frame).setVisible(true);
+                    return;
 //                    String subFolder = FactoryUtils.inputMessage("set subfolder name");
 //                    String msg = FactoryUtils.convertPascalVoc2YoloFormatBatch(imageFolder, subFolder, "detection");
 //                    FactoryUtils.showMessageTemp("Pascal VOC XMLs converted to Yolo format at " + msg, 3000, new CallBackTrigger() {

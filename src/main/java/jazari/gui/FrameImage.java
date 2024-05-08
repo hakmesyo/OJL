@@ -360,7 +360,7 @@ public class FrameImage extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btn_dashedLineColor, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(lbl_index, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lbl_index, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(slider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(13, 13, 13)))
@@ -596,7 +596,7 @@ public class FrameImage extends javax.swing.JFrame {
         BufferedImage bf = ImageProcess.readImageFromFile(getPicturePanel().imageFiles[getPicturePanel().imageIndex]);
         getPicturePanel().rawImage = ImageProcess.clone(bf);
         getPicturePanel().adjustImageToPanel(bf, true);
-        lbl_index.setText("[ "+getPicturePanel().imageIndex+" / "+getPicturePanel().imageFiles.length+" ]");
+        lbl_index.setText("[ "+(getPicturePanel().imageIndex+1)+" / "+getPicturePanel().imageFiles.length+" ]");
     }//GEN-LAST:event_sliderStateChanged
 
     private void sliderCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_sliderCaretPositionChanged
@@ -722,7 +722,7 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().setFocusable(true);
         getPicturePanel().requestFocusInWindow();
         titleImageInfo = (getPicturePanel().imageFiles[getPicturePanel().imageIndex].getName() + "      [ " + (getPicturePanel().imageIndex + 1) + " / " + getPicturePanel().imageFiles.length + " ]");
-        slider.setMaximum(getPicturePanel().imageFiles.length);
+        slider.setMaximum(getPicturePanel().imageFiles.length-1);
         slider.setValue(getPicturePanel().imageIndex);
         //isSequence.setVisible(false);
     }
