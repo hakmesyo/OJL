@@ -6430,7 +6430,8 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public CMatrix edgeDetectionCanny() {
-        image = ImageProcess.pixelsToImageGray(ImageProcess.imageToPixelsFloat(ImageProcess.edgeDetectionCanny(image, 0.3f, 1.0f, 2.5f, 3, false)));
+        //image = ImageProcess.pixelsToImageGray(ImageProcess.imageToPixelsFloat(ImageProcess.edgeDetectionCanny(image, 0.3f, 1.0f, 2.5f, 3, false)));
+        image = ImageProcess.edgeDetectionCanny(image, 0.3f, 1.0f, 2.5f, 3, false);
         setArray(ImageProcess.imageToPixelsFloat(image));
         return this;
     }
@@ -8496,8 +8497,8 @@ public final class CMatrix implements Serializable {
     public CMatrix applyFunction(CMatrix f) {
         CMatrix ret = this.clone();
         ret = ret.rgb2gray();
-        setArray(FactoryMatrix.applyFunction(array.toFloatMatrix(), f.array.toFloatVector()));
-        image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
+        ret.setArray(FactoryMatrix.applyFunction(ret.array.toFloatMatrix(), f.array.toFloatVector()));
+        ret.image = ImageProcess.pixelsToImageGray(ret.array.toFloatMatrix());
         return ret;
     }
 

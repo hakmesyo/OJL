@@ -13,11 +13,22 @@ import jazari.matrix.CMatrix;
  */
 public class TestEdgeDetection {
     public static void main(String[] args) {
+        CMatrix cm = CMatrix.getInstance()
+                .imread("images/pullar.png")
+                .imshow("rgb")
+                .imhist()
+                //.rgb2gray()
+                .edgeDetectionCanny()
+                .imshow("edge")
+                .imcomplement()
+                .imshow("complement")
+                ;
+        
 //        CMatrix cm = CMatrix.getInstance().imread(".//images//rice.png").imshow().detectEdgeCanny().imshow();
 //        CMatrix cm = CMatrix.getInstance().imread(".//images//rice.png").rgb2gray().imshow().
 //                
 //                tic().edgeDetectionCanny().toc().imshow().
 //                edgeDetectionMusa(10).toc().imshow();
-        CMatrix cm2 = CMatrix.getInstance().readImage(".//images//horoz.jpg").imshow().rgb2gray().imshow().showHistogram().log().imshow().println();
+//        CMatrix cm2 = CMatrix.getInstance().readImage(".//images//horoz.jpg").imshow().rgb2gray().imshow().showHistogram().log().imshow().println();
     }
 }

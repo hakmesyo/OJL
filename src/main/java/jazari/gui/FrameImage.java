@@ -44,6 +44,7 @@ public class FrameImage extends javax.swing.JFrame {
     public String titleImageInfo;
     public CMatrix cm;
     public String caption = "";
+    private boolean noPaint=false;
 
     /**
      * Creates new form FrameImage
@@ -593,9 +594,13 @@ public class FrameImage extends javax.swing.JFrame {
         }
         //System.out.println("slider index:"+slider.getValue());
         getPicturePanel().imageIndex = slider.getValue();
-        BufferedImage bf = ImageProcess.readImageFromFile(getPicturePanel().imageFiles[getPicturePanel().imageIndex]);
-        getPicturePanel().rawImage = ImageProcess.clone(bf);
-        getPicturePanel().adjustImageToPanel(bf, true);
+        if (!noPaint) {
+            BufferedImage bf = ImageProcess.readImageFromFile(getPicturePanel().imageFiles[getPicturePanel().imageIndex]);
+            getPicturePanel().rawImage = ImageProcess.clone(bf);
+            getPicturePanel().adjustImageToPanel(bf, true);
+        }else{
+            noPaint=false;
+        }
         lbl_index.setText("[ "+(getPicturePanel().imageIndex+1)+" / "+getPicturePanel().imageFiles.length+" ]");
     }//GEN-LAST:event_sliderStateChanged
 
@@ -721,8 +726,12 @@ public class FrameImage extends javax.swing.JFrame {
         //setFrameSize(img);
         getPicturePanel().setFocusable(true);
         getPicturePanel().requestFocusInWindow();
+        if (getPicturePanel().imageFiles==null) {
+            return;
+        }
         titleImageInfo = (getPicturePanel().imageFiles[getPicturePanel().imageIndex].getName() + "      [ " + (getPicturePanel().imageIndex + 1) + " / " + getPicturePanel().imageFiles.length + " ]");
         slider.setMaximum(getPicturePanel().imageFiles.length-1);
+        noPaint=true;
         slider.setValue(getPicturePanel().imageIndex);
         //isSequence.setVisible(false);
     }
