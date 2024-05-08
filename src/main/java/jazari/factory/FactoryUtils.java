@@ -8428,10 +8428,12 @@ public final class FactoryUtils {
 
     public static String convertPascalVoc2Yolo(int w, int h, List<PascalVocObject> listVoc, String[] classIndex) {
         Map<String, Integer> map = new HashMap();
+        int k=0;
         for (String str : classIndex) {
-            String s = str.split(":")[1];
-            int i = Integer.parseInt(str.split(":")[0]);
-            map.put(s, i);
+            String s = str.split(":")[0];
+            //int i = Integer.parseInt(str.split(":")[0]);
+            map.put(s, k);
+            k++;
         }
         int x1, x2, y1, y2, n, class_index;
         float px1, px2, py1, py2;
@@ -8449,8 +8451,9 @@ public final class FactoryUtils {
             if (!map.containsKey(pv.name)) {
                 continue;
             }
-            class_index = map.get(pv.name);
-            ret += class_index + " " + px1 + " " + py1 + " " + px2 + " " + py2 + "\n";
+            //class_index = map.get(pv.name);
+            //ret += class_index + " " + px1 + " " + py1 + " " + px2 + " " + py2 + "\n";
+            ret += pv.name + " " + px1 + " " + py1 + " " + px2 + " " + py2 + "\n";
         }
         return ret;
     }
