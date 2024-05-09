@@ -1249,7 +1249,11 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public float[][][] toFloatArray3D() {
-        return ImageProcess.imageToPixelsColorFloatFaster(image);
+        if (image!=null) {
+            return ImageProcess.imageToPixelsColorFloatFaster(image);
+        }else{
+            return null;
+        }        
     }
 
     /**

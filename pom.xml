@@ -104,11 +104,24 @@
             <artifactId>tensorflow-model-zoo</artifactId>
             <version>0.22.1</version>
         </dependency>
-        <!-- ONNXRuntime -->
+        <!-- ONNXRuntime 
         <dependency>
             <groupId>ai.djl.onnxruntime</groupId>
             <artifactId>onnxruntime-engine</artifactId>
             <version>0.22.1</version>
+        </dependency>
+        -->
+        
+        <!-- https://mvnrepository.com/artifact/com.microsoft.onnxruntime/onnxruntime -->
+        <dependency>
+            <groupId>com.microsoft.onnxruntime</groupId>
+            <artifactId>onnxruntime</artifactId>
+            <version>1.17.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.onnxruntime</groupId>
+            <artifactId>onnxruntime_gpu</artifactId>
+            <version>1.17.3</version>
         </dependency>
 
         
