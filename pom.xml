@@ -112,7 +112,7 @@
         </dependency>
         -->
         
-        <!-- https://mvnrepository.com/artifact/com.microsoft.onnxruntime/onnxruntime -->
+        <!-- https://mvnrepository.com/artifact/com.microsoft.onnxruntime/onnxruntime 
         <dependency>
             <groupId>com.microsoft.onnxruntime</groupId>
             <artifactId>onnxruntime</artifactId>
@@ -123,7 +123,7 @@
             <artifactId>onnxruntime_gpu</artifactId>
             <version>1.17.3</version>
         </dependency>
-
+        -->
         
         <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
         <dependency>
