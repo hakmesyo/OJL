@@ -1,6 +1,6 @@
 package jazari.app;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Component;
 import javax.swing.TransferHandler;
 import jazari.factory.FactoryUtils;
@@ -11,6 +11,11 @@ import javax.swing.JButton;
 import java.awt.Image;
 import java.io.File;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import jazari.gui.FlatLaf;
 import jazari.gui.FrameScreenCapture;
 
 
@@ -24,6 +29,15 @@ import jazari.gui.FrameScreenCapture;
  * @author cezerilab
  */
 public class Jazo extends javax.swing.JFrame {
+
+    static {
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
 
     /**
      * Creates new form JAnnotate
@@ -119,7 +133,7 @@ public class Jazo extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_openActionPerformed
 
     private void btn_screen_captureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_screen_captureActionPerformed
-        FrameScreenCapture frm=new FrameScreenCapture();
+        FrameScreenCapture frm = new FrameScreenCapture();
         frm.setVisible(true);
     }//GEN-LAST:event_btn_screen_captureActionPerformed
 
@@ -127,7 +141,7 @@ public class Jazo extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        FlatDarculaLaf.setup();
+        //FlatDarculaLaf.setup();
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 Jazo jazo = new Jazo();
@@ -144,7 +158,7 @@ public class Jazo extends javax.swing.JFrame {
 
     public static class ImageTransferHandler extends TransferHandler {
 
-        public static final DataFlavor[] SUPPORTED_DATA_FLAVORS = new DataFlavor[]{            
+        public static final DataFlavor[] SUPPORTED_DATA_FLAVORS = new DataFlavor[]{
             DataFlavor.javaFileListFlavor,
             DataFlavor.imageFlavor
         };

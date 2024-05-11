@@ -4,7 +4,7 @@
  */
 package jazari.gui;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+//import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Frame;
 import java.io.File;
 import java.util.logging.Level;
@@ -26,8 +26,14 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
     /**
      * Creates new form FrameBuildYoloDataSet
      *
-     * @param frame
+     *
      */
+    public FrameBuildYoloDataSet() {
+        this.frame = null;
+        initComponents();
+        //init();
+    }
+
     public FrameBuildYoloDataSet(FrameImage frame) {
         this.frame = frame;
         initComponents();
@@ -279,7 +285,7 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btn_build, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                    .addComponent(btn_build, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btn_cancel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -309,8 +315,13 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_buildActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_buildActionPerformed
-        buildYoloDataSet();
-        dispose();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                buildYoloDataSet();
+                dispose();
+            }
+        }).start();
     }//GEN-LAST:event_btn_buildActionPerformed
 
     private void btn_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancelActionPerformed
@@ -371,17 +382,17 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
 //            java.util.logging.Logger.getLogger(FrameBuildYoloDataSet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
 //        }
         //</editor-fold>
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Jazo.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            UIManager.setLookAndFeel(new FlatDarkLaf());
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(Jazo.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrameBuildYoloDataSet(null).setVisible(true);
+                new FrameBuildYoloDataSet().setVisible(true);
             }
         });
     }
@@ -441,11 +452,11 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
             });
             return;
         }
-        int n_train=Integer.parseInt(txt_train.getText());
-        int n_val=Integer.parseInt(txt_val.getText());
-        int n_test=Integer.parseInt(txt_test.getText());
-        
-        if (n_train+n_val+n_test!=100) {
+        int n_train = Integer.parseInt(txt_train.getText());
+        int n_val = Integer.parseInt(txt_val.getText());
+        int n_test = Integer.parseInt(txt_test.getText());
+
+        if (n_train + n_val + n_test != 100) {
             FactoryUtils.showMessageTemp("sum of train, val and test ratio must be 100", 3000, new CallBackTrigger() {
                 @Override
                 public void trigger() {
@@ -453,7 +464,7 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
             });
             return;
         }
-        
+
         String detection_type = "";
         if (frame.chkBBox.isSelected()) {
             detection_type = "detection";
@@ -484,6 +495,7 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
         else if (combo_annotation_type.getSelectedIndex() == 1) {
             File dir = new File(txt_folderPath.getText());
             String msg = FactoryUtils.convert2YoloFormatBatch(
+                    FrameBuildYoloDataSet.this,
                     frame.imageFolderPath,
                     dir.getAbsolutePath(),
                     detection_type,
@@ -499,5 +511,9 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
             });
         }
         dispose();
+    }
+
+    public void setCaption(String title) {
+        this.setTitle(title);
     }
 }

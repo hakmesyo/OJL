@@ -14,7 +14,7 @@ public class TestSinc {
         for (int i = 0; i < 1; i++) {
             long t1 = FactoryUtils.tic();
             CMatrix x = CMatrix.getInstance().range(-10, 10, 0.01f).shape();
-            CMatrix cm = x.clone().sinc().jitter(0.01f);//.plot(x.toFloatArray1D());
+            CMatrix cm = x.clone().sinc().jitter(0.01f).plot(x.toFloatArray1D()).println();
             CMatrix cm2 = cm.cat(2, cm.clone().addScalar(1.5f)).transpose().plot(x.getArray1Dfloat());
             long t2 = FactoryUtils.toc(t1);
         }

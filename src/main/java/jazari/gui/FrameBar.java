@@ -5,7 +5,7 @@
  */
 package jazari.gui;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+//import com.formdev.flatlaf.FlatDarkLaf;
 import jazari.image_processing.ImageProcess;
 import jazari.factory.FactoryUtils;
 import java.io.File;
@@ -22,13 +22,13 @@ import jazari.types.TFigureAttribute;
  */
 public class FrameBar extends javax.swing.JFrame {
 
-    static {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+//    static {
+//        try {
+//            UIManager.setLookAndFeel(new FlatDarkLaf());
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
 
     private float[][] data = null;
     private String[] categories = null;

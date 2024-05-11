@@ -4,7 +4,7 @@
  */
 package jazari.gui;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+//import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -411,11 +411,11 @@ public class FrameObjectProperties extends javax.swing.JFrame {
 //        }
         //</editor-fold>
 
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Jazo.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            UIManager.setLookAndFeel(new FlatDarkLaf());
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(Jazo.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 
 
         /* Create and display the form */

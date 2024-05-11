@@ -5,6 +5,7 @@
 package jazari.factory;
 
 import au.com.bytecode.opencsv.CSVReader;
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.google.gson.Gson;
 import java.awt.AWTException;
 import jazari.interfaces.InterfaceCallBack;
@@ -74,6 +75,9 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.IIOImage;
@@ -89,10 +93,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import jazari.gui.FrameBuildYoloDataSet;
+import jazari.gui.FrameCircularProgressBar;
 import jazari.utils.DataAnalytics;
 import jazari.gui.FrameImage;
+import jazari.gui.test.TestCircularProgressBar;
 import jazari.image_processing.ImageProcess;
 import jazari.interfaces.call_back_interface.CallBackTrigger;
 import jazari.matrix.CRectangle;
@@ -137,7 +148,10 @@ public final class FactoryUtils {
     static {
         try {
             robot = new Robot();
+            UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (AWTException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -2516,91 +2530,152 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static String convertArrayToString(float[] p) {
-        String s = "";
+    /**
+     * convert float array to string with seperator in a fast way using parallel
+     * stream
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(float[] p, String seperator) {
+//        double[] doubleArray = new double[p.length];
+//        IntStream.range(0, p.length).parallel().forEach(i -> doubleArray[i] = p[i]);
+        double[] doubleArray = new double[p.length];
         for (int i = 0; i < p.length; i++) {
-            s += p[i] + ";";
+            doubleArray[i] = p[i];
         }
-        return s;
+        return DoubleStream.of(doubleArray)
+                .parallel()
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(seperator));
     }
 
-    public static String toString(float[] p, String token) {
-        String s = "";
-        for (int i = 0; i < p.length; i++) {
-            s += p[i] + token;
-        }
-        return s;
+    /**
+     * convert double array to string with seperator in a fast way using
+     * parallel stream
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(double[] p, String seperator) {
+        return DoubleStream.of(p)
+                .parallel()
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(seperator));
     }
 
-//    public static String toString(float[] p, String token) {
-//        String s = "";
-//        for (int i = 0; i < p.length; i++) {
-//            s += p[i] + token;
-//        }
-//        return s;
-//    }
-    public static String toString(long[] p, String token) {
-        String s = "";
-        for (int i = 0; i < p.length; i++) {
-            s += p[i] + token;
-        }
-        return s;
+    /**
+     * convert long array to string with seperator in a fast way using parallel
+     * stream
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(long[] p, String seperator) {
+        return Arrays.stream(p)
+                .parallel()
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(seperator));
     }
 
-    public static String toString(int[] p, String token) {
-        String s = "";
-        for (int i = 0; i < p.length; i++) {
-            s += p[i] + token;
-        }
-        return s;
+    /**
+     * convert int array to string with seperator in a fast way using parallel
+     * stream
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(int[] p, String seperator) {
+        return Arrays.stream(p)
+                .parallel()
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(seperator));
     }
 
-    public static String toString(short[] p, String token) {
-        String s = "";
-        for (int i = 0; i < p.length; i++) {
-            s += p[i] + token;
-        }
-        return s;
+    /**
+     * convert short array to string with seperator in a fast way using parallel
+     * stream
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(short[] p, String seperator) {
+        return IntStream.range(0, p.length)
+                .mapToObj(i -> String.valueOf(p[i]))
+                .parallel()
+                .collect(Collectors.joining(seperator));
     }
 
-    public static String toString(byte[] p, String token) {
-        String s = "";
+    /**
+     * convert byte array to string with seperator
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(byte[] p, String seperator) {
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < p.length; i++) {
-            s += p[i] + token;
+            sb.append(p[i]);
+            if (i != p.length - 1) {
+                sb.append(seperator);
+            }
         }
-        return s;
+        return sb.toString();
     }
 
-    public static String toString(char[] p, String token) {
-        String s = "";
+    /**
+     * convert char array to string with seperator
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(char[] p, String seperator) {
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < p.length; i++) {
-            s += p[i] + token;
+            sb.append(p[i]);
+            if (i != p.length - 1) {
+                sb.append(seperator);
+            }
         }
-        return s;
+        return sb.toString();
     }
 
-    public static String toString(boolean[] p, String token) {
-        String s = "";
+    /**
+     * convert boolean array to string with seperator
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(boolean[] p, String seperator) {
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < p.length; i++) {
-            s += p[i] + token;
+            sb.append(p[i]);
+            if (i != p.length - 1) {
+                sb.append(seperator);
+            }
         }
-        return s;
+        return sb.toString();
     }
 
-    public static String toString(String[] p, String token) {
-        String s = "";
-        for (int i = 0; i < p.length; i++) {
-            s += p[i] + token;
-        }
-        return s;
-    }
-
-    public static String convertArrayToString(int[] p) {
-        String s = "";
-        for (int i = 0; i < p.length; i++) {
-            s += p[i] + ";";
-        }
-        return s;
+    /**
+     * Reverse of the String split function. This method joins string array with
+     * seperator
+     *
+     * @param p
+     * @param seperator
+     * @return
+     */
+    public static String toString(String[] p, String seperator) {
+        String ret = String.join(seperator, p);
+        return ret;
     }
 
     public static boolean isExistInTheList(int[] d, Vector<int[]> list) {
@@ -6946,7 +7021,7 @@ public final class FactoryUtils {
         int w = bbp.size.width;
         int h = bbp.size.height;
         String ret = "";
-        int k=0;
+        int k = 0;
         Map<String, Integer> map = new HashMap();
         for (String str : classIndex) {
             String s = str.split(":")[0];
@@ -6986,7 +7061,7 @@ public final class FactoryUtils {
         String ret = "";
         int x1, x2, y1, y2, n, class_index;
         float px1, px2, py1, py2;
-        int k=0;
+        int k = 0;
         Map<String, Integer> map = new HashMap();
         for (String str : classIndex) {
             String s = str.split(":")[0];
@@ -7496,6 +7571,24 @@ public final class FactoryUtils {
         LocalDateTime now = java.time.LocalDateTime.now();
         String ret = now.getHour() + ":" + now.getMinute() + ":" + now.getSecond();
         return ret;
+    }
+
+    public static String toYoloFormat(File f) {
+        String[] classIndex = getClassIndexArray(f.getParent() + "/class_labels.txt");
+        Map<String, Integer> map = new HashMap();
+        int k = 0;
+        for (String s : classIndex) {
+            map.put(s, k++);
+        }
+        String[] rows = readFile(f).split("\n");
+        String str = "";
+        for (String row : rows) {
+            String s = row.split(" ")[0];
+            int index = map.get(s);
+            row = row.replace(s, "" + index);
+            str += row + "\n";
+        }
+        return str;
     }
 
     public <T> List<T> toArrayList(T[][] twoDArray) {
@@ -8284,17 +8377,18 @@ public final class FactoryUtils {
                 map.put(s, s);
             }
         }
-        String classIndex="";
+        String classIndex = "";
         for (String row : rows) {
-            String[] e = row.split(" ");
-            classIndex = e[0];
-            String name = (classNames != null) ? map.get(classIndex) : "" + classIndex;
+            try {
+                String[] e = row.split(" ");
+                classIndex = e[0];
+                String name = (classNames != null) ? map.get(classIndex) : "" + classIndex;
 
-            if (name == null) {
-                name = "" + classIndex;
-            }
+                if (name == null) {
+                    name = "" + classIndex;
+                }
 
-            /*
+                /*
             x1 = pv.bndbox.xmin;
             y1 = pv.bndbox.ymin;
             x2 = pv.bndbox.xmax;
@@ -8303,19 +8397,22 @@ public final class FactoryUtils {
             py1 = (y1 + y2) / 2.0f / h; --> y1+y2=2*py1*h
             px2 = (x2 - x1) * 1.0f / w; --> x2-x1=px2*w
             py2 = (y2 - y1) * 1.0f / h; --> y2-y1=py2*h
-             */
-            px1 = Float.parseFloat(e[1]);
-            py1 = Float.parseFloat(e[2]);
-            px2 = Float.parseFloat(e[3]);
-            py2 = Float.parseFloat(e[4]);
-            x2 = Math.round((px1 * w * 2 + px2 * w) / 2);
-            y2 = Math.round((py1 * h * 2 + py2 * h) / 2);
-            x1 = Math.round(x2 - px2 * w);
-            y1 = Math.round(y2 - py2 * h);
-            PascalVocBoundingBox bbox = new PascalVocBoundingBox(name, new Rectangle(x1, y1, x2 - x1, y2 - y1), fromLeft, fromTop, null);
-            List<PascalVocAttribute> attributeList = null;
-            PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, attributeList);
-            lstObjects.add(obj);
+                 */
+                px1 = Float.parseFloat(e[1]);
+                py1 = Float.parseFloat(e[2]);
+                px2 = Float.parseFloat(e[3]);
+                py2 = Float.parseFloat(e[4]);
+                x2 = Math.round((px1 * w * 2 + px2 * w) / 2);
+                y2 = Math.round((py1 * h * 2 + py2 * h) / 2);
+                x1 = Math.round(x2 - px2 * w);
+                y1 = Math.round(y2 - py2 * h);
+                PascalVocBoundingBox bbox = new PascalVocBoundingBox(name, new Rectangle(x1, y1, x2 - x1, y2 - y1), fromLeft, fromTop, null);
+                List<PascalVocAttribute> attributeList = null;
+                PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, attributeList);
+                lstObjects.add(obj);
+            } catch (Exception e) {
+                System.out.println(e.toString());
+            }
         }
         ret.lstObjects = lstObjects;
         return ret;
@@ -8428,7 +8525,7 @@ public final class FactoryUtils {
 
     public static String convertPascalVoc2Yolo(int w, int h, List<PascalVocObject> listVoc, String[] classIndex) {
         Map<String, Integer> map = new HashMap();
-        int k=0;
+        int k = 0;
         for (String str : classIndex) {
             String s = str.split(":")[0];
             //int i = Integer.parseInt(str.split(":")[0]);
@@ -8471,7 +8568,7 @@ public final class FactoryUtils {
         int x1, x2, y1, y2, w, h, n, class_index;
         float px1, px2, py1, py2;
         //String[] refList = FactoryUtils.readFile(mainFolderPath + "/" + labels_map_file).split("\n");
-        int k=0;
+        int k = 0;
         Map<String, Integer> map = new HashMap();
         for (String str : refList) {
             String s = str.split(":")[0];
@@ -8528,16 +8625,16 @@ public final class FactoryUtils {
         FactoryUtils.makeDirectory(targetFolderName + "/images");
         FactoryUtils.makeDirectory(targetFolderName + "/images/train");
         FactoryUtils.makeDirectory(targetFolderName + "/images/val");
-        if (r_test>0) {
+        if (r_test > 0) {
             FactoryUtils.makeDirectory(targetFolderName + "/images/test");
-        }        
+        }
         FactoryUtils.makeDirectory(targetFolderName + "/labels");
         FactoryUtils.makeDirectory(targetFolderName + "/labels/train");
         FactoryUtils.makeDirectory(targetFolderName + "/labels/val");
-        if (r_test>0) {
+        if (r_test > 0) {
             FactoryUtils.makeDirectory(targetFolderName + "/labels/test");
         }
-        
+
         String str_yaml = "";
         if (r_test != 0) {
             str_yaml
@@ -8628,6 +8725,7 @@ public final class FactoryUtils {
      * convert all pascalvoc xml annotation files to yolo txt format based on
      * type (detection or segmentation)
      *
+     * @param frame
      * @param mainFolderPath
      * @param targetFolderName
      * @param detectionType
@@ -8638,6 +8736,7 @@ public final class FactoryUtils {
      * @return
      */
     public static String convert2YoloFormatBatch(
+            FrameBuildYoloDataSet frame,
             String mainFolderPath,
             String targetFolderName,
             String detectionType,
@@ -8646,6 +8745,7 @@ public final class FactoryUtils {
             int r_val,
             int r_test
     ) {
+
         String[] classIndex = getClassIndexArray(mainFolderPath + "/class_labels.txt");
         prepareYoloDataSet(classIndex, targetFolderName, r_train, r_val, r_test);
         int k = -1;
@@ -8655,19 +8755,31 @@ public final class FactoryUtils {
         int n_train = (int) Math.round(r_train / 100.0 * n);
         int n_val = (int) Math.round(r_val / 100.0 * n);
         int n_test = (int) Math.round(r_test / 100.0 * n);
+        FrameCircularProgressBar frm = new FrameCircularProgressBar();
+        frm.setVisible(true);
         for (File f : files) {
             if (f.isFile() && !FactoryUtils.getFileName(f.getName()).contains("class_labels")) {
                 k++;
+                int r = (int) Math.round(1.0 * k / files.length * 100);
+                
+                //frm.requestFocus();
+                frm.setValue(r);
+                //frm.revalidate();
+                //frm.repaint();
+
                 File imgFile = new File(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + "." + image_extension);
                 if (k < n_train) {
                     FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/train/" + imgFile.getName()));
-                    FactoryUtils.copyFile(f, new File(targetFolderName + "/labels/train/" + f.getName()));
+                    String new_content = FactoryUtils.toYoloFormat(f);
+                    FactoryUtils.writeToFile(targetFolderName + "/labels/train/" + f.getName(), new_content);
                 } else if (k < n_train + n_val) {
                     FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/val/" + imgFile.getName()));
-                    FactoryUtils.copyFile(f, new File(targetFolderName + "/labels/val/" + f.getName()));
+                    String new_content = FactoryUtils.toYoloFormat(f);
+                    FactoryUtils.writeToFile(targetFolderName + "/labels/val/" + f.getName(), new_content);
                 } else if (k < n_train + n_val + n_test) {
                     FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/test/" + imgFile.getName()));
-                    FactoryUtils.copyFile(f, new File(targetFolderName + "/labels/test/" + f.getName()));
+                    String new_content = FactoryUtils.toYoloFormat(f);
+                    FactoryUtils.writeToFile(targetFolderName + "/labels/test/" + f.getName(), new_content);
                 }
             }
         }
@@ -8981,6 +9093,20 @@ public final class FactoryUtils {
         Point bottomRight = new Point(maxX, maxY);
         TBoundingBox boundingBox = new TBoundingBox(topLeft, bottomRight);
         return boundingBox;
+    }
+
+    public static void deneme() {
+        FrameCircularProgressBar frm = new FrameCircularProgressBar();
+        frm.setVisible(true);
+        for (int i = 0; i < 100; i++) {
+            frm.setValue(i);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(TestCircularProgressBar.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
     }
 
 }

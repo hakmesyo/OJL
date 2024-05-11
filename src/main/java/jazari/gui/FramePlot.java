@@ -5,7 +5,7 @@
  */
 package jazari.gui;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+//import com.formdev.flatlaf.FlatDarkLaf;
 import jazari.types.TFigureAttribute;
 import jazari.matrix.CMatrix;
 import jazari.factory.FactoryUtils;
@@ -26,13 +26,13 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class FramePlot extends javax.swing.JFrame {
 
-    static {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+//    static {
+//        try {
+//            UIManager.setLookAndFeel(new FlatDarkLaf());
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
 
     private TFigureAttribute figureAttribute;
     private boolean isSort = true;
@@ -421,13 +421,13 @@ public class FramePlot extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        try {
+       // try {
             /* Set the Nimbus look and feel */
             //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
             /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
             * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
              */
-            UIManager.setLookAndFeel(new FlatDarkLaf());
+            //UIManager.setLookAndFeel(new FlatDarkLaf());
 //        try {
 //            
 ////            javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -448,9 +448,9 @@ public class FramePlot extends javax.swing.JFrame {
 //        }
 //</editor-fold>
 //</editor-fold>
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(FramePlot.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {

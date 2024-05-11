@@ -4,7 +4,7 @@
  */
 package jazari.gui;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+//import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.image.BufferedImage;
@@ -294,11 +294,11 @@ public class FrameScreenCapture extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        try {
-            UIManager.setLookAndFeel((LookAndFeel) new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FrameScreenCapture.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            UIManager.setLookAndFeel((LookAndFeel) new FlatDarkLaf());
+//        } catch (UnsupportedLookAndFeelException ex) {
+//            Logger.getLogger(FrameScreenCapture.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
