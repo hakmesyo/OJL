@@ -7495,6 +7495,11 @@ public final class CMatrix implements Serializable {
         return equalizeHistogram();
     }
 
+    public CMatrix histeqClahe() {
+        image=ImageProcess.equalizeHistogramAdaptiveClahe(image);
+        return this;
+    }
+
     public CMatrix histeqMusa() {
         return equalizeHistogramMusa();
     }

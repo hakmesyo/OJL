@@ -8725,8 +8725,8 @@ public final class FactoryUtils {
     }
 
     /**
-     * if you call this method from the UI components like JFrame you should use 
-     * thread since swing is single threaded and may freeze the ui element 
+     * if you call this method from the UI components like JFrame you should use
+     * thread since swing is single threaded and may freeze the ui element
      * example usage
      * <pre>
      *   new Thread(new Runnable() {
@@ -8739,13 +8739,13 @@ public final class FactoryUtils {
      *       }
      *   }).start();
      * </pre>
-
+     *
      * @param progress
      */
     public static void showCircularProgressBar(double progress) {
         int val = (int) Math.round(progress);
-        if (circularProgressBar==null) {
-            circularProgressBar=new FrameCircularProgressBar();
+        if (circularProgressBar == null) {
+            circularProgressBar = new FrameCircularProgressBar();
         }
         if (!circularProgressBar.isDisplayable() || !circularProgressBar.isVisible()) {
             circularProgressBar.setVisible(true);
@@ -9119,8 +9119,5 @@ public final class FactoryUtils {
         return boundingBox;
     }
 
-    public static void doStuff() {
-
-    }
 
 }

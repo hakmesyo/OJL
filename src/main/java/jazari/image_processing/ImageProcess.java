@@ -68,6 +68,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import static jazari.factory.FactoryUtils.getDefaultDirectory;
 import jazari.types.TBoundingBox;
+import org.opencv.core.Core;
 //import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 //import org.opencv.core.Core;
 //import org.opencv.core.CvType;
@@ -89,6 +90,8 @@ import jazari.types.TBoundingBox;
  * @author venap3
  */
 public final class ImageProcess {
+
+    private static boolean isOpenCVLoaded;
 
 //    static {
 //        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -4450,6 +4453,20 @@ public final class ImageProcess {
             }
         }
         return data;
+    }
+    
+    public static BufferedImage equalizeHistogramAdaptiveClahe(BufferedImage img){
+        if (!isOpenCVLoaded) {
+            loadOpenCVLibrary();
+        }
+        AdaptiveConcurrentClahe clahe=new AdaptiveConcurrentClahe();
+        BufferedImage ret=clahe.process(img);
+        return ret;
+    }
+    
+    public static void loadOpenCVLibrary() {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        isOpenCVLoaded = true;
     }
 
 }

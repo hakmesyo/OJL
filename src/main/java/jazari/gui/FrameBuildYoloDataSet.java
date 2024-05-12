@@ -7,11 +7,6 @@ package jazari.gui;
 //import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Frame;
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import jazari.app.Jazo;
 import jazari.factory.FactoryUtils;
 import jazari.interfaces.call_back_interface.CallBackTrigger;
 
