@@ -14,13 +14,12 @@ import jazari.matrix.CMatrix;
 public class TestBruteForceAttack {
 
     public static void main(String[] args) {
-//        for (int i = 0; i < 10; i++) {
-            String pass = "zdemo";
-            char[] pool = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-//            CMatrix cm = 
-                    CMatrix.getInstance()
-                    .bruteForceAttack(pool, pass, false)
-                    ;
-//        }
+        String pass = "zdemox";
+        char[] pool = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+        for (int i = 0; i < 1; i++) {
+            CMatrix.getInstance().bruteForceAttack(pool, pass, false, 1_000_000_000);
+        }
+        System.out.println("merhaba");
+        System.exit(0);
     }
 }

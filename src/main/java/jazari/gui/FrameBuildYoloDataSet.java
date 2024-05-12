@@ -495,7 +495,6 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
         else if (combo_annotation_type.getSelectedIndex() == 1) {
             File dir = new File(txt_folderPath.getText());
             String msg = FactoryUtils.convert2YoloFormatBatch(
-                    FrameBuildYoloDataSet.this,
                     frame.imageFolderPath,
                     dir.getAbsolutePath(),
                     detection_type,

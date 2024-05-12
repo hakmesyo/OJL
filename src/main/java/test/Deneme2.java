@@ -18,12 +18,14 @@ import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
  */
 public class Deneme2 {
     public static void main(String[] args) {
-        Polygon poly=new Polygon();
-        for (int i = 0; i < 10; i++) {
-            Point p=new Point(i,2*i);
-            poly.addPoint(p.x, p.y);
-            System.out.println(poly.npoints);
-        }
+        CMatrix cm = CMatrix.getInstance().range(100).perlinNoise().tr().plot();
+        System.out.println("merhaba");
+//        Polygon poly=new Polygon();
+//        for (int i = 0; i < 10; i++) {
+//            Point p=new Point(i,2*i);
+//            poly.addPoint(p.x, p.y);
+//            System.out.println(poly.npoints);
+//        }
         //AnnotationPascalVOCFormat apv= FactoryUtils.deserializePascalVocXML("images/pullar.xml");
         //FactoryUtils.serializePascalVocXML("images", "pullar_2.xml", "images/pullar.png", apv.source, apv.lstObjects);
 //        CMatrix cm = CMatrix.getInstance()

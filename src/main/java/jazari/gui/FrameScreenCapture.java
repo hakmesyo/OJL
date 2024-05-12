@@ -32,7 +32,7 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     public List<BufferedImage> listImage;
     public int fps = 10;
     public boolean isCaptureFromVideo = false;
-    String tempDirName="a";
+    String tempDirName = "a";
 
     /**
      * Creates new form FrameScreeCap
@@ -198,27 +198,37 @@ public class FrameScreenCapture extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_capture_single_imageActionPerformed
 
     private void btn_saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveActionPerformed
-        if (isCaptureFromVideo) {
-            String path = FactoryUtils.browseDirectory().getAbsolutePath();
-            FactoryUtils.makeDirectory(path);
-            File[] images = FactoryUtils.getFileArrayInFolderByExtension("images/temp/" + tempDirName, "jpg");
-            for (File image : images) {
-                FactoryUtils.copyFile(image, new File(path + "/" + image.getName()));
-            }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (isCaptureFromVideo) {
+                    String path = FactoryUtils.browseDirectory().getAbsolutePath();
+                    FactoryUtils.makeDirectory(path);
+                    File[] images = FactoryUtils.getFileArrayInFolderByExtension("images/temp/" + tempDirName, "jpg");
+                    int k = 0;
+                    for (File image : images) {
+                        FactoryUtils.showCircularProgressBar((int)Math.round((++k) * 1.0 / images.length * 100));
+                        FactoryUtils.copyFile(image, new File(path + "/" + image.getName()));
+                        FactoryUtils.sleep(10);
+                    }
 //            for (BufferedImage img : listImage) {
 //                ImageProcess.saveImage(img, path + "/" + System.currentTimeMillis() + ".jpg");
 //            }
-            //listImage.clear();
-            FactoryUtils.bekle(2000);
-            FactoryUtils.removeDirectory("images/temp/" + tempDirName);
-            screenshot = null;
-            FactoryUtils.showMessage("Captured Video Frames saved successfully");
-        } else if (screenshot != null) {
-            if (ImageProcess.saveImage(screenshot)) {
-                FactoryUtils.showMessage("Captured Image saved successfully");
+                    //listImage.clear();
+                    FactoryUtils.bekle(2000);
+                    FactoryUtils.removeDirectory("images/temp/" + tempDirName);
+                    screenshot = null;
+                    FactoryUtils.showMessage("Captured Video Frames saved successfully");
+                } else if (screenshot != null) {
+                    if (ImageProcess.saveImage(screenshot)) {
+                        FactoryUtils.showMessage("Captured Image saved successfully");
+                    }
+                    screenshot = null;
+                }
             }
-            screenshot = null;
-        }
+        }).start();
+
+
     }//GEN-LAST:event_btn_saveActionPerformed
 
     private void btn_useActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_useActionPerformed
@@ -229,10 +239,10 @@ public class FrameScreenCapture extends javax.swing.JFrame {
 
     private void btn_capture_videoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_capture_videoActionPerformed
         isCaptureFromVideo = true;
-        tempDirName=System.currentTimeMillis()+"";
+        tempDirName = System.currentTimeMillis() + "";
         FactoryUtils.makeDirectory("images");
         FactoryUtils.makeDirectory("images/temp");
-        FactoryUtils.makeDirectory("images/temp/"+tempDirName);
+        FactoryUtils.makeDirectory("images/temp/" + tempDirName);
         FrameScreenCapture frame = this;
         FactoryUtils.showMessage("For capturing with a specified fps\n"
                 + "select a bounding box rectangle with mouse press --> drag --> release\n"

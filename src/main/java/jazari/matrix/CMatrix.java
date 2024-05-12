@@ -259,7 +259,7 @@ public final class CMatrix implements Serializable {
     }
 
     public BufferedImage getImage() {
-        if (image==null) {
+        if (image == null) {
             image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         }
         return image;
@@ -837,7 +837,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix float type
      */
     public static CMatrix getInstance(float[][][] d) {
-        CMatrix cm=new CMatrix();
+        CMatrix cm = new CMatrix();
         cm.setArray(d);
         return cm;
     }
@@ -1249,11 +1249,11 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public float[][][] toFloatArray3D() {
-        if (image!=null) {
+        if (image != null) {
             return ImageProcess.imageToPixelsColorFloatFaster(image);
-        }else{
+        } else {
             return null;
-        }        
+        }
     }
 
     /**
@@ -2081,7 +2081,8 @@ public final class CMatrix implements Serializable {
         attr.items = getRowNamesArray();
 
         if (!hold_on) {
-            framePlot = new FramePlot(this.toFloatArray2D(), attr);
+            //framePlot = new FramePlot(this.toFloatArray2D(), attr);
+            return this;
         } else {
             if (framePlot == null) {
                 framePlot = new FramePlot(this.toFloatArray2D(), attr);
@@ -2822,7 +2823,7 @@ public final class CMatrix implements Serializable {
     public CMatrix imhist(String title) {
         CMatrix ret = this.clone();
 
-        if (ret.image == null){// || ret.image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+        if (ret.image == null) {// || ret.image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
             ret.image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         }
         CMatrix cc = ImageProcess.getHistogram(ret);
@@ -3073,7 +3074,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix showDataGrid() {
-        FrameDataGrid frm = new FrameDataGrid(this.toFloatArray2D(),false);
+        FrameDataGrid frm = new FrameDataGrid(this.toFloatArray2D(), false);
         frm.setVisible(true);
         return this;
     }
@@ -3110,6 +3111,19 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    /**
+     * take transpose of the matrix
+     * @return
+     */
+    public CMatrix tr() {
+        array = array.transpose();
+        return this;
+    }
+    
+    /**
+     * take transpose of the matrix
+     * @return
+     */
     public CMatrix transpose() {
         array = array.transpose();
         return this;
@@ -4905,12 +4919,12 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix jitter(float range) {
-        if (getImage().getType()==BufferedImage.TYPE_BYTE_GRAY){
-            setArray(ImageProcess.addNoise2D(this.toFloatArray2D(),range));
+        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.addNoise2D(this.toFloatArray2D(), range));
             //alttaki daha yavaş çünkü iki defa conversion yapıyor
             //setImage(ImageProcess.addNoise2D(this.getImage(),range));
-        }else{
-            setArray(ImageProcess.addNoise3D(this.toFloatArray3D(),range));
+        } else {
+            setArray(ImageProcess.addNoise3D(this.toFloatArray3D(), range));
         }
         return this;
     }
@@ -4918,7 +4932,7 @@ public final class CMatrix implements Serializable {
     /**
      * add certain noise on all matrix elements
      *
-     * @param range: float noise amount range should be 0 from 50  
+     * @param range: float noise amount range should be 0 from 50
      *
      * @return CMatrix
      */
@@ -4929,18 +4943,18 @@ public final class CMatrix implements Serializable {
     /**
      * add certain noise on some matrix elements with a given probability
      *
-     * @param range: float noise amount range should be 0 from 50  
-     * @param probability : float spatial noise probability ranges from 0 to 1 
+     * @param range: float noise amount range should be 0 from 50
+     * @param probability : float spatial noise probability ranges from 0 to 1
      *
      * @return CMatrix
      */
     public CMatrix addNoisePartial(float range, float probability) {
-        if (getImage().getType()==BufferedImage.TYPE_BYTE_GRAY){
-            setArray(ImageProcess.addNoisePartial2D(this.toFloatArray2D(),range,probability));
+        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.addNoisePartial2D(this.toFloatArray2D(), range, probability));
             //alttaki daha yavaş çünkü iki defa conversion yapıyor
             //setImage(ImageProcess.addNoisePartial2D(this.getImage(),range));
-        }else{
-            setArray(ImageProcess.addNoisePartial3D(this.toFloatArray3D(),range,probability));
+        } else {
+            setArray(ImageProcess.addNoisePartial3D(this.toFloatArray3D(), range, probability));
         }
         return this;
     }
@@ -8768,10 +8782,11 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
-    public CMatrix bruteForceAttack(char[] pool, String pass, boolean isPrint) {
+    public CMatrix bruteForceAttack(char[] pool, String pass, boolean isPrint, int counter) {
         long t = FactoryUtils.tic();
         BruteForce bf = new BruteForce(pool, 1);
         String newPass = bf.toString();
+        int k = 0;
         while (true) {
             if (newPass.equals(pass)) {
                 System.out.println("Password Found: " + newPass);
@@ -8780,7 +8795,10 @@ public final class CMatrix implements Serializable {
             newPass = bf.toString();
             if (isPrint) {
                 System.out.println("" + newPass);
-            }
+            } 
+//            else if (k++ > counter) {
+//                System.out.println(k + ". trial : " + newPass);
+//            }
             bf.increment();
         }
         FactoryUtils.toc(t);
@@ -9389,10 +9407,11 @@ public final class CMatrix implements Serializable {
 
     /**
      * Image Data Augmentation For Deep Learning and Machine Learning
+     *
      * @param n
      * @param imgs
      * @param opt
-     * @return 
+     * @return
      */
     public List<BufferedImage> imDataAug(int n, List<BufferedImage> imgs, DataAugmentationOpt opt) {
         List<BufferedImage> ret = new ArrayList();
@@ -9923,10 +9942,23 @@ public final class CMatrix implements Serializable {
 
     /**
      * open animated plot interface
+     * example usage:
+     * <pre>
+     *    CMatrix cm = CMatrix.getInstance()
+     *            .range(0, 100)
+     *            .perlinNoise()
+     *            .plotAnimated(1000, 100, new CallBackAppend() {
+     *                {@literal@}Override
+     *                public float[] append(int index) {
+     *                    float f1 = FactoryUtils.perlinNoise(index, 0.07f);
+     *                    return new float[]{f1{@literal}};
+     *                {@literal}}
+     *            {@literal}});
+     * </pre>
      *
      * @param loopNumber
      * @param threadSleep
-     * @param function : you can write any algortihm or call a function
+     * @param function : you can write any algortihm or call a function 
      * @return
      */
     public CMatrix plotAnimated(int loopNumber, int threadSleep, CallBackAppend function) {

@@ -114,9 +114,9 @@ public class FrameCircularProgressBar extends javax.swing.JFrame {
         return (PanelCircularProgressBar) panel;
     }
 
-    public void setValue(int val) {
-        getProgressBar().setValue(val);
-        if (val==100) {
+    public void setProgress(int progress) {
+        getProgressBar().setValue(progress);
+        if (progress==100) {
             this.dispose();
         }
     }

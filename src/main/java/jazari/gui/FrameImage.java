@@ -5,6 +5,7 @@
  */
 package jazari.gui;
 
+import com.formdev.flatlaf.FlatDarkLaf;
 import jazari.utils.DataAnalytics;
 //import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Dimension;
@@ -28,13 +29,13 @@ import jazari.interfaces.call_back_interface.CallBackTrigger;
  */
 public class FrameImage extends javax.swing.JFrame {
 
-//    static {
-//        try {
-//            UIManager.setLookAndFeel(new FlatDarkLaf());
-//        } catch (UnsupportedLookAndFeelException ex) {
-//            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
+    static {
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     public BufferedImage img;
     int pw = 100;

@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jazari.factory.FactoryUtils;
 import jazari.matrix.CMatrix;
+import jazari.types.TFigureAttribute;
 import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.NameFileComparator;
@@ -32,39 +33,59 @@ import org.apache.commons.io.comparator.NameFileComparator;
 public class Deneme {
 
     public static void main(String[] args) {
+
+//        TFigureAttribute attr = new TFigureAttribute(
+//                "Lane Detection Performance Evaluation",
+//                new String[]{"Accuracy", "Groups"},
+//                new String[]{"Epoch-10", "Epoch-20", "Epoch-30", "Epoch-40", "Epoch-50"},
+//                new String[]{"SCNN", "U-Net", "ENet", "ENet-SAD"}
+//        );
+//        CMatrix cm = CMatrix.getInstance()
+//                .rand(4, 5, -150f, 151f)
+//                .bar(attr);
+        int min = -200;
+        int max = 200;
+        CMatrix cm1 = CMatrix.getInstance()
+                .range(min, max)
+                .perlinNoise(0.01f);
+        CMatrix cm2 = CMatrix.getInstance()
+                .range(min, max)
+                .perlinNoise(0.022f);
+        CMatrix cm = cm1.cat(1, cm2);
+        cm.plot(CMatrix.getInstance().range(min, max).toFloatArray1D());
+    }
 //        int[] d=CMatrix.getInstance().rand(1, 1_000_000).toIntArray1D();
 //        Long t1=FactoryUtils.tic();
 //        for (int i = 0; i < 100; i++) {
 //            String s=FactoryUtils.toString(d, " ");
 //            t1=FactoryUtils.toc(t1);
 //        }
-        
-        String path = "C:\\Users\\cezerilab\\Downloads\\meristem\\meristem";
-        File[] files = FactoryUtils.getFileArrayInFolderByExtension(path, "txt");
-        int k=0;
-        for (File file : files) {
-            if (!file.getName().contains("class_labels")) {
-                String[] rows=FactoryUtils.readFile(file).split("\n");
-                String str="";
-                for (String row : rows) {
-                    String[] rs=row.split(" ");
-                    if (rs[0].equals("12")) {
-                        rs[0]="meristem";
-                        String s=FactoryUtils.toString(rs, " ");
-                        str+=s+"\n";
-                    }else{
-                        str+=row+"\n";
-                    }
-                    System.out.println(k++);
-                }
-                FactoryUtils.writeToFile(file, str);
-            }
- 
-        }
-        
-        
-    }
 
+//        String path = "C:\\Users\\cezerilab\\Downloads\\meristem\\meristem";
+//        File[] files = FactoryUtils.getFileArrayInFolderByExtension(path, "txt");
+//        int k=0;
+//        for (File file : files) {
+//            if (!file.getName().contains("class_labels")) {
+//                String[] rows=FactoryUtils.readFile(file).split("\n");
+//                String str="";
+//                for (String row : rows) {
+//                    String[] rs=row.split(" ");
+//                    if (rs[0].equals("12")) {
+//                        rs[0]="meristem";
+//                        String s=FactoryUtils.toString(rs, " ");
+//                        str+=s+"\n";
+//                    }else{
+//                        str+=row+"\n";
+//                    }
+//                    System.out.println(k++);
+//                }
+//                FactoryUtils.writeToFile(file, str);
+//            }
+// 
+//        }
+//        
+//        
+//    }
 //    static String path = "D:\\Dropbox\\NetbeansProjects\\LaserWeedingImageAcquisitionApp\\images\\ds";
 //
 //    public static boolean intersects(Point k, Point z, Point p) {

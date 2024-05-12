@@ -23,8 +23,8 @@ Click [OK]
     public static void main(String[] args) {
         int b = 110;
         int c = 0;
-        //int a = divide(b, c);
-        //System.out.println("a:" + a);
+        int a = divide(b, c);
+        System.out.println("a:" + a);
         doSomething(null);
     }
 

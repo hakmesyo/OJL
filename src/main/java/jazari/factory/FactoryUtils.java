@@ -93,13 +93,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import jazari.gui.FrameBuildYoloDataSet;
 import jazari.gui.FrameCircularProgressBar;
 import jazari.utils.DataAnalytics;
 import jazari.gui.FrameImage;
@@ -144,6 +141,7 @@ public final class FactoryUtils {
     public static int nAttempts = 0;
     public static Robot robot;
     public static String saveImageFolder = FactoryUtils.getDefaultDirectory();
+    public static FrameCircularProgressBar circularProgressBar = null;
 
     static {
         try {
@@ -7882,6 +7880,10 @@ public final class FactoryUtils {
         delay(milliSeconds);
     }
 
+    public static void sleep(int milliSeconds) {
+        delay(milliSeconds);
+    }
+
     public static void delay(int milliSeconds) {
         try {
             Thread.sleep(milliSeconds);
@@ -8698,6 +8700,7 @@ public final class FactoryUtils {
         for (File f : files) {
             if (f.isFile() && !FactoryUtils.getFileName(f.getName()).contains("class_labels")) {
                 k++;
+                showCircularProgressBar((int) Math.round(1.0 * k / files.length * 100));
                 File imgFile = new File(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + "." + image_extension);
                 String yolo_txt = "";
                 if (detectionType.equals("detection")) {
@@ -8722,10 +8725,38 @@ public final class FactoryUtils {
     }
 
     /**
+     * if you call this method from the UI components like JFrame you should use 
+     * thread since swing is single threaded and may freeze the ui element 
+     * example usage
+     * <pre>
+     *   new Thread(new Runnable() {
+     *       {@literal@}Override
+     *       public void run() {
+     *           for (int i = 1; i {@literal<}= 100; i++) {
+     *               FactoryUtils.showCircularProgressBar(i);
+     *               FactoryUtils.sleep(10);
+     *           }
+     *       }
+     *   }).start();
+     * </pre>
+
+     * @param progress
+     */
+    public static void showCircularProgressBar(double progress) {
+        int val = (int) Math.round(progress);
+        if (circularProgressBar==null) {
+            circularProgressBar=new FrameCircularProgressBar();
+        }
+        if (!circularProgressBar.isDisplayable() || !circularProgressBar.isVisible()) {
+            circularProgressBar.setVisible(true);
+        }
+        circularProgressBar.setProgress(val);
+    }
+
+    /**
      * convert all pascalvoc xml annotation files to yolo txt format based on
      * type (detection or segmentation)
      *
-     * @param frame
      * @param mainFolderPath
      * @param targetFolderName
      * @param detectionType
@@ -8736,7 +8767,6 @@ public final class FactoryUtils {
      * @return
      */
     public static String convert2YoloFormatBatch(
-            FrameBuildYoloDataSet frame,
             String mainFolderPath,
             String targetFolderName,
             String detectionType,
@@ -8755,18 +8785,12 @@ public final class FactoryUtils {
         int n_train = (int) Math.round(r_train / 100.0 * n);
         int n_val = (int) Math.round(r_val / 100.0 * n);
         int n_test = (int) Math.round(r_test / 100.0 * n);
-        FrameCircularProgressBar frm = new FrameCircularProgressBar();
-        frm.setVisible(true);
+        //FrameCircularProgressBar frm = new FrameCircularProgressBar();
+        //frm.setVisible(true);
         for (File f : files) {
             if (f.isFile() && !FactoryUtils.getFileName(f.getName()).contains("class_labels")) {
                 k++;
-                int r = (int) Math.round(1.0 * k / files.length * 100);
-                
-                //frm.requestFocus();
-                frm.setValue(r);
-                //frm.revalidate();
-                //frm.repaint();
-
+                showCircularProgressBar((int) Math.round(1.0 * k / files.length * 100));
                 File imgFile = new File(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + "." + image_extension);
                 if (k < n_train) {
                     FactoryUtils.copyFile(imgFile, new File(targetFolderName + "/images/train/" + imgFile.getName()));
@@ -9095,17 +9119,7 @@ public final class FactoryUtils {
         return boundingBox;
     }
 
-    public static void deneme() {
-        FrameCircularProgressBar frm = new FrameCircularProgressBar();
-        frm.setVisible(true);
-        for (int i = 0; i < 100; i++) {
-            frm.setValue(i);
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(TestCircularProgressBar.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+    public static void doStuff() {
 
     }
 
