@@ -31,6 +31,7 @@ import com.jhlabs.image.InvertFilter;
 import com.jhlabs.image.MotionBlurFilter;
 import com.jhlabs.image.MotionBlurOp;
 import com.jhlabs.image.PointFilter;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import java.awt.*;
@@ -973,6 +974,8 @@ public final class ImageProcess {
                 InputStream urlStream = conn.getInputStream();
                 BufferedImage bimg = ImageIO.read(urlStream);
                 return ImageIO.read(new URL(fileName));
+            } else if (FactoryUtils.getFileExtension(new File(fileName).getName()).equals("dcm")) {
+                return IJ.openImage(fileName).getBufferedImage();
             } else {
                 return ImageIO.read(new File(fileName));
             }
@@ -2423,6 +2426,9 @@ public final class ImageProcess {
         BufferedImage ret = null;
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             file = chooser.getSelectedFile();
+            if (FactoryUtils.getFileExtension(file.getName()).equals("dcm")) {
+                return IJ.openImage(file.getAbsolutePath()).getBufferedImage();
+            }
             try {
                 ret = ImageIO.read(file);
             } catch (IOException ex) {
@@ -2433,6 +2439,9 @@ public final class ImageProcess {
     }
 
     public static BufferedImage readImageFromFile(File file) {
+        if (FactoryUtils.getFileExtension(file.getName()).equals("dcm")) {
+            return IJ.openImage(file.getAbsolutePath()).getBufferedImage();
+        }
         BufferedImage ret = null;
         try {
             ret = ImageIO.read(file);
@@ -2452,6 +2461,9 @@ public final class ImageProcess {
         BufferedImage ret = null;
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             file = chooser.getSelectedFile();
+            if (FactoryUtils.getFileExtension(file.getName()).equals("dcm")) {
+                return file;
+            }
             try {
                 ret = ImageIO.read(file);
             } catch (IOException ex) {
@@ -2524,6 +2536,9 @@ public final class ImageProcess {
             return null;
         }
         BufferedImage ret = null;
+        if (FactoryUtils.getFileExtension(new File(fileName).getName()).equals("dcm")) {
+            return IJ.openImage(fileName).getBufferedImage();
+        }
         try {
             ret = ImageIO.read(file);
         } catch (IOException ex) {

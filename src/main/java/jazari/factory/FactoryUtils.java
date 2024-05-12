@@ -3744,7 +3744,7 @@ public final class FactoryUtils {
     public static File[] getFileArrayInFolderForImages(String imageFolder) {
         File dir = new File(imageFolder);
         final String[] EXTENSIONS = new String[]{
-            "gif", "png", "bmp", "jpg", "PNG", "JPG", "BMP", "GIF", "jpeg", "JPEG", "tif", "TIF" // and other formats you need
+            "gif", "png", "bmp", "jpg", "PNG", "JPG", "BMP", "GIF", "jpeg", "JPEG", "tif", "TIF", "dcm", "DCM" // and other formats you need
         };
         // filter to identify images based on their extensions
         FilenameFilter IMAGE_FILTER = new FilenameFilter() {
