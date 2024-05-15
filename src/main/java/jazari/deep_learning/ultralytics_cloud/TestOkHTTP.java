@@ -21,7 +21,7 @@ public class TestOkHTTP {
     public static void main(String[] args) throws IOException {
         String url = "https://api.ultralytics.com/v1/predict/kVciu58rzBTi71XqNsDZ";
         String apiKey = "8fd4f78b7b2e2a0cd8ed8cdc26e9061225ff500d13";
-        String imagePath = "D:\\DATASETS\\perihan_yolo_ds\\yolo_format\\detect\\images\\test\\fig_0.jpg";
+        String imagePath = "D:\\DATASETS\\perihan_yolo_ds\\yolo_format\\detect\\images\\test\\fig_1.jpg";
 
 //        OkHttpClient client = new OkHttpClient();
         OkHttpClient client = new OkHttpClient.Builder()

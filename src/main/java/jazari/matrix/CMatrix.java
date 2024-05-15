@@ -2081,8 +2081,8 @@ public final class CMatrix implements Serializable {
         attr.items = getRowNamesArray();
 
         if (!hold_on) {
-            //framePlot = new FramePlot(this.toFloatArray2D(), attr);
-            return this;
+            framePlot = new FramePlot(this.toFloatArray2D(), attr);
+            //return this;
         } else {
             if (framePlot == null) {
                 framePlot = new FramePlot(this.toFloatArray2D(), attr);
@@ -2979,7 +2979,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix getCDFData() {
-        float[] h_pdf = FactoryUtils.toFloatArray1D(getPDFData().array.toIntVector());
+        float[] h_pdf = getPDFData().toFloatArray1D();
         float[] h_cdf = new float[h_pdf.length];
         float t = 0;
         for (int i = 0; i < h_pdf.length; i++) {

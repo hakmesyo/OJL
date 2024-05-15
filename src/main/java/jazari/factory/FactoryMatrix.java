@@ -1997,7 +1997,10 @@ public final class FactoryMatrix implements Serializable {
         for (int i = 0; i < nBins; i++) {
             for (int j = 0; j < nr; j++) {
                 for (int k = 0; k < nc; k++) {
-                    if (d[j][k] >= i * delta + min && d[j][k] <= (i + 1) * delta + min) {
+//                    if (d[j][k] >= i * delta + min && d[j][k] <= (i + 1) * delta + min) {
+//                        ret[i]++;
+//                    }
+                    if (d[j][k] == i) {
                         ret[i]++;
                     }
                 }
