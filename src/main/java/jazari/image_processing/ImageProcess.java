@@ -963,6 +963,36 @@ public final class ImageProcess {
 
         return result;
     }
+    
+    public static BufferedImage imread() {
+        return readImage();
+    }
+
+    public static BufferedImage imread(String path) {
+        return readImage(path);
+    }
+
+    public static BufferedImage imread(File file) {
+        return readImage(file);
+    }
+
+    public static BufferedImage readImage() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new java.io.File("images"));
+        chooser.setDialogTitle("select Data Set file");
+        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
+        File file;
+        BufferedImage ret = null;
+        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            file = chooser.getSelectedFile();
+            return readImage(file.getAbsolutePath());
+        }
+        return ret;
+    }
+    
+    public static BufferedImage readImage(File file){
+        return readImage(file.getAbsolutePath());
+    }
 
     public static BufferedImage readImage(String fileName) {
         try {
@@ -979,6 +1009,8 @@ public final class ImageProcess {
                 return ImageIO.read(new URL(fileName));
             } else if (FactoryUtils.getFileExtension(new File(fileName).getName()).equals("dcm")) {
                 return IJ.openImage(fileName).getBufferedImage();
+            } else if (FactoryUtils.getFileExtension(new File(fileName).getName()).equals("tif")) {
+                return javax.imageio.ImageIO.read(new File(fileName));
             } else {
                 return ImageIO.read(new File(fileName));
             }
@@ -2415,145 +2447,114 @@ public final class ImageProcess {
 
         return bimage;
     }
+    
 
-    public static BufferedImage imread() {
-        return readImageFromFile();
-    }
+//
+//    public static BufferedImage readImageFromFile(File file) {
+//        if (FactoryUtils.getFileExtension(file.getName()).equals("dcm")) {
+//            return IJ.openImage(file.getAbsolutePath()).getBufferedImage();
+//        }
+//        BufferedImage ret = null;
+//        try {
+//            ret = ImageIO.read(file);
+//        } catch (IOException ex) {
+//            //Logger.getLogger(this.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return ret;
+//    }
 
-    public static BufferedImage readImageFromFile() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File("images"));
-        chooser.setDialogTitle("select Data Set file");
-        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
-        File file;
-        BufferedImage ret = null;
-        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            file = chooser.getSelectedFile();
-            if (FactoryUtils.getFileExtension(file.getName()).equals("dcm")) {
-                return IJ.openImage(file.getAbsolutePath()).getBufferedImage();
-            }
-            try {
-                ret = ImageIO.read(file);
-            } catch (IOException ex) {
-                //Logger.getLogger(this.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return ret;
-    }
+//    public static File readImage() {
+//        JFileChooser chooser = new JFileChooser();
+//        //chooser.setCurrentDirectory(new java.io.File("images"));
+//        chooser.setCurrentDirectory(new java.io.File(FactoryUtils.getWorkingDirectory()));
+//        chooser.setDialogTitle("select image file");
+//        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
+//        File file = null;
+//        BufferedImage ret = null;
+//        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+//            file = chooser.getSelectedFile();
+//            if (FactoryUtils.getFileExtension(file.getName()).equals("dcm")) {
+//                return file;
+//            }
+//            try {
+//                ret = ImageIO.read(file);
+//            } catch (IOException ex) {
+//                //Logger.getLogger(this.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
+//        return file;
+//    }
 
-    public static BufferedImage readImageFromFile(File file) {
-        if (FactoryUtils.getFileExtension(file.getName()).equals("dcm")) {
-            return IJ.openImage(file.getAbsolutePath()).getBufferedImage();
-        }
-        BufferedImage ret = null;
-        try {
-            ret = ImageIO.read(file);
-        } catch (IOException ex) {
-            //Logger.getLogger(this.getName()).log(Level.SEVERE, null, ex);
-        }
-        return ret;
-    }
+//    public static File readImageFileFromFolder() {
+//        JFileChooser chooser = new JFileChooser();
+//        chooser.setCurrentDirectory(new java.io.File("images"));
+//        chooser.setDialogTitle("select Data Set file");
+//        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
+//        File file = null;
+//        BufferedImage ret = null;
+//        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+//            file = chooser.getSelectedFile();
+//        }
+//        return file;
+//    }
 
-    public static File readImage() {
-        JFileChooser chooser = new JFileChooser();
-        //chooser.setCurrentDirectory(new java.io.File("images"));
-        chooser.setCurrentDirectory(new java.io.File(FactoryUtils.getWorkingDirectory()));
-        chooser.setDialogTitle("select image file");
-        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
-        File file = null;
-        BufferedImage ret = null;
-        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            file = chooser.getSelectedFile();
-            if (FactoryUtils.getFileExtension(file.getName()).equals("dcm")) {
-                return file;
-            }
-            try {
-                ret = ImageIO.read(file);
-            } catch (IOException ex) {
-                //Logger.getLogger(this.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return file;
-    }
+//    public static File readImageFileFromFolderWithDirectoryPath(String directoryPath) {
+//        if (directoryPath == null || directoryPath.isEmpty()) {
+//            return readImageFileFromFolder();
+//        }
+//        JFileChooser chooser = new JFileChooser();
+//        chooser.setCurrentDirectory(new java.io.File(directoryPath));
+//        chooser.setDialogTitle("select Data Set file");
+//        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
+//        File file = null;
+//        BufferedImage ret = null;
+//        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+//            file = chooser.getSelectedFile();
+//        }
+//        return file;
+//    }
+//
+//    public static BufferedImage readImageFromFileWithDirectoryPath(String directoryPath) {
+//        JFileChooser chooser = new JFileChooser();
+//        chooser.setCurrentDirectory(new java.io.File(directoryPath));
+//        chooser.setDialogTitle("select Data Set file");
+//        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
+//        File file;
+//        BufferedImage ret = null;
+//        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+//            file = chooser.getSelectedFile();
+//            try {
+//                ret = ImageIO.read(file);
+//            } catch (IOException ex) {
+//                //Logger.getLogger(this.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
+//        return ret;
+//    }
 
-    public static File readImageFileFromFolder() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File("images"));
-        chooser.setDialogTitle("select Data Set file");
-        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
-        File file = null;
-        BufferedImage ret = null;
-        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            file = chooser.getSelectedFile();
-        }
-        return file;
-    }
+//    public static BufferedImage readImageFromFile(String fileName) {
+//        File file = new File(fileName);
+//        if (!file.exists()) {
+//            System.err.println("Fatal Exception: Image File not found at specified path");
+//            System.exit(-1);
+//            return null;
+//        }
+//        BufferedImage ret = null;
+//        if (FactoryUtils.getFileExtension(new File(fileName).getName()).equals("dcm")) {
+//            return IJ.openImage(fileName).getBufferedImage();
+//        }
+//        try {
+//            ret = ImageIO.read(file);
+//        } catch (IOException ex) {
+//            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, "Problem reading " + fileName + "\n" + ex);
+//        }
+//        return ret;
+//    }
 
-    public static File readImageFileFromFolderWithDirectoryPath(String directoryPath) {
-        if (directoryPath == null || directoryPath.isEmpty()) {
-            return readImageFileFromFolder();
-        }
-        JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File(directoryPath));
-        chooser.setDialogTitle("select Data Set file");
-        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
-        File file = null;
-        BufferedImage ret = null;
-        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            file = chooser.getSelectedFile();
-        }
-        return file;
-    }
-
-    public static BufferedImage readImageFromFileWithDirectoryPath(String directoryPath) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File(directoryPath));
-        chooser.setDialogTitle("select Data Set file");
-        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
-        File file;
-        BufferedImage ret = null;
-        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            file = chooser.getSelectedFile();
-            try {
-                ret = ImageIO.read(file);
-            } catch (IOException ex) {
-                //Logger.getLogger(this.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return ret;
-    }
-
-    public static BufferedImage imread(String fileName) {
-        return readImageFromFile(fileName);
-    }
-
-    public static BufferedImage imread(File file) {
-        return readImageFromFile(file.getAbsolutePath());
-    }
-
-    public static BufferedImage readImageFromFile(String fileName) {
-        File file = new File(fileName);
-        if (!file.exists()) {
-            System.err.println("Fatal Exception: Image File not found at specified path");
-            System.exit(-1);
-            return null;
-        }
-        BufferedImage ret = null;
-        if (FactoryUtils.getFileExtension(new File(fileName).getName()).equals("dcm")) {
-            return IJ.openImage(fileName).getBufferedImage();
-        }
-        try {
-            ret = ImageIO.read(file);
-        } catch (IOException ex) {
-            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, "Problem reading " + fileName + "\n" + ex);
-        }
-        return ret;
-    }
-
-    public static CMatrix getMatrix(BufferedImage img) {
-        CMatrix cm = CMatrix.getInstance(imageToPixelsInt(img));
-        return cm;
-    }
+//    public static CMatrix getMatrix(BufferedImage img) {
+//        CMatrix cm = CMatrix.getInstance(imageToPixelsInt(img));
+//        return cm;
+//    }
 
     public static boolean writeImage(BufferedImage img) {
         return saveImage(img);

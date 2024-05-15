@@ -89,7 +89,7 @@ public class FrameImageAdvanced extends javax.swing.JFrame {
 
     public FrameImageAdvanced(String filePath) {
         initComponents();
-        img = ImageProcess.readImageFromFile(filePath);
+        img = ImageProcess.readImage(filePath);
         getPicturePanel().setImage(img, filePath, this);
         this.setSize(img.getWidth() + pw, img.getHeight() + ph);
         getPicturePanel().setFrame(this);
@@ -258,7 +258,7 @@ public class FrameImageAdvanced extends javax.swing.JFrame {
     private void image_listValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_image_listValueChanged
         listIndex = image_list.getSelectedIndex();
         try {
-            currBufferedImage = ImageProcess.readImageFromFile(txt_folderPath.getText() + "\\" + listImageFile.get(listIndex));
+            currBufferedImage = ImageProcess.readImage(txt_folderPath.getText() + "\\" + listImageFile.get(listIndex));
             getPicturePanel().setImage(currBufferedImage, txt_folderPath.getText() + "\\" + listImageFile.get(listIndex));
         } catch (Exception e) {
         }
@@ -280,7 +280,7 @@ public class FrameImageAdvanced extends javax.swing.JFrame {
             //System.out.println(f.getName());
         }
         image_list.setListData(listImageFile);
-        currBufferedImage = ImageProcess.readImageFromFile(txt_folderPath.getText() + "\\" + listImageFile.get(0));
+        currBufferedImage = ImageProcess.readImage(txt_folderPath.getText() + "\\" + listImageFile.get(0));
         getPicturePanel().setImage(currBufferedImage, txt_folderPath.getText() + "\\" + listImageFile.get(0));
         getPicturePanel().setJlist(image_list);
         image_list.setSelectedIndex(0);

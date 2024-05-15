@@ -326,7 +326,7 @@ public class PicturePanelAdvanced extends JPanel {
                 currentImageIndex = fileList.length;
             }
             currentImageIndex = (currentImageIndex - 1) % fileList.length;
-            currBufferedImage = ImageProcess.readImageFromFile(fileList[currentImageIndex]);
+            currBufferedImage = ImageProcess.readImage(fileList[currentImageIndex]);
             originalBufferedImage = currBufferedImage;
             fileName = fileList[currentImageIndex].getName();
             imagePath = fileList[currentImageIndex].getAbsolutePath();
@@ -351,7 +351,7 @@ public class PicturePanelAdvanced extends JPanel {
         int ty = this.getHeight() - 30;
         if (e.getPoint().x > tx && e.getPoint().x < tx + 75 && e.getPoint().y > ty && e.getPoint().y < ty + 30) {
             currentImageIndex = (currentImageIndex + 1) % fileList.length;
-            currBufferedImage = ImageProcess.readImageFromFile(fileList[currentImageIndex]);
+            currBufferedImage = ImageProcess.readImage(fileList[currentImageIndex]);
             originalBufferedImage = currBufferedImage;
             fileName = fileList[currentImageIndex].getName();
             imagePath = fileList[currentImageIndex].getAbsolutePath();
@@ -411,11 +411,11 @@ public class PicturePanelAdvanced extends JPanel {
             if (obj.getText().equals("Load Image")) {
                 setDefaultValues();
                 activateStatistics = false;
-                File fl = ImageProcess.readImageFileFromFolderWithDirectoryPath(imagePath);
+                File fl = FactoryUtils.browseFile(imagePath);
                 if (fl == null) {
                     return;
                 }
-                BufferedImage bf = ImageProcess.readImageFromFile(fl.getAbsolutePath());
+                BufferedImage bf = ImageProcess.readImage(fl.getAbsolutePath());
                 if (bf != null) {
                     originalBufferedImage = bf;
                     currBufferedImage = (originalBufferedImage);

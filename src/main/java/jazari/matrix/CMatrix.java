@@ -5137,33 +5137,17 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix readImage() {
-        File fl = ImageProcess.readImage();
-        BufferedImage bf = ImageProcess.readImageFromFile(fl);
-//        CMatrix ret = this.clone();
+        File file = FactoryUtils.browseFile();
+        BufferedImage bf = ImageProcess.readImage(file.getAbsolutePath());
         if (bf != null) {
             this.image = bf;
-//            this.array = FactoryUtils.toDoubleArray(ImageProcess.imageToPixels255(image));
-//            ret.array = ImageProcess.imageToPixelsDouble(GrayScale.luminosity(image));
-            this.imagePath = fl.getAbsolutePath();
+            this.imagePath = file.getAbsolutePath();
             setArray(ImageProcess.bufferedImageToArray2D(this.image));
-//            this.rgbImageArray = FactoryUtils.toTripleArray(ImageProcess.imageToPixels(image));
         }
         return this;
     }
 
     public CMatrix readImage(String path) {
-//        BufferedImage bf = ImageProcess.readImageFromFile(path);
-//        if (bf != null) {
-//            Path p = Paths.get(path);
-//            String fileName = p.getFileName().toString();
-//            this.name += "|" + fileName;
-//            this.image = bf;
-////            this.array = ImageProcess.imageToDoublePixels255(this.image);
-//            this.array = ImageProcess.imageToPixelsDouble(GrayScale.luminosity(image));
-//            this.imagePath = path;
-//        } else {
-//            System.err.println("null pointer exception, image could not be loaded properly");
-//        }
         this.image = ImageProcess.readImage(path);
         setArray(ImageProcess.bufferedImageToArray2D(this.image));
         this.imagePath = path;

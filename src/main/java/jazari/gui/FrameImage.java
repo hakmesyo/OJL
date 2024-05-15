@@ -596,7 +596,7 @@ public class FrameImage extends javax.swing.JFrame {
         //System.out.println("slider index:"+slider.getValue());
         getPicturePanel().imageIndex = slider.getValue();
         if (!noPaint) {
-            BufferedImage bf = ImageProcess.readImageFromFile(getPicturePanel().imageFiles[getPicturePanel().imageIndex]);
+            BufferedImage bf = ImageProcess.readImage(getPicturePanel().imageFiles[getPicturePanel().imageIndex]);
             getPicturePanel().rawImage = ImageProcess.clone(bf);
             getPicturePanel().adjustImageToPanel(bf, true);
         }else{

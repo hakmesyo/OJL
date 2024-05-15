@@ -98,6 +98,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private boolean activateHSV = false;
     private boolean activateEdge = false;
     private boolean activateEqualize = false;
+    private boolean activateEqualizeCLAHE = false;
     private boolean activateAutoSize = false;
     private AnnotationPascalVOCFormat pascalVocXML;
     public List<PascalVocObject> listPascalVocObject = new ArrayList();
@@ -557,6 +558,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Blue",
             "Edge",
             "Equalize",
+            "Equalize CLAHE",
             "Smooth",
             "Sharpen",
             "Crop",
@@ -2093,11 +2095,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     return;
                 } else if (obj.getText().equals("Load Image")) {
                     activateStatistics = false;
-                    File fl = ImageProcess.readImageFileFromFolderWithDirectoryPath(imagePath);
+                    File fl = FactoryUtils.browseFile(imagePath);
                     if (fl == null) {
                         return;
                     }
-                    BufferedImage bf = ImageProcess.readImageFromFile(fl.getAbsolutePath());
+                    BufferedImage bf = ImageProcess.readImage(fl.getAbsolutePath());
                     if (bf != null) {
                         originalBufferedImage = bf;
                         imagePath = fl.getAbsolutePath();
@@ -2226,6 +2228,18 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     }
                     originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
                     imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
+                } else if (obj.getText().equals("Equalize CLAHE")) {
+                    activateEqualizeCLAHE = true;
+                    if (selectionRect != null) {
+                        selectionRectImage = getCroppedImage();
+                        selectionRectImage = ImageProcess.equalizeHistogramAdaptiveClahe(selectionRectImage);
+                        currBufferedImage = ImageProcess
+                                .overlayImage(currBufferedImage, selectionRectImage, new Point(selectionRect.x - fromLeft, selectionRect.y - fromTop), 0.5f);
+                    } else {
+                        currBufferedImage = ImageProcess.equalizeHistogramAdaptiveClahe(currBufferedImage);
+                    }
+                    originalBufferedImageTemp = ImageProcess.clone(currBufferedImage);
+                    imgData = ImageProcess.bufferedImageToArray2D(currBufferedImage);
                 } else if (obj.getText().equals("Equalize")) {
                     activateEqualize = true;
                     if (selectionRect != null) {
@@ -2325,7 +2339,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             selectedBBox = null;
             selectedPolygon = null;
         }
-        BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+        BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
         setImage(bf, imagePath, caption, true);
         System.out.println("activateCrop:" + activateCrop);
         //frame.titleImageInfo = (imageFiles[imageIndex].getPath());
@@ -2343,7 +2357,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             selectedBBox = null;
             selectedPolygon = null;
         }
-        BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+        BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
         setImage(bf, imagePath, caption, true);
         //frame.titleImageInfo = (imageFiles[imageIndex].getPath());
         frame.titleImageInfo = (imageFiles[imageIndex].getName() + "      [ " + (imageIndex + 1) + " / " + imageFiles.length + " ]");
@@ -2443,6 +2457,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         activateHSV = false;
         activateEdge = false;
         activateEqualize = false;
+        activateEqualizeCLAHE = false;
     }
 
     @Override
@@ -2478,7 +2493,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     selectedBBox = null;
                 }
                 imageIndex++;
-                BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
                 rawImage = ImageProcess.clone(bf);
                 adjustImageToPanel(bf, true);
             } else if (activatePolygon) {
@@ -2491,7 +2506,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     selectedPolygon = null;
                 }
                 imageIndex++;
-                BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
                 rawImage = ImageProcess.clone(bf);
                 adjustImageToPanel(bf, true);
             } else if (activateLaneDetection) {
@@ -2501,7 +2516,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     return;
                 }
                 imageIndex++;
-                BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
                 rawImage = ImageProcess.clone(bf);
                 adjustImageToPanel(bf, true);
                 selectedLane = null;
@@ -2525,7 +2540,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else {
                     //listPascalVocObject.clear();
                     deleteCurrentImage();
-                    BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                    BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
                     rawImage = ImageProcess.clone(bf);
                     adjustImageToPanel(bf, true);
                     e.consume();
@@ -2548,7 +2563,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 } else {
                     //listPascalVocObject.clear();
                     deleteCurrentImage();
-                    BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                    BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
                     rawImage = ImageProcess.clone(bf);
                     adjustImageToPanel(bf, true);
                     e.consume();
@@ -2560,14 +2575,14 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     selectedLane = null;
                 } else {
                     deleteCurrentImage();
-                    BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                    BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
                     rawImage = ImageProcess.clone(bf);
                     adjustImageToPanel(bf, true);
                     e.consume();
                 }
             } else {
                 deleteCurrentImage();
-                BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+                BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
                 rawImage = ImageProcess.clone(bf);
                 adjustImageToPanel(bf, true);
                 e.consume();
@@ -2578,7 +2593,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         } else {
             return;
         }
-        BufferedImage bf = ImageProcess.readImageFromFile(imageFiles[imageIndex]);
+        BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
         rawImage = ImageProcess.clone(bf);
         adjustImageToPanel(bf, true);
         frame.slider.setValue(imageIndex);

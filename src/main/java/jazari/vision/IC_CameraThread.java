@@ -70,7 +70,7 @@ public class IC_CameraThread extends Thread {
                 Pointer p = camDll.IC_GetImagePtr(ic_grabber);
 //                t1 = FactoryUtils.toc("IC_GetImagePtr cost:",t1);
                 camDll.IC_SaveImage(ic_grabber, name, 1, 80);
-                cpanel.img = ImageProcess.readImageFromFile(name);
+                cpanel.img = ImageProcess.readImage(name);
 
 //            byte_array = p.getByteArray(0, size);
 //            if (color_format == 0 || color_format==3) {

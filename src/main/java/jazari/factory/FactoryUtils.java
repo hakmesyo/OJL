@@ -146,12 +146,15 @@ public final class FactoryUtils {
     static {
         try {
             robot = new Robot();
-            UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (AWTException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
 //    public static String listPorts() {
@@ -9118,6 +9121,5 @@ public final class FactoryUtils {
         TBoundingBox boundingBox = new TBoundingBox(topLeft, bottomRight);
         return boundingBox;
     }
-
 
 }

@@ -316,7 +316,7 @@ public class IC_CameraControlPanel extends javax.swing.JPanel {
             camDll.IC_SnapImage(ic_grabber, 1000);                            // Snap a frame into memory
 
             camDll.IC_SaveImage(ic_grabber, "temp.bmp", 0, 0);
-            img = ImageProcess.readImageFromFile("temp.bmp");
+            img = ImageProcess.readImage("temp.bmp");
 
 //            Pointer p = camDll.IC_GetImagePtr(ic_grabber);
 //            int size = 640 * 480;
