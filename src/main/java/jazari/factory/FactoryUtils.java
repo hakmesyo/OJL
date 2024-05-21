@@ -3789,9 +3789,39 @@ public final class FactoryUtils {
                     listImageFiles.addAll(List.of(subFiles));
                 } else {
                     String fileName = file.getName().toLowerCase();
-                    if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png") || fileName.endsWith(".gif")) {
+                    if (fileName.endsWith(".jpg")
+                            || fileName.endsWith(".jpeg")
+                            || fileName.endsWith(".png")
+                            || fileName.endsWith(".gif")
+                            || fileName.endsWith(".tiff")
+                            || fileName.endsWith(".dcm")) {
                         listImageFiles.add(file);
                     }
+                }
+            }
+        }
+        return listImageFiles.toArray(new File[0]);
+    }
+
+    public static File[] getFileArrayFromSubFoldersRecursively(String path) {
+        File folder = new File(path);
+
+        if (!folder.exists()) {
+            System.out.println("Folder was not found : " + path);
+            return new File[0];
+        }
+
+        File[] files = folder.listFiles();
+
+        List<File> listImageFiles = new ArrayList<>();
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    File[] subFiles = getFileArrayForImagesSubFoldersRecursively(file.getAbsolutePath());
+                    listImageFiles.addAll(List.of(subFiles));
+                } else {
+                    listImageFiles.add(file);
                 }
             }
         }
@@ -7572,6 +7602,10 @@ public final class FactoryUtils {
         LocalDateTime now = java.time.LocalDateTime.now();
         String ret = now.getHour() + ":" + now.getMinute() + ":" + now.getSecond();
         return ret;
+    }
+    
+    public static long millis(){
+        return System.currentTimeMillis();
     }
 
     public static String toYoloFormat(File f) {

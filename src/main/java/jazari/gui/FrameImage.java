@@ -45,7 +45,7 @@ public class FrameImage extends javax.swing.JFrame {
     public String titleImageInfo;
     public CMatrix cm;
     public String caption = "";
-    private boolean noPaint=false;
+    private boolean noPaint = false;
 
     /**
      * Creates new form FrameImage
@@ -67,11 +67,13 @@ public class FrameImage extends javax.swing.JFrame {
     public FrameImage(CMatrix cm, String imagePath, String caption) {
         initComponents();
         this.caption = caption;
-        imageFolderPath = FactoryUtils.getFolderPath(imagePath);
+        this.cm = cm;
+        this.imageFolderPath = FactoryUtils.getFolderPath(imagePath);
+        this.imagePath = imagePath;
         if (caption != null && !caption.isEmpty()) {
             setTitle(caption);
         }
-        loadImage(cm, imagePath, caption);
+        loadImage(cm, imagePath, caption, chk_full_size.isSelected());
         eventListener();
         chkLabelVisible.setSelected(true);
         setLocationRelativeTo(null);
@@ -124,6 +126,7 @@ public class FrameImage extends javax.swing.JFrame {
         combo_format = new javax.swing.JComboBox<>();
         slider = new javax.swing.JSlider();
         lbl_index = new javax.swing.JLabel();
+        chk_full_size = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -325,6 +328,13 @@ public class FrameImage extends javax.swing.JFrame {
 
         lbl_index.setText("...");
 
+        chk_full_size.setText("full size");
+        chk_full_size.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chk_full_sizeİtemStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -345,7 +355,9 @@ public class FrameImage extends javax.swing.JFrame {
                         .addComponent(lbl_zoom_factor)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chk_stretch)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 76, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chk_full_size)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
                         .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chkLane)
@@ -386,7 +398,8 @@ public class FrameImage extends javax.swing.JFrame {
                     .addComponent(chkLane)
                     .addComponent(btn_screen_capture)
                     .addComponent(chk_stretch)
-                    .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(chk_full_size))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(slider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -401,7 +414,7 @@ public class FrameImage extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelPicture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1089, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1138, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -587,10 +600,10 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().requestFocus();
     }//GEN-LAST:event_combo_formatİtemStateChanged
 
-    boolean isFirst=true;
+    boolean isFirst = true;
     private void sliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sliderStateChanged
         if (isFirst) {
-            isFirst=false;
+            isFirst = false;
             return;
         }
         //System.out.println("slider index:"+slider.getValue());
@@ -599,15 +612,20 @@ public class FrameImage extends javax.swing.JFrame {
             BufferedImage bf = ImageProcess.readImage(getPicturePanel().imageFiles[getPicturePanel().imageIndex]);
             getPicturePanel().rawImage = ImageProcess.clone(bf);
             getPicturePanel().adjustImageToPanel(bf, true);
-        }else{
-            noPaint=false;
+        } else {
+            noPaint = false;
         }
-        lbl_index.setText("[ "+(getPicturePanel().imageIndex+1)+" / "+getPicturePanel().imageFiles.length+" ]");
+        lbl_index.setText("[ " + (getPicturePanel().imageIndex + 1) + " / " + getPicturePanel().imageFiles.length + " ]");
     }//GEN-LAST:event_sliderStateChanged
 
     private void sliderCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_sliderCaretPositionChanged
         //System.out.println("caret pos slider index:"+slider.getValue());
     }//GEN-LAST:event_sliderCaretPositionChanged
+
+    private void chk_full_sizeİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_full_sizeİtemStateChanged
+        fullSizeFrame();
+        getPicturePanel().requestFocus();
+    }//GEN-LAST:event_chk_full_sizeİtemStateChanged
 
     public PanelPicture getPicturePanel() {
         return ((PanelPicture) panelPicture);
@@ -617,7 +635,7 @@ public class FrameImage extends javax.swing.JFrame {
         imagePath = FactoryUtils.saveImageAs(getPicturePanel().getImage(), txt_dpi.getText());
         if (imagePath != null && !imagePath.isEmpty()) {
             CMatrix cm = CMatrix.getInstance().imread(imagePath);
-            loadImage(cm, imagePath, imagePath);
+            loadImage(cm, imagePath, imagePath, chk_full_size.isSelected());
         }
     }
 
@@ -671,6 +689,7 @@ public class FrameImage extends javax.swing.JFrame {
     public javax.swing.JCheckBox chkLane;
     public javax.swing.JCheckBox chkPolygon;
     private javax.swing.JCheckBox chkSequence;
+    private javax.swing.JCheckBox chk_full_size;
     private javax.swing.JCheckBox chk_stretch;
     public javax.swing.JComboBox<String> combo_format;
     private javax.swing.JLabel jLabel2;
@@ -704,7 +723,7 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().setDashedLineColor();
     }
 
-    private void loadImage(CMatrix cm, String imagePath, String caption) {
+    private void loadImage(CMatrix cm, String imagePath, String caption, boolean isFullSize) {
         String[] s = FactoryUtils.splitPath(imagePath);
         if (imagePath != null && !imagePath.isEmpty()) {
             titleImageInfo = (s[s.length - 1]);
@@ -713,7 +732,7 @@ public class FrameImage extends javax.swing.JFrame {
         this.img = cm.getImage();
         this.imagePath = imagePath;
         getPicturePanel().activateBoundingBox = chkBBox.isSelected();
-        if (img.getHeight() > 850) {
+        if (!isFullSize && img.getHeight() > 850) {
             float zoom_factor = 850.0f / img.getHeight();
             int w = (int) (img.getWidth() * zoom_factor);
             int h = (int) (img.getHeight() * zoom_factor);
@@ -727,12 +746,12 @@ public class FrameImage extends javax.swing.JFrame {
         //setFrameSize(img);
         getPicturePanel().setFocusable(true);
         getPicturePanel().requestFocusInWindow();
-        if (getPicturePanel().imageFiles==null) {
+        if (getPicturePanel().imageFiles == null) {
             return;
         }
         titleImageInfo = (getPicturePanel().imageFiles[getPicturePanel().imageIndex].getName() + "      [ " + (getPicturePanel().imageIndex + 1) + " / " + getPicturePanel().imageFiles.length + " ]");
-        slider.setMaximum(getPicturePanel().imageFiles.length-1);
-        noPaint=true;
+        slider.setMaximum(getPicturePanel().imageFiles.length - 1);
+        noPaint = true;
         slider.setValue(getPicturePanel().imageIndex);
         //isSequence.setVisible(false);
     }
@@ -764,5 +783,13 @@ public class FrameImage extends javax.swing.JFrame {
                 setExtendedState(JFrame.MAXIMIZED_BOTH);
             }
         }
+    }
+
+    public void fullSizeFrame() {
+        if ((getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH) {
+            setLocationRelativeTo(null);
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
+        }
+        loadImage(cm, imagePath, caption, chk_full_size.isSelected());
     }
 }

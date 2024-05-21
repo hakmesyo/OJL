@@ -28,7 +28,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="panelPicture" alignment="0" max="32767" attributes="0"/>
-          <Component id="jScrollPane1" alignment="0" pref="1089" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" pref="1138" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -91,7 +91,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <Component id="btn_dataGrid" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btn_screen_capture" min="-2" max="-2" attributes="0"/>
@@ -103,9 +103,11 @@
                               <Component id="jLabel2" min="-2" pref="25" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="lbl_zoom_factor" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="chk_stretch" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="76" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="chk_full_size" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="40" max="32767" attributes="0"/>
                               <Component id="combo_format" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="chkLane" min="-2" max="-2" attributes="0"/>
@@ -117,7 +119,7 @@
                               <Component id="chkSequence" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="chkLabelVisible" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="btn_analytics" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btn_dashedLineColor" min="-2" pref="75" max="-2" attributes="0"/>
@@ -152,6 +154,7 @@
                           <Component id="btn_screen_capture" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="chk_stretch" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="combo_format" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chk_full_size" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -329,6 +332,14 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="..."/>
               </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chk_full_size">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="full size"/>
+              </Properties>
+              <Events>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chk_full_size&#x130;temStateChanged"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
