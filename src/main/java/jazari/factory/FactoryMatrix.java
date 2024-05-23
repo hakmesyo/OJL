@@ -25,6 +25,8 @@ import jwave.transforms.wavelets.daubechies.Daubechies4;
 import jwave.transforms.wavelets.daubechies.Daubechies5;
 import jwave.transforms.wavelets.daubechies.Daubechies6;
 import jwave.transforms.wavelets.daubechies.Daubechies7;
+import static jazari.factory.FactoryUtils.gaussian1D;
+import static jazari.factory.FactoryUtils.gaussian;
 
 /**
  * @author Dr. Musa ATAŞ It is developed for performance issues for
@@ -987,7 +989,7 @@ public final class FactoryMatrix implements Serializable {
         }
         return ret;
     }
-    
+
     public static double[][] transpose(double[][] d) {
         int nr = d.length;
         int nc = d[0].length;
@@ -3143,9 +3145,31 @@ public final class FactoryMatrix implements Serializable {
         return ret;
     }
 
+    public static float[][] randMatrix(int nr, int nc, float bound, long seed) {
+        float[][] ret = new float[nr][nc];
+        SplittableRandom rnd = new SplittableRandom(seed);
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                ret[i][j] = (float) rnd.nextDouble(bound);
+            }
+        }
+        return ret;
+    }
+
     public static float[][] randMatrix(int nr, int nc, float from, float to) {
         float[][] ret = new float[nr][nc];
         SplittableRandom rnd = new SplittableRandom();
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                ret[i][j] = (float) rnd.nextDouble(from, to);
+            }
+        }
+        return ret;
+    }
+
+    public static float[][] randMatrix(int nr, int nc, float from, float to, long seed) {
+        float[][] ret = new float[nr][nc];
+        SplittableRandom rnd = new SplittableRandom(seed);
         for (int i = 0; i < nr; i++) {
             for (int j = 0; j < nc; j++) {
                 ret[i][j] = (float) rnd.nextDouble(from, to);
@@ -3361,7 +3385,8 @@ public final class FactoryMatrix implements Serializable {
                     for (int l = 0; l < kernel[0].length; l++) {
                         t += kernel[k][l] * d[i - mid + k][j - mid + l];
                     }
-                    ret[i - mid][j - mid] = t / (kernel.length * kernel[0].length);
+                    //ret[i - mid][j - mid] = t / (kernel.length * kernel[0].length);
+                    ret[i - mid][j - mid] = t;
                 }
             }
         }
@@ -3444,7 +3469,7 @@ public final class FactoryMatrix implements Serializable {
         }
         return ret;
     }
-    
+
     public static float[] range1D(float from_inclusive, float to_exclusive, float step) {
         int delta = (int) ((to_exclusive - from_inclusive) / step);
         float[] ret = new float[delta];

@@ -1,71 +1,25 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package test;
 
-import jazari.matrix.CMatrix;
-import java.awt.Color;
+/**
+ *
+ * @author cezerilab
+ */
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import jazari.factory.FactoryMatrix;
 import jazari.factory.FactoryUtils;
-import static test.TestOptimizedConvolution.convolve;
-import static test.TestOptimizedConvolution.printMatrix;
+import jazari.matrix.CMatrix;
 
-/**
- *
- * @author BAP1
- */
-public class TestConvolution {
+public class TestOptimizedConvolution {
 
-    public static void main(String[] args) {
-        double[][] d_X = {
-            {-1, -1, -1, -1, -1, -1, -1, -1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, -1, 1, -1, -1, -1, 1, -1, -1},
-            {-1, -1, -1, 1, -1, 1, -1, -1, -1},
-            {-1, -1, -1, -1, 1, -1, -1, -1, -1},
-            {-1, -1, -1, 1, -1, 1, -1, -1, -1},
-            {-1, -1, 1, -1, -1, -1, 1, -1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, -1, -1, -1, -1, -1, -1, -1, -1}
-        };
-        double[][] d_M = {
-            {-1, -1, -1, -1, -1, -1, -1, -1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, 1, 1, -1, -1, -1, 1, 1, -1},
-            {-1, 1, -1, 1, -1, 1, -1, 1, -1},
-            {-1, 1, -1, -1, 1, -1, -1, 1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, -1, -1, -1, -1, -1, -1, -1, -1}
-        };
-        double[][] k_diag_1 = {
-            {1, -1, -1},
-            {-1, 1, -1},
-            {-1, -1, 1}
-        };
-        double[][] k_diag_2 = {
-            {-1, -1, 1},
-            {-1, 1, -1},
-            {1, -1, -1}
-        };
-        int w = 400;
-        CMatrix ck_dg1 = CMatrix.getInstance(k_diag_1).heatmap(Color.cyan, 200, 200, true, true);;
-        CMatrix ck_dg2 = CMatrix.getInstance(k_diag_2).heatmap(Color.cyan, 200, 200, true, true);;
-        CMatrix cm = CMatrix.getInstance(d_X)
-                .heatmap(Color.gray, w, w, true, true);
-        CMatrix cm_dg1 = cm.convolve(ck_dg1)
-                .heatmap(Color.cyan, w, w, true, true);
-        CMatrix cm_dg2 = cm.convolve(ck_dg2)
-                .heatmap(Color.cyan, w, w, true, true);
-        
-                // Örnek matris ve kernel
+    public static void main(String[] args) throws InterruptedException {
+        // Örnek matris ve kernel
         int n=10;
         float[][] matrix = FactoryMatrix.randMatrix(n, n, 100,123);
 
@@ -74,7 +28,6 @@ public class TestConvolution {
             {0, 1, 0},
             {1, 0, 1}
         };
-        CMatrix cm_kernel = CMatrix.getInstance(kernel).heatmap(true);
 
         // Convolution işlemini paralel olarak gerçekleştir
         float[][] convolvedMatrix = null;
@@ -96,20 +49,19 @@ public class TestConvolution {
         System.out.println("\nConvolution Sonucu:");
         printMatrix(convolvedMatrix);
         
-//        CMatrix cm = CMatrix.getInstance()
-//                .randWithSeed(n,n,100,123)
-//                
-//                
-////                .println()
-////                .convolve(CMatrix.getInstance().setArray(kernel))
-////                .println()
-//                ;
-//        CMatrix cm2 = CMatrix.getInstance().setArray(kernel);
-//        for (int i = 0; i < 2; i++) {            
-//            cm.tic().convolve(cm2).toc();
-//        }
-//        cm.println();
-
+        CMatrix cm = CMatrix.getInstance()
+                .randWithSeed(n,n,100,123)
+                
+                
+//                .println()
+//                .convolve(CMatrix.getInstance().setArray(kernel))
+//                .println()
+                ;
+        CMatrix cm2 = CMatrix.getInstance().setArray(kernel);
+        for (int i = 0; i < 2; i++) {            
+            cm.tic().convolve(cm2).toc();
+        }
+        cm.println();
     }
 
     // Convolution işlemini gerçekleştiren fonksiyon
@@ -178,4 +130,5 @@ public class TestConvolution {
             System.out.println(Arrays.toString(row));
         }
     }
+
 }

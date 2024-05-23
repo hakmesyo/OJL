@@ -1879,7 +1879,8 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix randWithSeed(int nr, int nc, float max, int seed) {
-        array = Nd4j.rand(seed, new long[]{nr, nc}).mul(max);
+        array=Nd4j.create(FactoryMatrix.randMatrix(nr, nc, max, seed));
+        //array = Nd4j.rand(seed, new long[]{nr, nc}).mul(max);
         return this;
     }
 
@@ -8546,8 +8547,24 @@ public final class CMatrix implements Serializable {
             if (frameHeatMap == null) {
                 frameHeatMap = new FrameHeatMap(this);
             }
-            frameHeatMap.setMatrix(this);
+            frameHeatMap.setMatrix(this);            
         }
+        frameHeatMap.getHeatMapPanel().setShowValue(showValue);
+        frameHeatMap.setVisible(true);
+        return this;
+    }
+
+    public CMatrix heatmap(boolean showValue, boolean showCellEdge) {
+        if (!hold_on) {
+            frameHeatMap = new FrameHeatMap(this);
+        } else {
+            if (frameHeatMap == null) {
+                frameHeatMap = new FrameHeatMap(this);
+            }
+            frameHeatMap.setMatrix(this);            
+        }
+        frameHeatMap.getHeatMapPanel().setShowValue(showValue);
+        frameHeatMap.getHeatMapPanel().setShowCellEdges(showCellEdge);
         frameHeatMap.setVisible(true);
         return this;
     }
@@ -8747,6 +8764,10 @@ public final class CMatrix implements Serializable {
         name = this.name + "|convolve";
         setArray(FactoryMatrix.convolve(array.toFloatMatrix(), kernel.array.toFloatMatrix()));
         return this;
+    }
+    
+    public CMatrix conv(CMatrix kernel) {
+        return conv(kernel);
     }
 
     /**

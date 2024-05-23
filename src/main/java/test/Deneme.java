@@ -8,7 +8,9 @@ package test;
 //import com.formdev.flatlaf.FlatDarculaLaf;
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +22,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jazari.factory.FactoryUtils;
+import jazari.image_processing.ImageProcess;
 import jazari.matrix.CMatrix;
 import jazari.types.TFigureAttribute;
 import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
@@ -33,6 +36,24 @@ import org.apache.commons.io.comparator.NameFileComparator;
 public class Deneme {
 
     public static void main(String[] args) {
+        
+        CMatrix cm = CMatrix.getInstance()
+                .imread("images/bird.jpg")
+                .imshow()
+                .convolve(CMatrix.currentMatrix)
+                ;
+//        String pp="D:\\DATASETS\\MASS\\CBIS_DDSM_JPG\\corrected_ds\\mass\\train";
+//        CMatrix cm = CMatrix.getInstance()
+//                .imread(pp+"/benign_Mass-Training_P_00027_RIGHT_MLO_1_1.jpg")
+//                .rgb2gray()
+//                .imshow()
+//                ;
+//        Rectangle rect=FactoryUtils.getWeightCenteredROIAsRectangle(cm.toFloatArray2D());
+//        System.out.println("rect = " + rect);
+//        BufferedImage img=ImageProcess.imread(pp+"/benign_Mass-Training_P_00027_RIGHT_MLO_0.jpg");
+//        img=ImageProcess.drawRectangle(img, rect, 5, Color.yellow);
+//        CMatrix.getInstance(img).imshow();
+//        System.out.println("");
 
 //        TFigureAttribute attr = new TFigureAttribute(
 //                "Lane Detection Performance Evaluation",
@@ -43,16 +64,16 @@ public class Deneme {
 //        CMatrix cm = CMatrix.getInstance()
 //                .rand(4, 5, -150f, 151f)
 //                .bar(attr);
-        int min = -200;
-        int max = 200;
-        CMatrix cm1 = CMatrix.getInstance()
-                .range(min, max)
-                .perlinNoise(0.01f);
-        CMatrix cm2 = CMatrix.getInstance()
-                .range(min, max)
-                .perlinNoise(0.022f);
-        CMatrix cm = cm1.cat(1, cm2);
-        cm.plot(CMatrix.getInstance().range(min, max).toFloatArray1D());
+//        int min = -200;
+//        int max = 200;
+//        CMatrix cm1 = CMatrix.getInstance()
+//                .range(min, max)
+//                .perlinNoise(0.01f);
+//        CMatrix cm2 = CMatrix.getInstance()
+//                .range(min, max)
+//                .perlinNoise(0.022f);
+//        CMatrix cm = cm1.cat(1, cm2);
+//        cm.plot(CMatrix.getInstance().range(min, max).toFloatArray1D());
     }
 //        int[] d=CMatrix.getInstance().rand(1, 1_000_000).toIntArray1D();
 //        Long t1=FactoryUtils.tic();

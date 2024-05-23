@@ -16,14 +16,14 @@ import jazari.factory.FactoryUtils;
 import jazari.utils.DataSet;
 
 /**
- * Bu yaklaşımın geleneksel CNN'den farkı CNN'de ki kernel içerisindeki
- * weightler yine tüm resmin pixelleri ile muhatap oluyordu. Ve bütün resimdeki
- * piksellerin kernel matrisindeki weightler üzerinde etkisi vardır. SNN de
- * durum farklıdır. Şöyle ki resimde hereket ettirilen bir window/kernel yoktur
- * dolayısıyla convolution işleminden bahsedilemez. İkinci fark; input imgedeki
+ * Bu yaklaşımın geleneksel CNN'den farkı CNN'deki kernel içerisindeki
+ * weightler yine tüm resmin pixelleri ile muhatap oluyordu., Ve bütün resimdeki
+ * piksellerin kernel matrisindeki weightler üzerinde etkisi vardır., SNN de
+ * durum farklıdır., Şöyle ki resimde hereket ettirilen bir window/kernel yoktur
+ * dolayısıyla convolution işleminden bahsedilemez., İkinci fark; input imgedeki
  * spatial bir bölgedeki piksellerin her biri sadece bir alt katmandaki
- * (abstract) node ile bağlantısı bulunmaktadır. Bu SNN yi oldukça sparse veya
- * bağlantı adedi olarak oldukça seyrek bir yapıya dönüştürür. SNN'in diğer bir
+ * (abstract) node ile bağlantısı bulunmaktadır., Bu SNN yi oldukça sparse veya
+ * bağlantı adedi olarak oldukça seyrek bir yapıya dönüştürür., SNN'in diğer bir
  * üstünlüğü teorik olarak input imgenin kare olma zorunluluğunun
  * bulunmamasıdır.
  *
@@ -53,9 +53,9 @@ public class TestMnist {
         DataSetSDNN ds_valid = UtilsSNN.generateDataSetFromCSV(PATH_VALID, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
         DataSetSDNN ds_test = UtilsSNN.generateDataSetFromCSV(PATH_TEST, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
 
-        UtilsSNN.trainAndSaveModel(opt,ds_train, ds_valid);
+        //UtilsSNN.trainAndSaveModel(opt,ds_train, ds_valid);
         UtilsSNN.testModel(opt,ds_test);
-        //UtilsSNN.visualizeModel(opt,ds_test);
+//        UtilsSNN.visualizeModel(opt,ds_test);
 //        UtilsSNN.visualizeLearningMetrics(opt);
     }
 

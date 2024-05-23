@@ -124,13 +124,18 @@ public class PanelHeatMap extends javax.swing.JPanel {
             int nc = colorMatrix[0].length;
             float delta_x = 1.0f * rect.width / nc;
             float delta_y = 1.0f * rect.height / nr;
+
             for (int i = 0; i < nr; i++) {
                 for (int j = 0; j < nc; j++) {
                     gr.setColor(colorMatrix[i][j]);
                     gr.fillRect((int) (j * delta_x + rect.x), (int) (i * delta_y + rect.y), (int) (delta_x + 1), (int) (delta_y + 1));
                     if (isValueVisible) {
                         gr.setColor(switchColor(colorMatrix[i][j]));
-                        gr.drawString("" + FactoryUtils.formatDouble(matrixValue[i][j]), (int) (j * delta_x + rect.x) + (int) (delta_x + 1) / 2, (int) (i * delta_y + rect.y) + (int) (delta_y + 1) / 2);
+                        String title = FactoryUtils.formatFloatAsString(matrixValue[i][j], 3);
+                        int titleWidth = FactoryUtils.getGraphicsTextWidth(gr, title);
+                        int titleHeight = FactoryUtils.getGraphicsTextHeight(gr, title);
+                        //gr.drawString(title, (int) (j * delta_x + rect.x) + (int) (delta_x + 1) / 2, (int) (i * delta_y + rect.y) + (int) (delta_y + 1) / 2);
+                        gr.drawString(title, (int) (j * delta_x + (delta_x - titleWidth) / 2), (int) (i * delta_y + (delta_y - titleHeight) / 2)+titleHeight);
                     }
                     if (isCellEdgeVisible) {
                         gr.setColor(Color.black);
@@ -187,8 +192,8 @@ public class PanelHeatMap extends javax.swing.JPanel {
     }
 
     private Color switchColor(Color col) {
-        int thr=2097152;
-        if ((col.getRed()+1) * (col.getGreen()+1) * (col.getBlue()+1) > 60000) {
+        int thr = 2097152;
+        if ((col.getRed() + 1) * (col.getGreen() + 1) * (col.getBlue() + 1) > 60000) {
             return Color.black;
         } else {
             return Color.white;

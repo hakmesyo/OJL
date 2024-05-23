@@ -67,7 +67,11 @@ public class FrameObjectProperties extends javax.swing.JFrame {
         this.totalNumberOfObjects = getTotalNumberOfObjects();
         if (objName == null || objName.equals("")) {
             this.objName = "class_name";
-            objects = FactoryUtils.readFile(folderPath + "/class_labels.txt").split("\n");
+            if (FactoryUtils.isFileExist(folderPath + "/class_labels.txt")) {
+                objects = FactoryUtils.readFile(folderPath + "/class_labels.txt").split("\n");
+            }else{
+                objects = new String[]{"0:Color 255 255 0"};
+            }            
             selectedIndex = -1;
         } else {
             this.objName = objName;
@@ -114,6 +118,9 @@ public class FrameObjectProperties extends javax.swing.JFrame {
     }
 
     private String[] buildClassNameList(String[] cs) {
+        if (cs==null) {
+          return new String[]{"temp"};    
+        }
         String[] ret = new String[cs.length];
         for (int i = 0; i < ret.length; i++) {
             ret[i] = cs[i].split(":")[0];

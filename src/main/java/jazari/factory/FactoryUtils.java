@@ -7,6 +7,7 @@ package jazari.factory;
 import au.com.bytecode.opencsv.CSVReader;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.google.gson.Gson;
+import ij.gui.Roi;
 import java.awt.AWTException;
 import jazari.interfaces.InterfaceCallBack;
 import jazari.utils.SerialType;
@@ -2308,7 +2309,6 @@ public final class FactoryUtils {
             DecimalFormat df = new DecimalFormat("#.000");
             q = Float.parseFloat(df.format(num).replace(",", "."));
         } catch (Exception e) {
-//            e.printStackTrace();
             return -10000000000000.0;
         }
         return q;
@@ -4012,7 +4012,7 @@ public final class FactoryUtils {
     public static float[] gaussian(float[] d, float sigma, float mean) {
         float[] ret = new float[d.length];
         for (int i = 0; i < d.length; i++) {
-            ret[i] = gaussian(d[i], sigma, mean);
+            ret[i] = gaussian1D(d[i], sigma, mean);
         }
         return ret;
     }
@@ -4053,9 +4053,48 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static float gaussian(float x, float sigma, float mean) {
+    public static float gaussian1D(float x, float sigma, float mean) {
         float ret = (float) (Math.exp(-(Math.pow(x - mean, 2) / (2 * sigma * sigma))));
         return ret;
+    }
+    
+    private static float gaussian2D(int x, int y, double sigma) {
+        double exponent = -(x * x + y * y) / (2 * sigma * sigma);
+        return (float)(Math.exp(exponent) / (2 * Math.PI * sigma * sigma));
+    }
+    
+    /**
+     * generates 2d gaussian kernel
+     * @param size  : should be odd number
+     * @param sigma : 1.0f
+     * @return
+     */
+    public static float[][] kernelGaussian2D(int size, float sigma) {
+        // Kernel boyutunun tek sayı olup olmadığını kontrol et
+        if (size % 2 == 0) {
+            throw new IllegalArgumentException("Kernel size should be odd number.");
+        }
+
+        float[][] kernel = new float[size][size];
+        double sum = 0;
+        int center = size / 2;
+
+        // Gauss fonksiyonunu kullanarak kernel elemanlarını hesapla
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                kernel[x][y] = gaussian2D(x - center, y - center, sigma);
+                sum += kernel[x][y];
+            }
+        }
+
+        // Kerneli normalize et
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                kernel[x][y] /= sum;
+            }
+        }
+
+        return kernel;
     }
 
     public static long tic() {
@@ -4196,6 +4235,19 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static Rectangle getWeightCenteredROIAsRectangle(float[][] d) {
+        int[] px = getProjectedMatrixOnX(d);
+        int[] py = getProjectedMatrixOnY(d);
+        int[] p_x = getPotentialObjects(px);
+        int[] p_y = getPotentialObjects(py);
+        Rectangle ret=new Rectangle();
+        ret.x=p_x[0];
+        ret.y=p_y[0];
+        ret.width=Math.abs(p_x[1]-p_x[0]);
+        ret.height=Math.abs(p_y[1]-p_y[0]);
+        return ret;
+    }
+    
     public static float[][] getWeightCenteredROI(float[][] d, CPoint[] cp) {
         float[][] ret = null;
         int[] px = getProjectedMatrixOnX(d);

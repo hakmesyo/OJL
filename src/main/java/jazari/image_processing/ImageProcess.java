@@ -1079,6 +1079,10 @@ public final class ImageProcess {
         int[][] original = FactoryUtils.toIntArray2D(d);
         return original;
     }
+    
+    public static float[][] to2DFloat(BufferedImage img){
+        return imageToPixelsFloat(img);
+    }
 
     public static float[][] imageToPixelsFloat(BufferedImage img) {
 //        if (img == null) {
@@ -2356,7 +2360,6 @@ public final class ImageProcess {
     }
 
     public static int[][] to2D(BufferedImage image) {
-//        final int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
         final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
         final int width = image.getWidth();
         final int height = image.getHeight();
@@ -3372,6 +3375,16 @@ public final class ImageProcess {
         g2d.setStroke(new BasicStroke(thickness));
         g2d.setColor(color);
         g2d.drawRect(y, x, w, h);
+        g2d.dispose();
+        return img;
+    }
+
+    public static BufferedImage drawRectangle(BufferedImage img, Rectangle rect, int thickness, Color color) {
+        img=convertToBufferedImageTypes(img, BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D g2d = (Graphics2D) img.getGraphics();
+        g2d.setStroke(new BasicStroke(thickness));
+        g2d.setColor(color);
+        g2d.drawRect(rect.x, rect.y, rect.width, rect.height);
         g2d.dispose();
         return img;
     }
