@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -4481,6 +4482,47 @@ public final class ImageProcess {
     public static void loadOpenCVLibrary() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         isOpenCVLoaded = true;
+    }
+
+    public static boolean isMaskImage(BufferedImage img) {
+        BufferedImage copy=clone(img);
+        copy=ImageProcess.rgb2gray(copy);
+        float[][] df=ImageProcess.imageToPixelsFloat(copy);
+        float[] d=FactoryUtils.toFloatArray1D(df);
+        double[] dd=FactoryUtils.toDoubleArray1D(d);
+//        int nr=d.length;
+//        int nc=d[0].length;
+//        for (int i = 0; i < nr; i++) {
+//            for (int j = 0; j < nc; j++) {
+//                if (!(d[i][j]==0 || d[i][j]==255)) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
+// 2. Functional API ile filtreleme
+         return !Arrays.stream(dd).anyMatch(pixel -> pixel >= 0 && pixel <= 255);//allMatch(pixel -> pixel == 0 || pixel == 255);
+    }
+    
+    public static boolean isMaskImage(float[][] data) {
+        int nr=data.length;
+        int nc=data[0].length;
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                if (!(data[i][j]==0 || data[i][j]==255)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    public static boolean isBinarizedImage(BufferedImage img) {
+        return isMaskImage(img);
+    }
+
+    public static boolean isBinarizedImage(float[][] data) {
+        return isMaskImage(data);
     }
 
 }

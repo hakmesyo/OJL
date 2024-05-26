@@ -261,6 +261,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         String folderName = FactoryUtils.getFolderPath(imagePath);
         currentFolderName = folderName;
         if ((activateBoundingBox || activatePolygon || activateLaneDetection) && imagePath != null && !imagePath.isEmpty()) {
+            //if pascal voc xml format was selected
             if (frame.combo_format.getSelectedIndex() == 0) {
                 //String fileName = FactoryUtils.getFileName(imagePath) + ".xml";
                 xmlFileName = folderName + "/" + FactoryUtils.getFileName(imagePath) + ".xml";
@@ -278,6 +279,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     showRegion = true;
                     source = bb.source;
                 }
+            //if yolo format was selected
             } else if (frame.combo_format.getSelectedIndex() == 1) {
                 yoloTxtFileName = folderName + "/" + FactoryUtils.getFileName(imagePath) + ".txt";
                 boolean checkYoloTxt = new File(yoloTxtFileName).exists();
@@ -626,7 +628,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         } catch (Exception ex) {
                             return;
                         }
-                        laneClass=""+laneClassIndex;
+                        laneClass = "" + laneClassIndex;
 
                         if (laneClassIndex >= 1 && laneClassIndex <= 5) {
                             PascalVocLane tempLane = selectedLane.clone();
@@ -831,7 +833,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         return;
                     }
                 }
-
 
                 if (activatePolygon && e.getButton() == MouseEvent.BUTTON1) {
                     Point p = constraintMousePosition(e);
@@ -1757,7 +1758,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 s = s.replace("java.awt.Color", "");
                 frame.setPixelInfo(getImageSize() + " Pos=(" + p.y + ":" + p.x + ") Value=" + s + " Img Type=" + currBufferedImage.getType());// + " RGB=" + "(" + r + "," + g + "," + b + ")");
             }
-        }else{
+        } else {
             frame.setPixelInfo(getImageSize() + " Pos=(" + 0 + ":" + 0 + ") Value=" + 0 + " Img Type=" + currBufferedImage.getType());
         }
     }
@@ -2367,7 +2368,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     private void saveYoloTxt() {
         String[] classIndex = FactoryUtils.getClassIndexArray(imageFolder + "/class_labels.txt");
-        String yoloTxt = FactoryUtils.convertPascalVoc2Yolo(currBufferedImage.getWidth(), currBufferedImage.getHeight(), listPascalVocObject, classIndex);
+        BufferedImage imgx=ImageProcess.imread(imagePath);
+        //String yoloTxt = FactoryUtils.convertPascalVoc2Yolo(currBufferedImage.getWidth(), currBufferedImage.getHeight(), listPascalVocObject, classIndex);
+        String yoloTxt = FactoryUtils.convertPascalVoc2Yolo(imgx.getWidth(), imgx.getHeight(), listPascalVocObject, classIndex);
         FactoryUtils.writeToFile(imageFolder + "/" + FactoryUtils.getFileName(new File(imagePath).getName()) + ".txt", yoloTxt);
     }
 
@@ -2406,7 +2409,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         for (PascalVocLane lane : splines) {
             String s = "lane:" + lane.name + ":";
             for (Point p : lane.spline) {
-                s += (p.x-fromLeft) + "," + (p.y-fromTop) + ":";
+                s += (p.x - fromLeft) + "," + (p.y - fromTop) + ":";
             }
             s = FactoryUtils.removeLastChar(s);
             content += s + "\n";
@@ -2429,7 +2432,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             ArrayList<Point> spline = new ArrayList<>();
             for (int i = 2; i < str.length; i++) {
                 String[] pnt = str[i].split(",");
-                spline.add(new Point(Integer.parseInt(pnt[0])+fromLeft, Integer.parseInt(pnt[1])+fromTop));
+                spline.add(new Point(Integer.parseInt(pnt[0]) + fromLeft, Integer.parseInt(pnt[1]) + fromTop));
             }
             PascalVocLane lane = new PascalVocLane(str[1], spline, null);
             splines.add(lane);
@@ -2468,14 +2471,22 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_UP) {
-            if (imageIndex < imageFiles.length - 1) {
-                imageIndex++;
-                selectedLane = null;
+            if (imageFiles != null) {
+                if (imageIndex < imageFiles.length - 1) {
+                    imageIndex++;
+                    selectedLane = null;
+                }
+            } else {
+                return;
             }
         } else if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_DOWN) {
-            if (imageIndex > 0) {
-                imageIndex--;
-                selectedLane = null;
+            if (imageFiles != null) {
+                if (imageIndex > 0) {
+                    imageIndex--;
+                    selectedLane = null;
+                }
+            }else{
+                return;
             }
         } else if (key == KeyEvent.VK_S) {
             if (activateBoundingBox) {

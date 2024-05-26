@@ -4057,15 +4057,16 @@ public final class FactoryUtils {
         float ret = (float) (Math.exp(-(Math.pow(x - mean, 2) / (2 * sigma * sigma))));
         return ret;
     }
-    
+
     private static float gaussian2D(int x, int y, double sigma) {
         double exponent = -(x * x + y * y) / (2 * sigma * sigma);
-        return (float)(Math.exp(exponent) / (2 * Math.PI * sigma * sigma));
+        return (float) (Math.exp(exponent) / (2 * Math.PI * sigma * sigma));
     }
-    
+
     /**
      * generates 2d gaussian kernel
-     * @param size  : should be odd number
+     *
+     * @param size : should be odd number
      * @param sigma : 1.0f
      * @return
      */
@@ -4240,14 +4241,14 @@ public final class FactoryUtils {
         int[] py = getProjectedMatrixOnY(d);
         int[] p_x = getPotentialObjects(px);
         int[] p_y = getPotentialObjects(py);
-        Rectangle ret=new Rectangle();
-        ret.x=p_x[0];
-        ret.y=p_y[0];
-        ret.width=Math.abs(p_x[1]-p_x[0]);
-        ret.height=Math.abs(p_y[1]-p_y[0]);
+        Rectangle ret = new Rectangle();
+        ret.x = p_x[0];
+        ret.y = p_y[0];
+        ret.width = Math.abs(p_x[1] - p_x[0]);
+        ret.height = Math.abs(p_y[1] - p_y[0]);
         return ret;
     }
-    
+
     public static float[][] getWeightCenteredROI(float[][] d, CPoint[] cp) {
         float[][] ret = null;
         int[] px = getProjectedMatrixOnX(d);
@@ -4291,13 +4292,15 @@ public final class FactoryUtils {
                 int p1 = i;
                 int p2 = 0;
                 int t = 0;
+                int k=0;
                 while (i < pr.length) {
                     if (pr[i] == 0) {
                         p2 = i;
                         break;
                     }
                     p2 = i;
-                    t += pr[i];
+                    //t += pr[i];
+                    t += ++k;
                     i++;
                 }
                 CPoint p = new CPoint(p1, p2);
@@ -7655,8 +7658,8 @@ public final class FactoryUtils {
         String ret = now.getHour() + ":" + now.getMinute() + ":" + now.getSecond();
         return ret;
     }
-    
-    public static long millis(){
+
+    public static long millis() {
         return System.currentTimeMillis();
     }
 
@@ -8432,7 +8435,11 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static AnnotationPascalVOCFormat deserializeYoloTxt(int fromLeft, int fromTop, BufferedImage img, String filePath) {
+    public static AnnotationPascalVOCFormat deserializeYoloTxt(
+            int fromLeft, 
+            int fromTop,
+            BufferedImage img, 
+            String filePath) {
         String str = FactoryUtils.readFile(filePath);
         AnnotationPascalVOCFormat ret = new AnnotationPascalVOCFormat();
         File file = new File(filePath);
@@ -8441,6 +8448,9 @@ public final class FactoryUtils {
         ret.fileName = fileName;
         ret.imagePath = ret.folder + "/" + ret.fileName;
         ret.source = new PascalVocSource();
+        BufferedImage originalImage=ImageProcess.imread(ret.imagePath);
+        int org_w=originalImage.getWidth();
+        int org_h=originalImage.getHeight();
         int w = img.getWidth();
         int h = img.getHeight();
         PascalVocSize size = new PascalVocSize(w, h, 3);
@@ -8448,19 +8458,10 @@ public final class FactoryUtils {
 
         List<PascalVocObject> lstObjects = new ArrayList();
         String[] rows = str.split("\n");
-        //String[] classNames = FactoryUtils.getClassIndexArray(ret.folder + "/class_labels.txt");
         String[] classNames = FactoryUtils.getClassIndexArray(ret.folder + "/class_labels.txt");
 
         int x1, y1, x2, y2;
         float px1, px2, py1, py2;
-//        Map<Integer, String> map = new HashMap();
-//        if (classNames != null) {
-//            for (String name : classNames) {
-//                String s = name.split(":")[1];
-//                int i = Integer.parseInt(name.split(":")[0]);
-//                map.put(i, s);
-//            }
-//        }
         Map<String, String> map = new HashMap();
         if (classNames != null) {
             for (String name : classNames) {
@@ -8489,14 +8490,23 @@ public final class FactoryUtils {
             px2 = (x2 - x1) * 1.0f / w; --> x2-x1=px2*w
             py2 = (y2 - y1) * 1.0f / h; --> y2-y1=py2*h
                  */
+                //float r_x=1.0f*w/org_w;
+                //float r_y=1.0f*h/org_h;
                 px1 = Float.parseFloat(e[1]);
                 py1 = Float.parseFloat(e[2]);
                 px2 = Float.parseFloat(e[3]);
                 py2 = Float.parseFloat(e[4]);
-                x2 = Math.round((px1 * w * 2 + px2 * w) / 2);
-                y2 = Math.round((py1 * h * 2 + py2 * h) / 2);
-                x1 = Math.round(x2 - px2 * w);
-                y1 = Math.round(y2 - py2 * h);
+                float _x2 = (px1 * org_w * 2 + px2 * org_w) / 2;
+                float _y2 = (py1 * org_h * 2 + py2 * org_h) / 2;
+                float _x1 = _x2 - px2 * org_w;
+                float _y1 = _y2 - py2 * org_h;
+                
+                x2 = Math.round(_x2);
+                y2 = Math.round(_y2);
+                x1 = Math.round(_x1);
+                y1 = Math.round(_y1);
+                
+                
                 PascalVocBoundingBox bbox = new PascalVocBoundingBox(name, new Rectangle(x1, y1, x2 - x1, y2 - y1), fromLeft, fromTop, null);
                 List<PascalVocAttribute> attributeList = null;
                 PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, attributeList);
@@ -8613,6 +8623,19 @@ public final class FactoryUtils {
         writeToFile(csvFilePath, ret);
         return ret;
     }
+
+    public static String toYoloNativeTxtFormat(int classIndex, Rectangle rect, int w,int h) {
+        float x1 = rect.x;
+        float y1 = rect.y;
+        float x2 = rect.x+rect.width;
+        float y2 = rect.y+rect.height;
+        float px1 = (x1 + x2) / 2.0f / w;
+        float py1 = (y1 + y2) / 2.0f / h;
+        float px2 = rect.width * 1.0f / w;
+        float py2 = rect.height * 1.0f / h;
+        String ret = classIndex + " " + px1 + " " + py1 + " " + px2 + " " + py2;
+        return ret;
+    }    
 
     public static String convertPascalVoc2Yolo(int w, int h, List<PascalVocObject> listVoc, String[] classIndex) {
         Map<String, Integer> map = new HashMap();
