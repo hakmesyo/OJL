@@ -191,6 +191,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
         btn_transpose = new javax.swing.JButton();
         btn_from_text = new javax.swing.JButton();
         btn_bar_plot = new javax.swing.JButton();
+        btn_heatmap = new javax.swing.JButton();
         tabbedPane = new javax.swing.JTabbedPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         ds_table = new javax.swing.JTable();
@@ -241,11 +242,20 @@ public class FrameDataGrid extends javax.swing.JFrame {
             }
         });
 
+        btn_heatmap.setText("Heat Map");
+        btn_heatmap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_heatmapActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(btn_transpose, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_scatter, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -254,10 +264,10 @@ public class FrameDataGrid extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_transpose, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_heatmap, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_from_text)
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(148, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -267,7 +277,8 @@ public class FrameDataGrid extends javax.swing.JFrame {
                 .addComponent(btn_visualize, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(btn_transpose, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(btn_bar_plot, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(btn_from_text, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(btn_from_text, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btn_heatmap, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         ds_table.setModel(new javax.swing.table.DefaultTableModel(
@@ -451,6 +462,28 @@ public class FrameDataGrid extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btn_bar_plotActionPerformed
 
+    private void btn_heatmapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_heatmapActionPerformed
+        if (isDataSelectedFromTable()) {
+            if (dataType.equals("2D")) {
+                float[][] f = getSelectedCells();
+                CMatrix.getInstance(f).transpose().heatmap();
+            } else {
+                float[][][] f = getSelected3DCells();
+                CMatrix.getInstance(f).transpose().heatmap();
+            }
+        } else {
+            if (dataType.equals("2D")) {
+                data2D = getSelectedTableData();
+                CMatrix.getInstance(data2D).heatmap();
+            } else {
+                data3D = getTablesData();
+                CMatrix.getInstance(data3D).heatmap();
+            }
+
+        }
+        
+    }//GEN-LAST:event_btn_heatmapActionPerformed
+
     public static float[][] tableToArray(JTable table) {
         int m = table.getRowCount();
         int n = table.getColumnCount();
@@ -557,6 +590,7 @@ public class FrameDataGrid extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_bar_plot;
     private javax.swing.JButton btn_from_text;
+    private javax.swing.JButton btn_heatmap;
     private javax.swing.JButton btn_plot;
     private javax.swing.JButton btn_scatter;
     private javax.swing.JButton btn_transpose;

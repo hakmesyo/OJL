@@ -1037,11 +1037,13 @@ public final class FactoryUtils {
         StringBuilder builder = new StringBuilder("");
         File file = new File(filePath);
         if (!file.exists()) {
-            showMessageTemp(filePath + " isminde bir dosya yok", nAttempts, null);
-            //showMessage(fileName + " isminde bir dosya yok");
+            // showMessageTemp(filePath + " isminde bir dosya yok", nAttempts, null);
+            // showMessage(fileName + " isminde bir dosya yok");
             return null;
         }
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+        try (
+            // InputStreamReader ile UTF-8 kodlamasını belirt
+            InputStreamReader reader = new InputStreamReader(new FileInputStream(filePath), "UTF-8"); BufferedReader br = new BufferedReader(reader)) {
             String s;
             while ((s = br.readLine()) != null) {
                 //ret = ret + s + "\n";
@@ -1055,6 +1057,28 @@ public final class FactoryUtils {
         return builder.toString();
     }
 
+//    public static String readFile(String filePath) {
+//        String ret = "";
+//        StringBuilder builder = new StringBuilder("");
+//        File file = new File(filePath);
+//        if (!file.exists()) {
+//            showMessageTemp(filePath + " isminde bir dosya yok", nAttempts, null);
+//            //showMessage(fileName + " isminde bir dosya yok");
+//            return null;
+//        }
+//        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+//            String s;
+//            while ((s = br.readLine()) != null) {
+//                //ret = ret + s + "\n";
+//                builder.append(s).append("\n");
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return ret;
+//        }
+//
+//        return builder.toString();
+//    }
     public static String readFile() {
         String ret = "";
         File getFile = getFileFromChooserOpen();
@@ -4292,7 +4316,7 @@ public final class FactoryUtils {
                 int p1 = i;
                 int p2 = 0;
                 int t = 0;
-                int k=0;
+                int k = 0;
                 while (i < pr.length) {
                     if (pr[i] == 0) {
                         p2 = i;
@@ -7664,11 +7688,13 @@ public final class FactoryUtils {
     }
 
     public static String toYoloFormat(File f) {
+        System.out.println("f = " + f);
         String[] classIndex = getClassIndexArray(f.getParent() + "/class_labels.txt");
         Map<String, Integer> map = new HashMap();
         int k = 0;
         for (String s : classIndex) {
-            map.put(s, k++);
+            map.put("" + k, k);
+            k++;
         }
         String[] rows = readFile(f).split("\n");
         String str = "";
@@ -8436,9 +8462,9 @@ public final class FactoryUtils {
     }
 
     public static AnnotationPascalVOCFormat deserializeYoloTxt(
-            int fromLeft, 
+            int fromLeft,
             int fromTop,
-            BufferedImage img, 
+            BufferedImage img,
             String filePath) {
         String str = FactoryUtils.readFile(filePath);
         AnnotationPascalVOCFormat ret = new AnnotationPascalVOCFormat();
@@ -8448,9 +8474,9 @@ public final class FactoryUtils {
         ret.fileName = fileName;
         ret.imagePath = ret.folder + "/" + ret.fileName;
         ret.source = new PascalVocSource();
-        BufferedImage originalImage=ImageProcess.imread(ret.imagePath);
-        int org_w=originalImage.getWidth();
-        int org_h=originalImage.getHeight();
+        BufferedImage originalImage = ImageProcess.imread(ret.imagePath);
+        int org_w = originalImage.getWidth();
+        int org_h = originalImage.getHeight();
         int w = img.getWidth();
         int h = img.getHeight();
         PascalVocSize size = new PascalVocSize(w, h, 3);
@@ -8500,13 +8526,12 @@ public final class FactoryUtils {
                 float _y2 = (py1 * org_h * 2 + py2 * org_h) / 2;
                 float _x1 = _x2 - px2 * org_w;
                 float _y1 = _y2 - py2 * org_h;
-                
+
                 x2 = Math.round(_x2);
                 y2 = Math.round(_y2);
                 x1 = Math.round(_x1);
                 y1 = Math.round(_y1);
-                
-                
+
                 PascalVocBoundingBox bbox = new PascalVocBoundingBox(name, new Rectangle(x1, y1, x2 - x1, y2 - y1), fromLeft, fromTop, null);
                 List<PascalVocAttribute> attributeList = null;
                 PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, attributeList);
@@ -8624,18 +8649,18 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static String toYoloNativeTxtFormat(int classIndex, Rectangle rect, int w,int h) {
+    public static String toYoloNativeTxtFormat(int classIndex, Rectangle rect, int w, int h) {
         float x1 = rect.x;
         float y1 = rect.y;
-        float x2 = rect.x+rect.width;
-        float y2 = rect.y+rect.height;
+        float x2 = rect.x + rect.width;
+        float y2 = rect.y + rect.height;
         float px1 = (x1 + x2) / 2.0f / w;
         float py1 = (y1 + y2) / 2.0f / h;
         float px2 = rect.width * 1.0f / w;
         float py2 = rect.height * 1.0f / h;
         String ret = classIndex + " " + px1 + " " + py1 + " " + px2 + " " + py2;
         return ret;
-    }    
+    }
 
     public static String convertPascalVoc2Yolo(int w, int h, List<PascalVocObject> listVoc, String[] classIndex) {
         Map<String, Integer> map = new HashMap();
@@ -8900,8 +8925,8 @@ public final class FactoryUtils {
         //FrameCircularProgressBar frm = new FrameCircularProgressBar();
         //frm.setVisible(true);
         for (File f : files) {
-            if (f.isFile() && !FactoryUtils.getFileName(f.getName()).contains("class_labels")) {
-                k++;
+            k++;
+            if (f.isFile() && !FactoryUtils.getFileName(f.getName()).contains("class_labels") && !FactoryUtils.isFileEmpty(f)) {
                 showCircularProgressBar((int) Math.round(1.0 * k / files.length * 100));
                 File imgFile = new File(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + "." + image_extension);
                 if (k < n_train) {
