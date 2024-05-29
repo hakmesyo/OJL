@@ -279,7 +279,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     showRegion = true;
                     source = bb.source;
                 }
-            //if yolo format was selected
+                //if yolo format was selected
             } else if (frame.combo_format.getSelectedIndex() == 1) {
                 yoloTxtFileName = folderName + "/" + FactoryUtils.getFileName(imagePath) + ".txt";
                 boolean checkYoloTxt = new File(yoloTxtFileName).exists();
@@ -738,7 +738,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     if (!isBBoxDragged) {
                         //selectedBBox = isMouseClickedOnBoundingBox();
                     }
-                    if (selectedBBox != null) {
+                    if (selectedBBox != null && 
+                            selectedBBox.getRectangle(0).contains(unScaleWithZoomFactor(mousePosTopLeft))) {
                         Point p = new Point(e.getPoint().x - fromLeft, e.getPoint().y - fromTop);
                         //Point p = e.getPoint();
                         isBBoxResizeTopLeft = false;
@@ -766,6 +767,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     } else {
                         isBBoxCancelled = false;
                         isBBoxDragged = false;
+                        selectedBBox=null;
                     }
                     /**
                      * eğer polygonal annoation yapılmak isteniyorsa
@@ -1009,50 +1011,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 }
             }
 
-            private PascalVocBoundingBox isMouseClickedOnBoundingBox() {
-                PascalVocBoundingBox ret = null;
-                Point relativeMousePos = new Point(mousePos.x - fromLeft, mousePos.y - fromTop);
-                //System.out.println("scaledMousePos = " + scaledMousePos);
-                if (listPascalVocObject.size() == 0) {
-                    return null;
-                } else {
-                    selectedPascalVocObject = null;
-                    PascalVocBoundingBox desiredBbox = null;
-                    List<PascalVocObject> listVocObject = new ArrayList();
-                    for (PascalVocObject obj : listPascalVocObject) {
-                        PascalVocBoundingBox bbox = obj.bndbox;
-                        if (FactoryUtils.isPointInROI(relativeMousePos, scaleWithZoomFactor(bbox.getRectangle(5)))) {
-                            if (desiredBbox == null) {
-                                desiredBbox = bbox;
-                                listVocObject.add(obj);
-                                selectedPascalVocObject = obj;
-                                continue;
-                            }
-                            Rectangle current = bbox.getRectangle(0);
-                            Rectangle desired = desiredBbox.getRectangle(0);
-                            if (desired.contains(current)) {
-                                selectedPascalVocObject = obj;
-                            }
-                            listVocObject.add(obj);
-//                            ret = bbox;
-//                            selectedPascalVocObject = obj;
-//                            return ret;
-                        }
-                    }
-                    if (selectedPascalVocObject != null) {
-                        ret = selectedPascalVocObject.bndbox;
-                    } else {
-                        int n = listVocObject.size();
-                        if (n > 0) {
-                            selectedPascalVocObject = listVocObject.get(n - 1);
-                            ret = listVocObject.get(n - 1).bndbox;
-                        }
-                    }
-                    isBBoxDragged = false;
-                    return ret;
-                }
-            }
-
         });
 
         this.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -1155,6 +1113,50 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
         }
         );
+    }
+
+    private PascalVocBoundingBox isMouseClickedOnBoundingBox() {
+        PascalVocBoundingBox ret = null;
+        Point relativeMousePos = new Point(mousePos.x - fromLeft, mousePos.y - fromTop);
+        //System.out.println("scaledMousePos = " + scaledMousePos);
+        if (listPascalVocObject.size() == 0) {
+            return null;
+        } else {
+            selectedPascalVocObject = null;
+            PascalVocBoundingBox desiredBbox = null;
+            List<PascalVocObject> listVocObject = new ArrayList();
+            for (PascalVocObject obj : listPascalVocObject) {
+                PascalVocBoundingBox bbox = obj.bndbox;
+                if (FactoryUtils.isPointInROI(relativeMousePos, scaleWithZoomFactor(bbox.getRectangle(5)))) {
+                    if (desiredBbox == null) {
+                        desiredBbox = bbox;
+                        listVocObject.add(obj);
+                        selectedPascalVocObject = obj;
+                        continue;
+                    }
+                    Rectangle current = bbox.getRectangle(0);
+                    Rectangle desired = desiredBbox.getRectangle(0);
+                    if (desired.contains(current)) {
+                        selectedPascalVocObject = obj;
+                    }
+                    listVocObject.add(obj);
+//                            ret = bbox;
+//                            selectedPascalVocObject = obj;
+//                            return ret;
+                }
+            }
+            if (selectedPascalVocObject != null) {
+                ret = selectedPascalVocObject.bndbox;
+            } else {
+                int n = listVocObject.size();
+                if (n > 0) {
+                    selectedPascalVocObject = listVocObject.get(n - 1);
+                    ret = listVocObject.get(n - 1).bndbox;
+                }
+            }
+            isBBoxDragged = false;
+            return ret;
+        }
     }
 
     private Point findSelectedSplinePoint(Point mousePoint) {
@@ -2368,7 +2370,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     private void saveYoloTxt() {
         String[] classIndex = FactoryUtils.getClassIndexArray(imageFolder + "/class_labels.txt");
-        BufferedImage imgx=ImageProcess.imread(imagePath);
+        BufferedImage imgx = ImageProcess.imread(imagePath);
         //String yoloTxt = FactoryUtils.convertPascalVoc2Yolo(currBufferedImage.getWidth(), currBufferedImage.getHeight(), listPascalVocObject, classIndex);
         String yoloTxt = FactoryUtils.convertPascalVoc2Yolo(imgx.getWidth(), imgx.getHeight(), listPascalVocObject, classIndex);
         FactoryUtils.writeToFile(imageFolder + "/" + FactoryUtils.getFileName(new File(imagePath).getName()) + ".txt", yoloTxt);
@@ -2485,7 +2487,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     imageIndex--;
                     selectedLane = null;
                 }
-            }else{
+            } else {
                 return;
             }
         } else if (key == KeyEvent.VK_S) {
