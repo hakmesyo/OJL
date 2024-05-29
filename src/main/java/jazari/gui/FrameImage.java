@@ -46,6 +46,7 @@ public class FrameImage extends javax.swing.JFrame {
     public CMatrix cm;
     public String caption = "";
     private boolean noPaint = false;
+    public float maxHeight=730;
 
     /**
      * Creates new form FrameImage
@@ -732,8 +733,8 @@ public class FrameImage extends javax.swing.JFrame {
         this.img = cm.getImage();
         this.imagePath = imagePath;
         getPicturePanel().activateBoundingBox = chkBBox.isSelected();
-        if (!isFullSize && img.getHeight() > 850) {
-            float zoom_factor = 850.0f / img.getHeight();
+        if (!isFullSize && img.getHeight() > maxHeight) {
+            float zoom_factor = maxHeight / img.getHeight();
             int w = (int) (img.getWidth() * zoom_factor);
             int h = (int) (img.getHeight() * zoom_factor);
             this.lbl_zoom_factor.setText("zoom factor:" + FactoryUtils.formatFloat(zoom_factor, 4));

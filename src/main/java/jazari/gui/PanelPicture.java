@@ -1789,8 +1789,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     public BufferedImage adjustImageToPanel(BufferedImage bf, boolean isClearBbox) {
-        if (bf.getHeight() > 850) {
-            float zoom_factor = 850.0f / bf.getHeight();
+        if (bf.getHeight() > frame.maxHeight) {
+            float zoom_factor = frame.maxHeight / bf.getHeight();
             int w = (int) (bf.getWidth() * zoom_factor);
             int h = (int) (bf.getHeight() * zoom_factor);
             frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));

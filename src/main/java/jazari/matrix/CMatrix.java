@@ -3130,6 +3130,25 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    /**
+     * take transpose of the matrix
+     * @return
+     */
+    public CMatrix T() {
+        array = array.transpose();
+        return this;
+    }
+
+    /**
+     * take transpose of the matrix provided as input
+     * @param cm
+     * @return
+     */
+    public CMatrix T(CMatrix cm) {
+        cm.array = cm.array.transpose();
+        return cm;
+    }
+
     public CMatrix subMatrix(CMatrix m, Point p1, Point p2) {
         int r = m.getRowNumber();
         int c = m.getColumnNumber();
