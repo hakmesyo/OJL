@@ -742,7 +742,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         Point pp = unScaleWithZoomFactor(mousePosTopLeft);
                         pp.x -= fromLeft;
                         pp.y -= fromTop;
-                        if (!selectedBBox.getRectangle(0).contains(pp)) {
+                        if (!selectedBBox.getRectangle(5).contains(pp)) {
                             isBBoxCancelled = false;
                             isBBoxDragged = false;
                             selectedBBox = null;

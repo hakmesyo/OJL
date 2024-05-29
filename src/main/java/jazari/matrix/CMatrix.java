@@ -4576,7 +4576,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix pinv() {
-        array = InvertMatrix.pinvert(array, false);
+        array = InvertMatrix.pinvert(array, true);
         return this;
 //        CMatrix ret = this.clone();
 //
@@ -8786,7 +8786,7 @@ public final class CMatrix implements Serializable {
     }
     
     public CMatrix conv(CMatrix kernel) {
-        return conv(kernel);
+        return convolve(kernel);
     }
 
     /**

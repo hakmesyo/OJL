@@ -1965,9 +1965,9 @@ public final class FactoryMatrix implements Serializable {
         return ret;
     }
 
-    public static float[] getHistogram(int[] d, int n) {
-        float[] ret = new float[n];
-        for (int i = 0; i < n; i++) {
+    public static float[] getHistogram(int[] d, int nBins) {
+        float[] ret = new float[nBins];
+        for (int i = 0; i < nBins; i++) {
             for (int j = 0; j < d.length; j++) {
                 if (d[j] == i) {
                     ret[i]++;
@@ -1977,14 +1977,18 @@ public final class FactoryMatrix implements Serializable {
         return ret;
     }
 
-    public static float[] getHistogram(float[] d, int n) {
-        float[] ret = new float[n];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < d.length; j++) {
-                if (d[j] == i) {
-                    ret[i]++;
-                }
+    public static float[] getHistogram(float[] d, int nBins) {
+        float[] ret = new float[nBins];
+        float min = FactoryUtils.getMinimum(d);
+        float max = FactoryUtils.getMaximum(d);
+        float delta = (max - min) / nBins;
+        int offset=(int) (min / delta);
+        for (int j = 0; j < d.length; j++) {
+            int bin = (int) (d[j] / delta)-offset;
+            if (bin==nBins) {
+                bin-=1;
             }
+            ret[bin]++;
         }
         return ret;
     }
@@ -1995,53 +1999,32 @@ public final class FactoryMatrix implements Serializable {
         int nc = d[0].length;
         float min = FactoryUtils.getMinimum(d);
         float max = FactoryUtils.getMaximum(d);
-        float delta = (max - min) / nBins;
-        for (int i = 0; i < nBins; i++) {
-            for (int j = 0; j < nr; j++) {
-                for (int k = 0; k < nc; k++) {
-//                    if (d[j][k] >= i * delta + min && d[j][k] <= (i + 1) * delta + min) {
-//                        ret[i]++;
-//                    }
-                    if (d[j][k] == i) {
-                        ret[i]++;
-                    }
-                }
+        float delta = Math.round((max - min) / nBins);
+        for (int j = 0; j < nr; j++) {
+            for (int k = 0; k < nc; k++) {
+                int index = (int) (d[j][k] / delta);
+                ret[index]++;
             }
         }
         return ret;
     }
 
-    public static float[] getHistogram(int[][] d, int n) {
-        float[] ret = new float[n];
+    public static float[] getHistogram(int[][] d, int nBins) {
+        float[] ret = new float[nBins];
         int nr = d.length;
         int nc = d[0].length;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < nr; j++) {
-                for (int k = 0; k < nc; k++) {
-                    if (d[j][k] == i) {
-                        ret[i]++;
-                    }
-                }
+        float min = FactoryUtils.getMinimum(d);
+        float max = FactoryUtils.getMaximum(d);
+        float delta = Math.round((max - min) / nBins);
+        for (int j = 0; j < nr; j++) {
+            for (int k = 0; k < nc; k++) {
+                int index = (int) (d[j][k] / delta);
+                ret[index]++;
             }
         }
         return ret;
     }
 
-//    public static float[] getHistogram(float[][] d, int n) {
-//        float[] ret = new float[n];
-//        int nr = d.length;
-//        int nc = d[0].length;
-//        for (int i = 0; i < n; i++) {
-//            for (int j = 0; j < nr; j++) {
-//                for (int k = 0; k < nc; k++) {
-//                    if (d[j][k] == i) {
-//                        ret[i]++;
-//                    }
-//                }
-//            }
-//        }
-//        return ret;
-//    }
     public static float[] getHistogram(short[] d, int n) {
         float[] ret = new float[n];
         for (int i = 0; i < n; i++) {
@@ -3378,6 +3361,7 @@ public final class FactoryMatrix implements Serializable {
         int nr = d.length;
         int nc = d[0].length;
         float[][] ret = new float[nr - 2 * mid][nc - 2 * mid];
+        int n=kernel.length * kernel[0].length;
         for (int i = mid; i < nr - mid; i++) {
             for (int j = mid; j < nc - mid; j++) {
                 float t = 0;
@@ -3385,9 +3369,8 @@ public final class FactoryMatrix implements Serializable {
                     for (int l = 0; l < kernel[0].length; l++) {
                         t += kernel[k][l] * d[i - mid + k][j - mid + l];
                     }
-                    //ret[i - mid][j - mid] = t / (kernel.length * kernel[0].length);
-                    ret[i - mid][j - mid] = t;
                 }
+                ret[i - mid][j - mid] = t/n;
             }
         }
         return ret;

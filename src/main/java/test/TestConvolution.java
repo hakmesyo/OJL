@@ -23,93 +23,111 @@ import static test.TestOptimizedConvolution.printMatrix;
 public class TestConvolution {
 
     public static void main(String[] args) {
-        double[][] d_X = {
-            {-1, -1, -1, -1, -1, -1, -1, -1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, -1, 1, -1, -1, -1, 1, -1, -1},
-            {-1, -1, -1, 1, -1, 1, -1, -1, -1},
-            {-1, -1, -1, -1, 1, -1, -1, -1, -1},
-            {-1, -1, -1, 1, -1, 1, -1, -1, -1},
-            {-1, -1, 1, -1, -1, -1, 1, -1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, -1, -1, -1, -1, -1, -1, -1, -1}
-        };
-        double[][] d_M = {
-            {-1, -1, -1, -1, -1, -1, -1, -1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, 1, 1, -1, -1, -1, 1, 1, -1},
-            {-1, 1, -1, 1, -1, 1, -1, 1, -1},
-            {-1, 1, -1, -1, 1, -1, -1, 1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
-            {-1, -1, -1, -1, -1, -1, -1, -1, -1}
-        };
-        double[][] k_diag_1 = {
-            {1, -1, -1},
-            {-1, 1, -1},
-            {-1, -1, 1}
-        };
-        double[][] k_diag_2 = {
-            {-1, -1, 1},
-            {-1, 1, -1},
-            {1, -1, -1}
-        };
-        int w = 400;
-        CMatrix ck_dg1 = CMatrix.getInstance(k_diag_1).heatmap(Color.cyan, 200, 200, true, true);;
-        CMatrix ck_dg2 = CMatrix.getInstance(k_diag_2).heatmap(Color.cyan, 200, 200, true, true);;
-        CMatrix cm = CMatrix.getInstance(d_X)
-                .heatmap(Color.gray, w, w, true, true);
-        CMatrix cm_dg1 = cm.convolve(ck_dg1)
-                .heatmap(Color.cyan, w, w, true, true);
-        CMatrix cm_dg2 = cm.convolve(ck_dg2)
-                .heatmap(Color.cyan, w, w, true, true);
-        
-                // Örnek matris ve kernel
-        int n=10;
-        float[][] matrix = FactoryMatrix.randMatrix(n, n, 100,123);
-
         float[][] kernel = {
-            {1, 0, 1},
-            {0, 1, 0},
-            {1, 0, 1}
+            {-1, -1, -1},
+            {0, 0, 0},
+            {1, 1, 1}
         };
-        CMatrix cm_kernel = CMatrix.getInstance(kernel).heatmap(true);
+        CMatrix cm_kernel = CMatrix.getInstance(kernel);
 
-        // Convolution işlemini paralel olarak gerçekleştir
-        float[][] convolvedMatrix = null;
-        long t1=FactoryUtils.tic();
-        for (int i = 0; i < 100; i++) {
-//            convolvedMatrix = convolveParallel(matrix, kernel);
-            convolvedMatrix = convolve(matrix, kernel);
-            t1=FactoryUtils.toc(t1);
-        }
-//        
-//        System.out.println("bitti");
-//        // Sonucu yazdır
-//        System.out.println("Orijinal Matris:");
-//        printMatrix(matrix);
-////
-//        System.out.println("\nKernel Matrisi:");
-//        printMatrix(kernel);
-////
-        System.out.println("\nConvolution Sonucu:");
-        printMatrix(convolvedMatrix);
+        CMatrix cm = CMatrix.getInstance()
+                .imread("images/chessboard.PNG")
+                .imresize(0.5f)
+                .rgb2gray()
+                .imshow()
+                ;
         
-//        CMatrix cm = CMatrix.getInstance()
-//                .randWithSeed(n,n,100,123)
-//                
-//                
-////                .println()
-////                .convolve(CMatrix.getInstance().setArray(kernel))
-////                .println()
-//                ;
-//        CMatrix cm2 = CMatrix.getInstance().setArray(kernel);
-//        for (int i = 0; i < 2; i++) {            
-//            cm.tic().convolve(cm2).toc();
+        CMatrix cm1 = cm.clone().conv(cm_kernel).round().map(0, 255).binarizeImage().imshow();//.map(0, 255);//.println().imshow();                
+        CMatrix cm2 = cm.clone().conv(cm_kernel.clone().T()).round().map(0, 255).binarizeImage().imshow();//.map(0, 255);//.println().imshow();                
+        cm1.add(cm2).map(0, 255).println().imshow();//.add(cm2).add(cm2_1).imshow();
+        
+//
+//        double[][] d_X = {
+//            {-1, -1, -1, -1, -1, -1, -1, -1, -1},
+//            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
+//            {-1, -1, 1, -1, -1, -1, 1, -1, -1},
+//            {-1, -1, -1, 1, -1, 1, -1, -1, -1},
+//            {-1, -1, -1, -1, 1, -1, -1, -1, -1},
+//            {-1, -1, -1, 1, -1, 1, -1, -1, -1},
+//            {-1, -1, 1, -1, -1, -1, 1, -1, -1},
+//            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
+//            {-1, -1, -1, -1, -1, -1, -1, -1, -1}
+//        };
+//        double[][] d_M = {
+//            {-1, -1, -1, -1, -1, -1, -1, -1, -1},
+//            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
+//            {-1, 1, 1, -1, -1, -1, 1, 1, -1},
+//            {-1, 1, -1, 1, -1, 1, -1, 1, -1},
+//            {-1, 1, -1, -1, 1, -1, -1, 1, -1},
+//            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
+//            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
+//            {-1, 1, -1, -1, -1, -1, -1, 1, -1},
+//            {-1, -1, -1, -1, -1, -1, -1, -1, -1}
+//        };
+//        double[][] k_diag_1 = {
+//            {1, -1, -1},
+//            {-1, 1, -1},
+//            {-1, -1, 1}
+//        };
+//        double[][] k_diag_2 = {
+//            {-1, -1, 1},
+//            {-1, 1, -1},
+//            {1, -1, -1}
+//        };
+//        int w = 400;
+//        CMatrix ck_dg1 = CMatrix.getInstance(k_diag_1).heatmap(Color.cyan, 200, 200, true, true);;
+//        CMatrix ck_dg2 = CMatrix.getInstance(k_diag_2).heatmap(Color.cyan, 200, 200, true, true);;
+//        CMatrix cm = CMatrix.getInstance(d_X)
+//                .heatmap(Color.gray, w, w, true, true);
+//        CMatrix cm_dg1 = cm.convolve(ck_dg1)
+//                .heatmap(Color.cyan, w, w, true, true);
+//        CMatrix cm_dg2 = cm.convolve(ck_dg2)
+//                .heatmap(Color.cyan, w, w, true, true);
+//
+//        // Örnek matris ve kernel
+//        int n = 10;
+//        float[][] matrix = FactoryMatrix.randMatrix(n, n, 100, 123);
+//
+//        float[][] kernel = {
+//            {1, 0, 1},
+//            {0, 1, 0},
+//            {1, 0, 1}
+//        };
+//        CMatrix cm_kernel = CMatrix.getInstance(kernel).heatmap(true);
+//
+//        // Convolution işlemini paralel olarak gerçekleştir
+//        float[][] convolvedMatrix = null;
+//        long t1 = FactoryUtils.tic();
+//        for (int i = 0; i < 100; i++) {
+////            convolvedMatrix = convolveParallel(matrix, kernel);
+//            convolvedMatrix = convolve(matrix, kernel);
+//            t1 = FactoryUtils.toc(t1);
 //        }
-//        cm.println();
-
+////        
+////        System.out.println("bitti");
+////        // Sonucu yazdır
+////        System.out.println("Orijinal Matris:");
+////        printMatrix(matrix);
+//////
+////        System.out.println("\nKernel Matrisi:");
+////        printMatrix(kernel);
+//////
+//        System.out.println("\nConvolution Sonucu:");
+//        printMatrix(convolvedMatrix);
+//
+////        CMatrix cm = CMatrix.getInstance()
+////                .randWithSeed(n,n,100,123)
+////                
+////                
+//////                .println()
+//////                .convolve(CMatrix.getInstance().setArray(kernel))
+//////                .println()
+////                ;
+////        CMatrix cm2 = CMatrix.getInstance().setArray(kernel);
+////        for (int i = 0; i < 2; i++) {            
+////            cm.tic().convolve(cm2).toc();
+////        }
+////        cm.println();
     }
 
     // Convolution işlemini gerçekleştiren fonksiyon
