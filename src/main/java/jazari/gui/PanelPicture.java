@@ -738,36 +738,45 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     if (!isBBoxDragged) {
                         //selectedBBox = isMouseClickedOnBoundingBox();
                     }
-                    if (selectedBBox != null && 
-                            selectedBBox.getRectangle(0).contains(unScaleWithZoomFactor(mousePosTopLeft))) {
-                        Point p = new Point(e.getPoint().x - fromLeft, e.getPoint().y - fromTop);
-                        //Point p = e.getPoint();
-                        isBBoxResizeTopLeft = false;
-                        isBBoxResizeTopRight = false;
-                        isBBoxResizeBottomLeft = false;
-                        isBBoxResizeBottomRight = false;
-                        int t = 4;
-                        if (p.x > scaleWithZoomFactor(selectedBBox.xmin) - t && p.x < scaleWithZoomFactor(selectedBBox.xmin) + t && p.y > scaleWithZoomFactor(selectedBBox.ymin) - t && p.y < scaleWithZoomFactor(selectedBBox.ymin) + t) {
-                            isBBoxResizeTopLeft = true;
-                        } else if (p.x > scaleWithZoomFactor(selectedBBox.xmax) - t && p.x < scaleWithZoomFactor(selectedBBox.xmax) + t && p.y > scaleWithZoomFactor(selectedBBox.ymin) - t && p.y < scaleWithZoomFactor(selectedBBox.ymin) + t) {
-                            isBBoxResizeTopRight = true;
-                        } else if (p.x > scaleWithZoomFactor(selectedBBox.xmax) - t && p.x < scaleWithZoomFactor(selectedBBox.xmax) + t && p.y > scaleWithZoomFactor(selectedBBox.ymax) - t && p.y < scaleWithZoomFactor(selectedBBox.ymax) + t) {
-                            isBBoxResizeBottomRight = true;
-                        } else if (p.x > scaleWithZoomFactor(selectedBBox.xmin) - t && p.x < scaleWithZoomFactor(selectedBBox.xmin) + t && p.y > scaleWithZoomFactor(selectedBBox.ymax) - t && p.y < scaleWithZoomFactor(selectedBBox.ymax) + t) {
-                            isBBoxResizeBottomLeft = true;
-                        } else if (p.x > scaleWithZoomFactor(selectedBBox.xmin) && p.x < scaleWithZoomFactor(selectedBBox.xmax) && p.y > scaleWithZoomFactor(selectedBBox.ymin) && p.y < scaleWithZoomFactor(selectedBBox.ymax)) {
-                            isBBoxDragged = true;
-                            referenceDragPos = e.getPoint();
-                            relativeDragPosFromTop.x = referenceDragPos.x - (scaleWithZoomFactor(selectedBBox.xmin) + fromLeft);
-                            relativeDragPosFromTop.y = referenceDragPos.y - (scaleWithZoomFactor(selectedBBox.ymin) + fromTop);
-                            //System.out.println("rel:"+relativeDragPosFromTop);
-                        } else {
+                    if (selectedBBox != null) {
+                        Point pp = unScaleWithZoomFactor(mousePosTopLeft);
+                        pp.x -= fromLeft;
+                        pp.y -= fromTop;
+                        if (!selectedBBox.getRectangle(0).contains(pp)) {
+                            isBBoxCancelled = false;
                             isBBoxDragged = false;
+                            selectedBBox = null;
+                        } else {
+                            Point p = new Point(e.getPoint().x - fromLeft, e.getPoint().y - fromTop);
+                            //Point p = e.getPoint();
+                            isBBoxResizeTopLeft = false;
+                            isBBoxResizeTopRight = false;
+                            isBBoxResizeBottomLeft = false;
+                            isBBoxResizeBottomRight = false;
+                            int t = 4;
+                            if (p.x > scaleWithZoomFactor(selectedBBox.xmin) - t && p.x < scaleWithZoomFactor(selectedBBox.xmin) + t && p.y > scaleWithZoomFactor(selectedBBox.ymin) - t && p.y < scaleWithZoomFactor(selectedBBox.ymin) + t) {
+                                isBBoxResizeTopLeft = true;
+                            } else if (p.x > scaleWithZoomFactor(selectedBBox.xmax) - t && p.x < scaleWithZoomFactor(selectedBBox.xmax) + t && p.y > scaleWithZoomFactor(selectedBBox.ymin) - t && p.y < scaleWithZoomFactor(selectedBBox.ymin) + t) {
+                                isBBoxResizeTopRight = true;
+                            } else if (p.x > scaleWithZoomFactor(selectedBBox.xmax) - t && p.x < scaleWithZoomFactor(selectedBBox.xmax) + t && p.y > scaleWithZoomFactor(selectedBBox.ymax) - t && p.y < scaleWithZoomFactor(selectedBBox.ymax) + t) {
+                                isBBoxResizeBottomRight = true;
+                            } else if (p.x > scaleWithZoomFactor(selectedBBox.xmin) - t && p.x < scaleWithZoomFactor(selectedBBox.xmin) + t && p.y > scaleWithZoomFactor(selectedBBox.ymax) - t && p.y < scaleWithZoomFactor(selectedBBox.ymax) + t) {
+                                isBBoxResizeBottomLeft = true;
+                            } else if (p.x > scaleWithZoomFactor(selectedBBox.xmin) && p.x < scaleWithZoomFactor(selectedBBox.xmax) && p.y > scaleWithZoomFactor(selectedBBox.ymin) && p.y < scaleWithZoomFactor(selectedBBox.ymax)) {
+                                isBBoxDragged = true;
+                                referenceDragPos = e.getPoint();
+                                relativeDragPosFromTop.x = referenceDragPos.x - (scaleWithZoomFactor(selectedBBox.xmin) + fromLeft);
+                                relativeDragPosFromTop.y = referenceDragPos.y - (scaleWithZoomFactor(selectedBBox.ymin) + fromTop);
+                                //System.out.println("rel:"+relativeDragPosFromTop);
+                            } else {
+                                isBBoxDragged = false;
+                            }
                         }
+
                     } else {
                         isBBoxCancelled = false;
                         isBBoxDragged = false;
-                        selectedBBox=null;
+                        selectedBBox = null;
                     }
                     /**
                      * eğer polygonal annoation yapılmak isteniyorsa
