@@ -779,7 +779,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         selectedBBox = null;
                     }
                     /**
-                     * eğer polygonal annoation yapılmak isteniyorsa
+                     * eğer polygonal annotation yapılmak isteniyorsa
                      */
                 } else if (activatePolygon) {
                     showRegion = true;

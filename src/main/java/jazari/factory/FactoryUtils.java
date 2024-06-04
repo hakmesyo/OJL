@@ -6674,7 +6674,7 @@ public final class FactoryUtils {
         }
     }
 
-    public static void reduceDataSet(String path_source, String path_reduced, float reduceRatio) {
+    public static void subsetDataSet(String path_source, String path_reduced, float reduceRatio) {
         FactoryUtils.makeDirectory(path_reduced);
         File[] dirs = FactoryUtils.getFolderListInFolder(path_source);
         for (File dir : dirs) {
@@ -6685,6 +6685,19 @@ public final class FactoryUtils {
             for (File file : imgReducedList) {
                 copyFile(file, new File(path_reduced + "/" + dir.getName() + "/" + file.getName()));
             }
+        }
+    }
+    
+    public static void resizeImages(String source, String target, float resizeRatio) {
+        FactoryUtils.makeDirectory(target);
+        File[] files = FactoryUtils.getFileArrayInFolderForImages(source);
+        BufferedImage img;
+        if (files.length==0) {
+            System.err.println(source+" path doesn't contain images to resize");
+        }
+        for (File file : files) {
+            img=ImageProcess.resize(ImageProcess.imread(file), resizeRatio);
+            ImageProcess.saveImage(img, target+"/"+file.getName());
         }
     }
 
@@ -9254,6 +9267,34 @@ public final class FactoryUtils {
         Point bottomRight = new Point(maxX, maxY);
         TBoundingBox boundingBox = new TBoundingBox(topLeft, bottomRight);
         return boundingBox;
+    }
+    
+    public static List<File> getFilteredFilesFromFilesAsList(File[] files,String keyword){
+         List<File> filtered = Arrays.stream(files)
+                .filter(dosya -> dosya.getName().contains(keyword))
+                .collect(Collectors.toList());
+         return filtered;
+    }
+
+    public static File[] getFilteredFilesFromFilesAsArray(File[] files,String keyword){
+         List<File> filtered = Arrays.stream(files)
+                .filter(dosya -> dosya.getName().contains(keyword))
+                .collect(Collectors.toList());
+         return filtered.toArray(new File[filtered.size()]);
+    }
+    
+    public static List<File> getFilteredFilesFromFilesAsList(List<File> files,String keyword){
+         List<File> filtered = files.stream()
+                .filter(dosya -> dosya.getName().contains(keyword))
+                .collect(Collectors.toList());
+         return filtered;
+    }
+
+    public static File[] getFilteredFilesFromFilesAsArray(List<File> files,String keyword){
+         List<File> filtered = files.stream()
+                .filter(dosya -> dosya.getName().contains(keyword))
+                .collect(Collectors.toList());
+         return filtered.toArray(new File[filtered.size()]);
     }
 
 }

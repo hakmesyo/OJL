@@ -5,24 +5,34 @@
 package test;
 
 import jazari.matrix.CMatrix;
+import jazari.types.TMatrixOperator;
 
 /**
  *
  * @author cezerilab
  */
 public class ATest1 {
+
     public static void main(String[] args) {
-        CMatrix cm = CMatrix.getInstance()
-                .imread("images/bf.png")
-                .imread("images/blob.jpg")
-                .rgb2gray()
-                //.cmd("0:2:end",":")
-                //.imshow()
-                .addNoisePartial(10,0.7f)
-                .imshow()
-                
-                
-                
+
+CMatrix cm = CMatrix.getInstance()
+                .range("0:5")
+                .transpose()
+                .replicateRow(5)
+                .dump()
                 ;
+
+//        CMatrix cm = CMatrix.getInstance()
+//                .imread("images/bf.png")
+//                .imread("images/blob.jpg")
+//                .rgb2gray()
+//                //.cmd("0:2:end",":")
+//                //.imshow()
+//                .addNoisePartial(10,0.7f)
+//                .imshow()
+//                
+//                
+//                
+//                ;
     }
 }

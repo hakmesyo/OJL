@@ -1656,6 +1656,21 @@ public final class ImageProcess {
 //        ret = ImageProcess.pixelsToImageGray(q);
 //        return ret;
     }
+    
+    /**
+     * resize the image with resize ratio Ratio can be 0.5f or 2f 
+     * ratio between 0..1 reduces the image size
+     * ratio larger than 1 enlarges the image size
+     * Image.SCALE_SMOOTH format
+     * @param img
+     * @param ratio
+     * @return
+     */
+    public static BufferedImage resize(BufferedImage img, float ratio) {
+        int w=Math.round(img.getWidth()*ratio);
+        int h=Math.round(img.getHeight()*ratio);
+        return resize(img, w, h);
+    }
 
     /**
      * resize the image to desired width and height value by using
