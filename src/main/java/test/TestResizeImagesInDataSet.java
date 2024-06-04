@@ -12,7 +12,7 @@ import jazari.factory.FactoryUtils;
  */
 public class TestResizeImagesInDataSet {
     public static void main(String[] args) {
-        String path="D:\\DATASETS\\MASS\\CBIS_DDSM_JPG\\yolo_ds\\calc\\yolo\\images\\train";
+        String path="D:\\DATASETS\\MASS\\CBIS_DDSM_JPG\\yolo_ds\\calc\\yolo\\images\\val";
         FactoryUtils.resizeImages(path, path, 0.5f);
         
     }

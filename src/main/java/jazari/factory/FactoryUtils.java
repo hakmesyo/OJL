@@ -1042,8 +1042,8 @@ public final class FactoryUtils {
             return null;
         }
         try (
-            // InputStreamReader ile UTF-8 kodlamasını belirt
-            InputStreamReader reader = new InputStreamReader(new FileInputStream(filePath), "UTF-8"); BufferedReader br = new BufferedReader(reader)) {
+                // InputStreamReader ile UTF-8 kodlamasını belirt
+                InputStreamReader reader = new InputStreamReader(new FileInputStream(filePath), "UTF-8"); BufferedReader br = new BufferedReader(reader)) {
             String s;
             while ((s = br.readLine()) != null) {
                 //ret = ret + s + "\n";
@@ -6687,17 +6687,56 @@ public final class FactoryUtils {
             }
         }
     }
-    
+
+    /**
+     * resize images from source folder and then save them in target folder
+     * resizeRatio smaller than 1 reduces the image size resizeRatio greater
+     * than 1 enlarges the image size
+     *
+     * @param source
+     * @param target
+     * @param resizeRatio
+     */
     public static void resizeImages(String source, String target, float resizeRatio) {
         FactoryUtils.makeDirectory(target);
         File[] files = FactoryUtils.getFileArrayInFolderForImages(source);
+        if (files.length == 0) {
+            System.err.println(source + " path doesn't contain images to resize");
+            return;
+        } else {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    int k = 0;
+                    for (File file : files) {
+                        showCircularProgressBar((int) Math.round(1.0 * ++k / files.length * 100));
+                        BufferedImage img = ImageProcess.resize(ImageProcess.imread(file), resizeRatio);
+                        ImageProcess.saveImage(img, target + "/" + file.getName());
+                    }
+                }
+            }).start();
+        }
+    }
+
+    /**
+     * resize images from source folder and then save them in target folder with
+     * a desired width and height values
+     *
+     * @param source
+     * @param target
+     * @param width
+     * @param height
+     */
+    public static void resizeImages(String source, String target, int width, int height) {
+        FactoryUtils.makeDirectory(target);
+        File[] files = FactoryUtils.getFileArrayInFolderForImages(source);
         BufferedImage img;
-        if (files.length==0) {
-            System.err.println(source+" path doesn't contain images to resize");
+        if (files.length == 0) {
+            System.err.println(source + " path doesn't contain images to resize");
         }
         for (File file : files) {
-            img=ImageProcess.resize(ImageProcess.imread(file), resizeRatio);
-            ImageProcess.saveImage(img, target+"/"+file.getName());
+            img = ImageProcess.resize(ImageProcess.imread(file), width, height);
+            ImageProcess.saveImage(img, target + "/" + file.getName());
         }
     }
 
@@ -9268,33 +9307,33 @@ public final class FactoryUtils {
         TBoundingBox boundingBox = new TBoundingBox(topLeft, bottomRight);
         return boundingBox;
     }
-    
-    public static List<File> getFilteredFilesFromFilesAsList(File[] files,String keyword){
-         List<File> filtered = Arrays.stream(files)
+
+    public static List<File> getFilteredFilesFromFilesAsList(File[] files, String keyword) {
+        List<File> filtered = Arrays.stream(files)
                 .filter(dosya -> dosya.getName().contains(keyword))
                 .collect(Collectors.toList());
-         return filtered;
+        return filtered;
     }
 
-    public static File[] getFilteredFilesFromFilesAsArray(File[] files,String keyword){
-         List<File> filtered = Arrays.stream(files)
+    public static File[] getFilteredFilesFromFilesAsArray(File[] files, String keyword) {
+        List<File> filtered = Arrays.stream(files)
                 .filter(dosya -> dosya.getName().contains(keyword))
                 .collect(Collectors.toList());
-         return filtered.toArray(new File[filtered.size()]);
-    }
-    
-    public static List<File> getFilteredFilesFromFilesAsList(List<File> files,String keyword){
-         List<File> filtered = files.stream()
-                .filter(dosya -> dosya.getName().contains(keyword))
-                .collect(Collectors.toList());
-         return filtered;
+        return filtered.toArray(new File[filtered.size()]);
     }
 
-    public static File[] getFilteredFilesFromFilesAsArray(List<File> files,String keyword){
-         List<File> filtered = files.stream()
+    public static List<File> getFilteredFilesFromFilesAsList(List<File> files, String keyword) {
+        List<File> filtered = files.stream()
                 .filter(dosya -> dosya.getName().contains(keyword))
                 .collect(Collectors.toList());
-         return filtered.toArray(new File[filtered.size()]);
+        return filtered;
+    }
+
+    public static File[] getFilteredFilesFromFilesAsArray(List<File> files, String keyword) {
+        List<File> filtered = files.stream()
+                .filter(dosya -> dosya.getName().contains(keyword))
+                .collect(Collectors.toList());
+        return filtered.toArray(new File[filtered.size()]);
     }
 
 }
