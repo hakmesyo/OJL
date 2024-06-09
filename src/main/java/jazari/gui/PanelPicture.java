@@ -1800,17 +1800,24 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     public BufferedImage adjustImageToPanel(BufferedImage bf, boolean isClearBbox) {
-        if (bf.getHeight() > frame.maxHeight) {
-            float zoom_factor = frame.maxHeight / bf.getHeight();
+        if (!frame.chk_customZoom.isSelected()) {
+            if (bf.getHeight() > frame.maxHeight) {
+                float zoom_factor = frame.maxHeight / bf.getHeight();
+                int w = (int) (bf.getWidth() * zoom_factor);
+                int h = (int) (bf.getHeight() * zoom_factor);
+                frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
+                original_zoom_factor = FactoryUtils.formatFloat(zoom_factor, 4);
+                zoom_factor = original_zoom_factor;
+                bf = ImageProcess.resizeAspectRatio(bf, w, h);
+            } else {
+                zoom_factor = original_zoom_factor = 1.0f;
+                frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
+            }
+        } else {
+            original_zoom_factor=Float.parseFloat(frame.lbl_zoom_factor.getText());
             int w = (int) (bf.getWidth() * zoom_factor);
             int h = (int) (bf.getHeight() * zoom_factor);
-            frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
-            original_zoom_factor = FactoryUtils.formatFloat(zoom_factor, 4);
-            zoom_factor = original_zoom_factor;
             bf = ImageProcess.resizeAspectRatio(bf, w, h);
-        } else {
-            zoom_factor = original_zoom_factor = 1.0f;
-            frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
         }
         //frame.titleImageInfo = (imageFiles[imageIndex].getName() + "      [ " + (imageIndex + 1) + " / " + imageFiles.length + " ]");
         frame.titleImageInfo = (imageFiles[imageIndex].getName());

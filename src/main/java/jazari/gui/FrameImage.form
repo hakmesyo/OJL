@@ -28,7 +28,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="panelPicture" alignment="0" max="32767" attributes="0"/>
-          <Component id="jScrollPane1" alignment="0" pref="1138" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -102,12 +102,14 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" pref="25" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="lbl_zoom_factor" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="chk_customZoom" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="lbl_zoom_factor" min="-2" pref="35" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="chk_stretch" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="chk_full_size" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="40" max="32767" attributes="0"/>
+                              <EmptySpace pref="134" max="32767" attributes="0"/>
                               <Component id="combo_format" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="chkLane" min="-2" max="-2" attributes="0"/>
@@ -155,6 +157,7 @@
                           <Component id="chk_stretch" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="combo_format" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="chk_full_size" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chk_customZoom" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -236,8 +239,11 @@
             </Component>
             <Component class="javax.swing.JLabel" name="lbl_zoom_factor">
               <Properties>
-                <Property name="text" type="java.lang.String" value="zoom:1"/>
+                <Property name="text" type="java.lang.String" value="1"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JButton" name="btn_dashedLineColor">
               <Properties>
@@ -340,6 +346,14 @@
               <Events>
                 <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chk_full_size&#x130;temStateChanged"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chk_customZoom">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="custom zoom"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>

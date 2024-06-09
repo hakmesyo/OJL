@@ -128,6 +128,7 @@ public class FrameImage extends javax.swing.JFrame {
         slider = new javax.swing.JSlider();
         lbl_index = new javax.swing.JLabel();
         chk_full_size = new javax.swing.JCheckBox();
+        chk_customZoom = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -237,7 +238,7 @@ public class FrameImage extends javax.swing.JFrame {
             }
         });
 
-        lbl_zoom_factor.setText("zoom:1");
+        lbl_zoom_factor.setText("1");
 
         btn_dashedLineColor.setText("color");
         btn_dashedLineColor.setToolTipText("Change Dashed Line Color");
@@ -336,6 +337,8 @@ public class FrameImage extends javax.swing.JFrame {
             }
         });
 
+        chk_customZoom.setText("custom zoom");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -353,12 +356,14 @@ public class FrameImage extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lbl_zoom_factor)
+                        .addComponent(chk_customZoom)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lbl_zoom_factor, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chk_stretch)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chk_full_size)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 134, Short.MAX_VALUE)
                         .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chkLane)
@@ -400,7 +405,8 @@ public class FrameImage extends javax.swing.JFrame {
                     .addComponent(btn_screen_capture)
                     .addComponent(chk_stretch)
                     .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chk_full_size))
+                    .addComponent(chk_full_size)
+                    .addComponent(chk_customZoom))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(slider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -415,7 +421,7 @@ public class FrameImage extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(panelPicture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1138, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -641,7 +647,7 @@ public class FrameImage extends javax.swing.JFrame {
     }
 
     public void setZoomFactor(double z) {
-        lbl_zoom_factor.setText("zoom factor:" + FactoryUtils.formatFloat((float) z, 4));
+        lbl_zoom_factor.setText(""+FactoryUtils.formatFloat((float) z, 4));
     }
 
 //    /**
@@ -690,6 +696,7 @@ public class FrameImage extends javax.swing.JFrame {
     public javax.swing.JCheckBox chkLane;
     public javax.swing.JCheckBox chkPolygon;
     private javax.swing.JCheckBox chkSequence;
+    public javax.swing.JCheckBox chk_customZoom;
     private javax.swing.JCheckBox chk_full_size;
     private javax.swing.JCheckBox chk_stretch;
     public javax.swing.JComboBox<String> combo_format;
@@ -697,7 +704,7 @@ public class FrameImage extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbl_index;
-    private javax.swing.JLabel lbl_zoom_factor;
+    public javax.swing.JLabel lbl_zoom_factor;
     private javax.swing.JPanel panelPicture;
     public javax.swing.JSlider slider;
     private javax.swing.JTextField txt_dpi;

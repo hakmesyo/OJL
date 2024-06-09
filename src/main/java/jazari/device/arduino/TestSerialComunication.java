@@ -27,7 +27,7 @@ public class TestSerialComunication implements SerialPortEventListener {
 
     public static void main(String[] args) {
         TestSerialComunication obj = new TestSerialComunication();
-        obj.start("COM14");
+        obj.start("COM4");
 //        try {
 //            for (int i = 0; i < 2; i++) {
 //                obj.sendDataToSerialPort("3:500-5:500-70:50");

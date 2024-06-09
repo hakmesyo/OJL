@@ -12,8 +12,10 @@ import jazari.factory.FactoryUtils;
  */
 public class TestResizeImagesInDataSet {
     public static void main(String[] args) {
-        String path="D:\\DATASETS\\MASS\\CBIS_DDSM_JPG\\yolo_ds\\calc\\yolo\\images\\val";
-        FactoryUtils.resizeImages(path, path, 0.5f);
+        //String path="D:\\DATASETS\\MASS\\CBIS_DDSM_JPG\\yolo_ds\\calc\\yolo\\images\\val";
+        String sourcePath="D:\\DATASETS\\weeds\\CottonWeedDet12\\weedImages_medium";
+        String targetPath="D:\\DATASETS\\weeds\\CottonWeedDet12\\weedImages_small";
+        FactoryUtils.resizeImages(sourcePath, targetPath, 0.5f);
         
     }
 }

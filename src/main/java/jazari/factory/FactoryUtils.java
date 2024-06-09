@@ -7,6 +7,7 @@ package jazari.factory;
 import au.com.bytecode.opencsv.CSVReader;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.google.gson.Gson;
+import com.google.maps.model.LatLng;
 import ij.gui.Roi;
 import java.awt.AWTException;
 import jazari.interfaces.InterfaceCallBack;
@@ -1330,6 +1331,7 @@ public final class FactoryUtils {
         frame.setSize(labelSize.width + 50, labelSize.height + 50); // İstediğiniz ekstra boşlukları ekleyebilirsiniz
         frame.setLocationRelativeTo(null); // Ekranın ortasına hizala
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Pencere kapatıldığında programı sonlandırma
+        frame.setAlwaysOnTop(true); 
         frame.setVisible(true);
         frame.repaint();
         Timer timer = new Timer(delay, new ActionListener() {
@@ -9235,48 +9237,23 @@ public final class FactoryUtils {
      * <a href="https://coordinates-converter.com/en/decimal/37.965177,41.851559?karte=OpenStreetMap&zoom=16">
      * link </a>
      *
-     * @param lat : (Y axis, Parallel) 41°51'4.61"D --> 41:51:4.61:E
-     * @param longt : (X axis, Meridian) 37°57'43.60"K --> 37:57:43.60:N
+     * @param latitude : (Y axis, Parallel) 41°51'4.61"D --> 41:51:4.61:E
+     * @param longtitude : (X axis, Meridian) 37°57'43.60"K --> 37:57:43.60:N
      * @return
      */
-    public static Point2D.Double gpsToDecimalCoordinate(String lat, String longt) {
-        Point2D.Double ret = new Point2D.Double();
-        String[] x = longt.split(":");
-        ret.x = Double.parseDouble(x[0]) + Double.parseDouble(x[1]) / 60.0 + Double.parseDouble(x[2]) / 3600.0;
+    public static LatLng gpsToDecimalCoordinate(String latitude, String longtitude) {
+        String[] x = longtitude.split(":");
+        double longt = Double.parseDouble(x[0]) + Double.parseDouble(x[1]) / 60.0 + Double.parseDouble(x[2]) / 3600.0;
         if (x[3].equals("S")) {
-            ret.x = -ret.x;
+            longt = -longt;
         }
-        String[] y = lat.split(":");
-        ret.y = Double.parseDouble(y[0]) + Double.parseDouble(y[1]) / 60.0 + Double.parseDouble(y[2]) / 3600.0;
+        String[] y = latitude.split(":");
+        double lat = Double.parseDouble(y[0]) + Double.parseDouble(y[1]) / 60.0 + Double.parseDouble(y[2]) / 3600.0;
         if (y[3].equals("W")) {
-            ret.y = -ret.y;
+            lat = -lat;
         }
+        LatLng ret = new LatLng(lat, longt);
         return ret;
-    }
-
-    /**
-     *
-     * @param from
-     * @param to
-     * @return
-     */
-    public static double getDirectionFromGPSPoints(Point2D.Double from, Point2D.Double to) {
-        double dLon = Math.toRadians(to.x - from.x);
-
-        double lat1 = Math.toRadians(from.y);
-        double lat2 = Math.toRadians(to.y);
-        double lon1 = Math.toRadians(from.x);
-
-        double y = Math.sin(dLon) * Math.cos(lat2);
-        double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-
-        double bearing = Math.toDegrees(Math.atan2(y, x));
-
-        // Normalize the bearing to range from 0 to 360 degrees
-        bearing = (bearing + 360) % 360;
-
-        return bearing;
-
     }
 
     public static TBoundingBox getBoundingBox(int[][] maskImage) {
@@ -9334,6 +9311,131 @@ public final class FactoryUtils {
                 .filter(dosya -> dosya.getName().contains(keyword))
                 .collect(Collectors.toList());
         return filtered.toArray(new File[filtered.size()]);
+    }
+
+    /**
+     * converts gps-rtk format to google earth lat long format
+     *
+     * @param gpsCoordinates ie: 3757.8019432,N,04151.0025488,E
+     * @return i.e: 37.96336572, 41.85004248
+     */
+    public static String gpsConvertRtk2LatLongFormat(String gpsCoordinates) {
+        String[] parts = gpsCoordinates.split(",");
+
+        if (parts.length != 4) {
+            return "Geçersiz GPS koordinatları!";
+        }
+
+        double latitudeDegrees = Double.parseDouble(parts[0].substring(0, parts[0].indexOf(".") - 2));
+        double latitudeMinutes = Double.parseDouble(parts[0].substring(parts[0].indexOf(".") - 2));
+        char latitudeDirection = parts[1].charAt(0);
+
+        double longitudeDegrees = Double.parseDouble(parts[2].substring(0, parts[2].indexOf(".") - 2));
+        double longitudeMinutes = Double.parseDouble(parts[2].substring(parts[2].indexOf(".") - 2));
+        char longitudeDirection = parts[3].charAt(0);
+
+        // Enlemi ondalık dereceye dönüştür
+        latitudeDegrees = latitudeDegrees + (latitudeMinutes / 60);
+
+        // Boylamı ondalık dereceye dönüştür
+        longitudeDegrees = longitudeDegrees + (longitudeMinutes / 60);
+
+        // Yönleri işler
+        if (latitudeDirection == 'S') {
+            latitudeDegrees *= -1;
+        }
+        if (longitudeDirection == 'W') {
+            longitudeDegrees *= -1;
+        }
+
+        // Google Earth formatında döndür (boylam, enlem)
+        return String.format("%.6f, %.6f", latitudeDegrees, longitudeDegrees);
+    }
+
+    /**
+     * Enlem ve boylam verilerini metre cinsinden x, y koordinatlarına
+     * dönüştürme fonksiyonu örnek: LatLng from=new
+     * LatLng(29.50911482597872,40.79043673267945) LatLng from=new
+     * LatLng(29.50836199373552,40.78993939708132) Point2D
+     * distXY=getTranslationFromGPSData(lat,lon,ref_lat,ref_lon);
+     *
+     * @param from
+     * @param to
+     * @return
+     */
+    public static Point2D gpsTranslationFrom(LatLng from, LatLng to) {
+        double R = 6378137.0;
+        // Enlem ve boylam farklarını radyan cinsine dönüştürme
+        double dLat = Math.toRadians(to.lat - from.lat);
+        double dLon = Math.toRadians(to.lng - from.lng);
+
+        // Ortalama enlem (refLat ve lat'ın ortalaması) kullanarak x ve y hesaplama
+        double avgLat = Math.toRadians((to.lat + from.lat) / 2.0);
+
+        double x = R * dLon * Math.cos(avgLat);
+        double y = R * dLat;
+
+        return new Point2D.Double(x, y);
+    }
+
+    /**
+     * get distance in meter from two LatLng points
+     *
+     * @param from
+     * @param to
+     * @return
+     */
+    public static double gpsDistance(LatLng from, LatLng to) {
+        double R = 6378137.0;
+        // İki nokta arasındaki mesafeyi hesaplamak için Haversine formülünü kullanma
+        double latDiff = Math.toRadians(to.lat - from.lat);
+        double lngDiff = Math.toRadians(to.lng - from.lng);
+        double a = Math.sin(latDiff / 2) * Math.sin(latDiff / 2)
+                + Math.cos(Math.toRadians(from.lat)) * Math.cos(Math.toRadians(to.lat))
+                * Math.sin(lngDiff / 2) * Math.sin(lngDiff / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    /**
+     * calculate direction angle between from and to
+     *
+     * @param from
+     * @param to
+     * @return
+     */
+    public static double gpsDirectionAngle(LatLng from, LatLng to) {
+        double dLon = Math.toRadians(to.lng - from.lng);
+
+        double lat1 = Math.toRadians(from.lat);
+        double lat2 = Math.toRadians(to.lat);
+        //double lon1 = Math.toRadians(from.lng);
+
+        double y = Math.sin(dLon) * Math.cos(lat2);
+        double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+        double bearing = Math.toDegrees(Math.atan2(y, x));
+
+        // Normalize the bearing to range from 0 to 360 degrees
+        bearing = (bearing + 360) % 360;
+
+        return bearing;
+
+    }
+
+    public static Point2D gpsLatLonToXYFromRefPoint(LatLng refPoint, LatLng point) {
+        double R = 6378137.0;
+        // Enlem ve boylam farklarını radyan cinsine dönüştürme
+        double dLat = Math.toRadians(point.lat - refPoint.lat);
+        double dLon = Math.toRadians(point.lng - refPoint.lng);
+
+        // Ortalama enlem (refLat ve lat'ın ortalaması) kullanarak x ve y hesaplama
+        double avgLat = Math.toRadians((point.lat + refPoint.lat) / 2.0);
+
+        double x = R * dLon * Math.cos(avgLat);
+        double y = R * dLat;
+
+        return new Point2D.Double(x, y);
     }
 
 }

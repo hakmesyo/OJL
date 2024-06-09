@@ -4,6 +4,7 @@
  */
 package test;
 
+import com.google.maps.model.LatLng;
 import java.awt.geom.Point2D;
 import jazari.factory.FactoryUtils;
 
@@ -15,18 +16,18 @@ import jazari.factory.FactoryUtils;
  */
 public class TestGPS {
     public static void main(String[] args) {
-        
-        
-        Point2D.Double p=FactoryUtils.gpsToDecimalCoordinate("37:57:43.5852:N","41:51:4.5684:E");
-        System.out.println("p = " + p);
-        
-        //iki gps noktasına göre yön tayini
-        Double angle=FactoryUtils.getDirectionFromGPSPoints(
-                FactoryUtils.gpsToDecimalCoordinate("37:57:42.38:N","41:51:11.54:E"), 
-                //FactoryUtils.GpsToDecimalCoordinate("37:57:42.26:N","41:51:1.59:E"));
-                //FactoryUtils.GpsToDecimalCoordinate("37:57:47.25:N","41:51:11.53:E")); //359 derece
-                //FactoryUtils.GpsToDecimalCoordinate("37:57:42.38:N","41:51:11.55:E")); //90 derece
-                FactoryUtils.gpsToDecimalCoordinate("37:57:42.38:N","41:51:11.53:E")); //270 derece
+//        aşağıdaki data gebze parkur alanı kml si
+        double[][] gpsData = {
+            {29.50911482597872, 40.79043673267945},
+            {29.50836199373552, 40.78993939708132},
+            {29.5088691017504, 40.78949094745692},
+            {29.50965094265705, 40.79000447472892}
+        };
+        LatLng from=new LatLng(gpsData[0][1],gpsData[0][0]);
+        LatLng to=new LatLng(gpsData[1][1],gpsData[1][0]);
+        double distance=FactoryUtils.gpsDistance(from, to);
+        System.out.println("distance = " + distance);
+        double angle=FactoryUtils.gpsDirectionAngle(from, to);
         System.out.println("angle = " + angle);
     }
 }
