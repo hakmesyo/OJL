@@ -85,10 +85,11 @@ public class TestJimClientByteBufferOfflineImages {
                     int thread_no = Integer.parseInt(msg.split(":")[2]);
                     if (msg.split(":").length < 4) {
                         client.send("CJ:THR:" + thread_no + ":" + "real time test image" + ":./temp.jpg");
+                        //return;
                     } else {
                         //response = msg.split(":")[4].split("->")[1];
                         response = msg;
-                        //System.out.println("gelen thread no:" + thread_no + " detection response = " + files[index].getName() + "->" + response + " elapsed time:" + (System.currentTimeMillis() - t1)+"\n");
+                        System.out.println("gelen thread no:" + thread_no + " detection response = " + files[index].getName() + "->" + response + " elapsed time:" + (System.currentTimeMillis() - t1)+"\n");
                     }
                     iterateImageFile(thread_no, response);
 
@@ -138,7 +139,7 @@ public class TestJimClientByteBufferOfflineImages {
 
     public static void main(String[] args) {
         t1 = System.currentTimeMillis();
-        files = FactoryUtils.getFileArrayInFolderByExtension("C:\\Users\\dell_lab\\Desktop\\fsm_tfjs\\dataset\\closed", "jpg");
+        files = FactoryUtils.getFileArrayInFolderByExtension("C:\\ds_teknofest\\recorded_images\\yolo_ds\\images\\test", "jpg");
         client = startJimCommunication("localhost", "8887", 1);
     }
 }

@@ -45,7 +45,7 @@ public class Deneme {
                 .setTypes(Image.class, DetectedObjects.class)
                 .optModelUrls("djl://ai.djl.paddlepaddle/face_detection/0.0.1/mask_detection")
                 .optFilter("flavor", "server")
-                .optTranslator(new FaceTranslator(0.5f, 0.7f))
+                .optTranslator((Translator<Image, DetectedObjects>) new FaceTranslator(0.5f, 0.7f))
                 .build();
 
         ZooModel model = criteria.loadModel();

@@ -69,34 +69,34 @@
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>api</artifactId>
-            <version>0.22.1</version>
+            <version>0.28.0</version>
         </dependency>
         
         <!-- https://mvnrepository.com/artifact/ai.djl/basicdataset -->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>basicdataset</artifactId>
-            <version>0.22.1</version>
+            <version>0.28.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/ai.djl/model-zoo -->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>model-zoo</artifactId>
-            <version>0.22.1</version>
+            <version>0.28.0</version>
         </dependency>
         
         <!-- MXNet -->
         <dependency>
             <groupId>ai.djl.mxnet</groupId>
             <artifactId>mxnet-model-zoo</artifactId>
-            <version>0.22.1</version>
+            <version>0.28.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/ai.djl.mxnet/mxnet-engine -->
         <dependency>
             <groupId>ai.djl.mxnet</groupId>
             <artifactId>mxnet-engine</artifactId>
-            <version>0.22.1</version>
+            <version>0.28.0</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -104,34 +104,29 @@
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
             <artifactId>pytorch-model-zoo</artifactId>
-            <version>0.22.1</version>
+            <version>0.28.0</version>
         </dependency>
         <!-- TensorFlow -->
         <dependency>
             <groupId>ai.djl.tensorflow</groupId>
             <artifactId>tensorflow-model-zoo</artifactId>
-            <version>0.22.1</version>
+            <version>0.28.0</version>
         </dependency>
-        <!-- ONNXRuntime 
+        
+        <!-- https://mvnrepository.com/artifact/ai.djl.onnxruntime/onnxruntime-engine -->
         <dependency>
             <groupId>ai.djl.onnxruntime</groupId>
             <artifactId>onnxruntime-engine</artifactId>
-            <version>0.22.1</version>
+            <version>0.28.0</version>
         </dependency>
-        -->
+
         
-        <!-- https://mvnrepository.com/artifact/com.microsoft.onnxruntime/onnxruntime 
+        <!-- https://mvnrepository.com/artifact/com.microsoft.onnxruntime/onnxruntime -->
         <dependency>
             <groupId>com.microsoft.onnxruntime</groupId>
             <artifactId>onnxruntime</artifactId>
-            <version>1.17.3</version>
+            <version>1.18.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.microsoft.onnxruntime</groupId>
-            <artifactId>onnxruntime_gpu</artifactId>
-            <version>1.17.3</version>
-        </dependency>
-        -->
         
         <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
         <dependency>
