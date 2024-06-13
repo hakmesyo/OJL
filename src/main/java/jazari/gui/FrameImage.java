@@ -698,7 +698,7 @@ public class FrameImage extends javax.swing.JFrame {
     private javax.swing.JCheckBox chkSequence;
     public javax.swing.JCheckBox chk_customZoom;
     private javax.swing.JCheckBox chk_full_size;
-    private javax.swing.JCheckBox chk_stretch;
+    public javax.swing.JCheckBox chk_stretch;
     public javax.swing.JComboBox<String> combo_format;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;

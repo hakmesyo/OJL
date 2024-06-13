@@ -82,7 +82,8 @@ public final class Yolov8Detection {
                         .optProgress(new ProgressBar())
                         .build();
 
-        try (ZooModel<Image, DetectedObjects> model = criteria.loadModel(); Predictor<Image, DetectedObjects> predictor = model.newPredictor()) {
+        try (ZooModel<Image, DetectedObjects> model = criteria.loadModel(); 
+                Predictor<Image, DetectedObjects> predictor = model.newPredictor()) {
             Path outputPath = Paths.get("build/output");
             Files.createDirectories(outputPath);
 
