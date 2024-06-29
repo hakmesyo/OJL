@@ -26,8 +26,8 @@ import jazari.image_processing.ImageProcess;
 import jazari.matrix.CMatrix;
 import jazari.types.TFigureAttribute;
 import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.comparator.NameFileComparator;
+//import org.apache.commons.io.FileUtils;
+//import org.apache.commons.io.comparator.NameFileComparator;
 
 /**
  *

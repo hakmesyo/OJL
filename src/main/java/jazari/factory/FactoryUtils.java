@@ -1331,7 +1331,7 @@ public final class FactoryUtils {
         frame.setSize(labelSize.width + 50, labelSize.height + 50); // İstediğiniz ekstra boşlukları ekleyebilirsiniz
         frame.setLocationRelativeTo(null); // Ekranın ortasına hizala
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Pencere kapatıldığında programı sonlandırma
-        frame.setAlwaysOnTop(true); 
+        frame.setAlwaysOnTop(true);
         frame.setVisible(true);
         frame.repaint();
         Timer timer = new Timer(delay, new ActionListener() {
@@ -8934,6 +8934,18 @@ public final class FactoryUtils {
      * @param progress
      */
     public static void showCircularProgressBar(double progress) {
+        int val = (int) Math.round(progress);
+        if (circularProgressBar == null) {
+            circularProgressBar = new FrameCircularProgressBar();
+        }
+        if (!circularProgressBar.isDisplayable() || !circularProgressBar.isVisible()) {
+            circularProgressBar.setVisible(true);
+        }
+        circularProgressBar.setProgress(val);
+    }
+
+    public static void showCircularProgressBar(int index, int max) {
+        double progress = (int) Math.round(1.0 * index / max * 100);
         int val = (int) Math.round(progress);
         if (circularProgressBar == null) {
             circularProgressBar = new FrameCircularProgressBar();

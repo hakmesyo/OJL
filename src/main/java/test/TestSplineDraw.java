@@ -10,11 +10,11 @@ import java.awt.event.*;
 import java.awt.geom.Path2D;
 import java.util.ArrayList;
 
-public class ASplineDrawing extends JFrame {
+public class TestSplineDraw extends JFrame {
 
     private EditableSplinePanel splinePanel;
 
-    public ASplineDrawing() {
+    public TestSplineDraw() {
         setTitle("Düzenlenebilir Spline Çizimi");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(600, 400);
@@ -26,7 +26,7 @@ public class ASplineDrawing extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ASplineDrawing());
+        SwingUtilities.invokeLater(() -> new TestSplineDraw());
     }
 
     private class EditableSplinePanel extends JPanel {

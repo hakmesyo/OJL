@@ -5,6 +5,7 @@
 package jazari.utils;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,19 +54,20 @@ public class WindowsLikeComparator implements Comparator<File> {
     static class SplitteFileName {
 
         String name;
-        Long number;
+        BigInteger number; // Değiştirildi: Long -> BigInteger
         String numberText;
         String ext;
 
         public SplitteFileName(String name, String numberText, String ext) {
             this.name = name;
             if ("".equals(numberText)) {
-                this.number = -1L;
+                this.number = BigInteger.valueOf(-1); // Değiştirildi: -1L -> BigInteger.valueOf(-1)
             } else {
-                this.number = Long.valueOf(numberText);
+                this.number = new BigInteger(numberText); // Değiştirildi: Long.valueOf(numberText) -> new BigInteger(numberText)
             }
             this.numberText = numberText;
             this.ext = ext;
         }
     }
+
 }

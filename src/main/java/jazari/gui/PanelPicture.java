@@ -44,8 +44,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
-import static jazari.factory.FactoryUtils.getClassIndexArray;
-import jazari.interfaces.call_back_interface.CallBackTrigger;
 import jazari.utils.MyDialog;
 import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
 import jazari.utils.pascalvoc.PascalVocAttribute;
@@ -565,10 +563,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Sharpen",
             "Crop",
             "Resize Images",
-            "Build YOLO DataSet", //"VocXML to Yolo Batch",
-        //"Yolo to VocXML Batch"
-        //"Build JSON as TuSimple"
-        };
+            "Build YOLO DataSet",};
 
         ButtonGroup itemsGroup = new ButtonGroup();
         items = new JRadioButtonMenuItem[elements.length];
@@ -1814,7 +1809,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 frame.setZoomFactor(FactoryUtils.formatFloat(zoom_factor, 4));
             }
         } else {
-            original_zoom_factor=Float.parseFloat(frame.lbl_zoom_factor.getText());
+            original_zoom_factor = Float.parseFloat(frame.lbl_zoom_factor.getText());
             int w = (int) (bf.getWidth() * zoom_factor);
             int h = (int) (bf.getHeight() * zoom_factor);
             bf = ImageProcess.resizeAspectRatio(bf, w, h);
@@ -2411,17 +2406,19 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
             lstObject.add(new PascalVocObject(name, "", 0, 0, 0, bbox, polygon, attributeList));
         }
-        if (lstObject.size() > 0) {
-            String xml = FactoryUtils.serializePascalVocXML(imageFolder, fileName, imagePath, new PascalVocSource(), lstObject);
-        } else {
-            File file = new File(imagePath);
-            if (FactoryUtils.isFileExist(imageFolder + "/" + FactoryUtils.getFileName(file.getName()) + ".xml")) {
-                FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(file.getName()) + ".xml");
-            }
-        }
-    }
+        String xml = FactoryUtils.serializePascalVocXML(imageFolder, fileName, imagePath, new PascalVocSource(), lstObject);
 
-    private void saveLanesAsTxt() {
+//        if (lstObject.size() > 0) {
+//            String xml = FactoryUtils.serializePascalVocXML(imageFolder, fileName, imagePath, new PascalVocSource(), lstObject);
+//        } else {
+//            File file = new File(imagePath);
+//            if (FactoryUtils.isFileExist(imageFolder + "/" + FactoryUtils.getFileName(file.getName()) + ".xml")) {
+//                FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(file.getName()) + ".xml");
+//            }
+//        }
+}
+
+private void saveLanesAsTxt() {
         String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".lane";
         String content = "";
         for (PascalVocLane lane : splines) {
@@ -2482,11 +2479,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
+public void keyTyped(KeyEvent e) {
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
+public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_UP) {
             if (imageFiles != null) {
@@ -2630,6 +2627,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
+public void keyReleased(KeyEvent e) {
     }
 }

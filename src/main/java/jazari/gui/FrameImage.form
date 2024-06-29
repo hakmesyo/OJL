@@ -102,9 +102,9 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" pref="25" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="chk_customZoom" min="-2" max="-2" attributes="0"/>
+                              <Component id="chk_customZoom" min="-2" pref="104" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="lbl_zoom_factor" min="-2" pref="35" max="-2" attributes="0"/>
+                              <Component id="lbl_zoom_factor" min="-2" pref="113" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="chk_stretch" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>

@@ -31,6 +31,8 @@ import com.jhlabs.image.InvertFilter;
 import com.jhlabs.image.MotionBlurFilter;
 import com.jhlabs.image.MotionBlurOp;
 import com.jhlabs.image.PointFilter;
+import com.luciad.imageio.webp.WebPImageReaderSpi;
+import com.luciad.imageio.webp.WebPImageWriterSpi;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
@@ -62,6 +64,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.GrayFilter;
@@ -69,6 +72,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import static jazari.factory.FactoryUtils.getDefaultDirectory;
 import jazari.types.TBoundingBox;
+import org.apache.commons.imaging.Imaging;
+import org.apache.tika.Tika;
 import org.opencv.core.Core;
 //import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 //import org.opencv.core.Core;
@@ -964,7 +969,7 @@ public final class ImageProcess {
 
         return result;
     }
-    
+
     public static BufferedImage imread() {
         return readImage();
     }
@@ -990,12 +995,46 @@ public final class ImageProcess {
         }
         return ret;
     }
-    
-    public static BufferedImage readImage(File file){
+
+    public static BufferedImage readImage(File file) {
         return readImage(file.getAbsolutePath());
     }
 
     public static BufferedImage readImage(String fileName) {
+        try {
+            File file = new File(fileName);
+
+            // Dosyanın gerçek MIME tipini kontrol et
+            Tika tika = new Tika();
+            String mimeType = tika.detect(file);
+
+            if (mimeType.equals("image/webp")) {
+                // WebP için TwelveMonkeys okuyucusunu kullan
+                IIORegistry registry = IIORegistry.getDefaultInstance();
+                registry.registerServiceProvider(new WebPImageReaderSpi());
+
+                try (ImageInputStream input = ImageIO.createImageInputStream(file)) {
+                    Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+                    if (readers.hasNext()) {
+                        ImageReader reader = readers.next();
+                        reader.setInput(input);
+                        return reader.read(0);
+                    }
+                }
+                throw new IOException("No suitable reader found for WebP image");
+            } else if (mimeType.equals("application/dicom")) {
+                return IJ.openImage(fileName).getBufferedImage();
+            } else {
+                // Diğer formatlar için standart ImageIO kullan
+                return ImageIO.read(file);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    public static BufferedImage readImage2(String fileName) {
         try {
             if (fileName.contains("http")) {
                 URL url = new URL(fileName);
@@ -1013,7 +1052,11 @@ public final class ImageProcess {
             } else if (FactoryUtils.getFileExtension(new File(fileName).getName()).equals("tif")) {
                 return javax.imageio.ImageIO.read(new File(fileName));
             } else {
-                return ImageIO.read(new File(fileName));
+                BufferedImage ret = ImageIO.read(new File(fileName));
+                if (ret == null) {
+                    return javax.imageio.ImageIO.read(new File(fileName));
+                }
+
             }
         } catch (IOException ex) {
             Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
@@ -1080,8 +1123,8 @@ public final class ImageProcess {
         int[][] original = FactoryUtils.toIntArray2D(d);
         return original;
     }
-    
-    public static float[][] to2DFloat(BufferedImage img){
+
+    public static float[][] to2DFloat(BufferedImage img) {
         return imageToPixelsFloat(img);
     }
 
@@ -1656,19 +1699,19 @@ public final class ImageProcess {
 //        ret = ImageProcess.pixelsToImageGray(q);
 //        return ret;
     }
-    
+
     /**
-     * resize the image with resize ratio Ratio can be 0.5f or 2f 
-     * ratio between 0..1 reduces the image size
-     * ratio larger than 1 enlarges the image size
+     * resize the image with resize ratio Ratio can be 0.5f or 2f ratio between
+     * 0..1 reduces the image size ratio larger than 1 enlarges the image size
      * Image.SCALE_SMOOTH format
+     *
      * @param img
      * @param ratio
      * @return
      */
     public static BufferedImage resize(BufferedImage img, float ratio) {
-        int w=Math.round(img.getWidth()*ratio);
-        int h=Math.round(img.getHeight()*ratio);
+        int w = Math.round(img.getWidth() * ratio);
+        int h = Math.round(img.getHeight() * ratio);
         return resize(img, w, h);
     }
 
@@ -2466,7 +2509,6 @@ public final class ImageProcess {
 
         return bimage;
     }
-    
 
 //
 //    public static BufferedImage readImageFromFile(File file) {
@@ -2481,7 +2523,6 @@ public final class ImageProcess {
 //        }
 //        return ret;
 //    }
-
 //    public static File readImage() {
 //        JFileChooser chooser = new JFileChooser();
 //        //chooser.setCurrentDirectory(new java.io.File("images"));
@@ -2503,7 +2544,6 @@ public final class ImageProcess {
 //        }
 //        return file;
 //    }
-
 //    public static File readImageFileFromFolder() {
 //        JFileChooser chooser = new JFileChooser();
 //        chooser.setCurrentDirectory(new java.io.File("images"));
@@ -2516,7 +2556,6 @@ public final class ImageProcess {
 //        }
 //        return file;
 //    }
-
 //    public static File readImageFileFromFolderWithDirectoryPath(String directoryPath) {
 //        if (directoryPath == null || directoryPath.isEmpty()) {
 //            return readImageFileFromFolder();
@@ -2550,7 +2589,6 @@ public final class ImageProcess {
 //        }
 //        return ret;
 //    }
-
 //    public static BufferedImage readImageFromFile(String fileName) {
 //        File file = new File(fileName);
 //        if (!file.exists()) {
@@ -2569,12 +2607,10 @@ public final class ImageProcess {
 //        }
 //        return ret;
 //    }
-
 //    public static CMatrix getMatrix(BufferedImage img) {
 //        CMatrix cm = CMatrix.getInstance(imageToPixelsInt(img));
 //        return cm;
 //    }
-
     public static boolean writeImage(BufferedImage img) {
         return saveImage(img);
     }
@@ -2634,6 +2670,44 @@ public final class ImageProcess {
     }
 
     public static boolean saveImage(BufferedImage img, String fileName) {
+        File file = new File(fileName);
+        String extension = FactoryUtils.getFileExtension(fileName).toLowerCase();
+        boolean ret = false;
+
+        try {
+            // PNG'den diğer formatlara dönüşüm için
+            if ((img.getType() == BufferedImage.TYPE_INT_ARGB || img.getType() == BufferedImage.TYPE_4BYTE_ABGR)&& !extension.equals("png")) {
+                BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D g = newImage.createGraphics();
+                g.setColor(Color.WHITE); // Arka plan rengi
+                g.fillRect(0, 0, newImage.getWidth(), newImage.getHeight());
+                g.drawImage(img, 0, 0, null);
+                g.dispose();
+                img = newImage;
+            }
+
+            // WebP için özel işlem
+            if (extension.equals("webp")) {
+                // TwelveMonkeys WebP yazıcısını kaydet
+                IIORegistry registry = IIORegistry.getDefaultInstance();
+                registry.registerServiceProvider(new WebPImageWriterSpi());
+            }
+
+            ret = ImageIO.write(img, extension, file);
+
+            // Eğer kaydetme başarısız olursa, PNG olarak kaydetmeyi dene
+            if (!ret) {
+                Logger.getLogger(ImageProcess.class.getName()).log(Level.WARNING,
+                        "Failed to save as " + extension + ". Attempting to save as PNG.");
+                ret = ImageIO.write(img, "png", new File(fileName + ".png"));
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+
+    public static boolean saveImage2(BufferedImage img, String fileName) {
         File file = new File(fileName);
         String extension = FactoryUtils.getFileExtension(fileName);
         boolean ret = false;
@@ -3396,7 +3470,7 @@ public final class ImageProcess {
     }
 
     public static BufferedImage drawRectangle(BufferedImage img, Rectangle rect, int thickness, Color color) {
-        img=convertToBufferedImageTypes(img, BufferedImage.TYPE_3BYTE_BGR);
+        img = convertToBufferedImageTypes(img, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D g2d = (Graphics2D) img.getGraphics();
         g2d.setStroke(new BasicStroke(thickness));
         g2d.setColor(color);
@@ -4484,27 +4558,27 @@ public final class ImageProcess {
         }
         return data;
     }
-    
-    public static BufferedImage equalizeHistogramAdaptiveClahe(BufferedImage img){
+
+    public static BufferedImage equalizeHistogramAdaptiveClahe(BufferedImage img) {
         if (!isOpenCVLoaded) {
             loadOpenCVLibrary();
         }
-        AdaptiveConcurrentClahe clahe=new AdaptiveConcurrentClahe();
-        BufferedImage ret=clahe.process(img);
+        AdaptiveConcurrentClahe clahe = new AdaptiveConcurrentClahe();
+        BufferedImage ret = clahe.process(img);
         return ret;
     }
-    
+
     public static void loadOpenCVLibrary() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         isOpenCVLoaded = true;
     }
 
     public static boolean isMaskImage(BufferedImage img) {
-        BufferedImage copy=clone(img);
-        copy=ImageProcess.rgb2gray(copy);
-        float[][] df=ImageProcess.imageToPixelsFloat(copy);
-        float[] d=FactoryUtils.toFloatArray1D(df);
-        double[] dd=FactoryUtils.toDoubleArray1D(d);
+        BufferedImage copy = clone(img);
+        copy = ImageProcess.rgb2gray(copy);
+        float[][] df = ImageProcess.imageToPixelsFloat(copy);
+        float[] d = FactoryUtils.toFloatArray1D(df);
+        double[] dd = FactoryUtils.toDoubleArray1D(d);
 //        int nr=d.length;
 //        int nc=d[0].length;
 //        for (int i = 0; i < nr; i++) {
@@ -4516,22 +4590,22 @@ public final class ImageProcess {
 //        }
 //        return true;
 // 2. Functional API ile filtreleme
-         return !Arrays.stream(dd).anyMatch(pixel -> pixel >= 0 && pixel <= 255);//allMatch(pixel -> pixel == 0 || pixel == 255);
+        return !Arrays.stream(dd).anyMatch(pixel -> pixel >= 0 && pixel <= 255);//allMatch(pixel -> pixel == 0 || pixel == 255);
     }
-    
+
     public static boolean isMaskImage(float[][] data) {
-        int nr=data.length;
-        int nc=data[0].length;
+        int nr = data.length;
+        int nc = data[0].length;
         for (int i = 0; i < nr; i++) {
             for (int j = 0; j < nc; j++) {
-                if (!(data[i][j]==0 || data[i][j]==255)) {
+                if (!(data[i][j] == 0 || data[i][j] == 255)) {
                     return false;
                 }
             }
         }
         return true;
     }
-    
+
     public static boolean isBinarizedImage(BufferedImage img) {
         return isMaskImage(img);
     }
