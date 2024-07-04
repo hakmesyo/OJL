@@ -28,7 +28,6 @@ import com.jhlabs.image.ContrastFilter;
 import com.jhlabs.image.GaussianFilter;
 import com.jhlabs.image.GrayscaleFilter;
 import com.jhlabs.image.InvertFilter;
-import com.jhlabs.image.MotionBlurFilter;
 import com.jhlabs.image.MotionBlurOp;
 import com.jhlabs.image.PointFilter;
 import com.luciad.imageio.webp.WebPImageReaderSpi;
@@ -39,7 +38,6 @@ import ij.process.ImageProcessor;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.*;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +45,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -67,12 +64,9 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
-import javax.swing.GrayFilter;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import static jazari.factory.FactoryUtils.getDefaultDirectory;
-import jazari.types.TBoundingBox;
-import org.apache.commons.imaging.Imaging;
 import org.apache.tika.Tika;
 import org.opencv.core.Core;
 //import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
@@ -999,6 +993,46 @@ public final class ImageProcess {
     public static BufferedImage readImage(File file) {
         return readImage(file.getAbsolutePath());
     }
+    
+//    public static BufferedImage readImage(String fileName) {
+//        try {
+//            return ImageIO.read(new File(fileName));
+////        try {
+////            File file = new File(fileName);
+////
+////            // Dosyanın gerçek MIME tipini kontrol et
+////            Tika tika = new Tika();
+////            String mimeType = tika.detect(file);
+////
+////            if (mimeType.equals("image/webp")) {
+////                // WebP için TwelveMonkeys okuyucusunu kullan
+////                IIORegistry registry = IIORegistry.getDefaultInstance();
+////                registry.registerServiceProvider(new WebPImageReaderSpi());
+////
+////                try (ImageInputStream input = ImageIO.createImageInputStream(file)) {
+////                    Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+////                    if (readers.hasNext()) {
+////                        ImageReader reader = readers.next();
+////                        reader.setInput(input);
+////                        return reader.read(0);
+////                    }
+////                }
+////                throw new IOException("No suitable reader found for WebP image");
+////            } else if (mimeType.equals("application/dicom")) {
+////                return IJ.openImage(fileName).getBufferedImage();
+////            } else {
+////                // Diğer formatlar için standart ImageIO kullan
+////                return ImageIO.read(file);
+////            }
+////        } catch (IOException ex) {
+////            Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
+////            return null;
+////        }
+//        } catch (IOException ex) {
+//            Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return null;
+//    }
 
     public static BufferedImage readImage(String fileName) {
         try {
