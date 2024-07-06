@@ -53,7 +53,7 @@ public class TestMnist {
         DataSetSDNN ds_valid = UtilsSNN.generateDataSetFromCSV(PATH_VALID, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
         DataSetSDNN ds_test = UtilsSNN.generateDataSetFromCSV(PATH_TEST, NUM_CHANNELS, NUMBER_OF_CLASSES, IMG_WIDTH, IMG_HEIGHT);
 
-        //UtilsSNN.trainAndSaveModel(opt,ds_train, ds_valid);
+        UtilsSNN.trainAndSaveModel(opt,ds_train, ds_valid);
         UtilsSNN.testModel(opt,ds_test);
 //        UtilsSNN.visualizeModel(opt,ds_test);
 //        UtilsSNN.visualizeLearningMetrics(opt);

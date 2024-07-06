@@ -1196,7 +1196,7 @@ Serializable
 		  while (st.hasMoreTokens())
 		  {
 			  //get next token and store it in the array
-			  row.add(new Double(st.nextToken()));
+			  row.add(Double.parseDouble(st.nextToken()));
 			  cols++;
 		  }
 				

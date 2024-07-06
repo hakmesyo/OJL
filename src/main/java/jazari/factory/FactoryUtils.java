@@ -9450,4 +9450,26 @@ public final class FactoryUtils {
         return new Point2D.Double(x, y);
     }
 
+    public static void reduceDataSet(String pathFrom, String pathTo, String fileExtension, float ratio) {
+        dataSetReduction(pathFrom, pathTo, fileExtension, ratio);
+    }
+
+    public static void dataSetReduction(String pathFrom, String pathTo, String fileExtension, float ratio) {
+        FactoryUtils.makeDirectory(pathTo);
+        File[] files = getFileArrayInFolderByExtension(pathFrom, fileExtension);
+        Random random = new Random();
+        int copiedFiles = 0;
+        int targetFileCount = Math.round(files.length * ratio);
+        for (int i = 0; i < files.length; i++) {
+            if (random.nextFloat() < ratio) {
+                FactoryUtils.copyFile(files[i], new File(pathTo + "/" + files[i].getName()));
+                copiedFiles++;
+                if (copiedFiles >= targetFileCount) {
+                    break;
+                }
+            }
+            FactoryUtils.showCircularProgressBar(i + 1, files.length);
+        }
+    }
+
 }

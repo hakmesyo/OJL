@@ -84,7 +84,7 @@ public class PartitionsP
         public static void main(String[] args)
         {
                 PartitionsP a = new PartitionsP() ;
-                int n = (new Integer(args[0])).intValue() ;
+                int n = Integer.parseInt(args[0]);
                 System.out.println("P("+ n +")=" + a.at(n)) ;
         }
 }

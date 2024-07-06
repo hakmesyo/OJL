@@ -391,7 +391,7 @@ class Permutation implements Cloneable
                         throw new IllegalArgumentException("Argument " + s + " out of range ") ;
 
                 Vector<Integer> or = new Vector< Integer> ();
-                or.add(new Integer(s)) ;
+                or.add(s) ;
                 /* i is the i-th image of s */
                 int i = s ;
                 for(;;)
@@ -400,7 +400,7 @@ class Permutation implements Cloneable
                         if ( i != s )
                                 /* cycle not yet closed. Append the new image to the result
                                 */
-                                or.add(new Integer(i)) ;
+                                or.add(i) ;
                         else
                                 /* cycle completed */
                                 break;

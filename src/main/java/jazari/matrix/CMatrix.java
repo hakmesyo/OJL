@@ -3373,7 +3373,7 @@ public final class CMatrix implements Serializable {
         float[] m = new float[n];
         ArrayList<Float> v = new ArrayList<Float>();
         for (int i = 0; i < n; i++) {
-            v.add(new Float(i));
+            v.add((float)i);
         }
         for (int i = 0; i < n; i++) {
             int a = new Random().nextInt(n - i);
@@ -3396,7 +3396,7 @@ public final class CMatrix implements Serializable {
         float[] m = new float[n];
         ArrayList<Float> v = new ArrayList<Float>();
         for (int i = from; i < to; i++) {
-            v.add(new Float(i));
+            v.add((float)i);
         }
         for (int i = 0; i < n; i++) {
             int a = new Random().nextInt(n - i);
@@ -3412,7 +3412,7 @@ public final class CMatrix implements Serializable {
         int[] m = new int[n];
         ArrayList<Integer> v = new ArrayList<Integer>();
         for (int i = 0; i < n; i++) {
-            v.add(new Integer(i));
+            v.add((int)i);
         }
         for (int i = 0; i < n; i++) {
             int a = new Random().nextInt(n - i);

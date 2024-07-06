@@ -277,7 +277,7 @@ public class Prime
         public static void main(String[] args)
         {
                 Prime a = new Prime() ;
-                int n = (new Integer(args[0])).intValue() ;
+                int n = Integer.parseInt(args[0]);
                 if ( n >= 1 )
                 {
                         if ( n >= 2)
