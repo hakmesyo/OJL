@@ -297,10 +297,10 @@ public class Partit implements Iterator
         {
                 if ( args.length  > 0)
                 {
-                        int n = (new Integer(args[0])).intValue() ;
+                        int n = Integer.parseInt(args[0]) ;
                         int m = n ;
                         if ( args.length > 1 )
-                                m = (new Integer(args[1])).intValue() ;
+                                m = Integer.parseInt(args[1]) ;
 
                         Partit pofn = new Partit(n,1,m) ;
                         /* N will count the number of partitions generated

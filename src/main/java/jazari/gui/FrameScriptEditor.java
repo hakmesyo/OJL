@@ -173,11 +173,11 @@ public class FrameScriptEditor extends javax.swing.JFrame {
             }else{
                 try {
                     int n=Integer.parseInt(params[i]);
-                    ret[i]=new Integer(n);
+                    ret[i]=n;
                 } catch (Exception e) {
                     try {
                         float n=Float.parseFloat(params[i]);
-                        ret[i]=new Float(n);
+                        ret[i]=n;
                     } catch (Exception e1) {
                     }
                 }

@@ -38,7 +38,7 @@ public class Nd4jEx11_Axpy {
 
         for(int i = 0; i < numTimes; i++) {
             long start = System.nanoTime();
-            Nd4j.getBlasWrapper().axpy(new Integer(1), arr,arr);
+            Nd4j.getBlasWrapper().axpy(1, arr,arr);
             long after = System.nanoTime();
             long add = Math.abs(after - start);
             System.out.println("Took " + add);
