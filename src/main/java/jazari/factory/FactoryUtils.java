@@ -9450,25 +9450,41 @@ public final class FactoryUtils {
         return new Point2D.Double(x, y);
     }
 
-    public static void reduceDataSet(String pathFrom, String pathTo, String fileExtension, float ratio) {
-        dataSetReduction(pathFrom, pathTo, fileExtension, ratio);
+    public static void reduceDataSet(String pathFrom, String pathTo, String fileExtension, boolean isShuffled, float ratio) {
+        dataSetReduction(pathFrom, pathTo, fileExtension, isShuffled, ratio);
     }
 
-    public static void dataSetReduction(String pathFrom, String pathTo, String fileExtension, float ratio) {
+    public static void dataSetReduction(String pathFrom, String pathTo, String fileExtension, boolean isShuffled, float ratio) {
         FactoryUtils.makeDirectory(pathTo);
         File[] files = getFileArrayInFolderByExtension(pathFrom, fileExtension);
-        Random random = new Random();
+        if (isShuffled) {
+            files = shuffle(files);
+        }
+        int interval = Math.round(1 / ratio);
+
         int copiedFiles = 0;
-        int targetFileCount = Math.round(files.length * ratio);
         for (int i = 0; i < files.length; i++) {
-            if (random.nextFloat() < ratio) {
+            if (i % interval == 0) {
                 FactoryUtils.copyFile(files[i], new File(pathTo + "/" + files[i].getName()));
                 copiedFiles++;
-                if (copiedFiles >= targetFileCount) {
-                    break;
-                }
             }
             FactoryUtils.showCircularProgressBar(i + 1, files.length);
+        }
+        System.out.println("Copied " + copiedFiles + " out of " + files.length + " files.");
+        System.out.println("Actual ratio: " + (float) copiedFiles / files.length);
+    }
+    
+    public static void updateFileNameAsMillis(String path,String fileExtension,boolean isShuffled){
+       File[] files = getFileArrayInFolderByExtension(path, fileExtension);
+        if (isShuffled) {
+           files = shuffle(files); 
+        }
+        int k=0;
+        for (File file : files) {
+            k++;
+            renameFile(file, new File(path+"/"+System.currentTimeMillis()+"."+fileExtension));
+            FactoryUtils.showCircularProgressBar(k, files.length);
+            bekle(5);
         }
     }
 
