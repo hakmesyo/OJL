@@ -1,86 +1,32 @@
 package jazari.device.arduino;
 
-import jazari.utils.SerialLib;
-import jazari.utils.SerialType;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import jazari.factory.FactorySerialLib;
 
-public class TestSerialComunication implements SerialPortEventListener {
-
-    /**
-     * The port we're normally going to use.
-     */
-    private static final String PORT_NAMES[] = {
-        "/dev/tty.usbserial-A9007UX1", // Mac OS X
-        "/dev/ttyACM0", // Raspberry Pi
-        "/dev/ttyUSB0", // Linux
-        "COM6", // Windows for solenoid valve
-        "COM7" // 
-    };
-    private SerialPort serialPort;
-    private SerialLib slib = new SerialLib(this);
-    private SerialType st = new SerialType();
+public class TestSerialComunication{
 
     public static void main(String[] args) {
-        TestSerialComunication obj = new TestSerialComunication();
-        obj.start("COM4");
-//        try {
-//            for (int i = 0; i < 2; i++) {
-//                obj.sendDataToSerialPort("3:500-5:500-70:50");
-//                Thread.sleep(500);
-//            }
-//        } catch (InterruptedException ex) {
-//        }
-//        
-//        try {
-//            Thread.sleep(20000);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(TestSerialComunication.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        obj.stop();
-//        System.exit(0);
-    }
+        FactorySerialLib serialLib = new FactorySerialLib();
 
-    public void start(String comPort) {
-        st = slib.serialInitialize(serialPort, comPort,115200);
-    }
+        if (serialLib.openSerialPort("COM9", 115200)) {
+            serialLib.setDataCallback(data -> {
+                System.out.println("Alınan veri: " + data);
+                // Burada gelen veriyi işleyebilirsiniz
+            });
 
-    @Override
-    public synchronized void serialEvent(SerialPortEvent oEvent) {
-        if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
+            serialLib.startListening();
+
+            // Veri gönderme örneği
+            serialLib.sendData("Merhaba, Arduino!");
+
+            // Programı çalışır durumda tutmak için
             try {
-                String inputLine = st.input.readLine();
-                System.out.println("from arduino = " + inputLine);
-//                if (inputLine.equals("9")) {
-//                    System.out.println("received msg:" + inputLine);
-//                }
-            } catch (Exception e) {
-                System.err.println("err:" + e.toString());
+                Thread.sleep(Long.MAX_VALUE);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+
+            // Program sonlandığında portu kapatın
+            serialLib.closePort();
         }
     }
-
-    public void sendDataToSerialPort(String s1) {
-        String s = s1 + "\n";
-        try {
-            st.output.write(s.getBytes());
-            st.output.flush();
-            System.out.println("sent message:"+s1);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void stop() {
-        if (serialPort != null) {
-            serialPort.removeEventListener();
-            serialPort.close();
-            System.out.println("B.Serial Port was closed successfully");
-        }
-    }
-
 }

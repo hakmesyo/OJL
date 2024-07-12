@@ -11,7 +11,6 @@ import com.google.maps.model.LatLng;
 import ij.gui.Roi;
 import java.awt.AWTException;
 import jazari.interfaces.InterfaceCallBack;
-import jazari.utils.SerialType;
 import jazari.types.TDeviceState;
 import jazari.types.TWord;
 import jazari.types.TLearningType;
@@ -8099,17 +8098,6 @@ public final class FactoryUtils {
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        }
-    }
-
-    public static void sendDataToSerialPort(SerialType st, String s1) {
-        String s = s1 + "\n";
-        try {
-            st.output.write(s.getBytes());
-            st.output.flush();
-            System.out.println("message was sent to arduino:" + s1);
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
     }
 
