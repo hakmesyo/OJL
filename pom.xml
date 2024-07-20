@@ -99,7 +99,15 @@
             <version>0.28.0</version>
             <scope>runtime</scope>
         </dependency>
-
+        <!--for offline run mxnet -->
+        <dependency>
+            <groupId>ai.djl.mxnet</groupId>
+            <artifactId>mxnet-native-mkl</artifactId>
+            <classifier>win-x86_64</classifier>
+            <scope>runtime</scope>
+            <version>1.9.1</version>
+        </dependency>
+        
         <!-- Pytorch -->
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
