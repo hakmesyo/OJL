@@ -93,7 +93,7 @@ public class TestArduinoCodeEfficient {
     private static final Pattern DATA_PATTERN = Pattern.compile("Heading = (\\d+\\.\\d+) Degress = (\\d+\\.\\d+)");
 
     public static void main(String[] args) {
-        FactorySerialLib serialLib = new FactorySerialLib();
+        FactorySerialLib serialLib = new FactorySerialLib("COM9", 115200,TestArduinoCodeEfficient::processArduinoData);
 
         if (serialLib.openSerialPort("COM9", 115200)) {  // Port adını ve baud hızını doğru ayarlayın
             serialLib.setDataCallback(TestArduinoCodeEfficient::processArduinoData);

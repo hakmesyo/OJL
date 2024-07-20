@@ -4,6 +4,48 @@
  */
 package jazari.factory;
 
+import ai.djl.Application;
+import ai.djl.MalformedModelException;
+import ai.djl.Model;
+import ai.djl.basicdataset.cv.classification.ImageFolder;
+import ai.djl.engine.Engine;
+import ai.djl.inference.Predictor;
+import ai.djl.metric.Metrics;
+import ai.djl.modality.Classifications;
+import ai.djl.modality.cv.Image;
+import ai.djl.modality.cv.ImageFactory;
+import ai.djl.modality.cv.transform.Normalize;
+import ai.djl.modality.cv.transform.Resize;
+import ai.djl.modality.cv.transform.ToTensor;
+import ai.djl.modality.cv.translator.ImageClassificationTranslator;
+import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.NDList;
+import ai.djl.ndarray.NDManager;
+import ai.djl.ndarray.types.Shape;
+import ai.djl.nn.Block;
+import ai.djl.nn.Blocks;
+import ai.djl.nn.Parameter;
+import ai.djl.nn.SequentialBlock;
+import ai.djl.nn.SymbolBlock;
+import ai.djl.nn.core.Linear;
+import ai.djl.repository.zoo.Criteria;
+import ai.djl.repository.zoo.ModelNotFoundException;
+import ai.djl.repository.zoo.ModelZoo;
+import ai.djl.repository.zoo.ZooModel;
+import ai.djl.training.DefaultTrainingConfig;
+import ai.djl.training.EasyTrain;
+import ai.djl.training.Trainer;
+import ai.djl.training.TrainingResult;
+import ai.djl.training.evaluator.Accuracy;
+import ai.djl.training.listener.TrainingListener;
+import ai.djl.training.loss.Loss;
+import ai.djl.training.loss.SoftmaxCrossEntropyLoss;
+import ai.djl.training.optimizer.Optimizer;
+import ai.djl.training.tracker.Tracker;
+import ai.djl.training.util.ProgressBar;
+import ai.djl.translate.TranslateException;
+import ai.djl.util.Pair;
+import ai.djl.util.PairList;
 import au.com.bytecode.opencsv.CSVReader;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.google.gson.Gson;
@@ -98,6 +140,9 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import jazari.deep_learning.ai.djl.examples.training.transferlearning.TransferLearningTestTemplate;
+import static jazari.deep_learning.ai.djl.examples.training.transferlearning.TransferLearningTestTemplate.calculatePerformanceMetrics;
+import static jazari.deep_learning.ai.djl.examples.training.transferlearning.TransferLearningTestTemplate.calculateROC;
 import jazari.gui.FrameCircularProgressBar;
 import jazari.utils.DataAnalytics;
 import jazari.gui.FrameImage;
@@ -7760,6 +7805,556 @@ public final class FactoryUtils {
         return str;
     }
 
+    public static ImageFolder loadDataSetDJL(String path, int batchSize, int maxDepth, int imageWidth) {
+        ImageFolder ds = ImageFolder.builder()
+                .setRepositoryPath(Paths.get(path))
+                .optMaxDepth(maxDepth)
+                .addTransform(new Resize(imageWidth, imageWidth))
+                .addTransform(new ToTensor())
+                .setSampling(batchSize, true)
+                .build();
+        try {
+            ds.prepare();
+        } catch (IOException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (TranslateException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ds;
+    }
+
+    public static Model buildTransferLearningModel4Train(String modelName, int nOutputClasses) {
+        Criteria.Builder<Image, Classifications> builder
+                = Criteria.builder()
+                        .optApplication(Application.CV.IMAGE_CLASSIFICATION)
+                        .setTypes(Image.class, Classifications.class)
+                        .optProgress(new ProgressBar())
+                        .optEngine("MXNet")
+                        .optGroupId("ai.djl.mxnet")
+                        .optArtifactId("mobilenet")
+                        .optFilter("flavor", "v2")
+                        .optFilter("multiplier", "1.0")
+                        .optFilter("dataset", "imagenet")
+                        ;
+
+//        Criteria<ai.djl.modality.cv.Image, ai.djl.modality.Classifications> criteria = Criteria.builder()
+//                .optApplication(ai.djl.Application.CV.IMAGE_CLASSIFICATION)
+//                .setTypes(ai.djl.modality.cv.Image.class, ai.djl.modality.Classifications.class)
+//                .optGroupId("ai.djl.mxnet")
+//                .optArtifactId(modelName)
+//                //.optFilter("flavor", "v3_small")
+//                .optFilter("flavor", "v2")
+//                .optFilter("multiplier", "1.0")
+//                .optFilter("dataset", "imagenet")
+//                .optEngine("MXNet")
+//                .optProgress(new ProgressBar())
+//                .build();
+        Model model = null;
+        try {
+            model = ModelZoo.loadModel(builder.build());
+        } catch (IOException | ModelNotFoundException | MalformedModelException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        SequentialBlock newBlock = new SequentialBlock();
+        SymbolBlock block = (SymbolBlock) model.getBlock();
+        block.removeLastBlock();
+        newBlock.add(block);
+        newBlock.add(Blocks.batchFlattenBlock());
+        newBlock.add(Linear.builder().setUnits(nOutputClasses).build());
+        model.setBlock(newBlock);
+
+//        ZooModel<ai.djl.modality.cv.Image, ai.djl.modality.Classifications> net = null;
+//        try {
+//            net = criteria.loadModel();
+//        } catch (IOException | ModelNotFoundException | MalformedModelException ex) {
+//            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//
+//        Model model = Model.newInstance("transfer-" + modelName);
+//        SymbolBlock baseBlock = (SymbolBlock) net.getBlock();
+//
+//        SequentialBlock newBlock = new SequentialBlock();
+//        for (int i = 0; i < baseBlock.getChildren().size() - 1; i++) {
+//            newBlock.add((Block) baseBlock.getChildren().get(i));
+//        }
+//        newBlock.add(Blocks.batchFlattenBlock());
+//        newBlock.add(Linear.builder().setUnits(nOutputClasses).build());
+//        model.setBlock(newBlock);
+
+        return model;
+    }
+    
+    public static Model buildTransferLearningModel4Test(String modelName, int nOutputClasses) {
+//        Criteria.Builder<Image, Classifications> builder
+//                = Criteria.builder()
+//                        .optApplication(Application.CV.IMAGE_CLASSIFICATION)
+//                        .setTypes(Image.class, Classifications.class)
+//                        .optProgress(new ProgressBar())
+//                        .optEngine("MXNet")
+//                        .optGroupId("ai.djl.mxnet")
+//                        .optArtifactId("mobilenet")
+//                        .optFilter("flavor", "v2")
+//                        .optFilter("multiplier", "1.0")
+//                        .optFilter("dataset", "imagenet")
+//                        ;
+
+        Criteria<ai.djl.modality.cv.Image, ai.djl.modality.Classifications> criteria = Criteria.builder()
+                .optApplication(ai.djl.Application.CV.IMAGE_CLASSIFICATION)
+                .setTypes(ai.djl.modality.cv.Image.class, ai.djl.modality.Classifications.class)
+                .optGroupId("ai.djl.mxnet")
+                .optArtifactId(modelName)
+                //.optFilter("flavor", "v3_small")
+                .optFilter("flavor", "v2")
+                .optFilter("multiplier", "1.0")
+                .optFilter("dataset", "imagenet")
+                .optEngine("MXNet")
+                .optProgress(new ProgressBar())
+                .build();
+        
+//        Model model = null;
+//        try {
+//            model = ModelZoo.loadModel(builder.build());
+//        } catch (IOException | ModelNotFoundException | MalformedModelException ex) {
+//            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        SequentialBlock newBlock = new SequentialBlock();
+//        SymbolBlock block = (SymbolBlock) model.getBlock();
+//        block.removeLastBlock();
+//        newBlock.add(block);
+//        newBlock.add(Blocks.batchFlattenBlock());
+//        newBlock.add(Linear.builder().setUnits(nOutputClasses).build());
+//        model.setBlock(newBlock);
+
+        ZooModel<ai.djl.modality.cv.Image, ai.djl.modality.Classifications> net = null;
+        try {
+            net = criteria.loadModel();
+        } catch (IOException | ModelNotFoundException | MalformedModelException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        Model model = Model.newInstance("transfer-" + modelName);
+        SequentialBlock newBlock = new SequentialBlock();
+        SymbolBlock block = (SymbolBlock) net.getBlock();
+        block.removeLastBlock();
+        newBlock.add(block);
+        newBlock.add(Blocks.batchFlattenBlock());
+        newBlock.add(Linear.builder().setUnits(nOutputClasses).build());
+        model.setBlock(newBlock);
+
+//
+//        SequentialBlock newBlock = new SequentialBlock();
+//        for (int i = 0; i < baseBlock.getChildren().size() - 1; i++) {
+//            newBlock.add((Block) baseBlock.getChildren().get(i));
+//        }
+//        newBlock.add(Blocks.batchFlattenBlock());
+//        newBlock.add(Linear.builder().setUnits(nOutputClasses).build());
+//        model.setBlock(newBlock);
+
+        return model;
+    }
+
+    public static Model trainModel(Model model, Loss loss, int epochs, ImageFolder... ds) {
+        Tracker learningRateTracker = Tracker.fixed(0.001f);
+        Optimizer optimizer = Optimizer.adam().optLearningRateTracker(learningRateTracker).build();
+
+        DefaultTrainingConfig config = new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
+                .addEvaluator(new Accuracy())
+                .optDevices(Engine.getInstance().getDevices(1))
+                .addTrainingListeners(TrainingListener.Defaults.logging())
+                .addTrainingListeners(new EpochTrainingListener()) // Özel listener'ı ekleyin
+                .optOptimizer(optimizer);
+
+        try (Trainer trainer = model.newTrainer(config)) {
+            Shape inputShape = new Shape(1, 3, 224, 224);
+            trainer.initialize(inputShape);
+            // Manuel metrik yönetimi
+            Metrics metrics = new Metrics();
+            metrics.addMetric("train_accuracy", 0);
+            metrics.addMetric("train_loss", 0);
+            metrics.addMetric("validate_accuracy", 0);
+            metrics.addMetric("validate_loss", 0);
+            trainer.setMetrics(metrics);
+
+            NDManager manager = NDManager.newBaseManager();
+            NDArray sampleInput = manager.randomUniform(0f, 1f, inputShape);
+            NDArray output = trainer.forward(new NDList(sampleInput)).singletonOrThrow();
+            System.out.println("Model output shape: " + output.getShape());
+            if (ds.length == 1) {
+                EasyTrain.fit(trainer, epochs, ds[0], null);
+            } else if (ds.length == 2) {
+                EasyTrain.fit(trainer, epochs, ds[0], ds[1]);
+            }
+            TrainingResult result = trainer.getTrainingResult();
+            System.out.println(result);
+        } catch (IOException | TranslateException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return model;
+    }
+
+    private static class EpochTrainingListener implements TrainingListener {
+
+        int epok;
+
+        @Override
+        public void onEpoch(Trainer trainer) {
+            Metrics metrics = trainer.getMetrics();
+
+            // Train metrics
+            float trainAccuracy = (float) metrics.mean("train_accuracy");
+            float trainLoss = (float) metrics.mean("train_loss");
+//            System.out.printf("Epoch %d: Train Accuracy: %.2f%%, Train Loss: %.5f%n",
+//                    1, trainAccuracy * 100, trainLoss);
+
+            // Validation metrics (if available)
+            if (metrics.hasMetric("validate_accuracy")) {
+                float validateAccuracy = (float) metrics.mean("validate_accuracy");
+                float validateLoss = (float) metrics.mean("validate_loss");
+//                System.out.printf("Epoch %d: Validation Accuracy: %.2f%%, Validation Loss: %.5f%n",
+//                        1, validateAccuracy * 100, validateLoss);
+            }
+        }
+
+        @Override
+        public void onTrainingBatch(Trainer trainer, BatchData batchData) {
+            // Batch-level işlemler için boş bırakıldı
+        }
+
+        @Override
+        public void onValidationBatch(Trainer trainer, BatchData batchData) {
+            // Validation batch-level işlemler için boş bırakıldı
+        }
+
+        @Override
+        public void onTrainingBegin(Trainer trainer) {
+            System.out.println("Training started");
+        }
+
+        @Override
+        public void onTrainingEnd(Trainer trainer) {
+            System.out.println("Training completed");
+        }
+    }
+
+//    public static Model trainModel(Model model, Loss loss, int epochs, ImageFolder... ds) {
+//        Tracker learningRateTracker = Tracker.fixed(0.001f);
+//        Optimizer optimizer = Optimizer.adam().optLearningRateTracker(learningRateTracker).build();
+//
+//        DefaultTrainingConfig config = new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
+//                .addEvaluator(new Accuracy())
+//                .optDevices(Engine.getInstance().getDevices(1))
+//                .addTrainingListeners(TrainingListener.Defaults.logging())
+//                .optOptimizer(optimizer) // Optimizer'ı ekleyin
+//                // Diğer parametreleri buraya ekleyebilirsiniz
+//                ;
+//
+//        try (Trainer trainer = model.newTrainer(config)) {
+//            Shape inputShape = new Shape(1, 3, 224, 224);
+//            trainer.initialize(inputShape);
+//
+//            NDManager manager = NDManager.newBaseManager();
+//            NDArray sampleInput = manager.randomUniform(0f, 1f, inputShape);
+//            NDArray output = trainer.forward(new NDList(sampleInput)).singletonOrThrow();
+//            System.out.println("Model output shape: " + output.getShape());
+//
+//            if (ds.length == 1) {
+//                EasyTrain.fit(trainer, epochs, ds[0], null);
+//            } else if (ds.length == 2) {
+//                EasyTrain.fit(trainer, epochs, ds[0], ds[1]);
+//            }
+//            TrainingResult result = trainer.getTrainingResult();
+//            System.out.println(result);
+//        } catch (IOException ex) {
+//            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (TranslateException ex) {
+//            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return model;
+//    }
+    public static Model saveModel(Model model, int epochs, Path modelDir, String modelName) {
+        try {
+            Files.createDirectories(modelDir);
+            model.setProperty("Epoch", String.valueOf(epochs));
+            // Modeli SymbolBlock olarak kaydet
+            model.save(modelDir, modelName);
+
+            System.out.println("Model saved successfully.");
+            System.out.println("Saved model files:");
+        } catch (Exception e) {
+            System.err.println("Error saving model or creating symbol file: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return model;
+    }
+
+    public static List<Path> getImageList(String folder, String extension) {
+        List<Path> lst = null;
+        List<Path> ret = new ArrayList<>();
+        File[] dirs = getDirectories(folder);
+        for (File dir : dirs) {
+            try {
+                lst = Files.list(Paths.get(dir.getAbsolutePath()))
+                        .filter(Files::isRegularFile)
+                        .filter(path -> path.toString().toLowerCase().endsWith("." + extension)) // Resim uzantısı
+                        .toList();
+            } catch (IOException ex) {
+                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            ret.addAll(lst);
+        }
+
+        return ret;
+    }
+
+    public static ImageClassificationTranslator getImageClassificationTranslator(String... classLabels) {
+        // ImageClassificationTranslator oluşturma (Synset'i doğrudan ayarlama)
+        ImageClassificationTranslator translator = ImageClassificationTranslator.builder()
+                .addTransform(new ToTensor())
+                .optSynset(Arrays.asList(classLabels)) // Sınıf etiketlerini liste olarak geçirme
+                .build();
+        return translator;
+    }
+
+    public static void evaluateModel(Model model, ImageClassificationTranslator translator, List<Path> imageFiles, boolean isDebug, String... classLabels) {
+        List<String> trueLabels = new ArrayList<>();
+        List<String> predictedLabels = new ArrayList<>();
+        List<Double> probabilities = new ArrayList<>();
+        // Her test görüntüsünü işleme
+        long t1 = FactoryUtils.tic();
+        int k = 0;
+        try (Predictor<Image, Classifications> predictor = model.newPredictor(translator)) {
+            for (Path imageFile : imageFiles) {
+                showCircularProgressBar(k++, imageFiles.size());
+                if (isDebug) {
+                    System.out.println("Processing image: " + imageFile.getFileName());
+                }
+
+                Image img = null;
+                try {
+                    img = ImageFactory.getInstance().fromFile(imageFile);
+                } catch (IOException ex) {
+                    Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                Classifications pred = null;
+                try {
+                    pred = predictor.predict(img);
+                } catch (TranslateException ex) {
+                    Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if (isDebug) {
+                    System.out.println("pred = " + pred);
+                }
+                String trueLabel = determineTrueLabel(imageFile, classLabels);
+                String predictedLabel = pred.best().getClassName();
+                double probability = pred.best().getProbability();  // Olasılık değerini al
+
+                trueLabels.add(trueLabel);
+                predictedLabels.add(predictedLabel);
+                probabilities.add(probability);
+                if (isDebug) {
+                    t1 = FactoryUtils.toc(t1);
+                }
+            }
+        }
+        // Performans metriklerini hesapla
+        Map<String, Object> metrics = calculatePerformanceMetrics(trueLabels, predictedLabels, classLabels);
+
+        // Sonuçları yazdır
+        System.out.println("Test Performance Metrics:");
+        System.out.println("-------------------------");
+        System.out.printf("Accuracy: %.4f%%\n", (double) metrics.get("accuracy") * 100);
+
+        System.out.println("\nPrecision:");
+        ((Map<String, Double>) metrics.get("precision")).forEach((key, value) -> System.out.printf("  %s: %.4f\n", key, value));
+
+        System.out.println("\nRecall:");
+        ((Map<String, Double>) metrics.get("recall")).forEach((key, value) -> System.out.printf("  %s: %.4f\n", key, value));
+
+        System.out.println("\nF1-Score:");
+        ((Map<String, Double>) metrics.get("f1Score")).forEach((key, value) -> System.out.printf("  %s: %.4f\n", key, value));
+        System.out.println("\nConfusion Matrix:");
+        int[][] confusionMatrix = (int[][]) metrics.get("confusionMatrix");
+        for (int[] row : confusionMatrix) {
+            for (int cell : row) {
+                System.out.printf("%d ", cell);
+            }
+            System.out.println();
+        }
+        double[][] rocPoints = calculateROC(probabilities, trueLabels, "open");
+
+        // ROC noktalarını yazdır (opsiyonel)
+        System.out.println("ROC Curve Points (FPR, TPR):");
+        for (int i = 0; i < rocPoints.length - 1; i++) {
+            System.out.printf("%.4f, %.4f%n", rocPoints[0][i], rocPoints[1][i]);
+        }
+        System.out.printf("AUC: %.4f%n", rocPoints[0][rocPoints.length - 1]);
+        CMatrix cm = CMatrix.getInstance(rocPoints[1])
+                .plot(FactoryUtils.toFloatArray1D(rocPoints[0]));
+    }
+
+    public static Map<String, Object> calculatePerformanceMetrics(List<String> trueLabels, List<String> predictedLabels, String[] classLabels) {
+        Map<String, Object> metrics = new HashMap<>();
+        int[][] confusionMatrix = new int[classLabels.length][classLabels.length];
+
+        // Confusion Matrix'i doldur
+        for (int i = 0; i < trueLabels.size(); i++) {
+            int trueIndex = Arrays.asList(classLabels).indexOf(trueLabels.get(i));
+            int predIndex = Arrays.asList(classLabels).indexOf(predictedLabels.get(i));
+            confusionMatrix[trueIndex][predIndex]++;
+        }
+
+        // Debug: Confusion Matrix'i yazdır
+        System.out.println("Confusion Matrix:");
+        for (int i = 0; i < confusionMatrix.length; i++) {
+            for (int j = 0; j < confusionMatrix[i].length; j++) {
+                System.out.print(confusionMatrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+
+        // Accuracy hesapla
+        int correctPredictions = 0;
+        for (int i = 0; i < classLabels.length; i++) {
+            correctPredictions += confusionMatrix[i][i];
+        }
+        double accuracy = (double) correctPredictions / trueLabels.size();
+
+        // Precision, Recall ve F1-Score hesapla
+        Map<String, Double> precisionMap = new HashMap<>();
+        Map<String, Double> recallMap = new HashMap<>();
+        Map<String, Double> f1ScoreMap = new HashMap<>();
+
+        for (int i = 0; i < classLabels.length; i++) {
+            int truePositives = confusionMatrix[i][i];
+            int falsePositives = 0;
+            int falseNegatives = 0;
+
+            for (int j = 0; j < classLabels.length; j++) {
+                if (i != j) {
+                    falsePositives += confusionMatrix[j][i];
+                    falseNegatives += confusionMatrix[i][j];
+                }
+            }
+
+            double precision = (truePositives + falsePositives > 0) ? (double) truePositives / (truePositives + falsePositives) : 0.0;
+            double recall = (truePositives + falseNegatives > 0) ? (double) truePositives / (truePositives + falseNegatives) : 0.0;
+            double f1Score = (precision + recall > 0) ? 2 * (precision * recall) / (precision + recall) : 0.0;
+
+            // Debug: Her sınıf için hesaplamaları yazdır
+            System.out.println("Class: " + classLabels[i]);
+            System.out.println("TP: " + truePositives + ", FP: " + falsePositives + ", FN: " + falseNegatives);
+            System.out.println("Precision: " + precision + ", Recall: " + recall + ", F1-Score: " + f1Score);
+
+            precisionMap.put(classLabels[i], precision);
+            recallMap.put(classLabels[i], recall);
+            f1ScoreMap.put(classLabels[i], f1Score);
+        }
+
+        // Metrikleri Map'e ekle
+        metrics.put("accuracy", accuracy);
+        metrics.put("precision", precisionMap);
+        metrics.put("recall", recallMap);
+        metrics.put("f1Score", f1ScoreMap);
+        metrics.put("confusionMatrix", confusionMatrix);
+
+        return metrics;
+    }
+
+    public static String determineTrueLabel(Path imagePath, String[] classLabels) {
+        for (String label : classLabels) {
+            if (imagePath.toString().toLowerCase().contains(label.toLowerCase())) {
+                return label;
+            }
+        }
+        System.out.println("Warning: Unable to determine true label for " + imagePath);
+        return "unknown";
+    }
+
+    public static double[][] calculateROC(List<Double> probabilities, List<String> trueLabels, String positiveClass) {
+        List<ProbabilityLabel> combinedList = new ArrayList<>();
+        for (int i = 0; i < probabilities.size(); i++) {
+            combinedList.add(new ProbabilityLabel(probabilities.get(i), trueLabels.get(i)));
+        }
+        Collections.sort(combinedList, Collections.reverseOrder());
+
+        int totalPositives = (int) trueLabels.stream().filter(label -> label.equals(positiveClass)).count();
+        int totalNegatives = trueLabels.size() - totalPositives;
+
+        List<Double> fprList = new ArrayList<>();
+        List<Double> tprList = new ArrayList<>();
+
+        fprList.add(0.0); // Başlangıç noktası
+        tprList.add(0.0); // Başlangıç noktası
+
+        int truePositives = 0;
+        int falsePositives = 0;
+
+        for (ProbabilityLabel pl : combinedList) {
+            if (pl.label.equals(positiveClass)) {
+                truePositives++;
+            } else {
+                falsePositives++;
+            }
+            double tpr = (double) truePositives / totalPositives;
+            double fpr = (double) falsePositives / totalNegatives;
+            fprList.add(fpr);
+            tprList.add(tpr);
+        }
+
+        // AUC hesapla
+        double auc = calculateAUC(fprList, tprList);
+
+        // 2x490 boyutunda bir matris oluştur
+        double[][] rocMatrix = new double[2][fprList.size()];
+
+        // FPR değerlerini ilk satıra yerleştir
+        for (int i = 0; i < fprList.size(); i++) {
+            rocMatrix[0][i] = fprList.get(i);
+        }
+
+        // TPR değerlerini ikinci satıra yerleştir
+        for (int i = 0; i < tprList.size(); i++) {
+            rocMatrix[1][i] = tprList.get(i);
+        }
+
+        return rocMatrix;
+    }
+
+    public static double calculateAUC(List<Double> fprList, List<Double> tprList) {
+        double auc = 0.0;
+        for (int i = 1; i < fprList.size(); i++) {
+            auc += (fprList.get(i) - fprList.get(i - 1)) * (tprList.get(i) + tprList.get(i - 1)) / 2;
+        }
+        return auc;
+    }
+
+    public static void printModelSummary(Model model) {
+        System.out.println("Model Name: " + model.getName());
+
+        // Model giriş bilgilerini yazdır
+        PairList<String, Shape> inputDescriptions = model.describeInput();
+        System.out.println("Input Description:");
+        for (int i = 0; i < inputDescriptions.size(); i++) {
+            System.out.println(inputDescriptions.get(i).getKey() + ": " + inputDescriptions.get(i).getValue());
+        }
+
+        // Model yapısını yazdır
+        Block block = model.getBlock();
+        System.out.println("\nModel Structure:");
+        System.out.println(block);
+
+        // Model parametrelerini yazdır
+        System.out.println("\nModel Parameters:");
+        for (Pair<String, Parameter> parameter : block.getParameters()) {
+            System.out.println(parameter.getValue().getName() + ": " + parameter.getValue().getShape());
+        }
+
+        // Toplam parametre sayısını hesapla ve yazdır
+        long totalParams = block.getParameters().stream()
+                .mapToLong(param -> param.getValue().getShape().size()).sum();
+        System.out.println("\nTotal parameters: " + totalParams);
+    }
+
     public <T> List<T> toArrayList(T[][] twoDArray) {
         List<T> list = new ArrayList<T>();
         for (T[] array : twoDArray) {
@@ -7946,8 +8541,10 @@ public final class FactoryUtils {
     public static String getLocalIP() {
         try {
             return InetAddress.getLocalHost().getHostAddress();
+
         } catch (UnknownHostException ex) {
-            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FactoryUtils.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
         return "127.0.0.1";
     }
@@ -7978,31 +8575,45 @@ public final class FactoryUtils {
                                     try {
                                         server.stop(1000);
                                         System.out.println("Java Server is stopping");
+
                                     } catch (InterruptedException ex) {
-                                        Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                                        Logger.getLogger(FactoryUtils.class
+                                                .getName()).log(Level.SEVERE, null, ex);
                                     }
                                     break;
+
                                 }
                             } catch (IOException ex) {
-                                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                                Logger.getLogger(FactoryUtils.class
+                                        .getName()).log(Level.SEVERE, null, ex);
                             }
                         }
                         Thread.sleep(1);
+
                     } catch (IOException ex) {
-                        Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(FactoryUtils.class
+                                .getName()).log(Level.SEVERE, null, ex);
+
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(FactoryUtils.class
+                                .getName()).log(Level.SEVERE, null, ex);
                     }
 
                 }
                 System.out.println("Java Server was stopped");
                 server.stop();
+
             } catch (UnknownHostException ex) {
-                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(FactoryUtils.class
+                        .getName()).log(Level.SEVERE, null, ex);
+
             } catch (IOException ex) {
-                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(FactoryUtils.class
+                        .getName()).log(Level.SEVERE, null, ex);
+
             } catch (InterruptedException ex) {
-                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(FactoryUtils.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
     }
@@ -8058,8 +8669,10 @@ public final class FactoryUtils {
     public static void delay(int milliSeconds) {
         try {
             Thread.sleep(milliSeconds);
+
         } catch (InterruptedException ex) {
-            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FactoryUtils.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -8662,8 +9275,10 @@ public final class FactoryUtils {
         if (trainSetRatio + testSetRatio != 1) {
             try {
                 throw new Exception("summation of train and test set ratios must be 1");
+
             } catch (Exception ex) {
-                Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(FactoryUtils.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
         }
         int size = lines.size();
@@ -9461,18 +10076,34 @@ public final class FactoryUtils {
         System.out.println("Copied " + copiedFiles + " out of " + files.length + " files.");
         System.out.println("Actual ratio: " + (float) copiedFiles / files.length);
     }
-    
-    public static void updateFileNameAsMillis(String path,String fileExtension,boolean isShuffled){
-       File[] files = getFileArrayInFolderByExtension(path, fileExtension);
+
+    public static void updateFileNameAsMillis(String path, String fileExtension, boolean isShuffled) {
+        File[] files = getFileArrayInFolderByExtension(path, fileExtension);
         if (isShuffled) {
-           files = shuffle(files); 
+            files = shuffle(files);
         }
-        int k=0;
+        int k = 0;
         for (File file : files) {
             k++;
-            renameFile(file, new File(path+"/"+System.currentTimeMillis()+"."+fileExtension));
+            renameFile(file, new File(path + "/" + System.currentTimeMillis() + "." + fileExtension));
             FactoryUtils.showCircularProgressBar(k, files.length);
             bekle(5);
+        }
+    }
+
+    private static class ProbabilityLabel implements Comparable<ProbabilityLabel> {
+
+        double probability;
+        String label;
+
+        ProbabilityLabel(double probability, String label) {
+            this.probability = probability;
+            this.label = label;
+        }
+
+        @Override
+        public int compareTo(ProbabilityLabel other) {
+            return Double.compare(this.probability, other.probability);
         }
     }
 

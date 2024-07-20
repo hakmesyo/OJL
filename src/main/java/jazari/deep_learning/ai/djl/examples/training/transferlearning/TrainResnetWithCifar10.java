@@ -18,6 +18,7 @@ import ai.djl.MalformedModelException;
 import ai.djl.Model;
 import ai.djl.ModelException;
 import ai.djl.basicdataset.cv.classification.Cifar10;
+import ai.djl.basicdataset.cv.classification.ImageFolder;
 import ai.djl.basicmodelzoo.BasicModelZoo;
 import ai.djl.basicmodelzoo.cv.classification.ResNetV1;
 import jazari.deep_learning.ai.djl.examples.training.util.Arguments;
@@ -55,6 +56,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import jazari.factory.FactoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +77,7 @@ public final class TrainResnetWithCifar10 {
 
     public static void main(String[] args) throws ModelException, IOException, TranslateException {
         System.setProperty("DJL_CACHE_DIR", "c:/ai/djl");
-        TrainResnetWithCifar10.runExample(args);
+        runExample(args);
     }
 
     public static TrainingResult runExample(String[] args)
@@ -84,8 +86,12 @@ public final class TrainResnetWithCifar10 {
         if (arguments == null) {
             return null;
         }
+        String datasetPath="D:\\DATASETS\\classification\\pistachio_224_224";
+        ImageFolder dataset_train = FactoryUtils.loadDataSetDJL(datasetPath+"/train", 32, 3, 224);
+        ImageFolder dataset_val = FactoryUtils.loadDataSetDJL(datasetPath+"/validation", 32, 3, 224);
 
-        try (Model model = getModel(arguments)) {
+        //try (Model model = getModel(arguments)) {
+        try (Model model = getModel()) {
             // get training dataset
             RandomAccessDataset trainDataset = getDataset(Dataset.Usage.TRAIN, arguments);
             RandomAccessDataset validationDataset = getDataset(Dataset.Usage.TEST, arguments);
@@ -104,7 +110,8 @@ public final class TrainResnetWithCifar10 {
 
                 // initialize trainer with proper input shape
                 trainer.initialize(inputShape);
-                EasyTrain.fit(trainer, arguments.getEpoch(), trainDataset, validationDataset);
+                //EasyTrain.fit(trainer, arguments.getEpoch(), trainDataset, validationDataset);
+                EasyTrain.fit(trainer, arguments.getEpoch(), dataset_train, dataset_val);
 
                 TrainingResult result = trainer.getTrainingResult();
                 model.setProperty("Epoch", String.valueOf(result.getEpoch()));
@@ -121,6 +128,31 @@ public final class TrainResnetWithCifar10 {
                 return result;
             }
         }
+    }
+
+    private static Model getModel() throws IOException, ModelNotFoundException, MalformedModelException {
+        //Map<String, String> options = arguments.getCriteria();
+        Criteria.Builder<Image, Classifications> builder
+                = Criteria.builder()
+                        .optApplication(Application.CV.IMAGE_CLASSIFICATION)
+                        .setTypes(Image.class, Classifications.class)
+                        .optProgress(new ProgressBar())
+                        .optArtifactId("resnet");
+        builder.optGroupId("ai.djl.mxnet");
+        builder.optFilter("layers", "50");
+        builder.optFilter("flavor", "v1");
+        builder.optFilter("dataset", "cifar10");
+
+        Model model = ModelZoo.loadModel(builder.build());
+        SequentialBlock newBlock = new SequentialBlock();
+        SymbolBlock block = (SymbolBlock) model.getBlock();
+        block.removeLastBlock();
+        newBlock.add(block);
+        newBlock.add(Blocks.batchFlattenBlock());
+        newBlock.add(Linear.builder().setUnits(10).build());
+        model.setBlock(newBlock);
+        // load pre-trained imperative ResNet50 from DJL model zoo
+        return model;
     }
 
     private static Model getModel(Arguments arguments)
@@ -207,8 +239,7 @@ public final class TrainResnetWithCifar10 {
                         .optModelName("resnetv1")
                         .build();
 
-        try (ZooModel<Image, Classifications> model = ModelZoo.loadModel(criteria);
-                Predictor<Image, Classifications> predictor = model.newPredictor()) {
+        try (ZooModel<Image, Classifications> model = ModelZoo.loadModel(criteria); Predictor<Image, Classifications> predictor = model.newPredictor()) {
             return predictor.predict(img);
         }
     }
@@ -217,7 +248,7 @@ public final class TrainResnetWithCifar10 {
         return new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
                 .addEvaluator(new Accuracy())
                 //.optDevices(Device.getDevices(arguments.getMaxGpus()))
-//                .optDevices(Device.getDevices(2))
+                //                .optDevices(Device.getDevices(2))
                 .addTrainingListeners(TrainingListener.Defaults.logging(arguments.getOutputDir()));
     }
 

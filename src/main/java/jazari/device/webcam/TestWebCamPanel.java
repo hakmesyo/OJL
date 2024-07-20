@@ -10,7 +10,6 @@ import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
 import java.awt.Dimension;
-import java.util.concurrent.TimeoutException;
 
 
 public class TestWebCamPanel {

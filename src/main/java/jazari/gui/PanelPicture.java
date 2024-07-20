@@ -851,11 +851,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                             repaint();
                             return;
                         } else {
-                            if (isFirstClickOutside) {
-                                isFirstClickOutside = false;
-                                repaint();
-                                return;
-                            }
+//                            if (isFirstClickOutside) {
+//                                isFirstClickOutside = false;
+//                                repaint();
+//                                return;
+//                            }
                         }
                     }
                 }

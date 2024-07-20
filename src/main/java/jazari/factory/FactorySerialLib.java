@@ -13,8 +13,10 @@ import java.util.function.Consumer;
 
 public class FactorySerialLib {
 
-    private SerialPort port;
-    private BufferedReader reader;
+    public SerialPort port;
+    public int baudRate = 9600;
+    public String portName = "com5";
+//    private BufferedReader reader;
     private OutputStream outputStream;
     private Consumer<String> dataCallback;
     private static final String PORT_NAMES[] = {
@@ -25,17 +27,22 @@ public class FactorySerialLib {
         "COM7" // 
     };
 
-    public FactorySerialLib() {
+    public FactorySerialLib(String portName, int baudRate, Consumer<String> callback) {
+        this.portName = portName;
+        this.baudRate = baudRate;
+        openSerialPort(portName, baudRate);
+        setDataCallback(callback);
+        startListening();
     }
 
     public boolean openSerialPort(String portName, int baudRate) {
         port = SerialPort.getCommPort(portName);
-        port.setComPortParameters(baudRate, 8, 1, SerialPort.NO_PARITY);
-        port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 1000, 0);
+        //port.setComPortParameters(baudRate, 8, 1, 0);
+        //port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 10000, 10000);
 
         if (port.openPort()) {
+            port.setComPortParameters(baudRate, 8, 1, 0);
             System.out.println("Port başarıyla açıldı: " + portName);
-            reader = new BufferedReader(new InputStreamReader(port.getInputStream()));
             outputStream = port.getOutputStream();
             return true;
         } else {
@@ -61,17 +68,18 @@ public class FactorySerialLib {
 
             @Override
             public void serialEvent(SerialPortEvent event) {
-                if (event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE) {
-                    return;
-                }
-                try {
-                    String line = reader.readLine();
-                    if (line != null && !line.trim().isEmpty() && dataCallback != null) {
-                        dataCallback.accept(line.trim());
+                while (true) {
+                    if (port.bytesAvailable() > 0) {
+                        byte[] readBuffer = new byte[port.bytesAvailable()];
+                        int numRead = port.readBytes(readBuffer, readBuffer.length);
+                        String data = new String(readBuffer);
+                        data = data.replaceAll("\r", "");
+                        data = data.replaceAll("\n", "");
+                        data = data.trim();
+                        if (data.length() > 0) {
+                            dataCallback.accept(data);
+                        }
                     }
-                } catch (Exception e) {
-                    System.out.println("Veri okuma hatası: " + e.getMessage());
-                    reconnect();
                 }
             }
         });
@@ -100,11 +108,4 @@ public class FactorySerialLib {
         }
     }
 
-    private void reconnect() {
-        System.out.println("Bağlantı koptu. Yeniden bağlanılıyor...");
-        closePort();
-        if (openSerialPort(port.getSystemPortName(), port.getBaudRate())) {
-            startListening();
-        }
-    }
 }

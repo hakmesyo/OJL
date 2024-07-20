@@ -12,9 +12,11 @@ import jazari.factory.FactorySerialLib;
 public class TestFactorySerialLib {
 
     public static void main(String[] args) {
-        FactorySerialLib serialLib = new FactorySerialLib();
+        FactorySerialLib device=new FactorySerialLib("com5", 115200, TestFactorySerialLib::processData);
+        /*
+        FactorySerialLib serialLib = new FactorySerialLib("COM5", 115200,TestFactorySerialLib::processData);
 
-        if (serialLib.openSerialPort("COM9", 115200)) {
+        if (serialLib.openSerialPort("COM5", 115200)) {
             serialLib.setDataCallback(data -> {
                 System.out.println("Alınan veri: " + data);
                 // Burada gelen veriyi işleyebilirsiniz
@@ -35,6 +37,7 @@ public class TestFactorySerialLib {
             // Program sonlandığında portu kapatın
             serialLib.closePort();
         }
+*/
     }
 //    private static SerialPort port;
 //    private static BufferedReader reader;
@@ -93,4 +96,8 @@ public class TestFactorySerialLib {
 //        port.closePort();
 //        connectToPort();
 //    }
+
+    private static void processData(String data) {
+        System.out.println("data: " +data );
+    }
 }
