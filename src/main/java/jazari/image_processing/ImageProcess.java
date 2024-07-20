@@ -993,7 +993,7 @@ public final class ImageProcess {
     public static BufferedImage readImage(File file) {
         return readImage(file.getAbsolutePath());
     }
-    
+
 //    public static BufferedImage readImage(String fileName) {
 //        try {
 //            return ImageIO.read(new File(fileName));
@@ -1033,7 +1033,6 @@ public final class ImageProcess {
 //        }
 //        return null;
 //    }
-
     public static BufferedImage readImage(String fileName) {
         try {
             File file = new File(fileName);
@@ -2413,6 +2412,33 @@ public final class ImageProcess {
         return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
 
+//    public static BufferedImage clone_deep(BufferedImage bi) {
+//        ColorModel cm = bi.getColorModel();
+//        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+//        WritableRaster raster = bi.copyData(null);
+//        BufferedImage copy = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+//
+//        // Copy properties if any
+//        String[] propertyNames = bi.getPropertyNames();
+//        if (propertyNames != null) {
+//            for (String name : propertyNames) {
+//                Object value = bi.getProperty(name);
+//                if (value != null) {
+//                    copy.getProperty(name);  // This doesn't set the property, but creates it if it doesn't exist
+//                }
+//            }
+//        }
+//
+//        // Force a new data buffer
+//        int width = bi.getWidth();
+//        int height = bi.getHeight();
+//        int[] pixels = new int[width * height];
+//        bi.getRGB(0, 0, width, height, pixels, 0, width);
+//        copy.setRGB(0, 0, width, height, pixels, 0, width);
+//
+//        return copy;
+//    }
+
 //    public static Image clone(Image img) {
 //        BufferedImage bf = ImageProcess.toBufferedImage(img);
 //        BufferedImage ret = new BufferedImage(bf.getWidth(), bf.getHeight(), bf.getType());
@@ -2710,7 +2736,7 @@ public final class ImageProcess {
 
         try {
             // PNG'den diğer formatlara dönüşüm için
-            if ((img.getType() == BufferedImage.TYPE_INT_ARGB || img.getType() == BufferedImage.TYPE_4BYTE_ABGR)&& !extension.equals("png")) {
+            if ((img.getType() == BufferedImage.TYPE_INT_ARGB || img.getType() == BufferedImage.TYPE_4BYTE_ABGR) && !extension.equals("png")) {
                 BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
                 Graphics2D g = newImage.createGraphics();
                 g.setColor(Color.WHITE); // Arka plan rengi

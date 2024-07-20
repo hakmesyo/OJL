@@ -1284,8 +1284,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         float temp_zoom_factor = zoom_factor;
-        temp_zoom_factor -= e.getWheelRotation() / 32.0f;
-        if (temp_zoom_factor > 2.0) {
+        temp_zoom_factor -= e.getWheelRotation() / 8.0f;
+        if (temp_zoom_factor > 3.0) {
             return;
         }
         zoom_factor = temp_zoom_factor;
@@ -1826,7 +1826,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
         }
         setImage(bf, imagePath, caption, isClearBbox);
-        frame.img = bf;
+        if (!frame.chk_customZoom.isSelected()) frame.img = bf;
         frame.imagePath = imagePath;
         frame.stretchFrame();
         return bf;

@@ -74,7 +74,7 @@ public class FrameImage extends javax.swing.JFrame {
         if (caption != null && !caption.isEmpty()) {
             setTitle(caption);
         }
-        loadImage(cm, imagePath, caption, chk_full_size.isSelected());
+        loadImage(cm, imagePath, caption, chk_stretch.isSelected());
         eventListener();
         chkLabelVisible.setSelected(true);
         setLocationRelativeTo(null);
@@ -127,7 +127,6 @@ public class FrameImage extends javax.swing.JFrame {
         combo_format = new javax.swing.JComboBox<>();
         slider = new javax.swing.JSlider();
         lbl_index = new javax.swing.JLabel();
-        chk_full_size = new javax.swing.JCheckBox();
         chk_customZoom = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -330,13 +329,6 @@ public class FrameImage extends javax.swing.JFrame {
 
         lbl_index.setText("...");
 
-        chk_full_size.setText("full size");
-        chk_full_size.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                chk_full_sizeİtemStateChanged(evt);
-            }
-        });
-
         chk_customZoom.setText("custom zoom");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -361,9 +353,7 @@ public class FrameImage extends javax.swing.JFrame {
                         .addComponent(lbl_zoom_factor, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chk_stretch)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chk_full_size)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 134, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 267, Short.MAX_VALUE)
                         .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chkLane)
@@ -405,7 +395,6 @@ public class FrameImage extends javax.swing.JFrame {
                     .addComponent(btn_screen_capture)
                     .addComponent(chk_stretch)
                     .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chk_full_size)
                     .addComponent(chk_customZoom))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -629,11 +618,6 @@ public class FrameImage extends javax.swing.JFrame {
         //System.out.println("caret pos slider index:"+slider.getValue());
     }//GEN-LAST:event_sliderCaretPositionChanged
 
-    private void chk_full_sizeİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_full_sizeİtemStateChanged
-        fullSizeFrame();
-        getPicturePanel().requestFocus();
-    }//GEN-LAST:event_chk_full_sizeİtemStateChanged
-
     public PanelPicture getPicturePanel() {
         return ((PanelPicture) panelPicture);
     }
@@ -642,7 +626,7 @@ public class FrameImage extends javax.swing.JFrame {
         imagePath = FactoryUtils.saveImageAs(getPicturePanel().getImage(), txt_dpi.getText());
         if (imagePath != null && !imagePath.isEmpty()) {
             CMatrix cm = CMatrix.getInstance().imread(imagePath);
-            loadImage(cm, imagePath, imagePath, chk_full_size.isSelected());
+            loadImage(cm, imagePath, imagePath, chk_stretch.isSelected());
         }
     }
 
@@ -697,7 +681,6 @@ public class FrameImage extends javax.swing.JFrame {
     public javax.swing.JCheckBox chkPolygon;
     private javax.swing.JCheckBox chkSequence;
     public javax.swing.JCheckBox chk_customZoom;
-    private javax.swing.JCheckBox chk_full_size;
     public javax.swing.JCheckBox chk_stretch;
     public javax.swing.JComboBox<String> combo_format;
     private javax.swing.JLabel jLabel2;
@@ -798,6 +781,6 @@ public class FrameImage extends javax.swing.JFrame {
             setLocationRelativeTo(null);
             setExtendedState(JFrame.MAXIMIZED_BOTH);
         }
-        loadImage(cm, imagePath, caption, chk_full_size.isSelected());
+        loadImage(cm, imagePath, caption, chk_stretch.isSelected());
     }
 }

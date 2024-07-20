@@ -107,9 +107,7 @@
                               <Component id="lbl_zoom_factor" min="-2" pref="113" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="chk_stretch" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="chk_full_size" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="134" max="32767" attributes="0"/>
+                              <EmptySpace pref="267" max="32767" attributes="0"/>
                               <Component id="combo_format" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="chkLane" min="-2" max="-2" attributes="0"/>
@@ -156,7 +154,6 @@
                           <Component id="btn_screen_capture" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="chk_stretch" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="combo_format" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="chk_full_size" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="chk_customZoom" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -341,14 +338,6 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="..."/>
               </Properties>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="chk_full_size">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="full size"/>
-              </Properties>
-              <Events>
-                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chk_full_size&#x130;temStateChanged"/>
-              </Events>
             </Component>
             <Component class="javax.swing.JCheckBox" name="chk_customZoom">
               <Properties>
