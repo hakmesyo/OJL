@@ -14,7 +14,6 @@ import ai.djl.metric.Metrics;
 import ai.djl.modality.Classifications;
 import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.ImageFactory;
-import ai.djl.modality.cv.transform.Normalize;
 import ai.djl.modality.cv.transform.Resize;
 import ai.djl.modality.cv.transform.ToTensor;
 import ai.djl.modality.cv.translator.ImageClassificationTranslator;
@@ -39,7 +38,6 @@ import ai.djl.training.TrainingResult;
 import ai.djl.training.evaluator.Accuracy;
 import ai.djl.training.listener.TrainingListener;
 import ai.djl.training.loss.Loss;
-import ai.djl.training.loss.SoftmaxCrossEntropyLoss;
 import ai.djl.training.optimizer.Optimizer;
 import ai.djl.training.tracker.Tracker;
 import ai.djl.training.util.ProgressBar;
@@ -50,7 +48,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.google.gson.Gson;
 import com.google.maps.model.LatLng;
-import ij.gui.Roi;
 import java.awt.AWTException;
 import jazari.interfaces.InterfaceCallBack;
 import jazari.types.TDeviceState;
@@ -140,13 +137,9 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import jazari.deep_learning.ai.djl.examples.training.transferlearning.TransferLearningTestTemplate;
-import static jazari.deep_learning.ai.djl.examples.training.transferlearning.TransferLearningTestTemplate.calculatePerformanceMetrics;
-import static jazari.deep_learning.ai.djl.examples.training.transferlearning.TransferLearningTestTemplate.calculateROC;
 import jazari.gui.FrameCircularProgressBar;
 import jazari.utils.DataAnalytics;
 import jazari.gui.FrameImage;
-import jazari.gui.test.TestCircularProgressBar;
 import jazari.image_processing.ImageProcess;
 import jazari.interfaces.call_back_interface.CallBackTrigger;
 import jazari.matrix.CRectangle;
@@ -320,62 +313,12 @@ public final class FactoryUtils {
         }
     }
 
-//    private static String curr_file;
-//    public static void plot(CMatrix cm) {
-//        new FramePlot(cm).setVisible(true);
-//    }
     public static ArrayList<Point> shuffleList(ArrayList<Point> lst) {
         long seed = System.nanoTime();
         Collections.shuffle(lst, new Random(seed));
         return lst;
     }
-    // This method returns a buffered image with the contents of an image
-
-//    public static Object readFromXML() {
-//        Object out = null;
-//        try {
-//            JFileChooser chooser = new JFileChooser();
-////            chooser.setCurrentDirectory(new java.io.File("C:\\Plotter\\GCODE"));
-//            chooser.setDialogTitle("xml from file");
-//            chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
-//            if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-//                File file = chooser.getSelectedFile();
-//                String modelFile = file.getAbsolutePath();
-//                XStream xx = new XStream(new DomDriver());
-//                FileReader fileReader;
-//                fileReader = new FileReader(modelFile);
-//                out = xx.fromXML(fileReader);
-//                FactoryUtils.showMessage("B.loaded successfully");
-//            }
-//        } catch (FileNotFoundException e) {
-//        }
-//        return out;
-//    }
-//
-//    public static void writeToXML(Object obj) {
-//        JFileChooser chooser = new JFileChooser();
-////        chooser.setCurrentDirectory(new java.io.File("C:\\Plotter\\GCODE"));
-//        chooser.setDialogTitle("save xml as a file");
-//        chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
-//        if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-//            File file = chooser.getSelectedFile();
-//            String fName = file.getAbsolutePath();
-//            writeToFile(fName, toXML(obj));
-//            showMessage("B. Object serialized to " + fName);
-//        }
-//    }
-//
-//    public static String toXML(Object obj) {
-//        return new XStream().toXML(obj);
-//    }
-//
-//    public static Object fromXML(String str) {
-//        return new XStream(new DomDriver()).fromXML(str);
-//    }
-//
-//    public static Object fromXMLFile() {
-//        return readFromXML();
-//    }
+    
     public static File getFileFromChooserForPNG() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("save panel as a png file");
@@ -712,20 +655,6 @@ public final class FactoryUtils {
         }
     }
 
-//    public static void writeToFile(String file_name, String row) {
-//        File outFile = new File(file_name);
-//        FileWriter out;
-//        if (outFile.exists()) {
-////            showMessage(file_name + " isminde bir dosya zaten var üzerine yazılacak");
-//        }
-//        try {
-//            out = new FileWriter(outFile, false);
-//            out.write(row);
-//            out.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
     public static void writeToFile(String file_name, float[][] d) {
         File outFile = new File(file_name);
         FileWriter out;
@@ -1102,28 +1031,6 @@ public final class FactoryUtils {
         return builder.toString();
     }
 
-//    public static String readFile(String filePath) {
-//        String ret = "";
-//        StringBuilder builder = new StringBuilder("");
-//        File file = new File(filePath);
-//        if (!file.exists()) {
-//            showMessageTemp(filePath + " isminde bir dosya yok", nAttempts, null);
-//            //showMessage(fileName + " isminde bir dosya yok");
-//            return null;
-//        }
-//        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-//            String s;
-//            while ((s = br.readLine()) != null) {
-//                //ret = ret + s + "\n";
-//                builder.append(s).append("\n");
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return ret;
-//        }
-//
-//        return builder.toString();
-//    }
     public static String readFile() {
         String ret = "";
         File getFile = getFileFromChooserOpen();
@@ -1382,7 +1289,9 @@ public final class FactoryUtils {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                func.trigger();
+                if (func != null) {
+                    func.trigger();
+                }                
             }
         });
         timer.setRepeats(false);
@@ -1554,13 +1463,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float getSum(float[] d) {
-//        float ret = 0;
-//        for (int i = 0; i < d.length; i++) {
-//            ret += d[i];
-//        }
-//        return ret;
-//    }
     public static float getSum(float[][] d) {
         float ret = 0;
         for (int i = 0; i < d.length; i++) {
@@ -1580,16 +1482,6 @@ public final class FactoryUtils {
         }
         return ret;
     }
-//
-//    public static float getSum(float[][] d) {
-//        float ret = 0;
-//        for (int i = 0; i < d.length; i++) {
-//            for (int j = 0; j < d[0].length; j++) {
-//                ret += d[i][j];
-//            }
-//        }
-//        return ret;
-//    }
 
     public static float getPixelCount(int[][] m) {
         if (m == null) {
@@ -1808,8 +1700,8 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static String UTM2DMS(int zone, double px, double py, char Letter) {
-        String[] s = UTM2Deg(zone, px, py, Letter).split(" ");
+    public static String gpsUTM2DMS(int zone, double px, double py, char Letter) {
+        String[] s = gpsUTM2Deg(zone, px, py, Letter).split(" ");
         double d1 = Double.parseDouble(s[0]);
         double deg1 = (int) d1;
         double m1 = (int) ((d1 - deg1) * 60);
@@ -1824,7 +1716,7 @@ public final class FactoryUtils {
         return str1 + " " + str2;
     }
 
-    public static String UTM2Deg(int zone, double px, double py, char Letter) {
+    public static String gpsUTM2Deg(int zone, double px, double py, char Letter) {
         double Easting = px;
         double Northing = py;
         double Hem;
@@ -1848,13 +1740,13 @@ public final class FactoryUtils {
         return latitude + " " + longitude;
     }
 
-    public static String degMS2UTM(String s1, String s2) {
+    public static String gpsDegMS2UTM(String s1, String s2) {
         double lat = Double.parseDouble(s1.split(":")[0]) + Double.parseDouble(s1.split(":")[1]) / 60.0 + Double.parseDouble(s1.split(":")[2]) / 3600.0;
         double longt = Double.parseDouble(s2.split(":")[0]) + Double.parseDouble(s2.split(":")[1]) / 60.0 + Double.parseDouble(s2.split(":")[2]) / 3600.0;
-        return deg2UTM(lat, longt);
+        return gpsDeg2UTM(lat, longt);
     }
 
-    public static String deg2UTM(double Lat, double Lon) {
+    public static String gpsDeg2UTM(double Lat, double Lon) {
         double Easting;
         double Northing;
         int Zone = (int) Math.floor(Lon / 6 + 31);
@@ -1935,13 +1827,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float[] toFloatArray1D(float[] m) {
-//        float[] ret = new float[m.length];
-//        for (int i = 0; i < m.length; i++) {
-//            ret[i] = m[i];
-//        }
-//        return ret;
-//    }
     public static float[][] toFloatArray2D(int[][] m) {
         int nr = m.length;
         int nc = m[0].length;
@@ -2153,15 +2038,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float[][] toFloatArray2D(float[][] m) {
-//        float[][] ret = new float[m.length][m[0].length];
-//        for (int i = 0; i < m.length; i++) {
-//            for (int j = 0; j < m[0].length; j++) {
-//                ret[i][j] = (float) Math.round(m[i][j]);
-//            }
-//        }
-//        return ret;
-//    }
     public static long[][] toLongArray2D(float[][] m) {
         long[][] ret = new long[m.length][m[0].length];
         for (int i = 0; i < m.length; i++) {
@@ -2183,22 +2059,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static int[] toIntArray1D(float[] m) {
-//        int[] ret = new int[m.length];
-//        for (int i = 0; i < m.length; i++) {
-//            ret[i] = (int) Math.round(m[i]);
-//        }
-//        return ret;
-//    }
-//    public static int[][] toIntArray2D(float[][] m) {
-//        int[][] ret = new int[m.length][m[0].length];
-//        for (int i = 0; i < m.length; i++) {
-//            for (int j = 0; j < m[0].length; j++) {
-//                ret[i][j] = (int) Math.round(m[i][j]);
-//            }
-//        }
-//        return ret;
-//    }
     public static int[][] toIntArray2D(byte[][] m) {
         int[][] ret = new int[m.length][m[0].length];
         for (int i = 0; i < m.length; i++) {
@@ -2469,94 +2329,6 @@ public final class FactoryUtils {
         return q;
     }
 
-    /*
-    public static float[] clone(float[] d) {
-        float[] ret = new float[d.length];
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = d[i];
-        }
-        return ret;
-    }
-
-    public static float[][] clone(float[][] d) {
-        float[][] ret = new float[d.length][d[0].length];
-        for (int i = 0; i < ret.length; i++) {
-            for (int j = 0; j < ret[0].length; j++) {
-                ret[i][j] = d[i][j];
-            }
-        }
-        return ret;
-    }
-
-    public static float[] clone(float[] d) {
-        float[] ret = new float[d.length];
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = d[i];
-        }
-        return ret;
-    }
-
-    public static float[][] clone(float[][] d) {
-        float[][] ret = new float[d.length][d[0].length];
-        for (int i = 0; i < ret.length; i++) {
-            for (int j = 0; j < d[i].length; j++) {
-                ret[i][j] = d[i][j];
-            }
-        }
-        return ret;
-    }
-
-    public static float[][][] clone(float[][][] d) {
-        if (d == null) {
-            return null;
-        }
-        float[][][] ret = new float[d.length][d[0].length][d[0][0].length];
-        for (int i = 0; i < ret.length; i++) {
-            for (int j = 0; j < ret[0].length; j++) {
-                for (int k = 0; k < ret[0][0].length; k++) {
-                    ret[i][j][k] = d[i][j][k];
-                }
-            }
-        }
-        return ret;
-    }
-
-    public static int[] clone(int[] d) {
-        int[] ret = new int[d.length];
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = d[i];
-        }
-        return ret;
-    }
-
-    public static String[] clone(String[] d) {
-        String[] ret = new String[d.length];
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = d[i];
-        }
-        return ret;
-    }
-
-    public static int[][] clone(int[][] d) {
-        int[][] ret = new int[d.length][d[0].length];
-        for (int i = 0; i < ret.length; i++) {
-            for (int j = 0; j < ret[0].length; j++) {
-                ret[i][j] = d[i][j];
-            }
-        }
-        return ret;
-    }
-
-    public static byte[][] clone(byte[][] d) {
-        byte[][] ret = new byte[d.length][d[0].length];
-        for (int i = 0; i < ret.length; i++) {
-            for (int j = 0; j < ret[0].length; j++) {
-                ret[i][j] = d[i][j];
-            }
-        }
-        return ret;
-    }
-     */
     public static int[] sortArrayAndReturnIndex(float[] p, String t) {
         int[] ret = new int[p.length];
         for (int i = 0; i < ret.length; i++) {
@@ -2930,15 +2702,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float[][] transpose(float[][] d) {
-//        float[][] ret = new float[d[0].length][d.length];
-//        for (int i = 0; i < d[0].length; i++) {
-//            for (int j = 0; j < d.length; j++) {
-//                ret[i][j] = d[j][i];
-//            }
-//        }
-//        return ret;
-//    }
     public static byte[][] transpose(byte[][] d) {
         byte[][] ret = new byte[d[0].length][d.length];
         for (int i = 0; i < d[0].length; i++) {
@@ -2969,19 +2732,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float[] to1D(float[][] d) {
-//        int r = d.length;
-//        int c = d[0].length;
-//        float[] ret = new float[r * c];
-//        int k = 0;
-//        for (int j = 0; j < c; j++) {
-//            for (int i = 0; i < r; i++) {
-//                ret[k++] = d[i][j];
-//            }
-//        }
-//        return ret;
-//    }
-//
     public static float[][] reshape(float[][] d, int r, int c) {
         if (d.length * d[0].length != r * c) {
             System.err.println("size mismatch");
@@ -3327,29 +3077,6 @@ public final class FactoryUtils {
         return m;
     }
 
-//    public static float getMaximum(float[][] p) {
-//        float m = p[0][0];
-//        for (int i = 0; i < p.length; i++) {
-//            for (int j = 0; j < p[0].length; j++) {
-//                if (p[i][j] > m) {
-//                    m = p[i][j];
-//                }
-//            }
-//        }
-//        return m;
-//    }
-//
-//    public static float getMinimum(float[][] p) {
-//        float m = p[0][0];
-//        for (int i = 0; i < p.length; i++) {
-//            for (int j = 0; j < p[0].length; j++) {
-//                if (p[i][j] < m) {
-//                    m = p[i][j];
-//                }
-//            }
-//        }
-//        return m;
-//    }
     public static int getMaximum(int[][] p) {
         int m = p[0][0];
         for (int i = 0; i < p.length; i++) {
@@ -4204,11 +3931,8 @@ public final class FactoryUtils {
      */
     public static float[][] getWeightCenteredROI(float[][] d, int t, int nf) {
         float[][] ret = null;
-//        CMatrix.getInstance(d).imshow();
         int[] px = getProjectedMatrixOnX(d);
         int[] py = getProjectedMatrixOnY(d);
-//        CMatrix.getInstance(px).plot();
-//        CMatrix.getInstance(py).plot();
         int thr = 10000;
         CPoint[] p_x = getPotentialObjects(px, thr);
         CPoint[] p_y = getPotentialObjects(py, thr);
@@ -4217,21 +3941,9 @@ public final class FactoryUtils {
                 return null;
             }
             ret = getSubMatrix(d, new CPoint(p_y[0].row, p_x[0].row), new CPoint(p_y[0].column, p_x[0].column));
-//            Thread.sleep(10);
         } catch (Exception ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-//        int[] p = getMinMaxPosition(d, t, 5);
-//        int w = d[0].length;
-//        int h = d.length;
-////        Point center = new Point(Math.abs(p[0] + p[2]) / 2, Math.abs(p[1] + p[3]) / 2);
-//        if (p[0] <= 1 || p[0] >= w - 1 || p[2] <= 1 || p[2] >= w - 1
-//                || p[1] <= 1 || p[1] >= h - 1 || p[3] <= 1 || p[3] >= h - 1) {
-//            ret = new float[1][1];
-//        } else {
-//            ret = getSubMatrix(d, new CPoint(p[1], p[0]), new CPoint(p[3], p[2]));
-//        }
         return ret;
     }
 
@@ -4756,13 +4468,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float[] scale(float[] dizi, float d) {
-//        float[] ret = new float[dizi.length];
-//        for (int i = 0; i < dizi.length; i++) {
-//            ret[i] = dizi[i] * d;
-//        }
-//        return ret;
-//    }
     public static String toWekaString(float[] d) {
         String ret = "";
         for (int i = 0; i < d.length; i++) {
@@ -5103,37 +4808,6 @@ public final class FactoryUtils {
         return inside;
     }
 
-//    public static float[] getHistogram(float[] d, int nBins) {
-//        float[] ret = new float[nBins];
-//        float min = getMinimum(d);
-//        boolean eksili = false;
-//        if (min < 0) {
-//            eksili = true;
-//        }
-//        float max = getMaximum(d);
-//        float delta = 0;
-//        if (min < 0 && max > 0) {
-//            delta = Math.abs(Math.abs(max) + Math.abs(min)) / (nBins - 1);
-//        }
-//        if ((min <= 0 && max <= 0) || (min >= 0 && max >= 0)) {
-//            delta = Math.abs(Math.abs(max) - Math.abs(min)) / (nBins - 1);
-//        }
-//        int index = 0;
-//        for (int i = 0; i < d.length; i++) {
-//            index = (int) Math.round((d[i] - min) / delta);
-//            if (index >= ret.length) {
-//                index = ret.length - 1;
-//            }
-//            if (index < 0) {
-//                index = 0;
-//            }
-//            if (d[i] == min) {
-//                int a = 1;
-//            }
-//            ret[index]++;
-//        }
-//        return ret;
-//    }
     /**
      * generate n different colors
      *
@@ -5167,27 +4841,6 @@ public final class FactoryUtils {
         return cl;
     }
 
-//    public static float[][] getHistogram(float[][] array) {
-//        float[][] d = FactoryMatrix.clone(array);
-//        d = transpose(d);
-//        int nBins = (int) (getMaximum(array) - getMinimum(array)) + 1;
-//        float[][] ret = new float[d.length][nBins];
-//        for (int i = 0; i < d.length; i++) {
-//            ret[i] = getHistogram(d[i], nBins);
-//        }
-//        return transpose(ret);
-//    }
-//
-//    public static float[][] getHistogram(float[][] array, int nBins) {
-//        float[][] d = FactoryMatrix.clone(array);
-//        d = transpose(d);
-//        float[][] ret = new float[d.length][nBins];
-//        for (int i = 0; i < d.length; i++) {
-//            ret[i] = getHistogram(d[i], nBins);
-//        }
-////        return transpose(ret);
-//        return ret;
-//    }
     public static float[] hist(float[][] array) {
         return FactoryMatrix.getHistogram(array, 256);
     }
@@ -5510,17 +5163,6 @@ public final class FactoryUtils {
         return values;
     }
 
-//    public static float[][] toFloatArray2D(int[][] array) {
-//        int nr = array.length;
-//        int nc = array[0].length;
-//        float[][] ret = new float[nr][nc];
-//        for (int i = 0; i < nr; i++) {
-//            for (int j = 0; j < nc; j++) {
-//                ret[i][j] = (float) array[i][j];
-//            }
-//        }
-//        return ret;
-//    }
     public static float[][] toFloatArray2D(long[][] array) {
         int nr = array.length;
         int nc = array[0].length;
@@ -5545,17 +5187,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float[][] toFloatArray2D(byte[][] array) {
-//        int nr = array.length;
-//        int nc = array[0].length;
-//        float[][] ret = new float[nr][nc];
-//        for (int i = 0; i < nr; i++) {
-//            for (int j = 0; j < nc; j++) {
-//                ret[i][j] = (float) array[i][j];
-//            }
-//        }
-//        return ret;
-//    }
     public static float[][] toFloatArray2D(String[][] array) {
         int nr = array.length;
         int nc = array[0].length;
@@ -5568,17 +5199,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static short[][] toShortArray2D(float[][] array) {
-//        int nr = array.length;
-//        int nc = array[0].length;
-//        short[][] ret = new short[nr][nc];
-//        for (int i = 0; i < nr; i++) {
-//            for (int j = 0; j < nc; j++) {
-//                ret[i][j] = (short) array[i][j];
-//            }
-//        }
-//        return ret;
-//    }
     public static short[][] toShortArray2D(int[][] array) {
         int nr = array.length;
         int nc = array[0].length;
@@ -5627,17 +5247,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static byte[][] toByteArray2D(float[][] array) {
-//        int nr = array.length;
-//        int nc = array[0].length;
-//        byte[][] ret = new byte[nr][nc];
-//        for (int i = 0; i < nr; i++) {
-//            for (int j = 0; j < nc; j++) {
-//                ret[i][j] = (byte) array[i][j];
-//            }
-//        }
-//        return ret;
-//    }
     public static byte[][] toByteArray2D(int[][] array) {
         int nr = array.length;
         int nc = array[0].length;
@@ -5698,17 +5307,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static char[][] toCharArray2D(float[][] array) {
-//        int nr = array.length;
-//        int nc = array[0].length;
-//        char[][] ret = new char[nr][nc];
-//        for (int i = 0; i < nr; i++) {
-//            for (int j = 0; j < nc; j++) {
-//                ret[i][j] = (char) array[i][j];
-//            }
-//        }
-//        return ret;
-//    }
     public static char[][] toCharArray2D(int[][] array) {
         int nr = array.length;
         int nc = array[0].length;
@@ -5757,17 +5355,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static long[][] toLongArray2D(float[][] array) {
-//        int nr = array.length;
-//        int nc = array[0].length;
-//        long[][] ret = new long[nr][nc];
-//        for (int i = 0; i < nr; i++) {
-//            for (int j = 0; j < nc; j++) {
-//                ret[i][j] = (long) array[i][j];
-//            }
-//        }
-//        return ret;
-//    }
     public static long[][] toLongArray2D(int[][] array) {
         int nr = array.length;
         int nc = array[0].length;
@@ -5816,17 +5403,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static String[][] toStringArray2D(float[][] array) {
-//        int nr = array.length;
-//        int nc = array[0].length;
-//        String[][] ret = new String[nr][nc];
-//        for (int i = 0; i < nr; i++) {
-//            for (int j = 0; j < nc; j++) {
-//                ret[i][j] = "" + array[i][j];
-//            }
-//        }
-//        return ret;
-//    }
     public static String[][] toStringArray2D(long[][] array) {
         int nr = array.length;
         int nc = array[0].length;
@@ -5888,11 +5464,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float[] clone(float[] p) {
-//        float[] ret = new float[p.length];
-//        System.arraycopy(p, 0, ret, 0, p.length);
-//        return ret;
-//    }
     public static int[] clone(int[] p) {
         int[] ret = new int[p.length];
         System.arraycopy(p, 0, ret, 0, p.length);
@@ -5944,14 +5515,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static float[][] clone(float[][] p) {
-//        float[][] ret = new float[p.length][p[0].length];
-//        int nr = p.length;
-//        for (int i = 0; i < nr; i++) {
-//            System.arraycopy(p[i], 0, ret[i], 0, p[0].length);
-//        }
-//        return ret;
-//    }
     public static int[][] clone(int[][] p) {
         int[][] ret = new int[p.length][p[0].length];
         int nr = p.length;
@@ -6184,20 +5747,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-//    public static int[] convertInt(List<Integer> lst) {
-//        int[] ret = lst.stream().filter(i -> i != null).mapToInt(i -> i).toArray();
-//        return ret;
-//    }
-//
-//    public static float[] convertFloat(List<Float> lst) {
-//        float[] ret = lst.stream().filter(i -> i != null).mapToDouble(i -> i).toArray();
-//        return ret;
-//    }
-//
-//    public static long[] convertLong(List<Long> lst) {
-//        long[] ret = lst.stream().filter(i -> i != null).mapToLong(i -> i).toArray();
-//        return ret;
-//    }
     public static boolean isPointInsidePolygon(Point[] polygon, Point point) {
         int i;
         int j;
@@ -6273,11 +5822,6 @@ public final class FactoryUtils {
         } else {
             return vector(from, to, -1);
         }
-//        float[] ret = new float[to - from];
-//        for (int i = 0; i < ret.length; i++) {
-//            ret[i] = from + i;
-//        }
-//        return ret;
     }
 
     public static float[] vector(float from, float to, float incr) {
@@ -6575,11 +6119,6 @@ public final class FactoryUtils {
             return result;
         }
 
-//        if (fromX2 <= fromX1 || toX2 <= toX1) {
-//            System.err.println("mapping can only be x2>x1 and x4>x3 and x should be in between x1 and x2");
-//            System.exit(-1);
-//        }
-//        return x * (toX2 - toX1) / (fromX2 - fromX1) + toX1;
     }
 
     public static String toJSON(List lst) {
@@ -7594,36 +7133,6 @@ public final class FactoryUtils {
                 .max(String::compareTo)
                 .orElse(null);
     }
-//    public static Rectangle getBoundingRectangle(Polygon polygon) {
-//        if (polygon.npoints <= 0) {
-//            return null;
-//        }
-//        Rectangle ret = new Rectangle();
-//        Point p = listPolygon.get(0);
-//        int minX = p.x;
-//        int minY = p.y;
-//        int maxX = p.x;
-//        int maxY = p.y;
-//        for (Point point : listPolygon) {
-//            if (point.x < minX) {
-//                minX = point.x;
-//            }
-//            if (point.y < minY) {
-//                minY = point.y;
-//            }
-//            if (point.x > maxX) {
-//                maxX = point.x;
-//            }
-//            if (point.y > maxY) {
-//                maxY = point.y;
-//            }
-//        }
-//        ret.x = minX;
-//        ret.y = minY;
-//        ret.width = maxX - minX;
-//        ret.height = maxY - minY;
-//        return ret;
-//    }
 
     public static int confirmMessage(String msg) {
         return JOptionPane.showConfirmDialog(null, msg);
@@ -7834,21 +7343,8 @@ public final class FactoryUtils {
                         .optArtifactId("mobilenet")
                         .optFilter("flavor", "v2")
                         .optFilter("multiplier", "1.0")
-                        .optFilter("dataset", "imagenet")
-                        ;
+                        .optFilter("dataset", "imagenet");
 
-//        Criteria<ai.djl.modality.cv.Image, ai.djl.modality.Classifications> criteria = Criteria.builder()
-//                .optApplication(ai.djl.Application.CV.IMAGE_CLASSIFICATION)
-//                .setTypes(ai.djl.modality.cv.Image.class, ai.djl.modality.Classifications.class)
-//                .optGroupId("ai.djl.mxnet")
-//                .optArtifactId(modelName)
-//                //.optFilter("flavor", "v3_small")
-//                .optFilter("flavor", "v2")
-//                .optFilter("multiplier", "1.0")
-//                .optFilter("dataset", "imagenet")
-//                .optEngine("MXNet")
-//                .optProgress(new ProgressBar())
-//                .build();
         Model model = null;
         try {
             model = ModelZoo.loadModel(builder.build());
@@ -7880,10 +7376,9 @@ public final class FactoryUtils {
 //        newBlock.add(Blocks.batchFlattenBlock());
 //        newBlock.add(Linear.builder().setUnits(nOutputClasses).build());
 //        model.setBlock(newBlock);
-
         return model;
     }
-    
+
     public static Model buildTransferLearningModel4Test(String modelName, int nOutputClasses) {
 //        Criteria.Builder<Image, Classifications> builder
 //                = Criteria.builder()
@@ -7910,7 +7405,7 @@ public final class FactoryUtils {
                 .optEngine("MXNet")
                 .optProgress(new ProgressBar())
                 .build();
-        
+
 //        Model model = null;
 //        try {
 //            model = ModelZoo.loadModel(builder.build());
@@ -7924,7 +7419,6 @@ public final class FactoryUtils {
 //        newBlock.add(Blocks.batchFlattenBlock());
 //        newBlock.add(Linear.builder().setUnits(nOutputClasses).build());
 //        model.setBlock(newBlock);
-
         ZooModel<ai.djl.modality.cv.Image, ai.djl.modality.Classifications> net = null;
         try {
             net = criteria.loadModel();
@@ -7949,7 +7443,6 @@ public final class FactoryUtils {
 //        newBlock.add(Blocks.batchFlattenBlock());
 //        newBlock.add(Linear.builder().setUnits(nOutputClasses).build());
 //        model.setBlock(newBlock);
-
         return model;
     }
 
@@ -8036,41 +7529,6 @@ public final class FactoryUtils {
         }
     }
 
-//    public static Model trainModel(Model model, Loss loss, int epochs, ImageFolder... ds) {
-//        Tracker learningRateTracker = Tracker.fixed(0.001f);
-//        Optimizer optimizer = Optimizer.adam().optLearningRateTracker(learningRateTracker).build();
-//
-//        DefaultTrainingConfig config = new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
-//                .addEvaluator(new Accuracy())
-//                .optDevices(Engine.getInstance().getDevices(1))
-//                .addTrainingListeners(TrainingListener.Defaults.logging())
-//                .optOptimizer(optimizer) // Optimizer'ı ekleyin
-//                // Diğer parametreleri buraya ekleyebilirsiniz
-//                ;
-//
-//        try (Trainer trainer = model.newTrainer(config)) {
-//            Shape inputShape = new Shape(1, 3, 224, 224);
-//            trainer.initialize(inputShape);
-//
-//            NDManager manager = NDManager.newBaseManager();
-//            NDArray sampleInput = manager.randomUniform(0f, 1f, inputShape);
-//            NDArray output = trainer.forward(new NDList(sampleInput)).singletonOrThrow();
-//            System.out.println("Model output shape: " + output.getShape());
-//
-//            if (ds.length == 1) {
-//                EasyTrain.fit(trainer, epochs, ds[0], null);
-//            } else if (ds.length == 2) {
-//                EasyTrain.fit(trainer, epochs, ds[0], ds[1]);
-//            }
-//            TrainingResult result = trainer.getTrainingResult();
-//            System.out.println(result);
-//        } catch (IOException ex) {
-//            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (TranslateException ex) {
-//            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return model;
-//    }
     public static Model saveModel(Model model, int epochs, Path modelDir, String modelName) {
         try {
             Files.createDirectories(modelDir);
@@ -8535,9 +7993,6 @@ public final class FactoryUtils {
         return (float) (b & 0xFF);
     }
 
-//    public static float byte2Float(byte b) {
-//        return (float) (b & 0xFF);
-//    }
     public static String getLocalIP() {
         try {
             return InetAddress.getLocalHost().getHostAddress();
@@ -8841,9 +8296,7 @@ public final class FactoryUtils {
                     FactoryUtils.copyFile(lst.get(i), new File(base_path + "/test/" + folder.getName() + "/" + lst.get(i).getName()));
                 }
             }
-
         }
-
     }
 
     /**
@@ -9161,18 +8614,6 @@ public final class FactoryUtils {
                     name = "" + classIndex;
                 }
 
-                /*
-            x1 = pv.bndbox.xmin;
-            y1 = pv.bndbox.ymin;
-            x2 = pv.bndbox.xmax;
-            y2 = pv.bndbox.ymax;
-            px1 = (x1 + x2) / 2.0f / w; --> x1+x2=2*px1*w  --> x2=(2*px1*w+px2*w)/2
-            py1 = (y1 + y2) / 2.0f / h; --> y1+y2=2*py1*h
-            px2 = (x2 - x1) * 1.0f / w; --> x2-x1=px2*w
-            py2 = (y2 - y1) * 1.0f / h; --> y2-y1=py2*h
-                 */
-                //float r_x=1.0f*w/org_w;
-                //float r_y=1.0f*h/org_h;
                 px1 = Float.parseFloat(e[1]);
                 py1 = Float.parseFloat(e[2]);
                 px2 = Float.parseFloat(e[3]);
@@ -9484,7 +8925,7 @@ public final class FactoryUtils {
     ) {
         String[] classIndex = getClassIndexArray(mainFolderPath + "/class_labels.txt");
         prepareYoloDataSet(classIndex, targetFolderName, r_train, r_val, r_test);
-        int k = -1;
+        int k = 0;
         File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "xml");
         files = FactoryUtils.shuffle(files, 121);
         int n = files.length;
@@ -9493,8 +8934,9 @@ public final class FactoryUtils {
         int n_test = (int) Math.round(r_test / 100.0 * n);
         for (File f : files) {
             if (f.isFile() && !FactoryUtils.getFileName(f.getName()).contains("class_labels")) {
-                k++;
-                showCircularProgressBar((int) Math.round(1.0 * k / files.length * 100));
+                showCircularProgressBar(k++, files.length);
+                //k++;
+                //showCircularProgressBar((int) Math.round(1.0 * k / files.length * 100));
                 File imgFile = new File(mainFolderPath + "/" + FactoryUtils.getFileName(f.getName()) + "." + image_extension);
                 String yolo_txt = "";
                 if (detectionType.equals("detection")) {
@@ -9555,6 +8997,9 @@ public final class FactoryUtils {
         }
         if (!circularProgressBar.isDisplayable() || !circularProgressBar.isVisible()) {
             circularProgressBar.setVisible(true);
+        }
+        if (index==max-1) {
+            val=100;
         }
         circularProgressBar.setProgress(val);
     }
@@ -10075,6 +9520,15 @@ public final class FactoryUtils {
         }
         System.out.println("Copied " + copiedFiles + " out of " + files.length + " files.");
         System.out.println("Actual ratio: " + (float) copiedFiles / files.length);
+    }
+    
+    public static void changeImageFileExtension(String path, String oldExtension, String newExtension){
+        File[] files = getFileArrayInFolderByExtension(path, oldExtension);
+        for (File file : files) {
+            BufferedImage img=ImageProcess.imread(file);
+            ImageProcess.saveImage(img, file.getParent()+"/"+FactoryUtils.getFileName(file.getName())+"."+newExtension);
+            deleteFile(file);
+        }
     }
 
     public static void updateFileNameAsMillis(String path, String fileExtension, boolean isShuffled) {

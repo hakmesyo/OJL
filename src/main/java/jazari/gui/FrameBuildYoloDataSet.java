@@ -432,19 +432,11 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
 
     private void buildYoloDataSet() {
         if (txt_folderPath.getText().isEmpty()) {
-            FactoryUtils.showMessageTemp("Folder path should be specified", 3000, new CallBackTrigger() {
-                @Override
-                public void trigger() {
-                }
-            });
+            FactoryUtils.showMessageTemp("Folder path should be specified", 3000, null);
             return;
         }
         if (txt_train.getText().isEmpty() || txt_val.getText().isEmpty()) {
-            FactoryUtils.showMessageTemp("At least train and val ratio must be non zero", 3000, new CallBackTrigger() {
-                @Override
-                public void trigger() {
-                }
-            });
+            FactoryUtils.showMessageTemp("At least train and val ratio must be non zero", 3000, null);
             return;
         }
         int n_train = Integer.parseInt(txt_train.getText());
@@ -452,11 +444,7 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
         int n_test = Integer.parseInt(txt_test.getText());
 
         if (n_train + n_val + n_test != 100) {
-            FactoryUtils.showMessageTemp("sum of train, val and test ratio must be 100", 3000, new CallBackTrigger() {
-                @Override
-                public void trigger() {
-                }
-            });
+            FactoryUtils.showMessageTemp("sum of train, val and test ratio must be 100", 3000, null);
             return;
         }
 
@@ -480,11 +468,7 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
                     n_val,
                     n_test
             );
-            FactoryUtils.showMessageTemp("Yolo Dataset b. generated successfully from yolo txt annotations!", 3000, new CallBackTrigger() {
-                @Override
-                public void trigger() {
-                }
-            });
+            FactoryUtils.showMessageTemp("Yolo Dataset b. generated successfully from yolo txt annotations!", 3000, null);
 
         } //eğer yolo txt seçili ise
         else if (combo_annotation_type.getSelectedIndex() == 1) {
@@ -498,11 +482,7 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
                     n_val,
                     n_test
             );
-            FactoryUtils.showMessageTemp("Yolo Dataset b. generated successfully from yolo txt annotations!", 3000, new CallBackTrigger() {
-                @Override
-                public void trigger() {
-                }
-            });
+            FactoryUtils.showMessageTemp("Yolo Dataset b. generated successfully from yolo txt annotations!", 3000, null);
         }
         dispose();
     }

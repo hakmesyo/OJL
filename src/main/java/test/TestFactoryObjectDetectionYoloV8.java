@@ -23,6 +23,7 @@ public class TestFactoryObjectDetectionYoloV8 {
     public static void main(String[] args) {
         Engine.getAllEngines();
         String modelPath="models/my_model/model_n.onnx";
+        //String modelPath="models/lane_segment/model.onnx";
         File[] files = FactoryUtils.getFileArrayInFolderByExtension("dataset/ds_simulation/test", "jpg");
         ZooModel<Image, DetectedObjects> model=FactoryObjectDetectionYoloV8.loadModel(modelPath, "OnnxRuntime");
         FrameBasicImage frm=new FrameBasicImage();
