@@ -18,6 +18,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <exec.mainClass>com.mycompany.ojl.OJL</exec.mainClass>
+        <maven.javadoc.skip>true</maven.javadoc.skip> 
     </properties>
     
     <dependencies>
@@ -267,12 +268,85 @@
             <artifactId>jcodec-javase</artifactId>
             <version>0.2.5</version>
         </dependency>
+        <!-- PROCESSING -->
+        <!-- https://mvnrepository.com/artifact/org.processing/processing-complete -->
+        <dependency>
+            <groupId>org.processing</groupId>
+            <artifactId>processing-complete</artifactId>
+            <version>3.3.7</version>
+            <type>pom</type>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.processing/core -->
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
             <version>3.3.7</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jogamp.gluegen/gluegen-rt-main -->
+        <dependency>
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt-main</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jogamp.jogl/jogl -->
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jogamp.jogl/jogl-all-main -->
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all-main</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jogamp.jogl/newt-main -->
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>newt-main</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jogamp.jogl/nativewindow-main -->
+        <dependency>
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>nativewindow-main</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.apple/AppleJavaExtensions -->
+        <dependency>
+            <groupId>com.apple</groupId>
+            <artifactId>AppleJavaExtensions</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.googlecode.gstreamer-java/gstreamer-java -->
+        <dependency>
+            <groupId>com.googlecode.gstreamer-java</groupId>
+            <artifactId>gstreamer-java</artifactId>
+            <version>1.5</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.processing/video -->
+        <dependency>
+            <groupId>org.processing</groupId>
+            <artifactId>video</artifactId>
+            <version>3.3.7</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.processing/serial -->
+        <dependency>
+            <groupId>org.processing</groupId>
+            <artifactId>serial</artifactId>
+            <version>3.3.7</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.processing/net -->
+        <dependency>
+            <groupId>org.processing</groupId>
+            <artifactId>net</artifactId>
+            <version>3.3.7</version>
+        </dependency>
+
+
+        
+        
         <!-- https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans -->
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
