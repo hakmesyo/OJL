@@ -4,20 +4,17 @@
  */
 package jazari.deep_learning.ai.djl.examples.training.transferlearning.mobilenet;
 
-import ai.djl.basicmodelzoo.BasicModelZoo;
-import ai.djl.modality.Classifications;
-import ai.djl.modality.cv.Image;
+//import ai.djl.basicmodelzoo.BasicModelZoo;
 import ai.djl.repository.Artifact;
 import ai.djl.repository.zoo.ModelLoader;
 import ai.djl.repository.zoo.ModelNotFoundException;
 import ai.djl.repository.zoo.ModelZoo;
-import ai.djl.repository.zoo.ZooModel;
+//import ai.djl.repository.zoo.BaseModelLoader;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *

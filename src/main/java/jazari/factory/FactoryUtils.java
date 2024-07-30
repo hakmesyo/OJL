@@ -318,7 +318,7 @@ public final class FactoryUtils {
         Collections.shuffle(lst, new Random(seed));
         return lst;
     }
-    
+
     public static File getFileFromChooserForPNG() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("save panel as a png file");
@@ -1291,7 +1291,7 @@ public final class FactoryUtils {
                 frame.dispose();
                 if (func != null) {
                     func.trigger();
-                }                
+                }
             }
         });
         timer.setRepeats(false);
@@ -8998,8 +8998,8 @@ public final class FactoryUtils {
         if (!circularProgressBar.isDisplayable() || !circularProgressBar.isVisible()) {
             circularProgressBar.setVisible(true);
         }
-        if (index==max-1) {
-            val=100;
+        if (index == max - 1) {
+            val = 100;
         }
         circularProgressBar.setProgress(val);
     }
@@ -9409,7 +9409,7 @@ public final class FactoryUtils {
         }
 
         // Google Earth formatında döndür (boylam, enlem)
-        return String.format("%.6f, %.6f", latitudeDegrees, longitudeDegrees);
+        return String.format("%.10f, %.10f", latitudeDegrees, longitudeDegrees);
     }
 
     /**
@@ -9464,23 +9464,78 @@ public final class FactoryUtils {
      * @param to
      * @return
      */
-    public static double gpsDirectionAngle(LatLng from, LatLng to) {
+    public static double gpsHeadingAngle(LatLng from, LatLng to) {
         double dLon = Math.toRadians(to.lng - from.lng);
 
         double lat1 = Math.toRadians(from.lat);
         double lat2 = Math.toRadians(to.lat);
-        //double lon1 = Math.toRadians(from.lng);
 
         double y = Math.sin(dLon) * Math.cos(lat2);
         double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
 
-        double bearing = Math.toDegrees(Math.atan2(y, x));
+        double heading = Math.toDegrees(Math.atan2(y, x));
 
         // Normalize the bearing to range from 0 to 360 degrees
-        bearing = (bearing + 360) % 360;
+        heading = (heading + 360) % 360;
 
-        return bearing;
+        return heading;
 
+    }
+
+    public static String replaceLast(String data, String oldChars, String newChars) {
+        int lastIndex = data.lastIndexOf(oldChars);
+        if (lastIndex != -1) {
+            return data.substring(0, lastIndex) + newChars + data.substring(lastIndex + oldChars.length());
+        } else {
+            return data;
+        }
+    }
+
+//    public static String replaceLast(String data, String oldChars, String newChars) {
+//        data = strReverse(data);
+//        data = data.replaceFirst(oldChars, newChars);
+//        data = strReverse(data);
+//        return data;
+//    }
+
+    public static String strReverse(String str) {
+        return new StringBuilder(str).reverse().toString();
+    }
+    
+    public static Robot getRobotInstance(){
+        Robot robot=null;
+        try {
+            robot = new Robot();
+        } catch (AWTException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return robot;
+    }
+
+    public static double gpsHeadingAngle(double lat1, double lon1, double lat2, double lon2) {
+        // Koordinatları radyan cinsine dönüştürme
+        lat1 = Math.toRadians(lat1);
+        lon1 = Math.toRadians(lon1);
+        lat2 = Math.toRadians(lat2);
+        lon2 = Math.toRadians(lon2);
+
+        // Boylam farkını hesaplama
+        double dlon = lon2 - lon1;
+
+        // Yön hesaplama
+        double y = Math.sin(dlon) * Math.cos(lat2);
+        double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dlon);
+        double heading = Math.atan2(y, x);
+
+        // Heading angle'ı derece cinsine dönüştürme
+        heading = Math.toDegrees(heading);
+
+        // Heading angle'ı 0 ile 360 derece arasında ayarlama
+        if (heading < 0) {
+            heading += 360;
+        }
+
+        return heading;
     }
 
     public static Point2D gpsLatLonToXYFromRefPoint(LatLng refPoint, LatLng point) {
@@ -9521,12 +9576,12 @@ public final class FactoryUtils {
         System.out.println("Copied " + copiedFiles + " out of " + files.length + " files.");
         System.out.println("Actual ratio: " + (float) copiedFiles / files.length);
     }
-    
-    public static void changeImageFileExtension(String path, String oldExtension, String newExtension){
+
+    public static void changeImageFileExtension(String path, String oldExtension, String newExtension) {
         File[] files = getFileArrayInFolderByExtension(path, oldExtension);
         for (File file : files) {
-            BufferedImage img=ImageProcess.imread(file);
-            ImageProcess.saveImage(img, file.getParent()+"/"+FactoryUtils.getFileName(file.getName())+"."+newExtension);
+            BufferedImage img = ImageProcess.imread(file);
+            ImageProcess.saveImage(img, file.getParent() + "/" + FactoryUtils.getFileName(file.getName()) + "." + newExtension);
             deleteFile(file);
         }
     }
@@ -9543,6 +9598,20 @@ public final class FactoryUtils {
             FactoryUtils.showCircularProgressBar(k, files.length);
             bekle(5);
         }
+    }
+
+    public static byte[] bufferedImageToByteArray(BufferedImage image) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(image, "png", baos);
+        } catch (IOException ex) {
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return baos.toByteArray();
+    }
+
+    public static byte[] toByteArray(BufferedImage image) {
+        return bufferedImageToByteArray(image);
     }
 
     private static class ProbabilityLabel implements Comparable<ProbabilityLabel> {

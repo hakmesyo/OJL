@@ -21,7 +21,7 @@ public class TestSensorsPC {
         for (Gpu gpu : lst) {
             System.out.println("gpu.name = " + gpu.name);
             System.out.println("gpu fans count= " + gpu.sensors.fans.size());
-            //System.out.println("fan speed:"+gpu.sensors.fans.get(0).value);
+            System.out.println("fan speed:"+gpu.sensors.fans.get(0).value);
         }
     }
 }

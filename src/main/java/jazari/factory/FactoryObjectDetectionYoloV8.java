@@ -4,6 +4,7 @@
  */
 package jazari.factory;
 
+import ai.djl.Device;
 import ai.djl.MalformedModelException;
 import ai.djl.inference.Predictor;
 import ai.djl.modality.Classifications;

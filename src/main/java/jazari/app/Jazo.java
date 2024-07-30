@@ -36,7 +36,6 @@ public class Jazo extends javax.swing.JFrame {
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     /**

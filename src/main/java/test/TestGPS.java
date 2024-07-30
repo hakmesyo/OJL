@@ -27,7 +27,7 @@ public class TestGPS {
         LatLng to=new LatLng(gpsData[1][1],gpsData[1][0]);
         double distance=FactoryUtils.gpsDistance(from, to);
         System.out.println("distance = " + distance);
-        double angle=FactoryUtils.gpsDirectionAngle(from, to);
+        double angle=FactoryUtils.gpsHeadingAngle(from, to);
         System.out.println("angle = " + angle);
     }
 }

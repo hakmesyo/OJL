@@ -2,10 +2,8 @@ package jazari.search.meta_heuristic.simulated_annealing;
 
 import java.util.Random;
 import java.util.SplittableRandom;
-import lombok.Data;
 import org.apache.commons.math3.random.JDKRandomGenerator;
 
-@Data
 public class City {
 
     private int x;

@@ -41,6 +41,7 @@ package jazari.matrix;
 import ai.djl.Application;
 import ai.djl.MalformedModelException;
 import ai.djl.Model;
+
 import ai.djl.basicdataset.cv.classification.ImageFolder;
 import ai.djl.inference.Predictor;
 import ai.djl.metric.Metrics;

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
-import org.tensorflow.TensorFlow;
+//import org.tensorflow.TensorFlow;
 
 /**
  *
@@ -45,7 +45,7 @@ public class LoadTeachableMachineTensorflow {
                         .optProgress(new ProgressBar())
                         .build();
         Engine.getEngine("TensorFlow");
-        TensorFlow.loadLibrary("C:\\Users\\cezerilab\\.djl.ai\\tensorflow\\2.10.1-cpu-win-x86_64/jnitensorflow.dll");
+        //TensorFlow.loadLibrary("C:\\Users\\cezerilab\\.djl.ai\\tensorflow\\2.10.1-cpu-win-x86_64/jnitensorflow.dll");
         ZooModel model = criteria.loadModel();
 
         Predictor<Image, Classifications> predictor = model.newPredictor();

@@ -44,13 +44,6 @@
             <version>${logback.version}</version>
         </dependency>
         
-        <!-- https://mvnrepository.com/artifact/org.rxtx/rxtx 
-        <dependency>
-            <groupId>org.rxtx</groupId>
-            <artifactId>rxtx</artifactId>
-            <version>2.1.7</version>
-        </dependency>-->
-        
         <!-- https://mvnrepository.com/artifact/com.fazecast/jSerialComm -->
         <dependency>
             <groupId>com.fazecast</groupId>
@@ -58,14 +51,6 @@
             <version>2.11.0</version>
         </dependency>
 
-               
-        <!-- https://mvnrepository.com/artifact/commons-io/commons-io 
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
-        </dependency>-->
-        
         <!-- https://mvnrepository.com/artifact/ai.djl/api -->
         <dependency>
             <groupId>ai.djl</groupId>
@@ -108,34 +93,46 @@
             <scope>runtime</scope>
             <version>1.9.1</version>
         </dependency>
-        
-        <!-- Pytorch -->
+        <dependency>
+            <groupId>ai.djl.onnxruntime</groupId>
+            <artifactId>onnxruntime-engine</artifactId>
+            <version>0.28.0</version>
+            <scope>runtime</scope>
+        </dependency>        
+        <!--
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
-            <artifactId>pytorch-model-zoo</artifactId>
+            <artifactId>pytorch-engine</artifactId>
             <version>0.28.0</version>
+            <scope>runtime</scope>
+        </dependency>        
+        <dependency>
+            <groupId>ai.djl.pytorch</groupId>
+            <artifactId>pytorch-native-cu121</artifactId>
+            <classifier>win-x86_64</classifier>
+            <version>2.3.1</version>
+            <scope>runtime</scope>
         </dependency>
-        <!-- TensorFlow -->
+        <dependency>
+            <groupId>ai.djl.pytorch</groupId>
+            <artifactId>pytorch-jni</artifactId>
+            <version>2.3.1-0.29.0</version>
+            <scope>runtime</scope>
+        </dependency> 
+                 
         <dependency>
             <groupId>ai.djl.tensorflow</groupId>
             <artifactId>tensorflow-model-zoo</artifactId>
             <version>0.28.0</version>
         </dependency>
         
-        <!-- https://mvnrepository.com/artifact/ai.djl.onnxruntime/onnxruntime-engine -->
         <dependency>
             <groupId>ai.djl.onnxruntime</groupId>
             <artifactId>onnxruntime-engine</artifactId>
             <version>0.28.0</version>
+            <scope>runtime</scope>
         </dependency>
-
-        
-        <!-- https://mvnrepository.com/artifact/com.microsoft.onnxruntime/onnxruntime -->
-        <dependency>
-            <groupId>com.microsoft.onnxruntime</groupId>
-            <artifactId>onnxruntime</artifactId>
-            <version>1.18.0</version>
-        </dependency>
+        --> 
         
         <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
         <dependency>
@@ -144,12 +141,12 @@
             <version>1.16.1</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.kaitai/kaitai-struct-runtime -->
+        <!-- https://mvnrepository.com/artifact/io.kaitai/kaitai-struct-runtime 
         <dependency>
             <groupId>io.kaitai</groupId>
             <artifactId>kaitai-struct-runtime</artifactId>
             <version>0.10</version>
-        </dependency>
+        </dependency>-->
         
         <!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
         <dependency>
@@ -208,13 +205,13 @@
             <version>2.2.1</version>
         </dependency>
         
-        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.26</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/de.sciss/jwave -->
         <dependency>
@@ -257,7 +254,7 @@
             <artifactId>tablesaw-jsplot</artifactId>
             <version>0.43.1</version>
         </dependency>
-        <!-- for screen recording -->
+        <!-- for screen recording 
         <dependency>
             <groupId>org.jcodec</groupId>
             <artifactId>jcodec</artifactId>
@@ -267,7 +264,7 @@
             <groupId>org.jcodec</groupId>
             <artifactId>jcodec-javase</artifactId>
             <version>0.2.5</version>
-        </dependency>
+        </dependency>-->
         <!-- PROCESSING -->
         <!-- https://mvnrepository.com/artifact/org.processing/processing-complete -->
         <dependency>
@@ -347,18 +344,18 @@
 
         
         
-        <!-- https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans -->
+        <!-- https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans 
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
             <artifactId>xmlbeans</artifactId>
             <version>5.2.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/net.sf.saxon/Saxon-HE -->
+        </dependency>-->
+        <!-- https://mvnrepository.com/artifact/net.sf.saxon/Saxon-HE 
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
             <version>12.4</version>
-        </dependency>
+        </dependency>-->
         <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
         <dependency>
             <groupId>org.openpnp</groupId>
@@ -390,12 +387,12 @@
             <artifactId>google-maps-services</artifactId>
             <version>2.2.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-imaging -->
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-imaging 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-imaging</artifactId>
             <version>1.0.0-alpha5</version>
-        </dependency>
+        </dependency>-->
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -417,12 +414,12 @@
             <artifactId>tika-core</artifactId>
             <version>2.7.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.17.2</version>
-        </dependency>
+        </dependency>-->
 
     </dependencies>
     
