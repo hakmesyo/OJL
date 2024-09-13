@@ -1059,6 +1059,8 @@ public final class ImageProcess {
                 return IJ.openImage(fileName).getBufferedImage();
             } else {
                 // Diğer formatlar için standart ImageIO kullan
+                
+                
                 return ImageIO.read(file);
             }
         } catch (IOException ex) {

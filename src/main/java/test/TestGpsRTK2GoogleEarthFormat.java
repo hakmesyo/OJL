@@ -12,7 +12,7 @@ import jazari.factory.FactoryUtils;
  */
 public class TestGpsRTK2GoogleEarthFormat {
     public static void main(String[] args) {
-        String s=FactoryUtils.gpsConvertRtk2LatLongFormat("3757.8019432,N,04151.0025488,E");
+        String s=FactoryUtils.gpsConvertRtk2LatLongString("3757.8019432,N,04151.0025488,E");
         System.out.println("s = " + s);
     }
 }

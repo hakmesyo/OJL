@@ -251,10 +251,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     }
 
     public void setImage(BufferedImage image, String imagePath, String caption, boolean isClearBbox) {
-        if (setImageCounter++ > 50) {
-            setImageCounter = 0;
-            System.gc();
-        }
+//        if (setImageCounter++ > 50) {
+//            setImageCounter = 0;
+//            System.gc();
+//        }
         this.caption = caption;
         String folderName = FactoryUtils.getFolderPath(imagePath);
         currentFolderName = folderName;

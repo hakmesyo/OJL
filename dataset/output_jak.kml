@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:kml xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:ns2="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xal="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+    <ns2:Document>
+        <ns2:name>Generated Path</ns2:name>
+        <ns2:Style id="yellowLineGreenPoly">
+            <ns2:LineStyle>
+                <ns2:color>7f00ffff</ns2:color>
+                <ns2:width>4.0</ns2:width>
+            </ns2:LineStyle>
+        </ns2:Style>
+        <ns2:Placemark>
+            <ns2:name>Path</ns2:name>
+            <ns2:styleUrl>#yellowLineGreenPoly</ns2:styleUrl>
+            <ns2:LineString>
+                <ns2:coordinates>41.8501618702164,37.96327558660128 41.8501530187302,37.96329006242495 41.85014398695938,37.96330404854646 41.85013339225093,37.96331128878102 41.85012029102375,37.96331543272915</ns2:coordinates>
+            </ns2:LineString>
+        </ns2:Placemark>
+    </ns2:Document>
+</ns2:kml>

@@ -48,6 +48,11 @@ import au.com.bytecode.opencsv.CSVReader;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.google.gson.Gson;
 import com.google.maps.model.LatLng;
+import de.micromata.opengis.kml.v_2_2_0.Document;
+import de.micromata.opengis.kml.v_2_2_0.Kml;
+import de.micromata.opengis.kml.v_2_2_0.LineString;
+import de.micromata.opengis.kml.v_2_2_0.Placemark;
+import de.micromata.opengis.kml.v_2_2_0.Style;
 import java.awt.AWTException;
 import jazari.interfaces.InterfaceCallBack;
 import jazari.types.TDeviceState;
@@ -80,7 +85,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_INT_BGR;
 import java.io.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -137,6 +144,8 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import jazari.gui.FrameCircularProgressBar;
 import jazari.utils.DataAnalytics;
 import jazari.gui.FrameImage;
@@ -160,11 +169,22 @@ import org.apache.commons.io.FileUtils;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.CoordinateTransform;
+import org.locationtech.proj4j.CoordinateTransformFactory;
+import org.locationtech.proj4j.ProjCoordinate;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import test.Deneme;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
@@ -181,6 +201,7 @@ public final class FactoryUtils {
     public static Robot robot;
     public static String saveImageFolder = FactoryUtils.getDefaultDirectory();
     public static FrameCircularProgressBar circularProgressBar = null;
+    public static JFileChooser chooser= new JFileChooser();;
 
     static {
         try {
@@ -190,6 +211,7 @@ public final class FactoryUtils {
         }
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
+            //chooser = new JFileChooser();
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -320,7 +342,7 @@ public final class FactoryUtils {
     }
 
     public static File getFileFromChooserForPNG() {
-        JFileChooser chooser = new JFileChooser();
+        //JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("save panel as a png file");
         chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
         chooser.setFileFilter(new FileNameExtensionFilter("png", "png"));
@@ -337,7 +359,7 @@ public final class FactoryUtils {
     }
 
     public static File getFileFromChooserSave() {
-        JFileChooser chooser = new JFileChooser();
+        //JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new File(getCurrentDirectory()));
         chooser.setDialogTitle("save as file");
         chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
@@ -351,7 +373,8 @@ public final class FactoryUtils {
     }
 
     public static File getFileFromChooserSave(String folderPath) {
-        JFileChooser chooser = new JFileChooser(folderPath);
+        //JFileChooser chooser = new JFileChooser(folderPath);
+        chooser.setCurrentDirectory(new File(folderPath));
         chooser.setDialogTitle("save as file");
         chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
 //        chooser.setFileFilter(new FileNameExtensionFilter("png", "png"));
@@ -364,7 +387,7 @@ public final class FactoryUtils {
     }
 
     public static File getFileFromChooserOpen() {
-        JFileChooser chooser = new JFileChooser();
+        //JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new File(getCurrentDirectory()));
         chooser.setDialogTitle("select file");
         chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
@@ -377,7 +400,7 @@ public final class FactoryUtils {
     }
 
     public static File getFileFromChooserOpenFilterImageFiles() {
-        JFileChooser chooser = new JFileChooser();
+        //JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new File(getCurrentDirectory()));
         chooser.setDialogTitle("select file");
         chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
@@ -392,7 +415,8 @@ public final class FactoryUtils {
     }
 
     public static File getFileFromChooserOpen(String folderPath) {
-        JFileChooser chooser = new JFileChooser(folderPath);
+//        JFileChooser chooser = new JFileChooser(folderPath);
+        chooser.setCurrentDirectory(new File(folderPath));
         chooser.setDialogTitle("select file");
         chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
 //        chooser.setFileFilter(new FileNameExtensionFilter("png", "png"));
@@ -409,7 +433,8 @@ public final class FactoryUtils {
     }
 
     public static File browseDirectory(String path) {
-        JFileChooser chooser = new JFileChooser(path);
+        //JFileChooser chooser = new JFileChooser(path);
+        chooser.setCurrentDirectory(new File(path));
         chooser.setDialogTitle("Browse Directory");
         chooser.setSize(new java.awt.Dimension(45, 37)); // Generated
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -1700,109 +1725,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-    public static String gpsUTM2DMS(int zone, double px, double py, char Letter) {
-        String[] s = gpsUTM2Deg(zone, px, py, Letter).split(" ");
-        double d1 = Double.parseDouble(s[0]);
-        double deg1 = (int) d1;
-        double m1 = (int) ((d1 - deg1) * 60);
-        double s1 = ((d1 - deg1) * 60 - m1) * 60;
-        String str1 = deg1 + ":" + m1 + ":" + s1;
-
-        double d2 = Double.parseDouble(s[1]);
-        double deg2 = (int) d2;
-        double m2 = (int) ((d2 - deg2) * 60);
-        double s2 = ((d2 - deg2) * 60 - m2) * 60;
-        String str2 = deg2 + ":" + m2 + ":" + s2;
-        return str1 + " " + str2;
-    }
-
-    public static String gpsUTM2Deg(int zone, double px, double py, char Letter) {
-        double Easting = px;
-        double Northing = py;
-        double Hem;
-        if (Letter > 'M') {
-            Hem = 'N';
-        } else {
-            Hem = 'S';
-        }
-        double north;
-        if (Hem == 'S') {
-            north = Northing - 10000000;
-        } else {
-            north = Northing;
-        }
-        double latitude = (north / 6366197.724 / 0.9996 + (1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) - 0.006739496742 * Math.sin(north / 6366197.724 / 0.9996) * Math.cos(north / 6366197.724 / 0.9996) * (Math.atan(Math.cos(Math.atan((Math.exp((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3)) - Math.exp(-(Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3))) / 2 / Math.cos((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996))) * Math.tan((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996)) - north / 6366197.724 / 0.9996) * 3 / 2) * (Math.atan(Math.cos(Math.atan((Math.exp((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3)) - Math.exp(-(Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3))) / 2 / Math.cos((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996))) * Math.tan((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996)) - north / 6366197.724 / 0.9996)) * 180 / Math.PI;
-        latitude = Math.round(latitude * 10000000);
-        latitude = latitude / 10000000;
-        double longitude = Math.atan((Math.exp((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3)) - Math.exp(-(Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3))) / 2 / Math.cos((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996)) * 180 / Math.PI + zone * 6 - 183;
-        longitude = Math.round(longitude * 10000000);
-        longitude = longitude / 10000000;
-        return latitude + " " + longitude;
-    }
-
-    public static String gpsDegMS2UTM(String s1, String s2) {
-        double lat = Double.parseDouble(s1.split(":")[0]) + Double.parseDouble(s1.split(":")[1]) / 60.0 + Double.parseDouble(s1.split(":")[2]) / 3600.0;
-        double longt = Double.parseDouble(s2.split(":")[0]) + Double.parseDouble(s2.split(":")[1]) / 60.0 + Double.parseDouble(s2.split(":")[2]) / 3600.0;
-        return gpsDeg2UTM(lat, longt);
-    }
-
-    public static String gpsDeg2UTM(double Lat, double Lon) {
-        double Easting;
-        double Northing;
-        int Zone = (int) Math.floor(Lon / 6 + 31);
-        char Letter;
-        if (Lat < -72) {
-            Letter = 'C';
-        } else if (Lat < -64) {
-            Letter = 'D';
-        } else if (Lat < -56) {
-            Letter = 'E';
-        } else if (Lat < -48) {
-            Letter = 'F';
-        } else if (Lat < -40) {
-            Letter = 'G';
-        } else if (Lat < -32) {
-            Letter = 'H';
-        } else if (Lat < -24) {
-            Letter = 'J';
-        } else if (Lat < -16) {
-            Letter = 'K';
-        } else if (Lat < -8) {
-            Letter = 'L';
-        } else if (Lat < 0) {
-            Letter = 'M';
-        } else if (Lat < 8) {
-            Letter = 'N';
-        } else if (Lat < 16) {
-            Letter = 'P';
-        } else if (Lat < 24) {
-            Letter = 'Q';
-        } else if (Lat < 32) {
-            Letter = 'R';
-        } else if (Lat < 40) {
-            Letter = 'S';
-        } else if (Lat < 48) {
-            Letter = 'T';
-        } else if (Lat < 56) {
-            Letter = 'U';
-        } else if (Lat < 64) {
-            Letter = 'V';
-        } else if (Lat < 72) {
-            Letter = 'W';
-        } else {
-            Letter = 'X';
-        }
-        Easting = 0.5 * Math.log((1 + Math.cos(Lat * Math.PI / 180) * Math.sin(Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180)) / (1 - Math.cos(Lat * Math.PI / 180) * Math.sin(Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180))) * 0.9996 * 6399593.62 / Math.pow((1 + Math.pow(0.0820944379, 2) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)), 0.5) * (1 + Math.pow(0.0820944379, 2) / 2 * Math.pow((0.5 * Math.log((1 + Math.cos(Lat * Math.PI / 180) * Math.sin(Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180)) / (1 - Math.cos(Lat * Math.PI / 180) * Math.sin(Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180)))), 2) * Math.pow(Math.cos(Lat * Math.PI / 180), 2) / 3) + 500000;
-        Easting = Math.round(Easting * 100) * 0.01;
-        Northing = (Math.atan(Math.tan(Lat * Math.PI / 180) / Math.cos((Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180))) - Lat * Math.PI / 180) * 0.9996 * 6399593.625 / Math.sqrt(1 + 0.006739496742 * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) * (1 + 0.006739496742 / 2 * Math.pow(0.5 * Math.log((1 + Math.cos(Lat * Math.PI / 180) * Math.sin((Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180))) / (1 - Math.cos(Lat * Math.PI / 180) * Math.sin((Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180)))), 2) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) + 0.9996 * 6399593.625 * (Lat * Math.PI / 180 - 0.005054622556 * (Lat * Math.PI / 180 + Math.sin(2 * Lat * Math.PI / 180) / 2) + 4.258201531e-05 * (3 * (Lat * Math.PI / 180 + Math.sin(2 * Lat * Math.PI / 180) / 2) + Math.sin(2 * Lat * Math.PI / 180) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) / 4 - 1.674057895e-07 * (5 * (3 * (Lat * Math.PI / 180 + Math.sin(2 * Lat * Math.PI / 180) / 2) + Math.sin(2 * Lat * Math.PI / 180) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) / 4 + Math.sin(2 * Lat * Math.PI / 180) * Math.pow(Math.cos(Lat * Math.PI / 180), 2) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) / 3);
-        if (Letter < 'M') {
-            Northing = Northing + 10000000;
-        }
-        Northing = Math.round(Northing * 100) * 0.01;
-        String ret = Easting + " " + Northing + " " + Zone;
-        return ret;
-    }
-
     public static int[] toIntArray1D(byte[] m) {
         int[] ret = new int[m.length];
         for (int i = 0; i < m.length; i++) {
@@ -2234,14 +2156,21 @@ public final class FactoryUtils {
      * @return
      */
     public static double formatDouble(double num) {
-        float q = 0;
         try {
-            DecimalFormat df = new DecimalFormat("#.000");
-            q = Float.parseFloat(df.format(num).replace(",", "."));
+            BigDecimal bd = new BigDecimal(num);
+            bd = bd.setScale(3, RoundingMode.HALF_UP);
+            return bd.doubleValue();
         } catch (Exception e) {
             return -10000000000000.0;
         }
-        return q;
+//        float q = 0;
+//        try {
+//            DecimalFormat df = new DecimalFormat("#.000");
+//            q = Float.parseFloat(df.format(num).replace(",", "."));
+//        } catch (Exception e) {
+//            return -10000000000000.0;
+//        }
+//        return q;
     }
 
     public static String formatFloatAsString(float num, int n) {
@@ -9292,30 +9221,6 @@ public final class FactoryUtils {
         return ret;
     }
 
-    /**
-     * convert gps coordinate to decimal (double)
-     * <a href="https://coordinates-converter.com/en/decimal/37.965177,41.851559?karte=OpenStreetMap&zoom=16">
-     * link </a>
-     *
-     * @param latitude : (Y axis, Parallel) 41°51'4.61"D --> 41:51:4.61:E
-     * @param longtitude : (X axis, Meridian) 37°57'43.60"K --> 37:57:43.60:N
-     * @return
-     */
-    public static LatLng gpsToDecimalCoordinate(String latitude, String longtitude) {
-        String[] x = longtitude.split(":");
-        double longt = Double.parseDouble(x[0]) + Double.parseDouble(x[1]) / 60.0 + Double.parseDouble(x[2]) / 3600.0;
-        if (x[3].equals("S")) {
-            longt = -longt;
-        }
-        String[] y = latitude.split(":");
-        double lat = Double.parseDouble(y[0]) + Double.parseDouble(y[1]) / 60.0 + Double.parseDouble(y[2]) / 3600.0;
-        if (y[3].equals("W")) {
-            lat = -lat;
-        }
-        LatLng ret = new LatLng(lat, longt);
-        return ret;
-    }
-
     public static TBoundingBox getBoundingBox(int[][] maskImage) {
         return findBoundingBox(maskImage);
     }
@@ -9379,7 +9284,7 @@ public final class FactoryUtils {
      * @param gpsCoordinates ie: 3757.8019432,N,04151.0025488,E
      * @return i.e: 37.96336572, 41.85004248
      */
-    public static String gpsConvertRtk2LatLongFormat(String gpsCoordinates) {
+    public static String gpsConvertRtk2LatLongString(String gpsCoordinates) {
         String[] parts = gpsCoordinates.split(",");
 
         if (parts.length != 4) {
@@ -9409,7 +9314,40 @@ public final class FactoryUtils {
         }
 
         // Google Earth formatında döndür (boylam, enlem)
-        return String.format("%.10f, %.10f", latitudeDegrees, longitudeDegrees);
+        //return String.format("%.10f %.10f", latitudeDegrees, longitudeDegrees);
+        return latitudeDegrees + " " + longitudeDegrees;
+    }
+
+    public static LatLng gpsConvertRtk2LatLong(String gpsCoordinates) {
+        String[] parts = gpsCoordinates.split(",");
+
+        if (parts.length != 4) {
+            return null;
+        }
+
+        double latitudeDegrees = Double.parseDouble(parts[0].substring(0, parts[0].indexOf(".") - 2));
+        double latitudeMinutes = Double.parseDouble(parts[0].substring(parts[0].indexOf(".") - 2));
+        char latitudeDirection = parts[1].charAt(0);
+
+        double longitudeDegrees = Double.parseDouble(parts[2].substring(0, parts[2].indexOf(".") - 2));
+        double longitudeMinutes = Double.parseDouble(parts[2].substring(parts[2].indexOf(".") - 2));
+        char longitudeDirection = parts[3].charAt(0);
+
+        // Enlemi ondalık dereceye dönüştür
+        latitudeDegrees = latitudeDegrees + (latitudeMinutes / 60);
+
+        // Boylamı ondalık dereceye dönüştür
+        longitudeDegrees = longitudeDegrees + (longitudeMinutes / 60);
+
+        // Yönleri işler
+        if (latitudeDirection == 'S') {
+            latitudeDegrees *= -1;
+        }
+        if (longitudeDirection == 'W') {
+            longitudeDegrees *= -1;
+        }
+
+        return new LatLng(latitudeDegrees, longitudeDegrees);
     }
 
     /**
@@ -9482,6 +9420,341 @@ public final class FactoryUtils {
 
     }
 
+    /**
+     * convert gps coordinate to decimal (double)
+     * <a href="https://coordinates-converter.com/en/decimal/37.965177,41.851559?karte=OpenStreetMap&zoom=16">
+     * link </a>
+     *
+     * @param latitude : (Y axis, Parallel) 41°51'4.61"D --> 41:51:4.61:E
+     * @param longtitude : (X axis, Meridian) 37°57'43.60"K --> 37:57:43.60:N
+     * @return
+     */
+    public static LatLng gpsToDecimalCoordinate(String latitude, String longtitude) {
+        String[] x = longtitude.split(":");
+        double longt = Double.parseDouble(x[0]) + Double.parseDouble(x[1]) / 60.0 + Double.parseDouble(x[2]) / 3600.0;
+        if (x[3].equals("S")) {
+            longt = -longt;
+        }
+        String[] y = latitude.split(":");
+        double lat = Double.parseDouble(y[0]) + Double.parseDouble(y[1]) / 60.0 + Double.parseDouble(y[2]) / 3600.0;
+        if (y[3].equals("W")) {
+            lat = -lat;
+        }
+        LatLng ret = new LatLng(lat, longt);
+        return ret;
+    }
+
+    private static final CRSFactory crsFactory = new CRSFactory();
+    private static final CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
+    private static final CoordinateReferenceSystem srcCRS = crsFactory.createFromName("EPSG:4326");// WGS84
+    //siirt için
+    private static final CoordinateReferenceSystem dstCRS = crsFactory.createFromName("EPSG:32638");// UTM zone 38N Siirt için
+    //gebze için    
+    //private static final CoordinateReferenceSystem dstCRS = crsFactory.createFromName("EPSG:32635");// UTM zone 35N gebze için
+    private static final CoordinateTransform transform = ctFactory.createTransform(srcCRS, dstCRS);
+
+    public static double[] gpsConvertToUTM(double lat, double lon) {
+        ProjCoordinate srcCoord = new ProjCoordinate(lon, lat);
+        ProjCoordinate dstCoord = new ProjCoordinate();
+
+        transform.transform(srcCoord, dstCoord);
+
+        return new double[]{dstCoord.x, dstCoord.y};
+    }
+
+    public static double[] gpsConvertToUTM(double[] lat_lon) {
+        ProjCoordinate srcCoord = new ProjCoordinate(lat_lon[1], lat_lon[0]);
+        ProjCoordinate dstCoord = new ProjCoordinate();
+
+        transform.transform(srcCoord, dstCoord);
+
+        return new double[]{dstCoord.x, dstCoord.y};
+    }
+
+    public static double[] gpsConvertToUTM(LatLng pos) {
+        double lat = pos.lat;
+        double lon = pos.lng;
+        ProjCoordinate srcCoord = new ProjCoordinate(lon, lat);
+        ProjCoordinate dstCoord = new ProjCoordinate();
+
+        transform.transform(srcCoord, dstCoord);
+
+        return new double[]{dstCoord.x, dstCoord.y};
+    }
+
+    public static String gpsUTM2DMS(int zone, double px, double py, char Letter) {
+        String[] s = gpsUTM2Deg(zone, px, py, Letter).split(" ");
+        double d1 = Double.parseDouble(s[0]);
+        double deg1 = (int) d1;
+        double m1 = (int) ((d1 - deg1) * 60);
+        double s1 = ((d1 - deg1) * 60 - m1) * 60;
+        String str1 = deg1 + ":" + m1 + ":" + s1;
+
+        double d2 = Double.parseDouble(s[1]);
+        double deg2 = (int) d2;
+        double m2 = (int) ((d2 - deg2) * 60);
+        double s2 = ((d2 - deg2) * 60 - m2) * 60;
+        String str2 = deg2 + ":" + m2 + ":" + s2;
+        return str1 + " " + str2;
+    }
+
+    public static String gpsUTM2Deg(int zone, double px, double py, char Letter) {
+        double Easting = px;
+        double Northing = py;
+        double Hem;
+        if (Letter > 'M') {
+            Hem = 'N';
+        } else {
+            Hem = 'S';
+        }
+        double north;
+        if (Hem == 'S') {
+            north = Northing - 10000000;
+        } else {
+            north = Northing;
+        }
+        double latitude = (north / 6366197.724 / 0.9996 + (1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) - 0.006739496742 * Math.sin(north / 6366197.724 / 0.9996) * Math.cos(north / 6366197.724 / 0.9996) * (Math.atan(Math.cos(Math.atan((Math.exp((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3)) - Math.exp(-(Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3))) / 2 / Math.cos((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996))) * Math.tan((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996)) - north / 6366197.724 / 0.9996) * 3 / 2) * (Math.atan(Math.cos(Math.atan((Math.exp((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3)) - Math.exp(-(Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3))) / 2 / Math.cos((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996))) * Math.tan((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996)) - north / 6366197.724 / 0.9996)) * 180 / Math.PI;
+        latitude = Math.round(latitude * 10000000);
+        latitude = latitude / 10000000;
+        double longitude = Math.atan((Math.exp((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3)) - Math.exp(-(Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) / 3))) / 2 / Math.cos((north - 0.9996 * 6399593.625 * (north / 6366197.724 / 0.9996 - 0.006739496742 * 3 / 4 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.pow(0.006739496742 * 3 / 4, 2) * 5 / 3 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 - Math.pow(0.006739496742 * 3 / 4, 3) * 35 / 27 * (5 * (3 * (north / 6366197.724 / 0.9996 + Math.sin(2 * north / 6366197.724 / 0.9996) / 2) + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 4 + Math.sin(2 * north / 6366197.724 / 0.9996) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2) * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) / 3)) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))) * (1 - 0.006739496742 * Math.pow((Easting - 500000) / (0.9996 * 6399593.625 / Math.sqrt((1 + 0.006739496742 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)))), 2) / 2 * Math.pow(Math.cos(north / 6366197.724 / 0.9996), 2)) + north / 6366197.724 / 0.9996)) * 180 / Math.PI + zone * 6 - 183;
+        longitude = Math.round(longitude * 10000000);
+        longitude = longitude / 10000000;
+        return latitude + " " + longitude;
+    }
+
+    public static String gpsDegMS2UTM(String s1, String s2) {
+        double lat = Double.parseDouble(s1.split(":")[0]) + Double.parseDouble(s1.split(":")[1]) / 60.0 + Double.parseDouble(s1.split(":")[2]) / 3600.0;
+        double longt = Double.parseDouble(s2.split(":")[0]) + Double.parseDouble(s2.split(":")[1]) / 60.0 + Double.parseDouble(s2.split(":")[2]) / 3600.0;
+        return gpsDeg2UTM(lat, longt);
+    }
+
+    public static String gpsDeg2UTM(double Lat, double Lon) {
+        double Easting;
+        double Northing;
+        int Zone = (int) Math.floor(Lon / 6 + 31);
+        char Letter;
+        if (Lat < -72) {
+            Letter = 'C';
+        } else if (Lat < -64) {
+            Letter = 'D';
+        } else if (Lat < -56) {
+            Letter = 'E';
+        } else if (Lat < -48) {
+            Letter = 'F';
+        } else if (Lat < -40) {
+            Letter = 'G';
+        } else if (Lat < -32) {
+            Letter = 'H';
+        } else if (Lat < -24) {
+            Letter = 'J';
+        } else if (Lat < -16) {
+            Letter = 'K';
+        } else if (Lat < -8) {
+            Letter = 'L';
+        } else if (Lat < 0) {
+            Letter = 'M';
+        } else if (Lat < 8) {
+            Letter = 'N';
+        } else if (Lat < 16) {
+            Letter = 'P';
+        } else if (Lat < 24) {
+            Letter = 'Q';
+        } else if (Lat < 32) {
+            Letter = 'R';
+        } else if (Lat < 40) {
+            Letter = 'S';
+        } else if (Lat < 48) {
+            Letter = 'T';
+        } else if (Lat < 56) {
+            Letter = 'U';
+        } else if (Lat < 64) {
+            Letter = 'V';
+        } else if (Lat < 72) {
+            Letter = 'W';
+        } else {
+            Letter = 'X';
+        }
+        Easting = 0.5 * Math.log((1 + Math.cos(Lat * Math.PI / 180) * Math.sin(Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180)) / (1 - Math.cos(Lat * Math.PI / 180) * Math.sin(Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180))) * 0.9996 * 6399593.62 / Math.pow((1 + Math.pow(0.0820944379, 2) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)), 0.5) * (1 + Math.pow(0.0820944379, 2) / 2 * Math.pow((0.5 * Math.log((1 + Math.cos(Lat * Math.PI / 180) * Math.sin(Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180)) / (1 - Math.cos(Lat * Math.PI / 180) * Math.sin(Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180)))), 2) * Math.pow(Math.cos(Lat * Math.PI / 180), 2) / 3) + 500000;
+        Easting = Math.round(Easting * 100) * 0.01;
+        Northing = (Math.atan(Math.tan(Lat * Math.PI / 180) / Math.cos((Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180))) - Lat * Math.PI / 180) * 0.9996 * 6399593.625 / Math.sqrt(1 + 0.006739496742 * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) * (1 + 0.006739496742 / 2 * Math.pow(0.5 * Math.log((1 + Math.cos(Lat * Math.PI / 180) * Math.sin((Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180))) / (1 - Math.cos(Lat * Math.PI / 180) * Math.sin((Lon * Math.PI / 180 - (6 * Zone - 183) * Math.PI / 180)))), 2) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) + 0.9996 * 6399593.625 * (Lat * Math.PI / 180 - 0.005054622556 * (Lat * Math.PI / 180 + Math.sin(2 * Lat * Math.PI / 180) / 2) + 4.258201531e-05 * (3 * (Lat * Math.PI / 180 + Math.sin(2 * Lat * Math.PI / 180) / 2) + Math.sin(2 * Lat * Math.PI / 180) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) / 4 - 1.674057895e-07 * (5 * (3 * (Lat * Math.PI / 180 + Math.sin(2 * Lat * Math.PI / 180) / 2) + Math.sin(2 * Lat * Math.PI / 180) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) / 4 + Math.sin(2 * Lat * Math.PI / 180) * Math.pow(Math.cos(Lat * Math.PI / 180), 2) * Math.pow(Math.cos(Lat * Math.PI / 180), 2)) / 3);
+        if (Letter < 'M') {
+            Northing = Northing + 10000000;
+        }
+        Northing = Math.round(Northing * 100) * 0.01;
+        String ret = Easting + " " + Northing + " " + Zone;
+        return ret;
+    }
+
+    public static void gpsGenerateKMLFromLatLong(List<LatLng> coordinates, String outputPath) {
+        final Kml kml = new Kml();
+        Document document = kml.createAndSetDocument().withName("Generated Path");
+
+        Placemark placemark = document.createAndAddPlacemark()
+                .withName("Path")
+                .withStyleUrl("#yellowLineGreenPoly");
+
+        LineString lineString = placemark.createAndSetLineString();
+        for (LatLng coord : coordinates) {
+            lineString.addToCoordinates(coord.lng, coord.lat); // Longitude, Latitude
+        }
+
+        Style style = document.createAndAddStyle()
+                .withId("yellowLineGreenPoly");
+        style.createAndSetLineStyle()
+                .withColor("7f00ffff")
+                .withWidth(4);
+
+        try {
+            kml.marshal(new File(outputPath));
+            System.out.println("KML file has been generated successfully: " + outputPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void gpsGenerateKMLFromDoubleLatLong(List<double[]> coordinates, String outputPath) {
+        final Kml kml = new Kml();
+        Document document = kml.createAndSetDocument().withName("Generated Path");
+
+        Placemark placemark = document.createAndAddPlacemark()
+                .withName("Path")
+                .withStyleUrl("#yellowLineGreenPoly");
+
+        LineString lineString = placemark.createAndSetLineString();
+        for (double[] coord : coordinates) {
+            lineString.addToCoordinates(coord[1], coord[0]); // Longitude, Latitude
+        }
+
+        Style style = document.createAndAddStyle()
+                .withId("yellowLineGreenPoly");
+        style.createAndSetLineStyle()
+                .withColor("7f00ffff")
+                .withWidth(4);
+
+        try {
+            kml.marshal(new File(outputPath));
+            System.out.println("KML file has been generated successfully: " + outputPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String gpsGenerateKMLFromDoubleLatLong(List<double[]> coordinates) {
+        final Kml kml = new Kml();
+        Document document = kml.createAndSetDocument().withName("Generated Path");
+
+        Placemark placemark = document.createAndAddPlacemark()
+                .withName("Path")
+                .withStyleUrl("#yellowLineGreenPoly");
+
+        LineString lineString = placemark.createAndSetLineString();
+        for (double[] coord : coordinates) {
+            lineString.addToCoordinates(coord[1], coord[0]); // Longitude, Latitude
+        }
+
+        Style style = document.createAndAddStyle()
+                .withId("yellowLineGreenPoly");
+        style.createAndSetLineStyle()
+                .withColor("7f00ffff")
+                .withWidth(4);
+
+        return kml.toString();
+    }
+
+    public static List<double[]> gpsGetGPSPointsFromKMLAsDouble(String kmlFilePath) {
+        List<double[]> gpsPoints = new ArrayList<>();
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            SAXParser saxParser = factory.newSAXParser();
+
+            DefaultHandler handler = new DefaultHandler() {
+                boolean bCoordinates = false;
+                StringBuilder coordBuilder = new StringBuilder();
+
+                public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+                    if (localName.equals("coordinates")) {
+                        bCoordinates = true;
+                        coordBuilder.setLength(0);
+                    }
+                }
+
+                public void endElement(String uri, String localName, String qName) throws SAXException {
+                    if (localName.equals("coordinates")) {
+                        bCoordinates = false;
+                        processCoordinates(coordBuilder.toString().trim());
+                    }
+                }
+
+                public void characters(char ch[], int start, int length) throws SAXException {
+                    if (bCoordinates) {
+                        coordBuilder.append(ch, start, length);
+                    }
+                }
+
+                private void processCoordinates(String coordinatesText) {
+                    String[] coordinatePairs = coordinatesText.split("\\s+");
+                    for (String pair : coordinatePairs) {
+                        String[] lonLat = pair.split(",");
+                        if (lonLat.length >= 2) {
+                            try {
+                                double lon = Double.parseDouble(lonLat[0]);
+                                double lat = Double.parseDouble(lonLat[1]);
+                                gpsPoints.add(new double[]{lat, lon});
+                            } catch (NumberFormatException e) {
+                                // Hatalı koordinat formatını sessizce geç
+                            }
+                        }
+                    }
+                }
+            };
+
+            saxParser.parse(new File(kmlFilePath), handler);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return gpsPoints;
+    }
+
+    public static List<LatLng> gpsGetGPSPointsFromKMLAsLatLong(String kml_path) {
+        List<LatLng> gpsPoints = new ArrayList<>();
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            org.w3c.dom.Document doc = builder.parse(new ByteArrayInputStream(kml_path.getBytes()));
+            NodeList coordinatesList = doc.getElementsByTagName("ns2:coordinates");
+
+            if (coordinatesList.getLength() == 0) {
+                System.out.println("No coordinates found in the KML content.");
+                return gpsPoints;
+            }
+
+            for (int i = 0; i < coordinatesList.getLength(); i++) {
+                Node coordinatesNode = coordinatesList.item(i);
+                String coordinatesText = coordinatesNode.getTextContent().trim();
+                String[] coordinatePairs = coordinatesText.split("\\s+");
+                for (String pair : coordinatePairs) {
+                    String[] lonLat = pair.split(",");
+                    if (lonLat.length >= 2) {
+                        try {
+                            double lon = Double.parseDouble(lonLat[0]);
+                            double lat = Double.parseDouble(lonLat[1]);
+                            gpsPoints.add(new LatLng(lat, lon));
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid coordinate format: " + pair);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing KML content: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return gpsPoints;
+    }
+
     public static String replaceLast(String data, String oldChars, String newChars) {
         int lastIndex = data.lastIndexOf(oldChars);
         if (lastIndex != -1) {
@@ -9497,13 +9770,12 @@ public final class FactoryUtils {
 //        data = strReverse(data);
 //        return data;
 //    }
-
     public static String strReverse(String str) {
         return new StringBuilder(str).reverse().toString();
     }
-    
-    public static Robot getRobotInstance(){
-        Robot robot=null;
+
+    public static Robot getRobotInstance() {
+        Robot robot = null;
         try {
             robot = new Robot();
         } catch (AWTException ex) {
