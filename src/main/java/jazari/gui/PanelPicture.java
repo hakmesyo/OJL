@@ -1828,7 +1828,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         setImage(bf, imagePath, caption, isClearBbox);
         if (!frame.chk_customZoom.isSelected()) frame.img = bf;
         frame.imagePath = imagePath;
-        frame.stretchFrame();
+        frame.autoResizeFrame();
         return bf;
     }
 

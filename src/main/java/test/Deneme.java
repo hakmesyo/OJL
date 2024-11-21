@@ -36,12 +36,13 @@ import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
 public class Deneme {
 
     public static void main(String[] args) {
-        
-        CMatrix cm = CMatrix.getInstance()
-                .imread("images/bird.jpg")
-                .imshow()
-                .convolve(CMatrix.currentMatrix)
-                ;
+        System.out.println(System.getProperty("file.encoding"));
+        System.out.println("çerçeveşğıi");
+//        CMatrix cm = CMatrix.getInstance()
+//                .imread("images/bird.jpg")
+//                .imshow()
+//                .convolve(CMatrix.currentMatrix)
+//                ;
 //        String pp="D:\\DATASETS\\MASS\\CBIS_DDSM_JPG\\corrected_ds\\mass\\train";
 //        CMatrix cm = CMatrix.getInstance()
 //                .imread(pp+"/benign_Mass-Training_P_00027_RIGHT_MLO_1_1.jpg")

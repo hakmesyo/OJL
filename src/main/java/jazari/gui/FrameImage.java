@@ -74,7 +74,7 @@ public class FrameImage extends javax.swing.JFrame {
         if (caption != null && !caption.isEmpty()) {
             setTitle(caption);
         }
-        loadImage(cm, imagePath, caption, chk_stretch.isSelected());
+        loadImage(cm, imagePath, caption, chk_auto_resize.isSelected());
         eventListener();
         chkLabelVisible.setSelected(true);
         setLocationRelativeTo(null);
@@ -123,7 +123,7 @@ public class FrameImage extends javax.swing.JFrame {
         btn_analytics = new javax.swing.JButton();
         chkLane = new javax.swing.JCheckBox();
         btn_screen_capture = new javax.swing.JButton();
-        chk_stretch = new javax.swing.JCheckBox();
+        chk_auto_resize = new javax.swing.JCheckBox();
         combo_format = new javax.swing.JComboBox<>();
         slider = new javax.swing.JSlider();
         lbl_index = new javax.swing.JLabel();
@@ -299,10 +299,10 @@ public class FrameImage extends javax.swing.JFrame {
             }
         });
 
-        chk_stretch.setText("stretch");
-        chk_stretch.addItemListener(new java.awt.event.ItemListener() {
+        chk_auto_resize.setText("auto resize");
+        chk_auto_resize.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                chk_stretchİtemStateChanged(evt);
+                chk_auto_resizeİtemStateChanged(evt);
             }
         });
 
@@ -352,7 +352,7 @@ public class FrameImage extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lbl_zoom_factor, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chk_stretch)
+                        .addComponent(chk_auto_resize)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 267, Short.MAX_VALUE)
                         .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -393,7 +393,7 @@ public class FrameImage extends javax.swing.JFrame {
                     .addComponent(btn_analytics)
                     .addComponent(chkLane)
                     .addComponent(btn_screen_capture)
-                    .addComponent(chk_stretch)
+                    .addComponent(chk_auto_resize)
                     .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(chk_customZoom))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -585,10 +585,10 @@ public class FrameImage extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_chkLaneActionPerformed
 
-    private void chk_stretchİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_stretchİtemStateChanged
-        stretchFrame();
+    private void chk_auto_resizeİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chk_auto_resizeİtemStateChanged
+        autoResizeFrame();
         getPicturePanel().requestFocus();
-    }//GEN-LAST:event_chk_stretchİtemStateChanged
+    }//GEN-LAST:event_chk_auto_resizeİtemStateChanged
 
     private void combo_formatİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_combo_formatİtemStateChanged
         getPicturePanel().listPascalVocObject.clear();
@@ -626,7 +626,7 @@ public class FrameImage extends javax.swing.JFrame {
         imagePath = FactoryUtils.saveImageAs(getPicturePanel().getImage(), txt_dpi.getText());
         if (imagePath != null && !imagePath.isEmpty()) {
             CMatrix cm = CMatrix.getInstance().imread(imagePath);
-            loadImage(cm, imagePath, imagePath, chk_stretch.isSelected());
+            loadImage(cm, imagePath, imagePath, chk_auto_resize.isSelected());
         }
     }
 
@@ -680,8 +680,8 @@ public class FrameImage extends javax.swing.JFrame {
     public javax.swing.JCheckBox chkLane;
     public javax.swing.JCheckBox chkPolygon;
     private javax.swing.JCheckBox chkSequence;
+    public javax.swing.JCheckBox chk_auto_resize;
     public javax.swing.JCheckBox chk_customZoom;
-    public javax.swing.JCheckBox chk_stretch;
     public javax.swing.JComboBox<String> combo_format;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
@@ -763,8 +763,8 @@ public class FrameImage extends javax.swing.JFrame {
         }
     }
 
-    public void stretchFrame() {
-        if (chk_stretch.isSelected()) {
+    public void autoResizeFrame() {
+        if (chk_auto_resize.isSelected()) {
             int w = getPicturePanel().getImage().getWidth();
             int h = getPicturePanel().getImage().getHeight() + 80;
             setSize(new Dimension(w, h));
@@ -775,12 +775,15 @@ public class FrameImage extends javax.swing.JFrame {
             }
         }
     }
+    public void setAutoResizeFrame(boolean isAutoResize) {
+        chk_auto_resize.setSelected(isAutoResize);
+    }
 
     public void fullSizeFrame() {
         if ((getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH) {
             setLocationRelativeTo(null);
             setExtendedState(JFrame.MAXIMIZED_BOTH);
         }
-        loadImage(cm, imagePath, caption, chk_stretch.isSelected());
+        loadImage(cm, imagePath, caption, chk_auto_resize.isSelected());
     }
 }

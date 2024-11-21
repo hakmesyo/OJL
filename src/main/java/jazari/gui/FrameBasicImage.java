@@ -29,7 +29,7 @@ public class FrameBasicImage extends JFrame {
     public FrameBasicImage() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        setResizable(false);
+        //setResizable(false);
         img = new JLabel(); 
         add(img, BorderLayout.CENTER);
     }

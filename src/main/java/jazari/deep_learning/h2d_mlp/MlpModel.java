@@ -218,14 +218,14 @@ public class MlpModel {
                         img = ImageProcess.rgb2gray(ImageProcess.imread(X_train.get(i)));
                         XX = FactoryUtils.timesScalar(ImageProcess.imageToPixelsFloat(img), scale);
 
-                        t1 = FactoryUtils.toc("--------------------\ndata loading cost :",t1);
+                        //t1 = FactoryUtils.toc("--------------------\ndata loading cost :",t1);
                         this.layers.get(0).channels.get(k).feed(XX);
-                        t1 = FactoryUtils.toc("feeding cost:",t1);
+                        //t1 = FactoryUtils.toc("feeding cost:",t1);
                         forwardPass(k);
-                        t1 = FactoryUtils.toc("forward pass cost:",t1);
+                        //t1 = FactoryUtils.toc("forward pass cost:",t1);
                         yy = getArray(y_train.get(j * BATCH_SIZE + l));
                         backwardPass(XX, yy, this.LEARNING_RATE, k);
-                        t1 = FactoryUtils.toc("backward pass cost:",t1);
+                        //t1 = FactoryUtils.toc("backward pass cost:",t1);
 
                         //calculate error
                         yy = FactoryUtils.timesScalar(getArray(y_train.get(i)), -1);

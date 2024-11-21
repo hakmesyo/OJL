@@ -28,8 +28,8 @@ public class TrainDeep2DMLP {
 
     public static void main(String[] args) {
 //        prepareDataSet();
-        String path_train = "C:\\ai\\djl\\mnist\\train";
-        String path_test = "C:\\ai\\djl\\mnist\\test";
+        String path_train = "D:\\ai\\djl\\mnist\\mnist\\train";
+        String path_test = "D:\\ai\\djl\\mnist\\mnist\\test";
 
         
         LinkedHashMap<String, List<String>> tr = Datasets.loadData(path_train, IMG_WIDTH, IMG_HEIGHT, NUM_CHANNEL);
@@ -54,34 +54,34 @@ public class TrainDeep2DMLP {
         model.fit(X_train, y_train, LEARNING_RATE, EPOCHS, BATCH_SIZE);
     }
 
-    private static void prepareDataSet() {
-        String path_train = "C:\\ai\\djl\\mnist\\train";
-        String path_test = "C:\\ai\\djl\\mnist\\test";
-        FactoryUtils.makeDirectory("C:\\ai\\djl\\mnist");
-        FactoryUtils.makeDirectory("C:\\ai\\djl\\mnist\\train");
-        FactoryUtils.makeDirectory("C:\\ai\\djl\\mnist\\test");
-
-        String p1 = "C:\\ai\\djl\\mnist_train";
-        File[] dirs = FactoryUtils.getDirectories(p1);
-        for (File dir : dirs) {
-            FactoryUtils.makeDirectory(path_train + "/" + dir.getName());
-            File[] files = FactoryUtils.getFileArrayInFolderForImages(p1 + "/" + dir.getName());
-            files = FactoryUtils.shuffle(files, 111);
-            for (int i = 0; i < 100; i++) {
-                FactoryUtils.copyFile(files[i], new File(path_train + "/" + dir.getName() + "/" + files[i].getName()));
-            }
-        }
-
-        String p2 = "C:\\ai\\djl\\mnist_test";
-        dirs = FactoryUtils.getDirectories(p2);
-        for (File dir : dirs) {
-            FactoryUtils.makeDirectory(path_test + "/" + dir.getName());
-            File[] files = FactoryUtils.getFileArrayInFolderForImages(p2 + "/" + dir.getName());
-            files = FactoryUtils.shuffle(files, 111);
-            for (int i = 0; i < 100; i++) {
-                FactoryUtils.copyFile(files[i], new File(path_test + "/" + dir.getName() + "/" + files[i].getName()));
-            }
-        }
-
-    }
+//    private static void prepareDataSet() {
+//        String path_train = "C:\\ai\\djl\\mnist\\train";
+//        String path_test = "C:\\ai\\djl\\mnist\\test";
+//        FactoryUtils.makeDirectory("C:\\ai\\djl\\mnist");
+//        FactoryUtils.makeDirectory("C:\\ai\\djl\\mnist\\train");
+//        FactoryUtils.makeDirectory("C:\\ai\\djl\\mnist\\test");
+//
+//        String p1 = "C:\\ai\\djl\\mnist_train";
+//        File[] dirs = FactoryUtils.getDirectories(p1);
+//        for (File dir : dirs) {
+//            FactoryUtils.makeDirectory(path_train + "/" + dir.getName());
+//            File[] files = FactoryUtils.getFileArrayInFolderForImages(p1 + "/" + dir.getName());
+//            files = FactoryUtils.shuffle(files, 111);
+//            for (int i = 0; i < 100; i++) {
+//                FactoryUtils.copyFile(files[i], new File(path_train + "/" + dir.getName() + "/" + files[i].getName()));
+//            }
+//        }
+//
+//        String p2 = "C:\\ai\\djl\\mnist_test";
+//        dirs = FactoryUtils.getDirectories(p2);
+//        for (File dir : dirs) {
+//            FactoryUtils.makeDirectory(path_test + "/" + dir.getName());
+//            File[] files = FactoryUtils.getFileArrayInFolderForImages(p2 + "/" + dir.getName());
+//            files = FactoryUtils.shuffle(files, 111);
+//            for (int i = 0; i < 100; i++) {
+//                FactoryUtils.copyFile(files[i], new File(path_test + "/" + dir.getName() + "/" + files[i].getName()));
+//            }
+//        }
+//
+//    }
 }

@@ -5,15 +5,18 @@
  */
 package jazari.factory;
 
-import jazari.gui.FrameImage;
-import jazari.image_processing.ImageProcess;
 import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamEvent;
+import com.github.sarxos.webcam.WebcamListener;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
+import jazari.gui.FrameBasicImage;
+import jazari.interfaces.call_back_interface.CallBackCamera;
 
 /**
  *
@@ -21,23 +24,20 @@ import javax.swing.JFrame;
  */
 public class FactoryWebCam {
 
-    //private FactoryWebCam factWebCam = new FactoryWebCam();
     public Webcam webCam;
     public WebcamPanel panel;
-    private FrameImage frm = new FrameImage();
-    private boolean isMotionDetectionImage = false;
-    private boolean isMotionDetectionVideo = false;
-    private boolean isVideoRecord = false;
-    private boolean isImageRecord = false;
-    private static String folderPath = "recorded";
     private static Dimension size;
-    private static boolean isFlipped = false;
+    private static boolean isFlipped = true;
     public static BufferedImage currentImage;
+    private CallBackCamera callback;
+    public FrameBasicImage frm = new FrameBasicImage();
 
-    public FactoryWebCam() {
-//        frm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frm.setVisible(true);
+    private FactoryWebCam() {
+    }
 
+    public static FactoryWebCam getInstance() {
+        FactoryWebCam ret = new FactoryWebCam();
+        return ret;
     }
 
     public FactoryWebCam openWebCam() {
@@ -59,7 +59,6 @@ public class FactoryWebCam {
     public FactoryWebCam openWebCam(Dimension size) {
         webCam = Webcam.getDefault();
         webCam.setCustomViewSizes(size); // register custom resolutions
-        //size = WebcamResolution.VGA.getSize();
         webCam.setViewSize(size);
         webCam.open(true);
         return this;
@@ -69,16 +68,80 @@ public class FactoryWebCam {
         webCam = Webcam.getWebcams().get(cameraIndex);
         webCam.setCustomViewSizes(size); // register custom resolutions
         webCam.setViewSize(size);
-        //size = WebcamResolution.VGA.getSize();
         webCam.open(true);
         return this;
     }
 
-    public FactoryWebCam startWebCAM(Dimension dim) {
+    public FactoryWebCam setCallback(boolean isCameraVisible, CallBackCamera callback) {
+        this.callback = callback;
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                // Webcam listener'ı ekle
+                if (webCam != null) {
+                    if (isCameraVisible) {
+                        frm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        frm.setVisible(true);
+                    }
+                    webCam.addWebcamListener(new WebcamListener() {
+                        @Override
+                        public void webcamImageObtained(WebcamEvent we) {
+                            // Her yeni görüntü alındığında callback'i çağır
+                            if (callback != null) {
+                                BufferedImage processedImage = callback.onFrame(we.getImage());
+                                currentImage = processedImage;
+                                if (isCameraVisible) {
+                                    frm.setImage(currentImage);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void webcamOpen(WebcamEvent we) {
+                            System.err.println("Camera is opened");
+                        }
+
+                        @Override
+                        public void webcamClosed(WebcamEvent we) {
+                            System.err.println("Camera is closed");
+                        }
+
+                        @Override
+                        public void webcamDisposed(WebcamEvent we) {
+                            System.err.println("Camera is disposed");
+                        }
+                    });
+                }
+                if (!isCameraVisible) {
+                    try {
+                        Thread.sleep(Long.MAX_VALUE);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(FactoryWebCam.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }).start();
+        return this;
+    }
+
+    public FactoryWebCam showWebCAM() {
         panel = new WebcamPanel(webCam);
         panel.setImageSizeDisplayed(true);
-//        panel.setFPSLimited(true);
-//        panel.setFPSLimit(fps);
+        panel.setFPSDisplayed(true);
+
+        JFrame window = new JFrame("Webcam");
+        window.add(panel);
+        window.setResizable(true);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.pack();
+        window.setVisible(true);
+        return this;
+    }
+
+    public FactoryWebCam showWebCAM(Dimension dim) {
+        panel = new WebcamPanel(webCam);
+        panel.setImageSizeDisplayed(true);
         panel.setFPSDisplayed(true);
 
         JFrame window = new JFrame("Webcam");
@@ -91,7 +154,7 @@ public class FactoryWebCam {
         return this;
     }
 
-    public FactoryWebCam startWebCAM(int fps) {
+    public FactoryWebCam showWebCAM(int fps) {
         panel = new WebcamPanel(webCam);
         panel.setImageSizeDisplayed(true);
         panel.setFPSLimited(true);
@@ -102,36 +165,16 @@ public class FactoryWebCam {
         window.add(panel);
         window.setResizable(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setPreferredSize(new Dimension(640, 480));
+        //window.setPreferredSize(new Dimension(640, 480));
         window.pack();
         window.setVisible(true);
-
-        /*
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                long t1=FactoryUtils.tic();
-                while (true) {
-                    try {
-                        currentImage = webCam.getImage();
-                        frm.setImage(currentImage,"","");
-                        t1=FactoryUtils.toc(t1);
-                        Thread.sleep(5);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(FactoryWebCam.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-
-        }).start();
-         */
         return this;
     }
 
-    public FactoryWebCam startWebCAM(Dimension resize, int fps) {
+    public FactoryWebCam showWebCAM(Dimension resize, int fps) {
         panel = new WebcamPanel(webCam);
         panel.setImageSizeDisplayed(true);
-        //panel.setFPSDisplayed(true);
+        panel.setFPSDisplayed(true);
         panel.setFPSLimited(true);
         panel.setFPSLimit(fps);
 
@@ -142,47 +185,7 @@ public class FactoryWebCam {
         window.setPreferredSize(resize);
         window.pack();
         window.setVisible(true);
-
-        /*
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                long t1 = FactoryUtils.tic();
-                while (true) {
-                    try {
-                        currentImage = webCam.getImage();
-                        currentImage = ImageProcess.toBufferedImage(currentImage, 5);
-                        currentImage = ImageProcess.resize(currentImage, resize.width, resize.height);
-                        frm.setImage(currentImage, "", "");
-                        t1 = FactoryUtils.toc(t1);
-                        Thread.sleep(5);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(FactoryWebCam.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-
-        }).start();
-         */
         return this;
-    }
-
-    private static float calculateDifferentPixels(float[][] bf_m, float[][] bf_prev_m) {
-        float diffRatio = 0;
-        int nr = bf_m.length;
-        int nc = bf_m[0].length;
-        int cnt = 0;
-        for (int i = 0; i < nr; i++) {
-            for (int j = 0; j < nc; j++) {
-                if (Math.abs((bf_m[i][j] - bf_prev_m[i][j])) >= 3) {
-                    cnt++;
-                }
-            }
-        }
-        //System.out.println("cnt = " + cnt);
-        diffRatio = 1.0f * cnt / (nr * nc);
-        //System.out.println("diffRatio = " + diffRatio);
-        return diffRatio;
     }
 
     public BufferedImage getImage() {
@@ -191,36 +194,6 @@ public class FactoryWebCam {
 
     public FactoryWebCam flipImageAlongVerticalAxis() {
         isFlipped = !isFlipped;
-        return this;
-    }
-
-    public FactoryWebCam startMotionDetectionImage() {
-        isMotionDetectionImage = true;
-        isMotionDetectionVideo = false;
-        return this;
-    }
-
-    public FactoryWebCam startMotionDetectionImage(String folderPath) {
-        FactoryWebCam.folderPath = folderPath;
-        isMotionDetectionImage = true;
-        isMotionDetectionVideo = false;
-        return this;
-    }
-
-    public FactoryWebCam stopMotionDetectionImage() {
-        isMotionDetectionImage = false;
-        return this;
-    }
-
-    public FactoryWebCam startMotionDetectionVideo(String folderPath) {
-        FactoryWebCam.folderPath = folderPath;
-        isMotionDetectionVideo = true;
-        isMotionDetectionImage = false;
-        return this;
-    }
-
-    public FactoryWebCam stopMotionDetectionVideo() {
-        isMotionDetectionVideo = false;
         return this;
     }
 

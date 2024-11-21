@@ -146,6 +146,7 @@ import jazari.gui.FlatLaf;
 import jazari.gui.FrameDataSetTextEditor;
 import jazari.gui.FrameScreenCapture;
 import jazari.interfaces.call_back_interface.CallBackAppend;
+import jazari.interfaces.call_back_interface.CallBackCamera;
 import jazari.utils.DataAugmentationOpt;
 import jazari.utils.PerlinNoise2D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -1880,7 +1881,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix randWithSeed(int nr, int nc, float max, int seed) {
-        array=Nd4j.create(FactoryMatrix.randMatrix(nr, nc, max, seed));
+        array = Nd4j.create(FactoryMatrix.randMatrix(nr, nc, max, seed));
         //array = Nd4j.rand(seed, new long[]{nr, nc}).mul(max);
         return this;
     }
@@ -2490,6 +2491,16 @@ public final class CMatrix implements Serializable {
             image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         }
         FrameImage frm = new FrameImage(this, this.imagePath, "");
+        frm.setVisible(true);
+        return this;
+    }
+
+    public CMatrix imshowAutoResized(boolean isAutoResized) {
+        if (image == null || image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
+        }
+        FrameImage frm = new FrameImage(this, this.imagePath, "");
+        frm.setAutoResizeFrame(isAutoResized);
         frm.setVisible(true);
         return this;
     }
@@ -3115,15 +3126,17 @@ public final class CMatrix implements Serializable {
 
     /**
      * take transpose of the matrix
+     *
      * @return
      */
     public CMatrix tr() {
         array = array.transpose();
         return this;
     }
-    
+
     /**
      * take transpose of the matrix
+     *
      * @return
      */
     public CMatrix transpose() {
@@ -3133,6 +3146,7 @@ public final class CMatrix implements Serializable {
 
     /**
      * take transpose of the matrix
+     *
      * @return
      */
     public CMatrix T() {
@@ -3142,6 +3156,7 @@ public final class CMatrix implements Serializable {
 
     /**
      * take transpose of the matrix provided as input
+     *
      * @param cm
      * @return
      */
@@ -3374,7 +3389,7 @@ public final class CMatrix implements Serializable {
         float[] m = new float[n];
         ArrayList<Float> v = new ArrayList<Float>();
         for (int i = 0; i < n; i++) {
-            v.add((float)i);
+            v.add((float) i);
         }
         for (int i = 0; i < n; i++) {
             int a = new Random().nextInt(n - i);
@@ -3397,7 +3412,7 @@ public final class CMatrix implements Serializable {
         float[] m = new float[n];
         ArrayList<Float> v = new ArrayList<Float>();
         for (int i = from; i < to; i++) {
-            v.add((float)i);
+            v.add((float) i);
         }
         for (int i = 0; i < n; i++) {
             int a = new Random().nextInt(n - i);
@@ -3413,7 +3428,7 @@ public final class CMatrix implements Serializable {
         int[] m = new int[n];
         ArrayList<Integer> v = new ArrayList<Integer>();
         for (int i = 0; i < n; i++) {
-            v.add((int)i);
+            v.add((int) i);
         }
         for (int i = 0; i < n; i++) {
             int a = new Random().nextInt(n - i);
@@ -7501,7 +7516,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix histeqClahe() {
-        image=ImageProcess.equalizeHistogramAdaptiveClahe(image);
+        image = ImageProcess.equalizeHistogramAdaptiveClahe(image);
         return this;
     }
 
@@ -8567,7 +8582,7 @@ public final class CMatrix implements Serializable {
             if (frameHeatMap == null) {
                 frameHeatMap = new FrameHeatMap(this);
             }
-            frameHeatMap.setMatrix(this);            
+            frameHeatMap.setMatrix(this);
         }
         frameHeatMap.getHeatMapPanel().setShowValue(showValue);
         frameHeatMap.setVisible(true);
@@ -8581,7 +8596,7 @@ public final class CMatrix implements Serializable {
             if (frameHeatMap == null) {
                 frameHeatMap = new FrameHeatMap(this);
             }
-            frameHeatMap.setMatrix(this);            
+            frameHeatMap.setMatrix(this);
         }
         frameHeatMap.getHeatMapPanel().setShowValue(showValue);
         frameHeatMap.getHeatMapPanel().setShowCellEdges(showCellEdge);
@@ -8785,7 +8800,7 @@ public final class CMatrix implements Serializable {
         setArray(FactoryMatrix.convolve(array.toFloatMatrix(), kernel.array.toFloatMatrix()));
         return this;
     }
-    
+
     public CMatrix conv(CMatrix kernel) {
         return convolve(kernel);
     }
@@ -8825,7 +8840,7 @@ public final class CMatrix implements Serializable {
             newPass = bf.toString();
             if (isPrint) {
                 System.out.println("" + newPass);
-            } 
+            }
 //            else if (k++ > counter) {
 //                System.out.println(k + ". trial : " + newPass);
 //            }
@@ -9342,7 +9357,7 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public CMatrix startCamera() {
-        factoryWebCam = new FactoryWebCam().openWebCam(0).startWebCAM(30);
+        factoryWebCam = FactoryWebCam.getInstance().openWebCam(0).showWebCAM();
         webCam = factoryWebCam.webCam;
         return this;
     }
@@ -9350,10 +9365,44 @@ public final class CMatrix implements Serializable {
     /**
      * start camera (index=0 by default)
      *
+     * @param isCameraVisible
+     * @param callback
      * @return
      */
-    public CMatrix startCamera(int fps) {
-        factoryWebCam = new FactoryWebCam().openWebCam(0).startWebCAM(fps);
+    public CMatrix startCamera(boolean isCameraVisible, CallBackCamera callback) {
+        factoryWebCam = FactoryWebCam
+                .getInstance()
+                .openWebCam(0)
+                .setCallback(isCameraVisible,callback);
+        webCam = factoryWebCam.webCam;
+        return this;
+    }
+    
+    /**
+     * start camera (index=0 by default)
+     *
+     * @param cameraIndex
+     * @param isCameraVisible
+     * @param callback
+     * @return
+     */
+    public CMatrix startCamera(int cameraIndex,boolean isCameraVisible, CallBackCamera callback) {
+        factoryWebCam = FactoryWebCam
+                .getInstance()
+                .openWebCam(cameraIndex)
+                .setCallback(isCameraVisible,callback);
+        webCam = factoryWebCam.webCam;
+        return this;
+    }
+
+    /**
+     * start camera (index=0 by default)
+     *
+     * @param cameraIndex
+     * @return
+     */
+    public CMatrix startCamera(int cameraIndex) {
+        factoryWebCam = FactoryWebCam.getInstance().openWebCam(cameraIndex).showWebCAM();
         webCam = factoryWebCam.webCam;
         return this;
     }
@@ -9363,34 +9412,35 @@ public final class CMatrix implements Serializable {
      *
      * @param cameraIndex : in case you have one more cameras installed type the
      * desired camera index
+     * @param fps
      * @return
      */
     public CMatrix startCamera(int cameraIndex, int fps) {
-        factoryWebCam = new FactoryWebCam().openWebCam(cameraIndex).startWebCAM(fps);
+        factoryWebCam = FactoryWebCam.getInstance().openWebCam(cameraIndex).showWebCAM(fps);
         webCam = factoryWebCam.webCam;
         return this;
     }
 
     public CMatrix startCamera(int cameraIndex, java.awt.Dimension size, int fps) {
-        factoryWebCam = new FactoryWebCam().openWebCam(cameraIndex, size).startWebCAM(fps);
+        factoryWebCam = FactoryWebCam.getInstance().openWebCam(cameraIndex, size).showWebCAM(fps);
         webCam = factoryWebCam.webCam;
         return this;
     }
 
     public CMatrix startCamera(int cameraIndex, java.awt.Dimension size, java.awt.Dimension resizeDim) {
-        factoryWebCam = new FactoryWebCam().openWebCam(cameraIndex, size).startWebCAM(resizeDim);
+        factoryWebCam = FactoryWebCam.getInstance().openWebCam(cameraIndex, size).showWebCAM(resizeDim);
         webCam = factoryWebCam.webCam;
         return this;
     }
 
     public CMatrix startCamera(java.awt.Dimension size, int fps) {
-        factoryWebCam = new FactoryWebCam().openWebCam(0, size).startWebCAM(fps);
+        factoryWebCam = FactoryWebCam.getInstance().openWebCam(0, size).showWebCAM(fps);
         webCam = factoryWebCam.webCam;
         return this;
     }
 
     public CMatrix startCamera(int cameraIndex, java.awt.Dimension size, java.awt.Dimension resize, int fps) {
-        factoryWebCam = new FactoryWebCam().openWebCam(cameraIndex, size).startWebCAM(resize, fps);
+        factoryWebCam = FactoryWebCam.getInstance().openWebCam(cameraIndex, size).showWebCAM(resize, fps);
         webCam = factoryWebCam.webCam;
         return this;
     }
@@ -9971,8 +10021,7 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * open animated plot interface
-     * example usage:
+     * open animated plot interface example usage:
      * <pre>
      *    CMatrix cm = CMatrix.getInstance()
      *            .range(0, 100)
@@ -9988,7 +10037,7 @@ public final class CMatrix implements Serializable {
      *
      * @param loopNumber
      * @param threadSleep
-     * @param function : you can write any algortihm or call a function 
+     * @param function : you can write any algortihm or call a function
      * @return
      */
     public CMatrix plotAnimated(int loopNumber, int threadSleep, CallBackAppend function) {

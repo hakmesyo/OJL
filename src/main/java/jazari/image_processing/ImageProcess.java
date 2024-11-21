@@ -30,7 +30,6 @@ import com.jhlabs.image.GrayscaleFilter;
 import com.jhlabs.image.InvertFilter;
 import com.jhlabs.image.MotionBlurOp;
 import com.jhlabs.image.PointFilter;
-import com.luciad.imageio.webp.WebPImageReaderSpi;
 import com.luciad.imageio.webp.WebPImageWriterSpi;
 import ij.IJ;
 import ij.ImagePlus;
@@ -54,7 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
@@ -62,28 +60,11 @@ import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.spi.IIORegistry;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import static jazari.factory.FactoryUtils.getDefaultDirectory;
-import org.apache.tika.Tika;
 import org.opencv.core.Core;
-//import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
-//import org.opencv.core.Core;
-//import org.opencv.core.CvType;
-//import org.opencv.core.Mat;
-//import org.opencv.core.MatOfFloat;
-//import org.opencv.core.MatOfInt;
-//import org.opencv.core.MatOfPoint;
-//import org.opencv.core.MatOfRect;
-//import org.opencv.core.Rect;
-//import org.opencv.core.Scalar;
-//import org.opencv.core.Size;
-//import org.opencv.imgcodecs.Imgcodecs;
-//import org.opencv.imgproc.Imgproc;
-//import org.opencv.imgproc.Moments;
-//import org.opencv.objdetect.CascadeClassifier;
 
 /**
  *
@@ -1033,36 +1014,45 @@ public final class ImageProcess {
 //        }
 //        return null;
 //    }
+//    public static BufferedImage readImage(String fileName) {
+//        try {
+//            File file = new File(fileName);
+//
+//            // Dosyanın gerçek MIME tipini kontrol et
+//            Tika tika = new Tika();
+//            String mimeType = tika.detect(file);
+//
+//            if (mimeType.equals("image/webp")) {
+//                // WebP için TwelveMonkeys okuyucusunu kullan
+//                IIORegistry registry = IIORegistry.getDefaultInstance();
+//                registry.registerServiceProvider(new WebPImageReaderSpi());
+//
+//                try (ImageInputStream input = ImageIO.createImageInputStream(file)) {
+//                    Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+//                    if (readers.hasNext()) {
+//                        ImageReader reader = readers.next();
+//                        reader.setInput(input);
+//                        return reader.read(0);
+//                    }
+//                }
+//                throw new IOException("No suitable reader found for WebP image");
+//            } else if (mimeType.equals("application/dicom")) {
+//                return IJ.openImage(fileName).getBufferedImage();
+//            } else {
+//                // Diğer formatlar için standart ImageIO kullan
+//                
+//                
+//                return ImageIO.read(file);
+//            }
+//        } catch (IOException ex) {
+//            Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
+//            return null;
+//        }
+//    }
     public static BufferedImage readImage(String fileName) {
         try {
             File file = new File(fileName);
-
-            // Dosyanın gerçek MIME tipini kontrol et
-            Tika tika = new Tika();
-            String mimeType = tika.detect(file);
-
-            if (mimeType.equals("image/webp")) {
-                // WebP için TwelveMonkeys okuyucusunu kullan
-                IIORegistry registry = IIORegistry.getDefaultInstance();
-                registry.registerServiceProvider(new WebPImageReaderSpi());
-
-                try (ImageInputStream input = ImageIO.createImageInputStream(file)) {
-                    Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
-                    if (readers.hasNext()) {
-                        ImageReader reader = readers.next();
-                        reader.setInput(input);
-                        return reader.read(0);
-                    }
-                }
-                throw new IOException("No suitable reader found for WebP image");
-            } else if (mimeType.equals("application/dicom")) {
-                return IJ.openImage(fileName).getBufferedImage();
-            } else {
-                // Diğer formatlar için standart ImageIO kullan
-                
-                
-                return ImageIO.read(file);
-            }
+            return ImageIO.read(file);
         } catch (IOException ex) {
             Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -2440,7 +2430,6 @@ public final class ImageProcess {
 //
 //        return copy;
 //    }
-
 //    public static Image clone(Image img) {
 //        BufferedImage bf = ImageProcess.toBufferedImage(img);
 //        BufferedImage ret = new BufferedImage(bf.getWidth(), bf.getHeight(), bf.getType());
@@ -3829,6 +3818,41 @@ public final class ImageProcess {
 
     public static BufferedImage toBinary(BufferedImage image) {
         return toNewColorSpace(image, BufferedImage.TYPE_BYTE_BINARY);
+    }
+
+    public static BufferedImage flipImageLeft2Right(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        // Güvenli tip kontrolü
+        int type = BufferedImage.TYPE_INT_RGB;  // varsayılan
+        if (image.getType() != 0) {  // TYPE_CUSTOM = 0
+            type = image.getType();
+        }
+
+        try {
+            BufferedImage flipped = new BufferedImage(width, height, type);
+            Graphics2D g = flipped.createGraphics();
+            g.drawImage(image, width, 0, -width, height, null);
+            g.dispose();
+            return flipped;
+        } catch (Exception e) {
+            // Hata durumunda en güvenli tip ile tekrar dene
+            BufferedImage flipped = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = flipped.createGraphics();
+            g.drawImage(image, width, 0, -width, height, null);
+            g.dispose();
+            return flipped;
+        }
+    }
+
+    public static BufferedImage flipImageTop2Bottom(BufferedImage image) {
+        // Dikey flip için (1, -1) kullan
+        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+        // Y ekseninde translate
+        tx.translate(0, -image.getHeight(null));
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(image, null);
     }
 
     public static BufferedImage flipHorizontal(BufferedImage image) {

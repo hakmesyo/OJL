@@ -106,7 +106,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="lbl_zoom_factor" min="-2" pref="113" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="chk_stretch" min="-2" max="-2" attributes="0"/>
+                              <Component id="chk_auto_resize" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="267" max="32767" attributes="0"/>
                               <Component id="combo_format" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -152,7 +152,7 @@
                           <Component id="btn_analytics" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="chkLane" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btn_screen_capture" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="chk_stretch" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chk_auto_resize" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="combo_format" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="chk_customZoom" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -294,12 +294,12 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_screen_captureActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="chk_stretch">
+            <Component class="javax.swing.JCheckBox" name="chk_auto_resize">
               <Properties>
-                <Property name="text" type="java.lang.String" value="stretch"/>
+                <Property name="text" type="java.lang.String" value="auto resize"/>
               </Properties>
               <Events>
-                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chk_stretch&#x130;temStateChanged"/>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chk_auto_resize&#x130;temStateChanged"/>
               </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
