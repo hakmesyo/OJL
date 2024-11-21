@@ -14,6 +14,11 @@ OJL (Open Jazari Library) is a comprehensive framework designed for JVM language
 - Computer Vision
 - Machine Learning
 - Deep Learning
+- JAZO Labeling Tool
+-- Classic Bounding Box
+-- Classic Polygon
+-- Spline Based Lane Labeling
+-- [Future Version] Automatic Labeling (SAM Based)
 
 ### �引用 Academic Citation
 
