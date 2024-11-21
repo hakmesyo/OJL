@@ -137,6 +137,7 @@ public class FactoryWebCam {
         window.pack();
         window.setVisible(true);
         System.err.println("showwebcam is triggered");
+        
         return this;
     }
 
