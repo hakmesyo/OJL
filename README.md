@@ -2,6 +2,7 @@
 
 ![OJL Version](https://img.shields.io/badge/OJL-1.0.0-orange.svg)
 ![Java Version](https://img.shields.io/badge/Java-8+-blue.svg)
+[![Processing](https://img.shields.io/badge/Processing-4.3-blue.svg)](https://processing.org/)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
