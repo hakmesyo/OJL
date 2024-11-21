@@ -44,7 +44,7 @@ public class Jazo extends javax.swing.JFrame {
     public Jazo() {
         initComponents();
         btn_open.setTransferHandler(new ImageTransferHandler());
-        this.setTitle("Jazari Annotation Tool  [21.05.2024]");
+        this.setTitle("Jazari Annotation Tool  [21.11.2024]");
         setLocationRelativeTo(null);
     }
 
@@ -62,7 +62,7 @@ public class Jazo extends javax.swing.JFrame {
         btn_screen_capture = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Jazari Annotation Tool V:10.05.2023");
+        setTitle("Jazari Annotation Tool Version:21.11.2024");
 
         btn_open.setFont(new java.awt.Font("Tahoma", 1, 36)); // NOI18N
         btn_open.setText("Open | Drag & Drop Image|Folder");
