@@ -136,6 +136,7 @@ public class FactoryWebCam {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.pack();
         window.setVisible(true);
+        System.err.println("showwebcam is triggered");
         return this;
     }
 
