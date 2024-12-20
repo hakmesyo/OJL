@@ -138,6 +138,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -147,6 +148,8 @@ import jazari.gui.FrameDataSetTextEditor;
 import jazari.gui.FrameScreenCapture;
 import jazari.interfaces.call_back_interface.CallBackAppend;
 import jazari.interfaces.call_back_interface.CallBackCamera;
+import jazari.machine_learning.analysis.distribution.ScatterPlotViewer;
+import jazari.machine_learning.analysis.tsne.TSNE;
 import jazari.utils.DataAugmentationOpt;
 import jazari.utils.PerlinNoise2D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -190,12 +193,12 @@ public final class CMatrix implements Serializable {
     private FramePloty framePloty = null;
     private FrameHeatMap frameHeatMap = null;
     public String plotType = "-";
-    private List<String> columnNames = new ArrayList();
-    private List<String> classLabels = new ArrayList();
+    public List<String> columnNames = new ArrayList();
+    public List<String> classLabels = new ArrayList();
     private float[] xData4FX;
 //    private static Random random = new SecureRandom();
     private Random random = new SecureRandom();
-    private List classLabelValues = new ArrayList();
+    //public List<String> classLabelValues = new ArrayList();
     private List<String> classLabelNames = new ArrayList();
     public String[] combinationPairs;
     public String[] permutationPairs;
@@ -220,6 +223,7 @@ public final class CMatrix implements Serializable {
     public String valueString;
     private Map map;
     private int gc_counter = 0;
+    public String[] features;
 
     public CMatrix getCurrentMatrix() {
         return currentMatrix;
@@ -989,10 +993,15 @@ public final class CMatrix implements Serializable {
      * @param path : csv file path
      * @return CMatrix float type
      */
-    public CMatrix readCSV(String path) {
-        ReaderCSV csv = FactoryUtils.readFromCSVFile(path);
+    public CMatrix readCSV(String path,String classLabelIndex) {
+        ReaderCSV csv=FactoryUtils.readFromCSVFile(path,classLabelIndex);
         array = Nd4j.create(FactoryUtils.toFloatArray2D(csv.data));
         columnNames = csv.columnNames;
+        features=columnNames.toArray(new String[columnNames.size()]);
+        this.classLabelNames.clear();
+        for (String feature : features) {
+            classLabelNames.add(feature);
+        }
         classLabels = csv.classLabels;
         image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         return this;
@@ -1049,6 +1058,10 @@ public final class CMatrix implements Serializable {
         ret.hold_on = this.hold_on;
         ret.framePlot = this.framePlot;
         ret.wekaInstance = this.wekaInstance;
+        ret.classLabelNames=FactoryUtils.clone(classLabels);
+        //ret.classLabelValues=FactoryUtils.clone(classLabelValues);
+        ret.classLabels=FactoryUtils.clone(classLabels);
+        ret.random=this.random;
         return ret;
     }
 
@@ -1992,8 +2005,26 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix scatter() {
-        FrameScatterPlot frm = new FrameScatterPlot(this);
-        frm.setVisible(true);
+        String[] array = classLabels.toArray(new String[0]);
+        ScatterPlotViewer viewer2 = new ScatterPlotViewer(toFloatArray2D(), array);
+        viewer2.show();
+        return this;
+    }
+    
+    /**
+     * Plot scatter graph of the given column index vectors of the CMatrix Another
+     * usage is an overloaded scatter method which takes two vector as an input
+     * parameter or two CMatrix objects.
+     *
+     * @param firstIndex
+     * @param secondIndex
+     * @return CMatrix
+     */
+    public CMatrix scatter(int firstIndex,int secondIndex) {
+        String[] array = classLabels.toArray(new String[0]);
+        cmd(":", ""+firstIndex+","+secondIndex);
+        ScatterPlotViewer viewer2 = new ScatterPlotViewer(toFloatArray2D(), array);
+        viewer2.show();
         return this;
     }
 
@@ -8158,7 +8189,7 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * similar to python make_blobs generate data set with a number of centers
+     * similar to python code make_blobs which generates data set with a number of centers
      * of Gaussian distribution based on given n_samples and
      * n_features(dimension) class labels (centers) can be accessed via
      * getClassLabel method columns are n_features rows are n_samples hint: you
@@ -8172,15 +8203,32 @@ public final class CMatrix implements Serializable {
     public CMatrix make_blobs(int n_samples, int n_features, int centers) {
         return make_blobs(n_samples, n_features, centers, 100, 5);
     }
-
-    public List getClassLabelValues() {
-        return classLabelValues;
+    
+    /**
+     * similar to python code make_blobs which generates data set given seed random point with a number of centers
+     * of Gaussian distribution based on given n_samples and
+     * n_features(dimension) class labels (centers) can be accessed via
+     * getClassLabel method columns are n_features rows are n_samples hint: you
+     * can best visualize the dataset by using scatter method
+     *
+     * @param n_samples
+     * @param n_features
+     * @param centers
+     * @param seedRandom
+     * @return
+     */
+    public CMatrix make_blobs(int n_samples, int n_features, int centers, int seedRandom) {
+        return make_blobs(n_samples, n_features, centers, 100, 5, seedRandom);
     }
 
-    public CMatrix setClassLabelValues(List classLabels) {
-        this.classLabelValues = classLabels;
-        return this;
-    }
+//    public List getClassLabelValues() {
+//        return classLabelValues;
+//    }
+
+//    public CMatrix setClassLabelValues(List<String> classLabels) {
+//        this.classLabelValues = classLabels;
+//        return this;
+//    }
 
     public List getClassLabelNames() {
         return classLabelNames;
@@ -8209,7 +8257,28 @@ public final class CMatrix implements Serializable {
         float[][] f = FactoryMatrix.make_blobs(n_samples, n_features, n_groups, mean_scale, var_scale, random);
         setArray(f);
         float[] cl = FactoryMatrix.getLastColumn(f);
-        setClassLabelValues(Arrays.asList(cl));
+        List<String> list = IntStream.range(0, cl.length)
+                            .mapToObj(i -> String.valueOf(cl[i]))
+                            .collect(Collectors.toList());
+        this.classLabels=list;
+        String[] gr_names = new String[n_groups];
+        for (int i = 0; i < n_groups; i++) {
+            gr_names[0] = "group " + (i + 1);
+        }
+        setClassLabelNames(Arrays.asList(gr_names));
+        return this;
+    }
+    
+    public CMatrix make_blobs(int n_samples, int n_features, int n_groups, int mean_scale, int var_scale, int seedRandom) {
+        SecureRandom rnd=new SecureRandom();
+        rnd.setSeed(seedRandom);
+        float[][] f = FactoryMatrix.make_blobs(n_samples, n_features, n_groups, mean_scale, var_scale, rnd);
+        setArray(f);
+        float[] cl = FactoryMatrix.getLastColumn(f);
+        List<String> list = IntStream.range(0, cl.length)
+                            .mapToObj(i -> String.valueOf(cl[i]))
+                            .collect(Collectors.toList());
+        this.classLabels=list;
         String[] gr_names = new String[n_groups];
         for (int i = 0; i < n_groups; i++) {
             gr_names[0] = "group " + (i + 1);
@@ -10072,6 +10141,22 @@ public final class CMatrix implements Serializable {
     public CMatrix robotCapture() {
         FrameScreenCapture capture = new FrameScreenCapture();
         capture.setVisible(true);
+        return this;
+    }
+
+    public CMatrix tsne() {
+        float[][] data=FactoryUtils.clone(this.toFloatArray2D());
+        data=FactoryNormalization.normalizeMinMax(data);
+        TSNE tsne = TSNE.build(FactoryUtils.toDoubleArray2D(data), classLabels.toArray(new String[classLabels.size()]), 2, 30, 0.5, 1000);
+        tsne.show();
+        return this;
+    }
+    
+    public CMatrix tsne(double perplexity, double eta, int n_iterations) {
+        float[][] data=FactoryUtils.clone(this.toFloatArray2D());
+        data=FactoryNormalization.normalizeMinMax(data);
+        TSNE tsne = TSNE.build(FactoryUtils.toDoubleArray2D(data), classLabels.toArray(new String[classLabels.size()]), 2, perplexity, eta, n_iterations);
+        tsne.show();
         return this;
     }
 }

@@ -3170,9 +3170,11 @@ public final class FactoryMatrix implements Serializable {
         for (int i = 0; i < n_groups; i++) {
             float[][] cm = new float[n_samples][1];
 
-            for (int j = 0; j < n_features; j++) {
-                float mean = (float) (Math.random() * mean_scale - mean_scale / 2);
-                float var = (float) (Math.sqrt(var_scale) + Math.random() * var_scale);
+            for (int j = 0; j < n_features; j++) {                
+//                float mean = (float) (Math.random() * mean_scale - mean_scale / 2);
+//                float var = (float) (Math.sqrt(var_scale) + Math.random() * var_scale);
+                float mean = (float) (random.nextDouble() * mean_scale - mean_scale / 2);
+                float var = (float) (Math.sqrt(var_scale) + random.nextDouble() * var_scale);
                 float[] f = fillRandNormal(n_samples, mean, var, random);
                 cm = cat("horizontal", cm, f);
             }

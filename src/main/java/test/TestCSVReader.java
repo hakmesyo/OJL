@@ -28,7 +28,7 @@ public class TestCSVReader {
                 .println()
                 ;
         CMatrix cm = CMatrix.getInstance()
-                .readCSV("data\\iris.csv")
+                .readCSV("data\\iris.csv","last")
                 .head()
                 .pow(2)
                 .head()

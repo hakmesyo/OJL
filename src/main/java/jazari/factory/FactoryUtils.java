@@ -201,7 +201,9 @@ public final class FactoryUtils {
     public static Robot robot;
     public static String saveImageFolder = FactoryUtils.getDefaultDirectory();
     public static FrameCircularProgressBar circularProgressBar = null;
-    public static JFileChooser chooser= new JFileChooser();;
+    public static JFileChooser chooser = new JFileChooser();
+
+    ;
 
     static {
         try {
@@ -1144,7 +1146,7 @@ public final class FactoryUtils {
         return lst.toArray(d);
     }
 
-    public static ReaderCSV readFromCSVFile(String file_name) {
+    public static ReaderCSV readFromCSVFile(String file_name, String classLabelIndex) {
         ReaderCSV csv = new ReaderCSV();
         List<String> columnNames = new ArrayList<>();
         List<String> classLabels = new ArrayList<>();
@@ -1158,6 +1160,12 @@ public final class FactoryUtils {
         try (BufferedReader br = new BufferedReader(new FileReader(file_name))) {
             String s = br.readLine().replace("\"", "");
             columnNames = Arrays.asList(s.split(","));
+            int index=0;
+            if (classLabelIndex.equals("last")) {
+                index=columnNames.size()-1;
+            }else if(classLabelIndex.equals("first")){
+                index=0;
+            }
             while ((s = br.readLine()) != null) {
                 float[] row = null;
                 String[] sd = s.split(",");
@@ -1165,7 +1173,8 @@ public final class FactoryUtils {
                 for (int i = 0; i < sd.length - 1; i++) {
                     row[i] = Float.parseFloat(sd[i]);
                 }
-                classLabels.add(sd[sd.length - 1].replace("\"", ""));
+                classLabels.add(sd[index].replace("\"", ""));
+
                 lst.add(row);
 
             }
