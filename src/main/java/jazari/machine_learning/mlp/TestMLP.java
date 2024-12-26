@@ -4,6 +4,12 @@
  */
 package jazari.machine_learning.mlp;
 
+import jazari.machine_learning.data_loader.DataLoader;
+import jazari.machine_learning.mlp.enums.EActivationType;
+import jazari.machine_learning.mlp.enums.EProblemType;
+import jazari.machine_learning.mlp.enums.EOptimizerType;
+import jazari.matrix.CMatrix;
+
 /**
  *
  * @author cezerilab
@@ -11,97 +17,58 @@ package jazari.machine_learning.mlp;
 public class TestMLP {
 
     public static void main(String[] args) {
-        performIris();
-//        performMNIST();
+//        performSyntheticDataSet();
+//        performIris();
+        performMNIST();
     }
-
-//    private static void performIris() {
-//        try {
-//            DataLoader loader = new DataLoader();
-//            loader.loadCSV("dataset/iris.csv", 4, true);
-//            loader.splitData(0.7, 0.15);
-//            loader.setBatchSize(8);
-//
-//            System.out.println("Class mapping: " + loader.getClassMap());
-//
-//            int inputFeatures = 4;  // Iris dataset features
-//            int numClasses = 3;     // Iris dataset classes
-//            int hiddenSize = 6;
-//
-//            System.out.println("Input features: " + inputFeatures);
-//            System.out.println("Hidden layer size: " + hiddenSize);
-//            System.out.println("Number of classes: " + numClasses);
-//
-//            MultiLayerPerceptron mlp = new MultiLayerPerceptron(ProblemType.CLASSIFICATION, inputFeatures);
-//
-//            mlp.addLayer(hiddenSize, ActivationType.RELU, 0.0);
-//            mlp.addLayer(numClasses, ActivationType.SOFTMAX, 0);
-//
-//            mlp.setLearningRate(0.001);
-//            mlp.setOptimizer(OptimizerType.ADAM);
-//            mlp.setRegularization(0.0, 0.0);
-//
-//            // Model özeti
-//            mlp.printSummary();
-//
-//            ModelTrainer trainer = new ModelTrainer(mlp, loader);
-//
-//            System.out.println("\nInitial performance:");
-//            trainer.evaluate();
-//
-//            System.out.println("\nTraining started...");
-//            trainer.train(100);
-//
-//            System.out.println("\nFinal performance:");
-//            trainer.evaluate();
-//
-//        } catch (Exception e) {
-//            System.err.println("Error occurred:");
-//            e.printStackTrace();
-//        }
-//    }
+    
+    private static void performSyntheticDataSet() {
+        CMatrix cm=CMatrix.getInstance()
+                .make_blobs(100, 5, 3)
+                .tsne()
+                ;
+    }
+    
     private static void performIris() {
-        try {
-            DataLoader loader = new DataLoader();
-            loader.loadCSV("dataset/iris.csv", 4, true);
-            
-            loader.splitData(0.7, 0.15);
-            loader.setBatchSize(4);  // Daha da küçük batch size
+        DataLoader loader = new DataLoader();
+        loader.loadCSV("dataset/iris.csv", 4, true);
 
-            System.out.println("Class mapping: " + loader.getClassMap());
+        loader.splitData(0.7, 0.15, 0.15);
+        loader.setBatchSize(4);  // Daha da küçük batch size
 
-            MultiLayerPerceptron mlp = new MultiLayerPerceptron(ProblemType.CLASSIFICATION, 4);
+        System.out.println("Class mapping: " + loader.getClassMap());
 
-            // Daha geniş tek layer
-            mlp.addLayer(21, ActivationType.RELU, 0.0);
-            mlp.addLayer(3, ActivationType.SOFTMAX, 0);
+        MultiLayerPerceptron mlp = new MultiLayerPerceptron(EProblemType.CLASSIFICATION, 4);
 
-            // Farklı hiperparametreler
-            mlp.setLearningRate(0.005);  // Daha küçük learning rate
-            mlp.setOptimizer(OptimizerType.ADAM);
-            mlp.setRegularization(0.0001, 0.0001);  // Çok hafif regularization
-            mlp.setAdamParameters(0.9, 0.999, 1e-8);
+        // Daha geniş tek layer
+        mlp.addLayer(21, EActivationType.RELU, 0.0);
+        mlp.addLayer(3, EActivationType.SOFTMAX, 0);
 
-            // Veri setini kontrol edelim
-            System.out.println("\nData Distribution:");
-            loader.printDataSummary();  // Bu metodu DataLoader'a eklememiz gerekecek
+        // Farklı hiperparametreler
+        mlp.setLearningRate(0.005);  // Daha küçük learning rate
+        mlp.setOptimizer(EOptimizerType.ADAM);
+        mlp.setRegularization(0.0001, 0.0001);  // Çok hafif regularization
+        mlp.setAdamParameters(0.9, 0.999, 1e-8);
 
-            mlp.summary();
+        // Veri setini kontrol edelim
+        System.out.println("\nData Distribution:");
+        loader.printDataSummary();  // Bu metodu DataLoader'a eklememiz gerekecek
 
-            ModelTrainer trainer = new ModelTrainer(mlp, loader);
-//            System.out.println("\nInitial performance:");
-//            trainer.evaluate();
+        mlp.summary();
 
-            System.out.println("\nTraining started...");
-            trainer.train(50);  // Daha az epoch
+        ModelTrainer trainer = new ModelTrainer(mlp, loader);
+        System.out.println("\nInitial performance:");
+        trainer.evaluate();
 
-            System.out.println("\nFinal performance:");
-            trainer.evaluate();
+        System.out.println("\nTraining started...");
+        trainer.train(50);  // Daha az epoch
+        trainer.waitForTrainingComplete();
+        
 
-        } catch (Exception e) {
-            System.err.println("Error occurred:");
-            e.printStackTrace();
-        }
+        System.out.println("\nFinal performance:");
+        trainer.evaluate();
+        trainer.showConfusionMatrix();
+        trainer.showROCCurve();
     }
 
     private static void performMNIST() {
@@ -113,7 +80,7 @@ public class TestMLP {
             // Veri kontrolü
             loader.printDataSummary();
 
-            loader.splitData(0.7, 0.15);
+            loader.splitData(0.7, 0.15, 0.15);
             loader.setBatchSize(64);
 
             System.out.println("Class mapping: 0-9 digits");
@@ -148,12 +115,12 @@ public class TestMLP {
 //            mlp.setOptimizer(OptimizerType.ADAM);
 //            mlp.setRegularization(0.0, 0.0); 
 //            mlp.setAdamParameters(0.9, 0.999, 1e-8);
-            MultiLayerPerceptron mlp = new MultiLayerPerceptron(ProblemType.CLASSIFICATION, inputFeatures);
-            mlp.addLayer(32, ActivationType.RELU, 0.0);  // Dropout'u kaldırdık
-            mlp.addLayer(numClasses, ActivationType.SOFTMAX, 0);
+            MultiLayerPerceptron mlp = new MultiLayerPerceptron(EProblemType.CLASSIFICATION, inputFeatures);
+            mlp.addLayer(32, EActivationType.RELU, 0.0);  // Dropout'u kaldırdık
+            mlp.addLayer(numClasses, EActivationType.SOFTMAX, 0);
 
             mlp.setLearningRate(0.001);
-            mlp.setOptimizer(OptimizerType.ADAM);
+            mlp.setOptimizer(EOptimizerType.ADAM);
             mlp.setRegularization(0.0, 0.0);  // Regularization yok
             mlp.setAdamParameters(0.9, 0.999, 1e-8);
 
@@ -166,6 +133,7 @@ public class TestMLP {
 
             System.out.println("\nTraining started...");
             trainer.train(50);
+            trainer.waitForTrainingComplete();
 
             System.out.println("\nFinal performance:");
             trainer.evaluate();
@@ -175,5 +143,6 @@ public class TestMLP {
             e.printStackTrace();
         }
     }
+
 
 }

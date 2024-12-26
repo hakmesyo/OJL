@@ -1996,6 +1996,15 @@ public final class CMatrix implements Serializable {
         array = Nd4j.create(FactoryMatrix.fillRandNormalMatrixMeanVar(f, mean, var, random));
         return this;
     }
+    
+    public CMatrix toDataSet() {
+        if (classLabels==null || classLabels.size()==0) {
+            classLabels=Arrays.stream(FactoryUtils.toStringArray1D(this.clone().cmd(":","-1").toFloatArray1D())).toList();
+            setArray(this.clone().cmd(":","0:-1").toFloatArray2D());
+        }
+        return this;
+    }
+    
 
     /**
      * Plot scatter graph of the first two column vectors of the CMatrix Another

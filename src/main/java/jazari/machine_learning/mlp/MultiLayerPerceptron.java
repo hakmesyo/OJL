@@ -8,46 +8,18 @@ package jazari.machine_learning.mlp;
  *
  * @author cezerilab
  */
+import jazari.machine_learning.mlp.enums.EActivationType;
+import jazari.machine_learning.mlp.enums.EProblemType;
+import jazari.machine_learning.mlp.enums.ELossFunction;
+import jazari.machine_learning.mlp.enums.EOptimizerType;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-// Aktivasyon fonksiyonları için enum
-enum ActivationType {
-    RELU,
-    SIGMOID,
-    TANH,
-    SOFTMAX,
-    LINEAR
-}
-
-// Optimizasyon algoritmaları için enum
-enum OptimizerType {
-    SGD,
-    ADAM,
-    RMSPROP
-}
-
-// Problem tipi için enum
-enum ProblemType {
-    CLASSIFICATION,
-    REGRESSION
-}
-
-// Loss function enum
-enum LossFunction {
-    CROSS_ENTROPY,
-    MSE,
-    HUBER
-}
 
 // Abstract base Layer class
 abstract class Layer implements Serializable {
@@ -55,11 +27,11 @@ abstract class Layer implements Serializable {
     protected double[] output;
     protected double[] input;
     protected double[] delta;
-    protected ActivationType activation;
+    protected EActivationType activation;
 
     public abstract double[] forward(double[] input, boolean isTraining);
 
-    public abstract void updateWeights(double learningRate, double momentum, OptimizerType optimizer,
+    public abstract void updateWeights(double learningRate, double momentum, EOptimizerType optimizer,
             double l1Lambda, double l2Lambda,
             double beta1, double beta2, double epsilon);
 
@@ -81,7 +53,7 @@ abstract class Layer implements Serializable {
         this.delta = delta;
     }
 
-    public ActivationType getActivation() {
+    public EActivationType getActivation() {
         return activation;
     }
 
@@ -107,7 +79,7 @@ class DenseLayer extends Layer {
     private int inputSize;
     private int outputSize;
 
-    public DenseLayer(int inputSize, int outputSize, ActivationType activation, double dropoutRate) {
+    public DenseLayer(int inputSize, int outputSize, EActivationType activation, double dropoutRate) {
         this.inputSize = inputSize;
         this.outputSize = outputSize;
         this.weights = new double[inputSize][outputSize];
@@ -241,7 +213,7 @@ class DenseLayer extends Layer {
     }
 
     @Override
-    public void updateWeights(double learningRate, double momentum, OptimizerType optimizer,
+    public void updateWeights(double learningRate, double momentum, EOptimizerType optimizer,
             double l1Lambda, double l2Lambda,
             double beta1, double beta2, double epsilon) {
         switch (optimizer) {
@@ -414,7 +386,7 @@ class BatchNormLayer extends Layer {
         this.delta = new double[size];
         this.epsilon = 1e-5;
         this.momentum = 0.9;
-        this.activation = ActivationType.LINEAR;
+        this.activation = EActivationType.LINEAR;
 
         this.xNormalized = new double[size];
         this.xCentered = new double[size];
@@ -507,7 +479,7 @@ class BatchNormLayer extends Layer {
     }
 
     @Override
-    public void updateWeights(double learningRate, double momentum, OptimizerType optimizer,
+    public void updateWeights(double learningRate, double momentum, EOptimizerType optimizer,
             double l1Lambda, double l2Lambda,
             double beta1, double beta2, double epsilon) {
         // BatchNorm layer'ında weights yok, güncelleme gamma ve beta için backward'da yapılıyor
@@ -550,35 +522,35 @@ public class MultiLayerPerceptron implements Serializable {
 
     private List<Layer> layers;
     private int inputSize;
-    private ProblemType problemType;
+    private EProblemType problemType;
     private double learningRate;
-    private OptimizerType optimizer;
+    private EOptimizerType optimizer;
     private double l1Lambda;
     private double l2Lambda;
     private double momentum;
     private double beta1;
     private double beta2;
     private double epsilon;
-    private LossFunction lossFunction;
+    private ELossFunction lossFunction;
     private String checkpointDir;
     private double bestLoss;
     private int epochsSinceImprovement;
     private int patience;
 
-    public MultiLayerPerceptron(ProblemType problemType, int inputSize) {
+    public MultiLayerPerceptron(EProblemType problemType, int inputSize) {
         this.layers = new ArrayList<>();
         this.problemType = problemType;
         this.inputSize = inputSize;
         this.learningRate = 0.001;
-        this.optimizer = OptimizerType.ADAM;
+        this.optimizer = EOptimizerType.ADAM;
         this.l1Lambda = 0;
         this.l2Lambda = 0;
         this.momentum = 0.9;
         this.beta1 = 0.9;
         this.beta2 = 0.999;
         this.epsilon = 1e-8;
-        this.lossFunction = problemType == ProblemType.CLASSIFICATION
-                ? LossFunction.CROSS_ENTROPY : LossFunction.MSE;
+        this.lossFunction = problemType == EProblemType.CLASSIFICATION
+                ? ELossFunction.CROSS_ENTROPY : ELossFunction.MSE;
         this.checkpointDir = "checkpoints/";
         this.bestLoss = Double.MAX_VALUE;
         this.epochsSinceImprovement = 0;
@@ -587,7 +559,7 @@ public class MultiLayerPerceptron implements Serializable {
         new File(checkpointDir).mkdirs();
     }
 
-    public void addLayer(int outputSize, ActivationType activation, double dropoutRate) {
+    public void addLayer(int outputSize, EActivationType activation, double dropoutRate) {
         int previousSize = layers.isEmpty() ? inputSize : layers.get(layers.size() - 1).getOutputSize();
         layers.add(new DenseLayer(previousSize, outputSize, activation, dropoutRate));
     }
@@ -742,7 +714,7 @@ public class MultiLayerPerceptron implements Serializable {
         this.learningRate = learningRate;
     }
 
-    public void setOptimizer(OptimizerType optimizer) {
+    public void setOptimizer(EOptimizerType optimizer) {
         this.optimizer = optimizer;
     }
 
@@ -751,7 +723,7 @@ public class MultiLayerPerceptron implements Serializable {
         this.l2Lambda = l2Lambda;
     }
 
-    public void setLossFunction(LossFunction lossFunction) {
+    public void setLossFunction(ELossFunction lossFunction) {
         this.lossFunction = lossFunction;
     }
 
@@ -775,7 +747,7 @@ public class MultiLayerPerceptron implements Serializable {
     }
 
     // Getter metodları
-    public ProblemType getProblemType() {
+    public EProblemType getProblemType() {
         return problemType;
     }
 
@@ -870,7 +842,7 @@ public class MultiLayerPerceptron implements Serializable {
 
         // Optimizer ve loss bilgisi
         System.out.println("\nOptimizer: " + optimizer);
-        System.out.println("Loss: " + (problemType == ProblemType.CLASSIFICATION ? "categorical_crossentropy" : "mse"));
+        System.out.println("Loss: " + (problemType == EProblemType.CLASSIFICATION ? "categorical_crossentropy" : "mse"));
         System.out.println("Learning rate: " + learningRate);
     }
 }

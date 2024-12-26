@@ -416,7 +416,15 @@
             <artifactId>webp-imageio</artifactId>
             <version>0.1.6</version>
         </dependency> 
-         <!--      
+        
+        <!-- https://mvnrepository.com/artifact/org.tallison/jmatio -->
+        <dependency>
+            <groupId>org.tallison</groupId>
+            <artifactId>jmatio</artifactId>
+            <version>1.5</version>
+        </dependency>
+
+        <!--      
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>

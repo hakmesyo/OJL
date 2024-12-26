@@ -16,6 +16,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LearningCurvesPlot extends JFrame {
@@ -53,31 +54,36 @@ public class LearningCurvesPlot extends JFrame {
         setTitle("Learning Curves");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+        // Arka plan rengini ayarla
+        setBackground(Color.WHITE);
+
         plotPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
+                setBackground(Color.WHITE);  // Panel arka planı
                 drawPlot((Graphics2D) g);
             }
         };
-        plotPanel.setBackground(BACKGROUND_COLOR);
+        plotPanel.setBackground(Color.WHITE);  // Panel arka planı
 
         setupPopupMenu();
 
         setLayout(new BorderLayout());
         add(plotPanel, BorderLayout.CENTER);
 
-        // Başlangıç boyutu
-        setSize(800, 900);
-        setMinimumSize(new Dimension(600, 700));
-        setLocationRelativeTo(null);
+        // Başlangıç boyutu ve minimum boyut
+        setSize(1000, 800);  // Daha büyük başlangıç boyutu
+        setMinimumSize(new Dimension(800, 600));  // Minimum boyut
+        setLocationRelativeTo(null);  // Ekranın ortasında
 
         // Pencere boyutu değiştiğinde aspect ratio'yu koru
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 int width = getWidth();
-                setSize(width, width);
+                int height = (int) (width * 0.8);  // 4:5 aspect ratio
+                setSize(width, height);
             }
         });
     }
@@ -390,5 +396,23 @@ public class LearningCurvesPlot extends JFrame {
             LearningCurvesPlot plot = new LearningCurvesPlot(trainLoss, valLoss, trainAcc, valAcc);
             plot.setVisible(true);
         });
+    }
+
+    /**
+     * Öğrenme eğrilerini yeni verilerle günceller
+     */
+    public void updateCurves(List<Double> newTrainLoss, List<Double> newValLoss,
+            List<Double> newTrainAccuracy, List<Double> newValAccuracy) {
+        // Derin kopya oluştur
+        this.trainLoss = new ArrayList<>(newTrainLoss);
+        this.valLoss = new ArrayList<>(newValLoss);
+        this.trainAccuracy = new ArrayList<>(newTrainAccuracy);
+        this.valAccuracy = new ArrayList<>(newValAccuracy);
+        this.epochs = trainLoss.size();
+
+        // Panel'i yeniden çiz
+        if (plotPanel != null) {
+            plotPanel.repaint();
+        }
     }
 }
