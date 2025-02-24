@@ -10,27 +10,16 @@ import java.awt.event.MouseMotionAdapter;
 import java.io.*;
 import org.fife.ui.rtextarea.*;
 import org.fife.ui.rsyntaxtextarea.*;
-import javax.tools.*;
 import java.util.*;
-import java.net.*;
-import java.lang.reflect.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.fife.rsta.ac.LanguageSupportFactory;
 import org.fife.rsta.ac.java.JavaLanguageSupport;
-import org.fife.ui.rsyntaxtextarea.parser.AbstractParser;
-import org.fife.ui.rsyntaxtextarea.parser.DefaultParseResult;
-import org.fife.ui.rsyntaxtextarea.parser.DefaultParserNotice;
-import org.fife.ui.rsyntaxtextarea.parser.ParserNotice;
 import org.fife.ui.rsyntaxtextarea.templates.*;
 import java.util.jar.JarFile;
 import java.util.jar.JarEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class AdvancedIDE extends JFrame {
+public class EnhancedIDE extends JFrame {
 
     private RSyntaxTextArea textArea;
     private JButton runButton;
@@ -39,7 +28,7 @@ public class AdvancedIDE extends JFrame {
     private RuntimeCompiler compiler;
     private Map<String, Set<String>> packageMap = new HashMap<>();
 
-    public AdvancedIDE() {
+    public EnhancedIDE() {
         super("Advanced Java IDE");
         compiler = new RuntimeCompiler();
         initializePackageStructure();  // YENİ EKLENEN
@@ -106,7 +95,7 @@ public class AdvancedIDE extends JFrame {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(AdvancedIDE.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(EnhancedIDE.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -500,132 +489,132 @@ public class AdvancedIDE extends JFrame {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            new AdvancedIDE().setVisible(true);
+            new EnhancedIDE().setVisible(true);
         });
     }
 }
 
-class RuntimeCompiler {
+//class RuntimeCompiler {
+//
+//    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
+//
+//    public void compile(String sourceCode, JTextArea outputArea) {
+//        try {
+//            String className = extractClassName(sourceCode);
+//            if (className == null) {
+//                throw new Exception("Could not find class name in source code");
+//            }
+//
+//            File sourceFile = new File(TEMP_DIR + className + ".java");
+//            try (FileWriter writer = new FileWriter(sourceFile)) {
+//                writer.write(sourceCode);
+//            }
+//
+//            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+//            if (compiler == null) {
+//                throw new Exception("No JavaCompiler available. Make sure you're using JDK, not JRE.");
+//            }
+//
+//            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+//            StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
+//
+//            Iterable<? extends JavaFileObject> compilationUnits
+//                    = fileManager.getJavaFileObjectsFromFiles(Arrays.asList(sourceFile));
+//
+//            java.util.List<String> options = new ArrayList<>();
+//            options.add("-d");
+//            options.add(TEMP_DIR);
+//
+//            JavaCompiler.CompilationTask task = compiler.getTask(
+//                    null,
+//                    fileManager,
+//                    diagnostics,
+//                    options,
+//                    null,
+//                    compilationUnits
+//            );
+//
+//            boolean success = task.call();
+//
+//            for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+//                outputArea.append(String.format("Line %d: %s%n",
+//                        diagnostic.getLineNumber(),
+//                        diagnostic.getMessage(null)));
+//            }
+//
+//            if (!success) {
+//                throw new Exception("Compilation failed");
+//            }
+//
+//            URLClassLoader classLoader = URLClassLoader.newInstance(
+//                    new URL[]{new File(TEMP_DIR).toURI().toURL()});
+//            Class<?> loadedClass = Class.forName(className, true, classLoader);
+//            Method mainMethod = loadedClass.getMethod("main", String[].class);
+//
+//            PrintStream originalOut = System.out;
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//            PrintStream newOut = new PrintStream(baos);
+//            System.setOut(newOut);
+//
+//            try {
+//                mainMethod.invoke(null, (Object) new String[]{});
+//            } finally {
+//                System.setOut(originalOut);
+//            }
+//
+//            outputArea.append("\nOutput:\n" + baos.toString());
+//
+//            sourceFile.delete();
+//            new File(TEMP_DIR + className + ".class").delete();
+//
+//            classLoader.close();
+//
+//        } catch (Exception e) {
+//            outputArea.append("\nExecution Error: " + e.getMessage());
+//            e.printStackTrace(new PrintStream(new OutputStreamAdapter(outputArea)));
+//        }
+//    }
+//
+//    private String extractClassName(String sourceCode) {
+//        String[] lines = sourceCode.split("\n");
+//        for (String line : lines) {
+//            line = line.trim();
+//            if (line.startsWith("public class ")) {
+//                return line.substring(13, line.indexOf("{")).trim();
+//            }
+//        }
+//        return null;
+//    }
+//}
 
-    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
-
-    public void compile(String sourceCode, JTextArea outputArea) {
-        try {
-            String className = extractClassName(sourceCode);
-            if (className == null) {
-                throw new Exception("Could not find class name in source code");
-            }
-
-            File sourceFile = new File(TEMP_DIR + className + ".java");
-            try (FileWriter writer = new FileWriter(sourceFile)) {
-                writer.write(sourceCode);
-            }
-
-            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            if (compiler == null) {
-                throw new Exception("No JavaCompiler available. Make sure you're using JDK, not JRE.");
-            }
-
-            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-            StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
-
-            Iterable<? extends JavaFileObject> compilationUnits
-                    = fileManager.getJavaFileObjectsFromFiles(Arrays.asList(sourceFile));
-
-            java.util.List<String> options = new ArrayList<>();
-            options.add("-d");
-            options.add(TEMP_DIR);
-
-            JavaCompiler.CompilationTask task = compiler.getTask(
-                    null,
-                    fileManager,
-                    diagnostics,
-                    options,
-                    null,
-                    compilationUnits
-            );
-
-            boolean success = task.call();
-
-            for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-                outputArea.append(String.format("Line %d: %s%n",
-                        diagnostic.getLineNumber(),
-                        diagnostic.getMessage(null)));
-            }
-
-            if (!success) {
-                throw new Exception("Compilation failed");
-            }
-
-            URLClassLoader classLoader = URLClassLoader.newInstance(
-                    new URL[]{new File(TEMP_DIR).toURI().toURL()});
-            Class<?> loadedClass = Class.forName(className, true, classLoader);
-            Method mainMethod = loadedClass.getMethod("main", String[].class);
-
-            PrintStream originalOut = System.out;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PrintStream newOut = new PrintStream(baos);
-            System.setOut(newOut);
-
-            try {
-                mainMethod.invoke(null, (Object) new String[]{});
-            } finally {
-                System.setOut(originalOut);
-            }
-
-            outputArea.append("\nOutput:\n" + baos.toString());
-
-            sourceFile.delete();
-            new File(TEMP_DIR + className + ".class").delete();
-
-            classLoader.close();
-
-        } catch (Exception e) {
-            outputArea.append("\nExecution Error: " + e.getMessage());
-            e.printStackTrace(new PrintStream(new OutputStreamAdapter(outputArea)));
-        }
-    }
-
-    private String extractClassName(String sourceCode) {
-        String[] lines = sourceCode.split("\n");
-        for (String line : lines) {
-            line = line.trim();
-            if (line.startsWith("public class ")) {
-                return line.substring(13, line.indexOf("{")).trim();
-            }
-        }
-        return null;
-    }
-}
-
-class OutputStreamAdapter extends OutputStream {
-
-    private JTextArea textArea;
-    private StringBuilder buffer;
-
-    public OutputStreamAdapter(JTextArea textArea) {
-        this.textArea = textArea;
-        this.buffer = new StringBuilder();
-    }
-
-    @Override
-    public void write(int b) {
-        buffer.append((char) b);
-        if (b == '\n') {
-            SwingUtilities.invokeLater(() -> {
-                textArea.append(buffer.toString());
-                buffer.setLength(0);
-            });
-        }
-    }
-
-    @Override
-    public void flush() {
-        if (buffer.length() > 0) {
-            SwingUtilities.invokeLater(() -> {
-                textArea.append(buffer.toString());
-                buffer.setLength(0);
-            });
-        }
-    }
-}
+//class OutputStreamAdapter extends OutputStream {
+//
+//    private JTextArea textArea;
+//    private StringBuilder buffer;
+//
+//    public OutputStreamAdapter(JTextArea textArea) {
+//        this.textArea = textArea;
+//        this.buffer = new StringBuilder();
+//    }
+//
+//    @Override
+//    public void write(int b) {
+//        buffer.append((char) b);
+//        if (b == '\n') {
+//            SwingUtilities.invokeLater(() -> {
+//                textArea.append(buffer.toString());
+//                buffer.setLength(0);
+//            });
+//        }
+//    }
+//
+//    @Override
+//    public void flush() {
+//        if (buffer.length() > 0) {
+//            SwingUtilities.invokeLater(() -> {
+//                textArea.append(buffer.toString());
+//                buffer.setLength(0);
+//            });
+//        }
+//    }
+//}

@@ -23,11 +23,13 @@ public class SerialComExample {
 
     public static void main(String[] args) {
         // COM4 portunu bul
-        SerialPort comPort = SerialPort.getCommPort("COM4");
+        //SerialPort comPort = SerialPort.getCommPort("COM4");
+        SerialPort comPort = SerialPort.getCommPort("COM10");
 
         // Portu aç (9600 baud, 8 veri biti, hiçbir parite, 1 durma biti)
         comPort.openPort();
         comPort.setBaudRate(9600);
+        //comPort.setBaudRate(115200);
         comPort.setNumDataBits(8);
         comPort.setParity(SerialPort.NO_PARITY);
         comPort.setNumStopBits(1);
@@ -46,7 +48,7 @@ public class SerialComExample {
                 int numRead = comPort.readBytes(newData, newData.length);
                 // Baytları karakter dizisine dönüştür
                 String receivedString = new String(newData, StandardCharsets.UTF_8);
-                System.out.println(receivedString);
+                System.out.print(receivedString);
             }
         });
 
