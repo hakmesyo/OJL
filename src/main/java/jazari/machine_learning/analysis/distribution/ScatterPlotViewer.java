@@ -48,12 +48,7 @@ public class ScatterPlotViewer extends JPanel {
         this.points = points;
         this.labels = labels;
         this.title = "Scatter Plot";
-        Set<String> my_set = new HashSet<>();
-        for (String label : labels) {
-            my_set.add(label);
-        }
-        nClass = my_set.size();
-
+        
         calculateBounds();
         initColors();
         setupInteractions();
@@ -64,6 +59,20 @@ public class ScatterPlotViewer extends JPanel {
 
         ToolTipManager.sharedInstance().setInitialDelay(0);
         setToolTipText("");
+    }
+    
+    // Varsayılan etiketlerle başlatmak için ek constructor
+    public ScatterPlotViewer(float[][] points) {
+        this(points, generateDefaultLabels(points.length));
+    }
+    
+    // Varsayılan etiketleri oluşturan yardımcı metod
+    private static String[] generateDefaultLabels(int count) {
+        String[] defaultLabels = new String[count];
+        for (int i = 0; i < count; i++) {
+            defaultLabels[i] = "0";  // Varsayılan olarak tüm noktalar "0" kümesinde
+        }
+        return defaultLabels;
     }
 
     private void calculateBounds() {
@@ -135,51 +144,32 @@ public class ScatterPlotViewer extends JPanel {
         }
     }
 
-//    private void initColors() {
-//        int maxLabel = 0;
-//        for (int label : labels) {
-//            maxLabel = Math.max(maxLabel, label);
-//        }
-//
-//        colors = new Color[maxLabel + 1];
-//        float hue = 0.0f;
-//        float saturation = 0.8f;
-//        float brightness = 0.9f;
-//        float hueStep = 1.0f / colors.length;
-//
-//        for (int i = 0; i < colors.length; i++) {
-//            colors[i] = Color.getHSBColor(hue, saturation, brightness);
-//            hue += hueStep;
-//        }
-//    }
-//    private void initColors() {
-//        float hue = 0.0f;
-//        float saturation = 0.8f;
-//        float brightness = 0.9f;
-//        float hueStep = 1.0f / nClass;
-//
-//        int size = 0;
-//        for (int i = 0; i < labels.length; i++) {
-//            colors.put(labels[i], Color.getHSBColor(hue, saturation, brightness));
-//            if (colors.size() > size) {
-//                size = colors.size();
-//                hue += hueStep;
-//            }
-//
-//        }
-//    }
-
     private void initColors() {
+        // Benzersiz etiketleri topla
+        Set<String> uniqueLabels = new HashSet<>();
+        for (String label : labels) {
+            uniqueLabels.add(label);
+        }
+        
+        // nClass'ı güncelle
+        nClass = uniqueLabels.size();
+        
         float hue = 0.0f;
         float saturation = 0.8f;
         float brightness = 0.9f;
-        float hueStep = 1.0f / nClass;
+        float hueStep = 1.0f / Math.max(1, nClass);  // Sıfıra bölünmeyi önlemek için
 
-        for (String label : labels) {
+        // Her benzersiz etiket için renk ata
+        for (String label : uniqueLabels) {
             if (!colors.containsKey(label)) {  // Eğer key yoksa
                 colors.put(label, Color.getHSBColor(hue, saturation, brightness));
                 hue += hueStep;
             }
+        }
+        
+        // Eğer colors haritası boşsa varsayılan bir renk ekle
+        if (colors.isEmpty()) {
+            colors.put("default", Color.BLUE);
         }
     }
 
@@ -216,10 +206,6 @@ public class ScatterPlotViewer extends JPanel {
                     return;
                 }
 
-                // Mouse pozisyonunun plot içindeki göreceli konumunu hesapla
-                float relativeX = (float) (e.getX() - PADDING) / (getWidth() - PADDING - LEGEND_WIDTH - 10);
-                float relativeY = (float) (e.getY() - PADDING) / (getHeight() - 2 * PADDING);
-
                 // Eski scale değerini sakla
                 float oldScale = scale;
 
@@ -227,11 +213,6 @@ public class ScatterPlotViewer extends JPanel {
                 scale *= Math.pow(1.05, -e.getWheelRotation());
                 scale = Math.max(0.1f, Math.min(10.0f, scale));
 
-                // Plot alanının boyutlarını hesapla
-                float plotWidth = getWidth() - PADDING - LEGEND_WIDTH - 10;
-                float plotHeight = getHeight() - 2 * PADDING;
-
-                // Zoom merkezini korumak için yeni translate değerlerini hesapla
                 translateX = e.getX() - (e.getX() - translateX) * scale / oldScale;
                 translateY = e.getY() - (e.getY() - translateY) * scale / oldScale;
 
@@ -431,7 +412,10 @@ public class ScatterPlotViewer extends JPanel {
     private void drawPoints(Graphics2D g2) {
         // Noktaları çiz
         for (int i = 0; i < points.length; i++) {
-            g2.setColor(colors.get(labels[i]));
+            // labels[i] için renk bulunamadığında varsayılan renk kullan
+            Color pointColor = colors.getOrDefault(labels[i], Color.BLUE);
+            g2.setColor(pointColor);
+            
             int x = worldToScreenX(points[i][0]) - POINT_SIZE / 2;
             int y = worldToScreenY(points[i][1]) - POINT_SIZE / 2;
 
@@ -444,6 +428,11 @@ public class ScatterPlotViewer extends JPanel {
     }
 
     private void drawLegend(Graphics2D g2) {
+        // Renk haritası boşsa legend çizme
+        if (colors.isEmpty()) {
+            return;
+        }
+        
         int legendX = getWidth() - LEGEND_WIDTH + 10;
         int legendY = PADDING;
         int itemHeight = 20;
@@ -451,10 +440,10 @@ public class ScatterPlotViewer extends JPanel {
         // Legend arka planı
         g2.setColor(new Color(250, 250, 250, 240));
         g2.fillRoundRect(legendX - 5, legendY, LEGEND_WIDTH - 15,
-                nClass * itemHeight + 30, 10, 10);
+                Math.max(1, nClass) * itemHeight + 30, 10, 10);
         g2.setColor(new Color(200, 200, 200));
         g2.drawRoundRect(legendX - 5, legendY, LEGEND_WIDTH - 15,
-                nClass * itemHeight + 30, 10, 10);
+                Math.max(1, nClass) * itemHeight + 30, 10, 10);
 
         // Legend başlığı
         g2.setColor(Color.BLACK);
@@ -464,7 +453,13 @@ public class ScatterPlotViewer extends JPanel {
         // Legend itemları
         g2.setFont(LABEL_FONT);
         String[] keys = colors.keySet().toArray(new String[0]);
-        for (int i = 0; i < nClass; i++) {
+        
+        // Boş kontrol
+        if (keys.length == 0) {
+            return;
+        }
+        
+        for (int i = 0; i < Math.min(nClass, keys.length); i++) {
             int y = legendY + 35 + i * itemHeight;
 
             // Renk kutusu

@@ -56,6 +56,7 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         //cm.plotPanel = getPlotPanel();
         initialize();
+        getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
     }
 
     public FramePlot(float[][] data, boolean isPlotRefreshed) {
@@ -73,6 +74,7 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         //cm.plotPanel = getPlotPanel();
         initialize();
+        getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
     }
 
     public FramePlot(float[][] data, float[] x) {
@@ -86,6 +88,7 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         //cm.plotPanel = getPlotPanel();
         initialize();
+        getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
     }
 
     public FramePlot(float[][] data, TFigureAttribute attr) {
@@ -97,6 +100,7 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         //this.cm.plotPanel = getPlotPanel();
         initialize();
+        getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
     }
 
     public FramePlot(float[][] data, TFigureAttribute attr, float[] x) {
@@ -109,6 +113,7 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setRandomSeed(System.currentTimeMillis());
         getPlotPanel().setXAxis(x);
         initialize();
+        getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
     }
 
     public void setMatrix(float[][] data) {
@@ -222,7 +227,6 @@ public class FramePlot extends javax.swing.JFrame {
             }
         });
 
-        chk_dark_mode.setSelected(true);
         chk_dark_mode.setText("dark mode");
         chk_dark_mode.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {

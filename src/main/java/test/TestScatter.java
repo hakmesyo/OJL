@@ -24,9 +24,9 @@ public class TestScatter {
 //        CMatrix cm3=cm1.cat(1, cm2).scatter();
 
         //iki farklı random dist seçtiğimde
-        CMatrix cm1 = CMatrix.getInstance().rand(1,100).transpose();
-        CMatrix cm2 = cm1.clone().jitter(100).transpose();
-        CMatrix cm3=cm1.cat(1, cm2).scatter();
+        CMatrix cm1 = CMatrix.getInstance().rand(1,100);
+        CMatrix cm2 = cm1.clone().jitter(100);
+        CMatrix cm3=cm1.cat(2, cm2).tr().println().scatter();
 
     }
 }
