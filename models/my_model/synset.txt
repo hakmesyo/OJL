@@ -18,3 +18,8 @@ yol_calismasi
 sagdan_gidiniz
 ada
 soldan_gidiniz
+engel_yol
+engel_koni
+start_stop_line
+yaya_gecidi_zemin
+yaya

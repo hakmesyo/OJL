@@ -10176,4 +10176,12 @@ public final class CMatrix implements Serializable {
         tsne.show();
         return this;
     }
+
+    public BufferedImage getBufferedImage() {
+        return this.getImage();
+    }
+    
+    public BufferedImage toBufferedImage() {
+        return this.getImage();
+    }
 }

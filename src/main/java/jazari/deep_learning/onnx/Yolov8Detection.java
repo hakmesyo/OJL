@@ -53,11 +53,7 @@ public final class Yolov8Detection {
         //Path imgPath = Paths.get("images/dog_cat.jpg");
         Path imgPath = Paths.get("images/sim_1.jpg");
         Image img = ImageFactory.getInstance().fromFile(imgPath);
-        //Path modelPath =Paths.get("C:\\Users\\cezerilab\\Downloads\\yolov8n.zip");
-        //Path modelPath =Paths.get("C:\\Users\\cezerilab\\Downloads\\yolov8n_pytorch.zip");
-        //Path modelPath =Paths.get("C:\\Users\\cezerilab\\Downloads\\my_model\\model_m.onnx");
-        Path modelPath = Paths.get("C:\\Users\\cezerilab\\Downloads\\my_model\\model_n.onnx");
-        //Path modelPath =Paths.get("C:\\Users\\cezerilab\\Downloads\\my_model\\model_n.pt");
+        Path modelPath = Paths.get("models/my_model/model_n.onnx");
 
         // Use DJL OnnxRuntime model zoo model, model can be found:
         // https://mlrepo.djl.ai/model/cv/object_detection/ai/djl/onnxruntime/yolov8n/0.0.1/yolov8n.zip

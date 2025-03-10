@@ -11,14 +11,16 @@
     <properties>
         <dl4j-master.version>1.0.0-M1.1</dl4j-master.version>
         <nd4j.backend>nd4j-native</nd4j.backend>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version> 
         <logback.version>1.1.7</logback.version>
         <junit.version>5.8.0-M1</junit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <exec.mainClass>jazari.app.Jazo</exec.mainClass>
+        <maven.javadoc.skip>true</maven.javadoc.skip> 
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <exec.mainClass>com.mycompany.ojl.OJL</exec.mainClass>
-        <maven.javadoc.skip>true</maven.javadoc.skip> 
     </properties>
     
     <dependencies>
@@ -93,12 +95,21 @@
             <scope>runtime</scope>
             <version>1.9.1</version>
         </dependency>
+        <!--
+        <dependency>
+            <groupId>com.microsoft.onnxruntime</groupId>
+            <artifactId>onnxruntime</artifactId>
+            <version>1.16.3</version>
+        </dependency>
+        -->
+        
         <dependency>
             <groupId>ai.djl.onnxruntime</groupId>
             <artifactId>onnxruntime-engine</artifactId>
             <version>0.28.0</version>
             <scope>runtime</scope>
-        </dependency>        
+        </dependency>    
+             
         <!--
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
@@ -492,6 +503,76 @@
     
     <build>
         <plugins>
+            <!-- Jar oluşturma ve bağımlılıkları dahil etme için -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version> <!-- Daha güncel versiyona yükseltildi -->
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>jazari.app.Jazo</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        
+            <!-- JavaDoc oluşturma için -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version> <!-- Daha güncel versiyona yükseltildi -->
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        
+            <!-- Test çalıştırma için -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version> <!-- Daha güncel versiyona yükseltildi -->
+                <configuration>
+                    <argLine>-Dfile.encoding=UTF-8</argLine>
+                </configuration>
+            </plugin>
+        
+            <!-- Programı çalıştırma için -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.1</version> <!-- Güncellenmiş sürüm -->
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Dfile.encoding=UTF-8</argument>
+                        <argument>-classpath</argument>
+                        <classpath/>
+                        <argument>jazari.app.Jazo</argument>
+                    </arguments>
+                </configuration>
+            </plugin>        
+        </plugins>
+    </build>
+    
+    <!--    <build>
+        <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
@@ -528,8 +609,30 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <argLine>-Dfile.encoding=UTF-8</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Dfile.encoding=UTF-8</argument>
+                        <argument>-classpath</argument>
+                        <classpath/>
+                        <argument>jazari.app.Jazo</argument>  YOLOv8ObjectDetector yerine ana sınıfınız 
+                    </arguments>
+                </configuration>
+            </plugin>        
         </plugins>
-    </build>
+    </build>-->
     
         
 </project>
