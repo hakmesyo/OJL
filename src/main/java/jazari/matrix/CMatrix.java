@@ -2771,7 +2771,7 @@ public final class CMatrix implements Serializable {
 //        return this;
 //    }
 //    public CMatrix imshowGray() {
-////        if (image == null) {
+    ////        if (image == null) {
 ////            image = ImageProcess.pixelsToBufferedImage255(FactoryUtils.toIntArray(array));
 ////        }
 //        image = ImageProcess.pixelsToBufferedImage255(array);
@@ -3328,7 +3328,7 @@ public final class CMatrix implements Serializable {
 //
 //            }
 //        } else {
-////            int[] rows = p[0];
+    ////            int[] rows = p[0];
 ////            int[] cols = p[1];
 ////            d = new float[rows.length][this.getColumnNumber()];
 ////            for (int i = 0; i < rows.length; i++) {
@@ -4032,7 +4032,7 @@ public final class CMatrix implements Serializable {
         }
 //        if (this.getColumnNumber() != cm.getRowNumber()) {
 //            throw new InputMismatchException("can not multiply these two matrices please make sure both matrices obey the matrix multiplication rule i.e. column number of first matrix must equal to the colum number of the second matrix");
-////            return this;
+        ////            return this;
 //        }
         array = array.mul(cm.array);
         return this;
@@ -8120,6 +8120,68 @@ public final class CMatrix implements Serializable {
      * @param n
      * @return
      */
+    public CMatrix imReplicateColumn(int n) {
+        image = ImageProcess.replicateImageColumn(image, n);
+        return this;
+    }
+
+    /**
+     * Replicate/Duplicate the Matrix n times along column
+     *
+     * @param n
+     * @return
+     */
+    public CMatrix imReplicateRow(int n) {
+        image = ImageProcess.replicateImageRow(image, n);
+        return this;
+    }
+
+    /**
+     * Replicate/Duplicate the Matrix nr times along rows and nc times along
+     * columns
+     *
+     * @param nr:number of rows
+     * @param nc:number of columns
+     * @return
+     */
+    public CMatrix imReplicate(int nr, int nc) {
+        image = ImageProcess.replicateImage(image, nr, nc);
+        return this;
+    }
+
+    public CMatrix imMirror(boolean horizontalFlip, boolean verticalFlip) {
+        image = ImageProcess.mirrorImage(image, horizontalFlip, verticalFlip);
+        return this;
+    }
+
+    public CMatrix imMirrorHorizontal() {
+        image = ImageProcess.mirrorHorizontal(image);
+        return this;
+    }
+
+    public CMatrix imMirrorVertical() {
+        image = ImageProcess.mirrorVertical(image);
+        return this;
+    }
+
+    public CMatrix imFlip(boolean horizontalFlip, boolean verticalFlip) {
+        return imMirror(horizontalFlip, verticalFlip);
+    }
+
+    public CMatrix imFlipHorizontal() {
+        return imMirrorHorizontal();
+    }
+
+    public CMatrix imFlipVertical() {
+        return imMirrorVertical();
+    }
+
+    /**
+     * Replicate/Duplicate the Matrix n times along column
+     *
+     * @param n
+     * @return
+     */
     public CMatrix duplicateColumn(int n) {
         return replicateColumn(n);
     }
@@ -10180,7 +10242,7 @@ public final class CMatrix implements Serializable {
     public BufferedImage getBufferedImage() {
         return this.getImage();
     }
-    
+
     public BufferedImage toBufferedImage() {
         return this.getImage();
     }

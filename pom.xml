@@ -95,14 +95,6 @@
             <scope>runtime</scope>
             <version>1.9.1</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.microsoft.onnxruntime</groupId>
-            <artifactId>onnxruntime</artifactId>
-            <version>1.16.3</version>
-        </dependency>
-        -->
-        
         <dependency>
             <groupId>ai.djl.onnxruntime</groupId>
             <artifactId>onnxruntime-engine</artifactId>
@@ -110,55 +102,12 @@
             <scope>runtime</scope>
         </dependency>    
              
-        <!--
-        <dependency>
-            <groupId>ai.djl.pytorch</groupId>
-            <artifactId>pytorch-engine</artifactId>
-            <version>0.28.0</version>
-            <scope>runtime</scope>
-        </dependency>        
-        <dependency>
-            <groupId>ai.djl.pytorch</groupId>
-            <artifactId>pytorch-native-cu121</artifactId>
-            <classifier>win-x86_64</classifier>
-            <version>2.3.1</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>ai.djl.pytorch</groupId>
-            <artifactId>pytorch-jni</artifactId>
-            <version>2.3.1-0.29.0</version>
-            <scope>runtime</scope>
-        </dependency> 
-                 
-        <dependency>
-            <groupId>ai.djl.tensorflow</groupId>
-            <artifactId>tensorflow-model-zoo</artifactId>
-            <version>0.28.0</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>ai.djl.onnxruntime</groupId>
-            <artifactId>onnxruntime-engine</artifactId>
-            <version>0.28.0</version>
-            <scope>runtime</scope>
-        </dependency>
-        --> 
-        
         <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.16.1</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.kaitai/kaitai-struct-runtime 
-        <dependency>
-            <groupId>io.kaitai</groupId>
-            <artifactId>kaitai-struct-runtime</artifactId>
-            <version>0.10</version>
-        </dependency>-->
-        
         <!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
         <dependency>
             <groupId>commons-cli</groupId>
@@ -216,14 +165,6 @@
             <version>2.2.1</version>
         </dependency>
         
-        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok 
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
-            <scope>provided</scope>
-        </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/de.sciss/jwave -->
         <dependency>
             <groupId>de.sciss</groupId>
@@ -265,17 +206,6 @@
             <artifactId>tablesaw-jsplot</artifactId>
             <version>0.43.1</version>
         </dependency>
-        <!-- for screen recording 
-        <dependency>
-            <groupId>org.jcodec</groupId>
-            <artifactId>jcodec</artifactId>
-            <version>0.2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jcodec</groupId>
-            <artifactId>jcodec-javase</artifactId>
-            <version>0.2.5</version>
-        </dependency>-->
         <!-- PROCESSING -->
         <!-- https://mvnrepository.com/artifact/org.processing/processing-complete -->
         <dependency>
@@ -351,22 +281,6 @@
             <artifactId>net</artifactId>
             <version>3.3.7</version>
         </dependency>
-
-
-        
-        
-        <!-- https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans 
-        <dependency>
-            <groupId>org.apache.xmlbeans</groupId>
-            <artifactId>xmlbeans</artifactId>
-            <version>5.2.0</version>
-        </dependency>-->
-        <!-- https://mvnrepository.com/artifact/net.sf.saxon/Saxon-HE 
-        <dependency>
-            <groupId>net.sf.saxon</groupId>
-            <artifactId>Saxon-HE</artifactId>
-            <version>12.4</version>
-        </dependency>-->
         <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
         <dependency>
             <groupId>org.openpnp</groupId>
@@ -405,12 +319,6 @@
             <version>2.2.1</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-imaging 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-imaging</artifactId>
-            <version>1.0.0-alpha5</version>
-        </dependency>-->
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -434,19 +342,6 @@
             <artifactId>jmatio</artifactId>
             <version>1.5</version>
         </dependency>
-
-        <!--      
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>2.7.0</version>
-        </dependency>-->
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.17.2</version>
-        </dependency>-->
         <!-- https://mvnrepository.com/artifact/org.locationtech.proj4j/proj4j -->
         <dependency>
             <groupId>org.locationtech.proj4j</groupId>
@@ -570,69 +465,4 @@
             </plugin>        
         </plugins>
     </build>
-    
-    <!--    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>jazari.app.Jazo</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <argLine>-Dfile.encoding=UTF-8</argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Dfile.encoding=UTF-8</argument>
-                        <argument>-classpath</argument>
-                        <classpath/>
-                        <argument>jazari.app.Jazo</argument>  YOLOv8ObjectDetector yerine ana sınıfınız 
-                    </arguments>
-                </configuration>
-            </plugin>        
-        </plugins>
-    </build>-->
-    
-        
 </project>

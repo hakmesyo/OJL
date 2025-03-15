@@ -96,6 +96,13 @@ public class FactoryObjectDetectionYoloV8 {
         return null;
     }
 
+    /**
+     * predict bboxes for the image
+     * @param model
+     * @param imageFile
+     * @param isBboxShown
+     * @return
+     */
     public static DetectedObjects predict(ZooModel<Image, DetectedObjects> model, File imageFile, boolean isBboxShown) {
         Image img;
         BufferedImage bimg = null;
@@ -108,6 +115,12 @@ public class FactoryObjectDetectionYoloV8 {
         return predict(model, bimg, isBboxShown);
     }
 
+    /**
+     * predict bboxes for the image
+     * @param model
+     * @param image
+     * @return
+     */
     public static DetectedObjects predict(ZooModel<Image, DetectedObjects> model, BufferedImage image) {
         Image img = ImageFactory.getInstance().fromImage(image);
         DetectedObjects detection = null;
@@ -119,6 +132,13 @@ public class FactoryObjectDetectionYoloV8 {
         return detection;
     }
 
+    /**
+     * predict bboxes for the image
+     * @param model
+     * @param image
+     * @param isBboxShown
+     * @return
+     */
     public static DetectedObjects predict(ZooModel<Image, DetectedObjects> model, BufferedImage image, boolean isBboxShown) {
         Image img = ImageFactory.getInstance().fromImage(image);
         DetectedObjects detection = null;
@@ -166,7 +186,16 @@ public class FactoryObjectDetectionYoloV8 {
         return detection;
     }
 
-    private static void drawText(Graphics2D g, String text, int x, int y, int stroke, int padding) {
+    /**
+     *
+     * @param g
+     * @param text
+     * @param x
+     * @param y
+     * @param stroke
+     * @param padding
+     */
+    public static void drawText(Graphics2D g, String text, int x, int y, int stroke, int padding) {
         FontMetrics metrics = g.getFontMetrics();
         x += stroke / 2;
         y += stroke / 2;

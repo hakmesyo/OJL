@@ -8,19 +8,30 @@ package misc.llm_code_collector;
  *
  * @author cezerilab
  */
+import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jazari.gui.FlatLaf;
 
 /**
  * Java kaynak kodlarını toplayıp tek bir dosyada birleştiren basit bir uygulama.
  */
 public class SimpleJavaCodeCollector extends JFrame {
+    static {
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(FlatLaf.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     private JTextField projectPathField;
     private JTextField outputFileField;
@@ -275,13 +286,6 @@ public class SimpleJavaCodeCollector extends JFrame {
     }
     
     public static void main(String[] args) {
-        // Look and Feel ayarla
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
         // Uygulamayı başlat
         SwingUtilities.invokeLater(() -> {
             SimpleJavaCodeCollector app = new SimpleJavaCodeCollector();

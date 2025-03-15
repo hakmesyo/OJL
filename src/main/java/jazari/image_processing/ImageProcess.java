@@ -978,7 +978,7 @@ public final class ImageProcess {
 //    public static BufferedImage readImage(String fileName) {
 //        try {
 //            return ImageIO.read(new File(fileName));
-////        try {
+    ////        try {
 ////            File file = new File(fileName);
 ////
 ////            // Dosyanın gerçek MIME tipini kontrol et
@@ -1229,7 +1229,10 @@ public final class ImageProcess {
 //                int b = pixels[i] & 0xff;
 //                int y = (int) (0.33000000000000002D * (float) r + 0.56000000000000005D * (float) g + 0.11D * (float) b);
 //                fpixels[i] = y;
-////            fpixels[i] = pixels[i];
+
+    
+
+    ////            fpixels[i] = pixels[i];
 //            }
 //        }
 //        int k = 0;
@@ -1726,6 +1729,134 @@ public final class ImageProcess {
     }
 
     /**
+     * BufferedImage'i yatay yönde n kez çoğaltır
+     *
+     * @param originalImage çoğaltılacak orijinal görüntü
+     * @param n kaç kez çoğaltılacağı
+     * @return çoğaltılmış yeni BufferedImage
+     */
+    public static BufferedImage replicateImageColumn(BufferedImage originalImage, int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("Çoğaltma sayısı pozitif bir değer olmalıdır");
+        }
+
+        if (n == 1) {
+            return deepCopy(originalImage);
+        }
+
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+        int newWidth = originalWidth * n;
+
+        // Yeni, geniş görüntü oluştur
+        BufferedImage resultImage = new BufferedImage(newWidth, originalHeight, originalImage.getType());
+
+        // Grafik nesnesi oluştur
+        Graphics2D g2d = resultImage.createGraphics();
+
+        // Orijinal görüntüyü n kez yan yana çiz
+        for (int i = 0; i < n; i++) {
+            g2d.drawImage(originalImage, i * originalWidth, 0, null);
+        }
+
+        g2d.dispose();
+
+        return resultImage;
+    }
+
+    /**
+     * BufferedImage'i dikey yönde (satır) n kez çoğaltır
+     *
+     * @param originalImage çoğaltılacak orijinal görüntü
+     * @param n kaç kez çoğaltılacağı
+     * @return çoğaltılmış yeni BufferedImage
+     */
+    public static BufferedImage replicateImageRow(BufferedImage originalImage, int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("Çoğaltma sayısı pozitif bir değer olmalıdır");
+        }
+
+        if (n == 1) {
+            return deepCopy(originalImage);
+        }
+
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+        int newHeight = originalHeight * n;
+
+        // Yeni, uzun görüntü oluştur
+        BufferedImage resultImage = new BufferedImage(originalWidth, newHeight, originalImage.getType());
+
+        // Grafik nesnesi oluştur
+        Graphics2D g2d = resultImage.createGraphics();
+
+        // Orijinal görüntüyü n kez alt alta çiz
+        for (int i = 0; i < n; i++) {
+            g2d.drawImage(originalImage, 0, i * originalHeight, null);
+        }
+
+        g2d.dispose();
+
+        return resultImage;
+    }
+
+    /**
+     * BufferedImage'i yatay ve dikey yönde çoğaltır
+     *
+     * @param originalImage çoğaltılacak orijinal görüntü
+     * @param numRows dikey yönde (satır) kaç kez çoğaltılacağı
+     * @param numColumns yatay yönde (sütun) kaç kez çoğaltılacağı
+     * @return çoğaltılmış yeni BufferedImage
+     */
+    public static BufferedImage replicateImage(BufferedImage originalImage, int numRows, int numColumns) {
+        if (numRows <= 0 || numColumns <= 0) {
+            throw new IllegalArgumentException("Çoğaltma sayıları pozitif değerler olmalıdır");
+        }
+
+        if (numRows == 1 && numColumns == 1) {
+            return deepCopy(originalImage);
+        }
+
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+        int newWidth = originalWidth * numColumns;
+        int newHeight = originalHeight * numRows;
+
+        // Yeni, genişletilmiş görüntü oluştur
+        BufferedImage resultImage = new BufferedImage(newWidth, newHeight, originalImage.getType());
+
+        // Grafik nesnesi oluştur
+        Graphics2D g2d = resultImage.createGraphics();
+
+        // İsteğe bağlı: Daha iyi kalite için render ipuçları
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+        // Orijinal görüntüyü hem satır hem de sütun olarak çoğalt
+        for (int row = 0; row < numRows; row++) {
+            for (int col = 0; col < numColumns; col++) {
+                int x = col * originalWidth;
+                int y = row * originalHeight;
+                g2d.drawImage(originalImage, x, y, null);
+            }
+        }
+
+        g2d.dispose();
+
+        return resultImage;
+    }
+
+    /**
+     * BufferedImage'in derin kopyasını oluşturur
+     */
+    public static BufferedImage deepCopy(BufferedImage source) {
+        BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), source.getType());
+        Graphics2D g2d = copy.createGraphics();
+        g2d.drawImage(source, 0, 0, null);
+        g2d.dispose();
+        return copy;
+    }
+
+    /**
      * resize the image with resize ratio Ratio can be 0.5f or 2f ratio between
      * 0..1 reduces the image size ratio larger than 1 enlarges the image size
      * Image.SCALE_SMOOTH format
@@ -1750,7 +1881,7 @@ public final class ImageProcess {
      * @return
      */
     public static BufferedImage resize(BufferedImage src, int w, int h) {
-////        Image tmp = img.getScaledInstance(w, h, Image.SCALE_FAST);
+        ////        Image tmp = img.getScaledInstance(w, h, Image.SCALE_FAST);
 //        Image tmp = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
 ////        Image tmp = img.getScaledInstance(w, h, Image.SCALE_REPLICATE);
 //        BufferedImage dimg = new BufferedImage(w, h, img.getType());
@@ -3489,7 +3620,7 @@ public final class ImageProcess {
 //        String xml = "";
 //        if (type.equals("haar")) {
 //            xml = "etc\\haarcascades\\haarcascade_frontalface_alt.xml";
-////            xml = "etc\\haarcascades\\haarcascade_frontalface_alt_tree.xml";
+    ////            xml = "etc\\haarcascades\\haarcascade_frontalface_alt_tree.xml";
 //        }
 //        if (type.equals("lbp")) {
 //            xml = "etc\\lbpcascades\\lbpcascade_frontalface.xml";
@@ -4698,6 +4829,61 @@ public final class ImageProcess {
 
     public static boolean isBinarizedImage(float[][] data) {
         return isMaskImage(data);
+    }
+
+    /**
+     * BufferedImage'i yatay veya dikey yönde aynalar
+     *
+     * @param originalImage aynalama yapılacak orijinal görüntü
+     * @param horizontalFlip yatay aynalama yapılıp yapılmayacağı
+     * @param verticalFlip dikey aynalama yapılıp yapılmayacağı
+     * @return aynalanmış görüntü
+     */
+    public static BufferedImage mirrorImage(BufferedImage originalImage, boolean horizontalFlip, boolean verticalFlip) {
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+
+        // Eğer hiçbir aynalama yapılmayacaksa orijinal görüntünün kopyasını döndür
+        if (!horizontalFlip && !verticalFlip) {
+            return deepCopy(originalImage);
+        }
+
+        // Yeni görüntü oluştur
+        BufferedImage mirroredImage = new BufferedImage(width, height, originalImage.getType());
+
+        // Grafik nesnesi oluştur
+        Graphics2D g2d = mirroredImage.createGraphics();
+
+        // Dönüşüm matrisini ayarla
+        int x = horizontalFlip ? width : 0;
+        int y = verticalFlip ? height : 0;
+        int scaleX = horizontalFlip ? -1 : 1;
+        int scaleY = verticalFlip ? -1 : 1;
+
+        // AffineTransform kullanarak görüntüyü aynala
+        AffineTransform transform = new AffineTransform();
+        transform.translate(x, y);
+        transform.scale(scaleX, scaleY);
+
+        g2d.setTransform(transform);
+        g2d.drawImage(originalImage, 0, 0, null);
+        g2d.dispose();
+
+        return mirroredImage;
+    }
+
+    /**
+     * Sadece yatay aynalama yapar
+     */
+    public static BufferedImage mirrorHorizontal(BufferedImage originalImage) {
+        return mirrorImage(originalImage, true, false);
+    }
+
+    /**
+     * Sadece dikey aynalama yapar
+     */
+    public static BufferedImage mirrorVertical(BufferedImage originalImage) {
+        return mirrorImage(originalImage, false, true);
     }
 
 }
