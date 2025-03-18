@@ -17,10 +17,11 @@ import java.util.stream.Stream;
 
 /**
  * Main frame for LLM-related tools including Java source code collector.
- * 
+ *
  * @author cezerilab
  */
 public class FrameMainLLM extends javax.swing.JFrame {
+
     static {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
@@ -34,11 +35,12 @@ public class FrameMainLLM extends javax.swing.JFrame {
      */
     public FrameMainLLM() {
         initComponents();
+        logArea.setDoubleBuffered(true);
     }
-    
+
     /**
      * Enable or disable UI components
-     * 
+     *
      * @param enabled true to enable components, false to disable
      */
     private void setComponentsEnabled(boolean enabled) {
@@ -48,51 +50,51 @@ public class FrameMainLLM extends javax.swing.JFrame {
         projectPathField.setEnabled(enabled);
         outputFileField.setEnabled(enabled);
     }
-    
+
     /**
      * Main code collection logic
-     * 
+     *
      * @param projectPath Path to the project directory
      * @param outputFile Path to the output file
      * @throws IOException If there are issues reading/writing files
      */
     private void collectJavaCode(String projectPath, String outputFile) throws IOException {
         logToUI("Scanning for Java files: " + projectPath);
-        
+
         // Find Java files
         List<Path> javaFiles = findJavaFiles(projectPath);
-        
+
         if (javaFiles.isEmpty()) {
             logToUI("No Java files found in the specified directory!");
             return;
         }
-        
+
         logToUI("Found " + javaFiles.size() + " Java files in total.");
-        
+
         // Combine files
         logToUI("Combining files...");
         combineJavaFiles(javaFiles, outputFile);
-        
+
         logToUI("Operation completed! Output file: " + outputFile);
-        
+
         SwingUtilities.invokeLater(() -> {
-            int result = JOptionPane.showConfirmDialog(this, 
-                    "Operation completed successfully!\nDo you want to open the output file now?", 
+            int result = JOptionPane.showConfirmDialog(this,
+                    "Operation completed successfully!\nDo you want to open the output file now?",
                     "Operation Completed", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
                 try {
                     Desktop.getDesktop().open(new File(outputFile));
                 } catch (IOException e) {
-                    JOptionPane.showMessageDialog(this, "Could not open file: " + e.getMessage(), 
+                    JOptionPane.showMessageDialog(this, "Could not open file: " + e.getMessage(),
                             "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
     }
-    
+
     /**
      * Log message to the UI
-     * 
+     *
      * @param message Message to display
      */
     private void logToUI(String message) {
@@ -102,21 +104,21 @@ public class FrameMainLLM extends javax.swing.JFrame {
             logArea.setCaretPosition(logArea.getDocument().getLength());
         });
     }
-    
+
     /**
      * Find all Java files in the given directory and its subdirectories
-     * 
+     *
      * @param directory Root directory to search from
      * @return List of Java file paths
      * @throws IOException If directory cannot be read
      */
     private List<Path> findJavaFiles(String directory) throws IOException {
         Path startPath = Paths.get(directory);
-        
+
         if (!Files.exists(startPath)) {
             throw new IOException("Specified directory not found: " + directory);
         }
-        
+
         try (Stream<Path> pathStream = Files.walk(startPath)) {
             return pathStream
                     .filter(Files::isRegularFile)
@@ -125,27 +127,30 @@ public class FrameMainLLM extends javax.swing.JFrame {
                     .collect(Collectors.toList());
         }
     }
-    
+
     /**
      * Check if a path is within build or target directories
-     * 
+     *
      * @param path Path to check
      * @return true if path is in build or target directory
      */
     private boolean isInBuildOrTarget(Path path) {
         String pathStr = path.toString();
-        return pathStr.contains(File.separator + "build" + File.separator) || 
-               pathStr.contains(File.separator + "target" + File.separator);
+        return pathStr.contains(File.separator + "build" + File.separator)
+                || pathStr.contains(File.separator + "target" + File.separator);
     }
-    
+
     /**
      * Combine multiple Java files into one output file
-     * 
+     *
      * @param javaFiles List of Java file paths
      * @param outputFilePath Path to the output file
      * @throws IOException If there are issues reading/writing files
      */
     private void combineJavaFiles(List<Path> javaFiles, String outputFilePath) throws IOException {
+        // Create a StringBuilder to store content for both file and UI
+        StringBuilder contentBuilder = new StringBuilder();
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath))) {
             int count = 0;
             for (Path javaFile : javaFiles) {
@@ -153,29 +158,44 @@ public class FrameMainLLM extends javax.swing.JFrame {
                 if (count % 10 == 0) {
                     logToUI("Processing: " + count + "/" + javaFiles.size() + " files");
                 }
-                
-                // Add file info
-                writer.write("============================================================");
+
+                // Add file info to both StringBuilder and output file
+                String fileHeader = "============================================================";
+                String filePath = "FILE: " + javaFile.toString();
+                String fileFooter = "============================================================";
+
+                writer.write(fileHeader);
                 writer.newLine();
-                writer.write("FILE: " + javaFile.toString());
+                writer.write(filePath);
                 writer.newLine();
-                writer.write("============================================================");
+                writer.write(fileFooter);
                 writer.newLine();
-                
+
+                contentBuilder.append(fileHeader).append("\n");
+                contentBuilder.append(filePath).append("\n");
+                contentBuilder.append(fileFooter).append("\n");
+
                 // Read and write file content
                 try (BufferedReader reader = new BufferedReader(new FileReader(javaFile.toFile()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         writer.write(line);
                         writer.newLine();
+                        contentBuilder.append(line).append("\n");
                     }
                 }
-                
+
                 // Add space between files
                 writer.newLine();
                 writer.newLine();
+                contentBuilder.append("\n\n");
             }
         }
+
+        // Display content in the logArea after all processing is complete
+        logToUI("\n--- CREATED FILE CONTENT ---\n");
+        logToUI(contentBuilder.toString());
+        logToUI("\n--- END OF FILE CONTENT ---\n");
     }
 
     /**
@@ -322,15 +342,15 @@ public class FrameMainLLM extends javax.swing.JFrame {
         JFileChooser fileChooser = new JFileChooser(new File("."));
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.setDialogTitle("Select Project Directory");
-        
+
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             projectPathField.setText(selectedFile.getAbsolutePath());
-            
+
             // Suggest automatic output file name
             if (outputFileField.getText().isEmpty()) {
-                String defaultOutput = selectedFile.getAbsolutePath() + File.separator + 
-                                      "collected_java_code.txt";
+                String defaultOutput = selectedFile.getAbsolutePath() + File.separator
+                        + "collected_java_code.txt";
                 outputFileField.setText(defaultOutput);
             }
         }
@@ -341,7 +361,7 @@ public class FrameMainLLM extends javax.swing.JFrame {
         JFileChooser fileChooser = new JFileChooser(new File("."));
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setDialogTitle("Select Output File");
-        
+
         if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             String path = selectedFile.getAbsolutePath();
@@ -355,23 +375,23 @@ public class FrameMainLLM extends javax.swing.JFrame {
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         String projectPath = projectPathField.getText().trim();
         String outputFile = outputFileField.getText().trim();
-        
+
         if (projectPath.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please select project directory!", 
-                                         "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please select project directory!",
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         if (outputFile.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please specify output file!", 
-                                         "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please specify output file!",
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         // Disable interface
         setComponentsEnabled(false);
         logArea.setText("");
-        
+
         // Run in background
         new Thread(() -> {
             try {
@@ -379,8 +399,8 @@ public class FrameMainLLM extends javax.swing.JFrame {
             } catch (Exception e) {
                 SwingUtilities.invokeLater(() -> {
                     logArea.append("ERROR: " + e.getMessage() + "\n");
-                    JOptionPane.showMessageDialog(this, "An error occurred during operation: " + 
-                                                e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "An error occurred during operation: "
+                            + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 });
             } finally {
                 SwingUtilities.invokeLater(() -> setComponentsEnabled(true));
@@ -395,7 +415,7 @@ public class FrameMainLLM extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                FrameMainLLM frm=new FrameMainLLM();
+                FrameMainLLM frm = new FrameMainLLM();
                 frm.setVisible(true);
             }
         });
