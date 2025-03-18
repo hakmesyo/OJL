@@ -833,6 +833,7 @@ public class EnhancedIDE extends JFrame {
         }
     }
 
+// updateMembersTree metodunun düzeltilmiş versiyonu
     private void updateMembersTree(File file) {
         try {
             // Önce tree'yi temizle
@@ -863,10 +864,14 @@ public class EnhancedIDE extends JFrame {
                     // Yorumları temizle
                     if (methodName.contains("//")) {
                         methodName = methodName.substring(0, methodName.indexOf("//"));
-                    }// Method signature'ı al
+                    }
+                    // Method signature'ı al
                     if (methodName.contains("(")) {
-                        methodName = methodName.substring(0, methodName.indexOf(")") + 1);
-                        methodsNode.add(new DefaultMutableTreeNode(methodName));
+                        int closingParenIndex = methodName.indexOf(")");
+                        if (closingParenIndex != -1) {  // Eğer ")" karakteri varsa
+                            methodName = methodName.substring(0, closingParenIndex + 1);
+                            methodsNode.add(new DefaultMutableTreeNode(methodName));
+                        }
                     }
                 }
 
@@ -883,8 +888,11 @@ public class EnhancedIDE extends JFrame {
                     }
 
                     // Değişken adını al
-                    fieldName = fieldName.substring(0, fieldName.indexOf(";"));
-                    fieldsNode.add(new DefaultMutableTreeNode(fieldName));
+                    int semicolonIndex = fieldName.indexOf(";");
+                    if (semicolonIndex != -1) {  // Eğer ";" karakteri varsa
+                        fieldName = fieldName.substring(0, semicolonIndex);
+                        fieldsNode.add(new DefaultMutableTreeNode(fieldName));
+                    }
                 }
             }
             reader.close();
