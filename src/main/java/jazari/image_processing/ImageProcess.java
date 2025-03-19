@@ -197,6 +197,50 @@ public final class ImageProcess {
         return imageToPixelsFloat(currBufferedImage);
     }
 
+    /**
+     * Canny Edge Detection - BufferedImage alıp BufferedImage döndüren versiyon
+     *
+     * @param img : Kaynak görüntü
+     * @return BufferedImage olarak kenar tespit sonucu
+     */
+    public static BufferedImage edgeDetectionCannyAsImage(BufferedImage img) {
+        float lowThreshold = 0.3f;
+        float highTreshold = 1.0f;
+        float gaussianKernelRadious = 2.5f;
+        int guassianKernelWidth = 3;
+        boolean isContrastNormalized = false;
+
+        BufferedImage currBufferedImage = edgeDetectionCanny(img, lowThreshold, highTreshold,
+                gaussianKernelRadious, guassianKernelWidth, isContrastNormalized);
+        currBufferedImage = toGrayLevel(currBufferedImage);
+        return currBufferedImage;
+    }
+
+    /**
+     * Canny Edge Detection - Parametreleri ayarlanabilir versiyon
+     *
+     * @param img : Kaynak görüntü
+     * @param lowThreshold : Düşük eşik değeri (0.0f-1.0f)
+     * @param highThreshold : Yüksek eşik değeri (0.0f-1.0f)
+     * @param gaussianRadius : Gaussian yumuşatma yarıçapı
+     * @param gaussianWidth : Gaussian kernel genişliği (3, 5, 7 vb. tek sayı
+     * olmalı)
+     * @param normalizeContrast : Kontrast normalizasyonu yapılıp yapılmayacağı
+     * @return BufferedImage olarak kenar tespit sonucu
+     */
+    public static BufferedImage edgeDetectionCannyAsImage(BufferedImage img,
+            float lowThreshold,
+            float highThreshold,
+            float gaussianRadius,
+            int gaussianWidth,
+            boolean normalizeContrast) {
+
+        BufferedImage currBufferedImage = edgeDetectionCanny(img, lowThreshold, highThreshold,
+                gaussianRadius, gaussianWidth, normalizeContrast);
+        currBufferedImage = toGrayLevel(currBufferedImage);
+        return currBufferedImage;
+    }
+
     /*
     public static Mat ocv_edgeDetectionCanny(Mat imageGray) {
         Mat imageCanny = new Mat();
@@ -4886,4 +4930,214 @@ public final class ImageProcess {
         return mirrorImage(originalImage, false, true);
     }
 
+    /**
+     * Görüntüyü mozaikleştirir (pikselleştirir)
+     *
+     * @param image Mozaikleştirilecek görüntü
+     * @param blockSize Mozaik blok boyutu (pixel)
+     * @return Mozaikleştirilmiş görüntü
+     */
+    public static BufferedImage mosaicImage(BufferedImage image, int blockSize) {
+        if (blockSize <= 1) {
+            return image; // Blok boyutu 1 veya daha küçükse orjinal görüntüyü döndür
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        // Çıktı görüntüsünü oluştur
+        BufferedImage output = new BufferedImage(width, height, image.getType());
+
+        // Görüntüyü blok blok işle
+        for (int y = 0; y < height; y += blockSize) {
+            for (int x = 0; x < width; x += blockSize) {
+                // Blok boyutlarını hesapla (görüntü kenarında eksik bloklar için)
+                int blockWidth = Math.min(blockSize, width - x);
+                int blockHeight = Math.min(blockSize, height - y);
+
+                // Blok içindeki piksellerin renklerini topla
+                int sumR = 0, sumG = 0, sumB = 0;
+                int count = 0;
+
+                for (int by = 0; by < blockHeight; by++) {
+                    for (int bx = 0; bx < blockWidth; bx++) {
+                        int rgb = image.getRGB(x + bx, y + by);
+                        sumR += (rgb >> 16) & 0xff;
+                        sumG += (rgb >> 8) & 0xff;
+                        sumB += rgb & 0xff;
+                        count++;
+                    }
+                }
+
+                // Ortalama rengi hesapla
+                int avgR = sumR / count;
+                int avgG = sumG / count;
+                int avgB = sumB / count;
+                int avgRGB = (avgR << 16) | (avgG << 8) | avgB;
+
+                // Bloğu ortalama renkle doldur
+                for (int by = 0; by < blockHeight; by++) {
+                    for (int bx = 0; bx < blockWidth; bx++) {
+                        output.setRGB(x + bx, y + by, avgRGB);
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
+    /**
+     * Görüntünün belirli bir bölgesini mozaikleştirir
+     *
+     * @param image Mozaikleştirilecek görüntü
+     * @param roi Mozaikleştirilecek bölge (Rectangle)
+     * @param blockSize Mozaik blok boyutu (pixel)
+     * @return Belirli bölgesi mozaikleştirilmiş görüntü
+     */
+    public static BufferedImage mosaicRegion(BufferedImage image, Rectangle roi, int blockSize) {
+        if (blockSize <= 1) {
+            return image; // Blok boyutu 1 veya daha küçükse orjinal görüntüyü döndür
+        }
+
+        // Görüntü boyutlarını al
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        // ROI'nin görüntü sınırları içinde olduğunu garantile
+        int x = Math.max(0, roi.x);
+        int y = Math.max(0, roi.y);
+        int roiWidth = Math.min(roi.width, width - x);
+        int roiHeight = Math.min(roi.height, height - y);
+
+        if (roiWidth <= 0 || roiHeight <= 0) {
+            return image; // Geçerli bir ROI değilse orijinal görüntüyü döndür
+        }
+
+        // Çıktı görüntüsünü oluştur (orijinal görüntünün kopyası)
+        BufferedImage output = new BufferedImage(width, height, image.getType());
+        Graphics2D g2d = output.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+
+        // Sadece ROI bölgesini blok blok işle
+        for (int blockY = y; blockY < y + roiHeight; blockY += blockSize) {
+            for (int blockX = x; blockX < x + roiWidth; blockX += blockSize) {
+                // Blok boyutlarını hesapla (ROI kenarında eksik bloklar için)
+                int blockW = Math.min(blockSize, x + roiWidth - blockX);
+                int blockH = Math.min(blockSize, y + roiHeight - blockY);
+
+                // Blok içindeki piksellerin renklerini topla
+                int sumR = 0, sumG = 0, sumB = 0;
+                int count = 0;
+
+                for (int by = 0; by < blockH; by++) {
+                    for (int bx = 0; bx < blockW; bx++) {
+                        int rgb = image.getRGB(blockX + bx, blockY + by);
+                        sumR += (rgb >> 16) & 0xff;
+                        sumG += (rgb >> 8) & 0xff;
+                        sumB += rgb & 0xff;
+                        count++;
+                    }
+                }
+
+                // Ortalama rengi hesapla
+                int avgR = sumR / count;
+                int avgG = sumG / count;
+                int avgB = sumB / count;
+                int avgRGB = (avgR << 16) | (avgG << 8) | avgB;
+
+                // Bloğu ortalama renkle doldur
+                for (int by = 0; by < blockH; by++) {
+                    for (int bx = 0; bx < blockW; bx++) {
+                        output.setRGB(blockX + bx, blockY + by, avgRGB);
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
+    /**
+     * Daha hızlı versiyonu - BufferedImage Graphics2D kullanarak (Büyük
+     * resimler için daha verimli)
+     *
+     * @param image Mozaikleştirilecek görüntü
+     * @param blockSize Mozaik blok boyutu (pixel)
+     * @return Mozaikleştirilmiş görüntü
+     */
+    public static BufferedImage mosaicImageFast(BufferedImage image, int blockSize) {
+        if (blockSize <= 1) {
+            return image;
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        // Küçültülmüş görüntüyü oluştur
+        int smallWidth = Math.max(1, width / blockSize);
+        int smallHeight = Math.max(1, height / blockSize);
+
+        // Görüntüyü küçült (her blok tek piksel olacak şekilde)
+        BufferedImage smallImage = new BufferedImage(smallWidth, smallHeight, image.getType());
+        Graphics2D g2d = smallImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(image, 0, 0, smallWidth, smallHeight, null);
+        g2d.dispose();
+
+        // Küçültülmüş görüntüyü orijinal boyuta geri büyüt (bu aşamada pikseller büyük bloklar halinde görünecek)
+        BufferedImage output = new BufferedImage(width, height, image.getType());
+        g2d = output.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2d.drawImage(smallImage, 0, 0, width, height, null);
+        g2d.dispose();
+
+        return output;
+    }
+
+    /**
+     * Yüzleri veya özel bölgeleri bulanıklaştırmak için mozaik uygular
+     *
+     * @param image Ana görüntü
+     * @param regions Mozaiklenecek bölgeler listesi (Rectangle)
+     * @param blockSize Mozaik blok boyutu
+     * @return Bölgeleri mozaiklenmiş görüntü
+     */
+    public static BufferedImage mosaicRegions(BufferedImage image, List<Rectangle> regions, int blockSize) {
+        // Orijinal görüntünün bir kopyasını oluştur
+        BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+        Graphics2D g2d = result.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+
+        // Her bir bölgeyi mozaikle
+        for (Rectangle region : regions) {
+            result = mosaicRegion(result, region, blockSize);
+        }
+
+        return result;
+    }
+
+    /**
+     * Yüz bölgesini (veya herhangi bir bölgeyi) otomatik tespit edip
+     * mozaikleyebilecek bir örnek metod NOT: Bu metod tam implementasyon
+     * değildir, sadece örnek bir çerçevedir. Gerçek yüz tespiti için OpenCV
+     * veya başka bir kütüphane kullanmanız gerekir.
+     */
+    public static BufferedImage mosaicFaces(BufferedImage image, int blockSize) {
+        // TODO: Burada OpenCV veya başka bir yüz tespit algoritması kullanılmalı
+        // Örnek olarak manuel bir bölge tanımlıyoruz
+        List<Rectangle> faceRegions = new ArrayList<>();
+
+        // Örnek: Görüntünün ortasında varsayımsal bir yüz bölgesi
+        int faceWidth = image.getWidth() / 4;
+        int faceHeight = image.getHeight() / 4;
+        int faceX = (image.getWidth() - faceWidth) / 2;
+        int faceY = (image.getHeight() - faceHeight) / 2;
+
+        faceRegions.add(new Rectangle(faceX, faceY, faceWidth, faceHeight));
+
+        return mosaicRegions(image, faceRegions, blockSize);
+    }
 }

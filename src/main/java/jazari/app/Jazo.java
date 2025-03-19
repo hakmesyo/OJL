@@ -62,7 +62,6 @@ public class Jazo extends javax.swing.JFrame {
         btn_open = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         btn_screen_capture = new javax.swing.JButton();
-        btn_llm = new javax.swing.JButton();
         btn_ide = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -86,15 +85,7 @@ public class Jazo extends javax.swing.JFrame {
             }
         });
 
-        btn_llm.setText("LLM");
-        btn_llm.setToolTipText("Open LLM Frame");
-        btn_llm.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_llmActionPerformed(evt);
-            }
-        });
-
-        btn_ide.setText("Open JIDE");
+        btn_ide.setText("Open JLLM");
         btn_ide.setToolTipText("Open Interpreter IDE Frame");
         btn_ide.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -108,11 +99,9 @@ public class Jazo extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btn_screen_capture)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_llm, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_ide, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_screen_capture)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -121,7 +110,6 @@ public class Jazo extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btn_screen_capture, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                    .addComponent(btn_llm, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
                     .addComponent(btn_ide, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -164,11 +152,8 @@ public class Jazo extends javax.swing.JFrame {
         frm.setVisible(true);
     }//GEN-LAST:event_btn_screen_captureActionPerformed
 
-    private void btn_llmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_llmActionPerformed
-        new FrameMainLLM().setVisible(true);
-    }//GEN-LAST:event_btn_llmActionPerformed
-
     private void btn_ideActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ideActionPerformed
+        //new FrameMainLLM().setVisible(true);
         new EnhancedIDE().setVisible(true);
     }//GEN-LAST:event_btn_ideActionPerformed
 
@@ -187,7 +172,6 @@ public class Jazo extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_ide;
-    private javax.swing.JButton btn_llm;
     private javax.swing.JButton btn_open;
     private javax.swing.JButton btn_screen_capture;
     private javax.swing.JPanel jPanel1;

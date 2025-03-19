@@ -1,16 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package jazari.interpreter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +41,7 @@ public class RuntimeCompiler {
             // Tam nitelikli sınıf adı (fully qualified class name)
             String fullyQualifiedName = packageName == null ? className : packageName + "." + className;
 
-// Paket yapısını oluştur (eğer paket belirtilmişse)
+            // Paket yapısını oluştur (eğer paket belirtilmişse)
             File packageDir = new File(TEMP_DIR);
             if (packageName != null && !packageName.isEmpty()) {
                 String packagePath = packageName.replace('.', File.separatorChar);
@@ -104,25 +102,11 @@ public class RuntimeCompiler {
             // Tam paket yolu ile sınıfı yükle
             Class<?> loadedClass = Class.forName(fullyQualifiedName, true, classLoader);
 
-            // main metodunu bul ve çalıştır
+            // main metodunu bul
             Method mainMethod = loadedClass.getMethod("main", String[].class);
 
-            // System.out'u yeniden yönlendir
-            PrintStream originalOut = System.out;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PrintStream newOut = new PrintStream(baos);
-            System.setOut(newOut);
-
-            try {
-                // Kodu çalıştır
-                mainMethod.invoke(null, (Object) new String[]{});
-            } finally {
-                // Her durumda orijinal System.out'u geri yükle
-                System.setOut(originalOut);
-            }
-
-            // Çıktıyı al ve göster
-            outputArea.append("\nOutput:\n" + baos.toString());
+            // Güvenli şekilde kullanıcı kodunu çalıştır
+            runUserCode(null, mainMethod, new String[]{}, outputArea);
 
             // Geçici dosyaları temizle - paket dizini içindeki sınıf dosyasını sil
             sourceFile.delete();
@@ -141,6 +125,126 @@ public class RuntimeCompiler {
         } catch (Exception e) {
             outputArea.append("\nExecution Error: " + e.toString());
             e.printStackTrace(new PrintStream(new OutputStreamAdapter(outputArea)));
+        }
+    }
+
+    /**
+     * Derlenen kullanıcı kodunu güvenli bir şekilde çalıştırır ve System.exit()
+     * çağrılarını engeller.
+     *
+     * @param instance Derlenen sınıfın bir örneği (static main metodu için null
+     * olabilir)
+     * @param mainMethod Çağrılacak main metodu
+     * @param args Main metoduna geçirilecek argümanlar (genellikle boş String
+     * dizisi)
+     * @param outputArea Çıktının yazdırılacağı metin alanı
+     */
+    private void runUserCode(Object instance, Method mainMethod, String[] args, JTextArea outputArea) {
+        // Orijinal çıkış akışlarını yedekle
+        PrintStream originalOut = System.out;
+        PrintStream originalErr = System.err;
+
+        // Orijinal güvenlik yöneticisini sakla
+        SecurityManager originalSecurityManager = System.getSecurityManager();
+
+        try {
+            // Çıkışı IDE'nin output paneline yönlendir
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream customOut = new PrintStream(baos);
+            System.setOut(customOut);
+            System.setErr(customOut);
+
+            // Özel güvenlik yöneticisi oluştur ve ayarla
+// Özel güvenlik yöneticisi oluştur ve ayarla
+            SecurityManager customSecurityManager = new SecurityManager() {
+                @Override
+                public void checkExit(int status) {
+                    // JFrame için System.exit çağrılarına izin ver
+                    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+                    for (StackTraceElement element : stackTrace) {
+                        // JFrame'den gelen System.exit çağrılarına izin ver
+                        if (element.getClassName().contains("javax.swing.JFrame")
+                                && element.getMethodName().equals("setDefaultCloseOperation")) {
+                            return; // Bu durumda izin ver
+                        }
+                    }
+
+                    // Diğer System.exit() çağrılarını engelle
+                    throw new SecurityException("System.exit çağrısı engellendi");
+                }
+
+                // Diğer güvenlik kontrolleri için orijinal davranışı koru
+                @Override
+                public void checkPermission(Permission perm) {
+                    if (perm.getName() != null && perm.getName().startsWith("exitVM")) {
+                        // JFrame'den gelen çağrılar için kontrol
+                        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+                        boolean isFromJFrame = false;
+
+                        for (StackTraceElement element : stackTrace) {
+                            if (element.getClassName().contains("javax.swing.JFrame")
+                                    && element.getMethodName().equals("setDefaultCloseOperation")) {
+                                isFromJFrame = true;
+                                break;
+                            }
+                        }
+
+                        if (!isFromJFrame) {
+                            throw new SecurityException("System.exit çağrısı engellendi");
+                        }
+                    }
+
+                    // Diğer tüm izinlere izin ver
+                    if (originalSecurityManager != null) {
+                        // Eğer orijinal güvenlik yöneticisi varsa, ona yönlendir
+                        try {
+                            originalSecurityManager.checkPermission(perm);
+                        } catch (SecurityException se) {
+                            // Sınırlandırılmış API erişimi sorunlarını yok say
+                            if (!perm.getName().contains("accessClassInPackage.sun")
+                                    && !perm.getName().contains("modifyThread")) {
+                                throw se;
+                            }
+                        }
+                    }
+                }
+            };
+            System.setSecurityManager(customSecurityManager);
+
+            outputArea.append("\n--- Program Çalıştırılıyor ---\n");
+
+            try {
+                // User kodunu çalıştır
+                mainMethod.invoke(instance, (Object) args);
+
+                // Çıktıyı al ve göster
+                outputArea.append("\nOutput:\n" + baos.toString());
+                outputArea.append("\n--- Program Çalışması Tamamlandı ---\n");
+
+            } catch (SecurityException se) {
+                // System.exit çağrısı engellendi
+                outputArea.append("\nOutput:\n" + baos.toString());
+                outputArea.append("\n--- Program System.exit() çağırdı, ancak IDE korundu. ---\n");
+            } catch (InvocationTargetException ite) {
+                // Kullanıcı kodundan gelen exception
+                Throwable cause = ite.getCause();
+                outputArea.append("\nOutput:\n" + baos.toString());
+                outputArea.append("\n--- Program Hatası ---\n");
+
+                // Detaylı hata stack trace'i yazdır
+                cause.printStackTrace(new PrintStream(new OutputStreamAdapter(outputArea)));
+            } catch (Exception e) {
+                // Diğer tüm hatalar
+                outputArea.append("\nOutput:\n" + baos.toString());
+                outputArea.append("\n--- Çalıştırma Hatası ---\n");
+                outputArea.append(e.toString());
+            }
+
+        } finally {
+            // Her durumda orijinal değerleri geri yükle
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+            System.setSecurityManager(originalSecurityManager);
         }
     }
 

@@ -1160,11 +1160,11 @@ public final class FactoryUtils {
         try (BufferedReader br = new BufferedReader(new FileReader(file_name))) {
             String s = br.readLine().replace("\"", "");
             columnNames = Arrays.asList(s.split(","));
-            int index=0;
+            int index = 0;
             if (classLabelIndex.equals("last")) {
-                index=columnNames.size()-1;
-            }else if(classLabelIndex.equals("first")){
-                index=0;
+                index = columnNames.size() - 1;
+            } else if (classLabelIndex.equals("first")) {
+                index = 0;
             }
             while ((s = br.readLine()) != null) {
                 float[] row = null;
@@ -8053,6 +8053,17 @@ public final class FactoryUtils {
 
     public static void bekle(int milliSeconds) {
         delay(milliSeconds);
+    }
+
+    public static void bekleUntilPressEnter() {
+        try {
+            System.err.println("Uygulama çalışıyor. Devam etmek veya durdurmak için Enter tuşuna basın...");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            reader.readLine(); // Enter'a basılana kadar bekler ve tüm satırı okur
+            System.err.println("Program sonlandırılıyor...");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void sleep(int milliSeconds) {

@@ -21,12 +21,11 @@ public class TestOnnxInference {
 
     public static void main(String[] args) {
         //ZooModel<Image, DetectedObjects> model= FactoryObjectDetectionYoloV8.loadModel("C:\\Users\\Cezeri\\Downloads\\den1.onnx", "OnnxRuntime");
-        ZooModel<Image, DetectedObjects> model = FactoryObjectDetectionYoloV8.loadModel("models/my_model/model_m.onnx", "OnnxRuntime");
+        ZooModel<Image, DetectedObjects> model = FactoryObjectDetectionYoloV8.loadModel("models/my_model/model_n.onnx", "OnnxRuntime");
         System.out.println("model = " + model);
-        System.out.println("bugün hava çok güzelş");
         BufferedImage tempImg = CMatrix.getInstance().imread("images/sim_1.jpg").getBufferedImage();
         //BufferedImage tempImg=CMatrix.getInstance().imread("C:\\Users\\Cezeri\\Downloads\\den1.jpg").getBufferedImage();
-        long t1=FactoryUtils.tic();
+        long t1 = FactoryUtils.tic();
         for (int i = 0; i < 10; i++) {
             DetectedObjects detectedObjects = FactoryObjectDetectionYoloV8.predict(model, tempImg, true);
             //System.out.println("detectedObjects = " + detectedObjects);
@@ -34,7 +33,10 @@ public class TestOnnxInference {
             for (DetectedObjects.DetectedObject detectedObject : list) {
                 System.out.println("detectedObject = " + detectedObject);
             }
-            t1=FactoryUtils.toc(t1);
+            t1 = FactoryUtils.toc(t1);
+            System.gc();
+            FactoryUtils.bekle(1000);
+
         }
 
     }

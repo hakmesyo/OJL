@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import jazari.factory.FactoryUtils;
 import jazari.factory.FactoryWebCam;
 import jazari.gui.FrameBasicImage;
 import jazari.gui.FrameImage;
@@ -78,14 +79,24 @@ public class TestCamera {
 //                return image;
 //            }
 //        });
+        //CMatrix cm1 = CMatrix.getInstance();
+        FrameBasicImage frm=new FrameBasicImage();
+        frm.setVisible(true);
         CMatrix cm = CMatrix.getInstance()
-                .startCamera(0)
-//                .startCamera(0,true, (BufferedImage image) -> {
-//                    //image = ImageProcess.rgb2gray(image);
-//                    image = ImageProcess.flipImageLeft2Right(image);
-//                    return image;
-//        })
+//                .startCamera(0)
+                .startCamera(0,false, (BufferedImage image) -> {
+                    //image = ImageProcess.rgb2gray(image);
+                    image = ImageProcess.flipImageLeft2Right(image);
+                    //image = ImageProcess.rgb2hsv(image);
+                    //image = ImageProcess.edgeDetectionCannyAsImage(image);
+                    //image = ImageProcess.mosaicImageFast(image, 15);
+                    frm.setImage(image);
+                    return image;
+        })
         ;
+        
+        FactoryUtils.bekleUntilPressEnter();
+        System.exit(0);
 
     }
 

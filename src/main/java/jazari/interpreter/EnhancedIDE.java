@@ -4,12 +4,13 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 import java.awt.event.*;
@@ -22,13 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import org.fife.ui.rtextarea.*;
 import org.fife.ui.rsyntaxtextarea.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import org.fife.rsta.ac.LanguageSupportFactory;
-import org.fife.rsta.ac.java.JavaLanguageSupport;
 import org.fife.ui.rsyntaxtextarea.templates.*;
 import jazari.gui.FrameMainLLM;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -56,6 +54,7 @@ public class EnhancedIDE extends JFrame {
     private JButton openButton;
     private JButton runButton;
     private JButton clearButton;
+    private JButton newFileButton;
 
     // Tab yönetimi için
     private Map<String, RSyntaxTextArea> openedFiles = new HashMap<>();
@@ -182,6 +181,44 @@ public class EnhancedIDE extends JFrame {
         outputArea = new JTextArea(8, 60);
         outputArea.setEditable(false);
         outputArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+// Output alanı için daha iyi fare tekerleği desteği
+        outputArea.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.isControlDown()) {
+                    // Ctrl tuşuna basılıysa font boyutunu değiştir
+                    int rotation = e.getWheelRotation();
+                    if (rotation < 0) {
+                        changeOutputFontSize(1); // Büyüt
+                    } else {
+                        changeOutputFontSize(-1); // Küçült
+                    }
+                    e.consume(); // Olayı tüket
+                } else {
+                    // Ctrl basılı değilse, normal kaydırma davranışını gerçekleştir
+                    // Olay işleyicisini outputArea'dan çıkar ve orijinal işleyiciye ilet
+
+                    // Önce, listener'ı geçici olarak kaldır
+                    MouseWheelListener[] listeners = outputArea.getMouseWheelListeners();
+                    for (MouseWheelListener listener : listeners) {
+                        if (listener == this) {
+                            outputArea.removeMouseWheelListener(this);
+                            break;
+                        }
+                    }
+
+                    // Sonra, olayı parent bileşene ilet (JScrollPane)
+                    Container parent = outputArea.getParent();
+                    if (parent != null) {
+                        parent.dispatchEvent(e);
+                    }
+
+                    // Son olarak, listener'ı geri ekle
+                    outputArea.addMouseWheelListener(this);
+                }
+            }
+        });
+
         JScrollPane outputScrollPane = new JScrollPane(outputArea);
         outputScrollPane.setBorder(BorderFactory.createTitledBorder("Output"));
 
@@ -213,14 +250,44 @@ public class EnhancedIDE extends JFrame {
             }
         });
         setSize(1200, 800);
+        // initializeUI metodunun sonuna ekleyin (setSize komutundan sonra)
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Pencereyi tam ekran yap
         setLocationRelativeTo(null);
 
         addSampleCode();
+
+        KeyStroke altShiftF = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(altShiftF, "formatCodeGlobal");
+        getRootPane().getActionMap().put("formatCodeGlobal", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                formatCurrentCode();
+            }
+        });
+    }
+// Output alanının font boyutunu değiştirmek için yeni metod
+
+    private void changeOutputFontSize(int sizeChange) {
+        if (outputArea != null) {
+            Font currentFont = outputArea.getFont();
+            int newSize = currentFont.getSize() + sizeChange;
+
+            // Minimum ve maksimum font boyutu sınırları
+            newSize = Math.max(8, Math.min(36, newSize));
+
+            Font newFont = new Font(currentFont.getFontName(), currentFont.getStyle(), newSize);
+            outputArea.setFont(newFont);
+        }
     }
 
     private JToolBar createToolBar() {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
+
+        newFileButton = new JButton("New File");
+        newFileButton.setToolTipText("Create new file");
+        newFileButton.addActionListener(e -> createNewFile());
+        toolBar.add(newFileButton, 0); // Araç çubuğunun başına ekleyin
 
         saveButton = new JButton("Save");
         saveButton.setToolTipText("Save current file");
@@ -251,6 +318,37 @@ public class EnhancedIDE extends JFrame {
         toolBar.add(clearButton);
 
         return toolBar;
+    }
+
+    private void createNewFile() {
+        // Kullanıcıdan dosya adı isteyin
+        String fileName = JOptionPane.showInputDialog(this,
+                "Enter file name:", "New File", JOptionPane.QUESTION_MESSAGE);
+
+        if (fileName != null && !fileName.trim().isEmpty()) {
+            // Eğer .java uzantısı yoksa ekleyin
+            if (!fileName.toLowerCase().endsWith(".java")) {
+                fileName += ".java";
+            }
+
+            // Yeni bir tab oluşturun
+            addNewTab(fileName, null);
+
+            // Eğer isterseniz temel bir Java sınıf şablonu ekleyebilirsiniz
+            RSyntaxTextArea currentEditor = getCurrentEditor();
+            if (currentEditor != null) {
+                String className = fileName.substring(0, fileName.lastIndexOf('.'));
+                String classTemplate
+                        = "public class " + className + " {\n\n"
+                        + "\tpublic static void main(String[] args) {\n"
+                        + "\t\t// Your code here\n"
+                        + "\t\tSystem.out.println(\"Hello from " + className + "\");\n"
+                        + "\t}\n"
+                        + "}\n";
+                currentEditor.setText(classTemplate);
+                currentEditor.setCaretPosition(classTemplate.indexOf("// Your code here"));
+            }
+        }
     }
 
     private JPanel createLeftPanel() {
@@ -285,6 +383,24 @@ public class EnhancedIDE extends JFrame {
         RTextScrollPane scrollPane = new RTextScrollPane(textArea);
         scrollPane.setFoldIndicatorEnabled(true);
 
+        // Kaydırma paneline fare tekerleği listener'ı ekleyin
+        scrollPane.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.isControlDown()) {
+                    // Ctrl tuşuna basılıysa font boyutunu değiştir
+                    int rotation = e.getWheelRotation();
+                    if (rotation < 0) {
+                        changeFontSize(1); // Büyüt
+                    } else {
+                        changeFontSize(-1); // Küçült
+                    }
+                    e.consume(); // Olayı tüket
+                }
+                // Ctrl basılı değilse, normal kaydırma davranışı otomatik gerçekleşir
+            }
+        });
+
         tabbedPane.addTab(title, scrollPane);
         tabbedPane.setSelectedComponent(scrollPane);
 
@@ -294,6 +410,31 @@ public class EnhancedIDE extends JFrame {
 
         if (file != null) {
             openedFiles.put(file.getAbsolutePath(), textArea);
+        }
+
+        // Metin değiştikçe üyeleri güncelle
+        textArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                updateMembersFromText(textArea.getText(), title);
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                updateMembersFromText(textArea.getText(), title);
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                // Plain text için çağrılmaz
+            }
+        });
+
+        // Başlangıçta da bir güncelleme yap
+        if (file == null) {
+            SwingUtilities.invokeLater(() -> {
+                updateMembersFromText(textArea.getText(), title);
+            });
         }
     }
 
@@ -346,156 +487,442 @@ public class EnhancedIDE extends JFrame {
             textArea.setCaretColor(Color.WHITE);
         }
 
-        // Otomatik tamamlama ayarları
-        LanguageSupportFactory.get().register(textArea);
-        JavaLanguageSupport jls = new JavaLanguageSupport();
-        jls.setAutoCompleteEnabled(true);
-        jls.setAutoActivationEnabled(true);
-        jls.setShowDescWindow(true);
-        jls.setParameterAssistanceEnabled(true);
-        jls.install(textArea);
+//        Font currentFont = textArea.getFont();
+//        Font largerFont = new Font(currentFont.getFontName(), currentFont.getStyle(), 18); // 16 punto
+//        textArea.setFont(largerFont);
+        // Otomatik tamamlama özelliğini kur - ESKİ KOD YERİNE BUNU KULLANIN
+        JavaAutoCompleteProvider autoCompleteProvider = new JavaAutoCompleteProvider(textArea);
+        autoCompleteProvider.install();
 
-        setupBasicCodeCompletion(textArea);
+        // Diğer ayarları koru
         setupKeyBindings(textArea);
         setupCodeTemplates(textArea);
+        textArea.setComponentPopupMenu(createEditorPopupMenu(textArea));
+//        textArea.addMouseWheelListener(new MouseWheelListener() {
+//            @Override
+//            public void mouseWheelMoved(MouseWheelEvent e) {
+//                // Ctrl tuşuna basılı mı kontrol et
+//                if (e.isControlDown()) {
+//                    // Tekerleğin yukarı/aşağı hareketi
+//                    int rotation = e.getWheelRotation();
+//
+//                    // Tekerlek aşağı = negatif değer, yukarı = pozitif değer
+//                    // Aşağı = küçültme, yukarı = büyütme
+//                    if (rotation < 0) {
+//                        changeFontSize(1); // Yukarı: Font boyutunu artır
+//                    } else {
+//                        changeFontSize(-1); // Aşağı: Font boyutunu azalt
+//                    }
+//
+//                    // Olayın normal işlenmesini engelle
+//                    e.consume();
+//                }
+//            }
+//        });
     }
 
-    // Basitleştirilmiş kod tamamlama
-    private void setupBasicCodeCompletion(RSyntaxTextArea textArea) {
-        // Import önerileri için mouse listener
-        textArea.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    showEditMenuPopup(e, textArea);
-                }
-            }
+    /**
+     * Editör için sağ tıklama popup menüsü oluşturur
+     */
+// Gelişmiş sağ tıklama menüsü kodu
+    private JPopupMenu createEditorPopupMenu(RSyntaxTextArea textArea) {
+        // Mevcut popup menüyü al (varsa)
+        JPopupMenu existingPopup = textArea.getComponentPopupMenu();
+        JPopupMenu popup = (existingPopup != null) ? existingPopup : new JPopupMenu();
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    showEditMenuPopup(e, textArea);
-                }
-            }
-        });
+        // Run seçeneği
+        JMenuItem runItem = new JMenuItem("Run (F6)");
+        runItem.addActionListener(e -> runCode());
+        runItem.setMnemonic('R');
+        popup.insert(runItem, 0);
+
+        // Ayırıcı ekle
+        popup.insert(new JPopupMenu.Separator(), 1);
+
+        // Insert alt menüsü
+        JMenu insertMenu = new JMenu("Insert");
+        insertMenu.setMnemonic('I');
+
+        // Constructor
+        JMenuItem constructorItem = new JMenuItem("Constructor...");
+        constructorItem.addActionListener(e -> insertConstructor());
+        insertMenu.add(constructorItem);
+
+        // Getter ve Setter
+        JMenuItem getterSetterItem = new JMenuItem("Getter and Setter...");
+        getterSetterItem.addActionListener(e -> insertGetterSetter());
+        insertMenu.add(getterSetterItem);
+
+        // Override metotları
+        JMenuItem overrideItem = new JMenuItem("Override Methods...");
+        overrideItem.addActionListener(e -> insertOverrideMethods());
+        insertMenu.add(overrideItem);
+
+        // Try/Catch bloğu
+        JMenuItem tryCatchItem = new JMenuItem("Try/Catch Block");
+        tryCatchItem.addActionListener(e -> insertTryCatch());
+        insertMenu.add(tryCatchItem);
+
+        // Main metodu
+        JMenuItem mainMethodItem = new JMenuItem("Main Method");
+        mainMethodItem.addActionListener(e -> insertMainMethod());
+        insertMenu.add(mainMethodItem);
+
+        // For döngüsü
+        JMenuItem forLoopItem = new JMenuItem("For Loop");
+        forLoopItem.addActionListener(e -> insertForLoop());
+        insertMenu.add(forLoopItem);
+
+        // While döngüsü
+        JMenuItem whileLoopItem = new JMenuItem("While Loop");
+        whileLoopItem.addActionListener(e -> insertWhileLoop());
+        insertMenu.add(whileLoopItem);
+
+        // If bloğu
+        JMenuItem ifBlockItem = new JMenuItem("If Block");
+        ifBlockItem.addActionListener(e -> insertIfBlock());
+        insertMenu.add(ifBlockItem);
+
+        // Switch bloğu
+        JMenuItem switchBlockItem = new JMenuItem("Switch Block");
+        switchBlockItem.addActionListener(e -> insertSwitchBlock());
+        insertMenu.add(switchBlockItem);
+
+        // Ana menüye Insert alt menüsünü ekle
+        popup.insert(insertMenu, 2);
+
+        // Format kodu seçeneği
+        JMenuItem formatItem = new JMenuItem("Format Code (Alt+Shift+F)");
+        formatItem.addActionListener(e -> formatCurrentCode());
+        formatItem.setMnemonic('F');
+        popup.add(formatItem);
+
+        return popup;
     }
 
-    private void showEditMenuPopup(MouseEvent e, RSyntaxTextArea textArea) {
-        try {
-            int offset = textArea.viewToModel2D(e.getPoint());
-            int start = getWordStart(textArea, offset);
-            int end = getWordEnd(textArea, offset);
+// Insert menüsü için gerekli metodlar
+    private void insertConstructor() {
+        RSyntaxTextArea editor = getCurrentEditor();
+        if (editor == null) {
+            return;
+        }
 
-            if (start != end) {
-                String word = textArea.getText(start, end - start);
-                if (word.length() > 0) {
-                    // Düzenleme menüsü
-                    JPopupMenu popup = new JPopupMenu();
+        // Sınıf adını ve alanları analiz et
+        String className = extractClassName(editor.getText());
+        List<String> fields = extractFields(editor.getText());
 
-                    // Sınıf adıysa import önerileri ekle
-                    if (Character.isUpperCase(word.charAt(0))) {
-                        List<String> suggestions = findPossibleImports(word);
-                        if (!suggestions.isEmpty()) {
-                            for (String suggestion : suggestions) {
-                                JMenuItem importItem = new JMenuItem("Import " + suggestion);
-                                importItem.addActionListener(evt -> insertImport(suggestion, textArea));
-                                popup.add(importItem);
-                            }
-                            popup.addSeparator();
-                        }
+        if (className == null || className.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Class name could not be determined.\nMake sure a class is defined in this file.",
+                    "Insert Constructor", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Constructor template'i oluştur
+        StringBuilder constructor = new StringBuilder();
+        constructor.append("\n    /**\n");
+        constructor.append("     * Constructor for ").append(className).append("\n");
+        constructor.append("     */\n");
+        constructor.append("    public ").append(className).append("(");
+
+        // Parametreler
+        if (!fields.isEmpty()) {
+            for (int i = 0; i < fields.size(); i++) {
+                String field = fields.get(i);
+                String[] parts = field.trim().split("\\s+");
+                // En az 2 parça olmalı: tip ve değişken adı
+                if (parts.length >= 2) {
+                    String type = parts[0];
+                    String name = parts[parts.length - 1];
+                    if (name.endsWith(";")) {
+                        name = name.substring(0, name.length() - 1);
                     }
 
-                    // Düzenleme menüsü
-                    JMenuItem cutItem = new JMenuItem("Cut");
-                    JMenuItem copyItem = new JMenuItem("Copy");
-                    JMenuItem pasteItem = new JMenuItem("Paste");
-                    JMenuItem selectAllItem = new JMenuItem("Select All");
-
-                    cutItem.addActionListener(evt -> textArea.cut());
-                    copyItem.addActionListener(evt -> textArea.copy());
-                    pasteItem.addActionListener(evt -> textArea.paste());
-                    selectAllItem.addActionListener(evt -> textArea.selectAll());
-
-                    popup.add(cutItem);
-                    popup.add(copyItem);
-                    popup.add(pasteItem);
-                    popup.add(selectAllItem);
-
-                    popup.show(textArea, e.getX(), e.getY());
+                    if (i > 0) {
+                        constructor.append(", ");
+                    }
+                    constructor.append(type).append(" ").append(name);
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private int getWordStart(RSyntaxTextArea textArea, int offset) {
-        try {
-            String text = textArea.getText(0, offset);
-            int start = offset;
-            while (start > 0 && Character.isJavaIdentifierPart(text.charAt(start - 1))) {
-                start--;
-            }
-            return start;
-        } catch (Exception e) {
-            return offset;
-        }
-    }
-
-    private int getWordEnd(RSyntaxTextArea textArea, int offset) {
-        try {
-            String text = textArea.getText();
-            int end = offset;
-            while (end < text.length() && Character.isJavaIdentifierPart(text.charAt(end))) {
-                end++;
-            }
-            return end;
-        } catch (Exception e) {
-            return offset;
-        }
-    }
-
-    private List<String> findPossibleImports(String className) {
-        List<String> suggestions = new ArrayList<>();
-
-        for (Map.Entry<String, Set<String>> entry : packageMap.entrySet()) {
-            if (entry.getValue().contains(className)) {
-                suggestions.add(entry.getKey() + "." + className);
-            }
         }
 
-        return suggestions;
+        constructor.append(") {\n");
+
+        // Alan atamalarını ekle
+        if (!fields.isEmpty()) {
+            for (String field : fields) {
+                String[] parts = field.trim().split("\\s+");
+                if (parts.length >= 2) {
+                    String name = parts[parts.length - 1];
+                    if (name.endsWith(";")) {
+                        name = name.substring(0, name.length() - 1);
+                    }
+                    constructor.append("        this.").append(name).append(" = ").append(name).append(";\n");
+                }
+            }
+        } else {
+            constructor.append("        // Initialize fields here\n");
+        }
+
+        constructor.append("    }\n");
+
+        // İmleç konumuna constructor'ı ekle
+        int caretPos = editor.getCaretPosition();
+        editor.insert(constructor.toString(), caretPos);
     }
 
-    private void insertImport(String importStr, RSyntaxTextArea textArea) {
-        try {
-            String text = textArea.getText();
-            String[] lines = text.split("\n");
-            int insertPosition = 0;
+    private void insertGetterSetter() {
+        RSyntaxTextArea editor = getCurrentEditor();
+        if (editor == null) {
+            return;
+        }
 
-            if (text.contains("import " + importStr + ";")) {
-                return;  // Zaten varsa ekleme
+        // Alanları analiz et
+        List<String> fields = extractFields(editor.getText());
+
+        if (fields.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "No fields found in this class.\nAdd fields first to generate getters/setters.",
+                    "Insert Getter/Setter", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Getter/Setter oluşturulacak alanları seçme iletişim kutusu
+        JDialog dialog = new JDialog(this, "Select Fields", true);
+        dialog.setLayout(new BorderLayout());
+
+        JPanel fieldsPanel = new JPanel(new GridLayout(0, 1));
+        List<JCheckBox> checkBoxes = new ArrayList<>();
+
+        for (String field : fields) {
+            String[] parts = field.trim().split("\\s+");
+            if (parts.length >= 2) {
+                String name = parts[parts.length - 1];
+                if (name.endsWith(";")) {
+                    name = name.substring(0, name.length() - 1);
+                }
+                JCheckBox checkBox = new JCheckBox(field.trim());
+                checkBox.setSelected(true);
+                checkBoxes.add(checkBox);
+                fieldsPanel.add(checkBox);
             }
+        }
 
-            boolean foundPackage = false;
-            for (int i = 0; i < lines.length; i++) {
-                String line = lines[i].trim();
-                if (line.startsWith("package ")) {
-                    foundPackage = true;
-                    insertPosition = textArea.getLineEndOffset(i);
-                    break;
+        JScrollPane scrollPane = new JScrollPane(fieldsPanel);
+        dialog.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton okButton = new JButton("OK");
+        JButton cancelButton = new JButton("Cancel");
+
+        okButton.addActionListener(e -> {
+            StringBuilder gettersSetters = new StringBuilder();
+
+            for (int i = 0; i < checkBoxes.size(); i++) {
+                if (checkBoxes.get(i).isSelected()) {
+                    String field = fields.get(i);
+                    String[] parts = field.trim().split("\\s+");
+                    if (parts.length >= 2) {
+                        String type = parts[0];
+                        String name = parts[parts.length - 1];
+                        if (name.endsWith(";")) {
+                            name = name.substring(0, name.length() - 1);
+                        }
+
+                        // Getter
+                        gettersSetters.append("\n    /**\n");
+                        gettersSetters.append("     * @return the ").append(name).append("\n");
+                        gettersSetters.append("     */\n");
+                        gettersSetters.append("    public ").append(type).append(" get")
+                                .append(Character.toUpperCase(name.charAt(0)))
+                                .append(name.substring(1)).append("() {\n");
+                        gettersSetters.append("        return ").append(name).append(";\n");
+                        gettersSetters.append("    }\n\n");
+
+                        // Setter
+                        gettersSetters.append("    /**\n");
+                        gettersSetters.append("     * @param ").append(name).append(" the ")
+                                .append(name).append(" to set\n");
+                        gettersSetters.append("     */\n");
+                        gettersSetters.append("    public void set")
+                                .append(Character.toUpperCase(name.charAt(0)))
+                                .append(name.substring(1)).append("(").append(type).append(" ")
+                                .append(name).append(") {\n");
+                        gettersSetters.append("        this.").append(name).append(" = ").append(name).append(";\n");
+                        gettersSetters.append("    }\n");
+                    }
                 }
             }
 
-            if (!foundPackage) {
-                insertPosition = 0;
+            // İmleç konumuna getter/setter'ları ekle
+            int caretPos = editor.getCaretPosition();
+            editor.insert(gettersSetters.toString(), caretPos);
+
+            dialog.dispose();
+        });
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        buttonPanel.add(okButton);
+        buttonPanel.add(cancelButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private void insertOverrideMethods() {
+        // Bu kısım daha karmaşık ve reflection gerektiriyor
+        JOptionPane.showMessageDialog(this,
+                "Override Methods feature is not yet implemented.\nWill be added in a future update.",
+                "Not Implemented", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void insertTryCatch() {
+        RSyntaxTextArea editor = getCurrentEditor();
+        if (editor == null) {
+            return;
+        }
+
+        String template = "try {\n    // Your code here\n} catch (Exception e) {\n    e.printStackTrace();\n}";
+        int caretPos = editor.getCaretPosition();
+        editor.insert(template, caretPos);
+        editor.setCaretPosition(caretPos + template.indexOf("// Your code here"));
+    }
+
+    private void insertMainMethod() {
+        RSyntaxTextArea editor = getCurrentEditor();
+        if (editor == null) {
+            return;
+        }
+
+        String template = "public static void main(String[] args) {\n    // Your code here\n}";
+        int caretPos = editor.getCaretPosition();
+        editor.insert(template, caretPos);
+        editor.setCaretPosition(caretPos + template.indexOf("// Your code here"));
+    }
+
+    private void insertForLoop() {
+        RSyntaxTextArea editor = getCurrentEditor();
+        if (editor == null) {
+            return;
+        }
+
+        String template = "for (int i = 0; i < 10; i++) {\n    // Your code here\n}";
+        int caretPos = editor.getCaretPosition();
+        editor.insert(template, caretPos);
+        editor.setCaretPosition(caretPos + template.indexOf("// Your code here"));
+    }
+
+    private void insertWhileLoop() {
+        RSyntaxTextArea editor = getCurrentEditor();
+        if (editor == null) {
+            return;
+        }
+
+        String template = "while (condition) {\n    // Your code here\n}";
+        int caretPos = editor.getCaretPosition();
+        editor.insert(template, caretPos);
+        editor.setCaretPosition(caretPos + template.indexOf("condition"));
+    }
+
+    private void insertIfBlock() {
+        RSyntaxTextArea editor = getCurrentEditor();
+        if (editor == null) {
+            return;
+        }
+
+        String template = "if (condition) {\n    // Your code here\n}";
+        int caretPos = editor.getCaretPosition();
+        editor.insert(template, caretPos);
+        editor.setCaretPosition(caretPos + template.indexOf("condition"));
+    }
+
+    private void insertSwitchBlock() {
+        RSyntaxTextArea editor = getCurrentEditor();
+        if (editor == null) {
+            return;
+        }
+
+        String template = "switch (variable) {\n    case value1:\n        // Code for value1\n        break;\n    case value2:\n        // Code for value2\n        break;\n    default:\n        // Default code\n        break;\n}";
+        int caretPos = editor.getCaretPosition();
+        editor.insert(template, caretPos);
+        editor.setCaretPosition(caretPos + template.indexOf("variable"));
+    }
+
+// Yardımcı metotlar
+    private String extractClassName(String code) {
+        String className = null;
+
+        // Regex ile sınıf tanımını ara
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\bclass\\s+([A-Za-z0-9_]+)");
+        java.util.regex.Matcher matcher = pattern.matcher(code);
+
+        if (matcher.find()) {
+            className = matcher.group(1);
+        }
+
+        return className;
+    }
+
+    private List<String> extractFields(String code) {
+        List<String> fields = new ArrayList<>();
+
+        // Satırlara böl
+        String[] lines = code.split("\n");
+        boolean inClass = false;
+        int bracketLevel = 0;
+
+        for (String line : lines) {
+            line = line.trim();
+
+            // Sınıf tanımını bul
+            if (!inClass && line.contains("class")) {
+                inClass = true;
             }
 
-            String importStatement = "\nimport " + importStr + ";\n";
-            textArea.insert(importStatement, insertPosition);
+            // Süslü parantezleri say
+            if (inClass) {
+                for (char c : line.toCharArray()) {
+                    if (c == '{') {
+                        bracketLevel++;
+                    }
+                    if (c == '}') {
+                        bracketLevel--;
+                    }
+                }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                // Sınıf içindeki alanları bul
+                if (bracketLevel > 0 && line.contains(";")
+                        && !line.contains("(") && !line.contains("=")
+                        && (line.contains("private ") || line.contains("protected ")
+                        || line.contains("public ") || Character.isLowerCase(line.charAt(0)))) {
+
+                    // Yorumları temizle
+                    if (line.contains("//")) {
+                        line = line.substring(0, line.indexOf("//"));
+                    }
+
+                    fields.add(line);
+                }
+            }
+        }
+
+        return fields;
+    }
+
+    private void changeFontSize(int sizeChange) {
+        RSyntaxTextArea currentEditor = getCurrentEditor();
+        if (currentEditor != null) {
+            Font currentFont = currentEditor.getFont();
+            int newSize = currentFont.getSize() + sizeChange;
+
+            // Minimum ve maksimum font boyutu sınırları
+            newSize = Math.max(8, Math.min(36, newSize));
+
+            Font newFont = new Font(currentFont.getFontName(), currentFont.getStyle(), newSize);
+            currentEditor.setFont(newFont);
         }
     }
 
@@ -503,12 +930,27 @@ public class EnhancedIDE extends JFrame {
         InputMap im = textArea.getInputMap();
         ActionMap am = textArea.getActionMap();
 
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "formatCode");
+        am.put("formatCode", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                formatCurrentCode();
+            }
+        });
         // Ctrl+S için kaydetme
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK), "saveFile");
         am.put("saveFile", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 saveCurrentFile();
+            }
+        });
+
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK), "newFile");
+        am.put("newFile", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createNewFile();
             }
         });
 
@@ -520,6 +962,107 @@ public class EnhancedIDE extends JFrame {
                 runCode();
             }
         });
+        // Shift+F6 için yeni binding ekle
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F6, KeyEvent.SHIFT_DOWN_MASK), "runCodeShift");
+        am.put("runCodeShift", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                runCode();
+            }
+        });
+
+        // F9 için yeni binding ekle
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0), "runCodeF9");
+        am.put("runCodeF9", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                runCode();
+            }
+        });
+    }
+
+// Kod formatlama metodunu ekleyin
+    private void formatCurrentCode() {
+        RSyntaxTextArea currentEditor = getCurrentEditor();
+        if (currentEditor == null) {
+            return;
+        }
+
+        try {
+            String code = currentEditor.getText();
+            String formattedCode = formatJavaCode(code);
+
+            // Formatlanan kodu editöre yerleştir
+            int caretPosition = currentEditor.getCaretPosition();
+            currentEditor.setText(formattedCode);
+
+            // İmleci mümkünse aynı pozisyonda tut
+            try {
+                if (caretPosition < formattedCode.length()) {
+                    currentEditor.setCaretPosition(caretPosition);
+                }
+            } catch (Exception e) {
+                // İmleç konumlandırma hatası olursa yok say
+            }
+
+            outputArea.append("\nCode formatted successfully.");
+        } catch (Exception e) {
+            outputArea.append("\nError formatting code: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Java kodunu formatlar Bu basit bir formatlayıcıdır, daha gelişmiş
+     * formatlama için kütüphaneler kullanılabilir
+     */
+    private String formatJavaCode(String code) {
+        StringBuilder formattedCode = new StringBuilder();
+        String[] lines = code.split("\n");
+        int indentLevel = 0;
+        boolean inComment = false;
+
+        for (String line : lines) {
+            String trimmedLine = line.trim();
+
+            // Boş satırı olduğu gibi ekle
+            if (trimmedLine.isEmpty()) {
+                formattedCode.append("\n");
+                continue;
+            }
+
+            // Çok satırlı yorum kontrolü
+            if (trimmedLine.contains("/*")) {
+                inComment = true;
+            }
+            if (trimmedLine.contains("*/")) {
+                inComment = false;
+            }
+
+            // Süslü parantezleri kontrol et ve indent seviyesini ayarla
+            if (trimmedLine.endsWith("}") || trimmedLine.endsWith("};")) {
+                indentLevel = Math.max(0, indentLevel - 1);
+            }
+
+            // İndent uygula
+            if (!inComment && !trimmedLine.startsWith("*")) {
+                for (int i = 0; i < indentLevel; i++) {
+                    formattedCode.append("    "); // 4 boşluk indent
+                }
+            } else {
+                // Yorumlar için özel formatlama
+                formattedCode.append(" "); // Yorum satırlarında sadece 1 boşluk bırak
+            }
+
+            // Satırı ekle
+            formattedCode.append(trimmedLine).append("\n");
+
+            // Süslü parantez sonrası indent seviyesini artır
+            if (trimmedLine.endsWith("{")) {
+                indentLevel++;
+            }
+        }
+
+        return formattedCode.toString();
     }
 
     private void setupCodeTemplates(RSyntaxTextArea textArea) {
@@ -647,11 +1190,23 @@ public class EnhancedIDE extends JFrame {
             // Aktif tab değiştiğinde members panelini güncelle
             RSyntaxTextArea currentEditor = getCurrentEditor();
             if (currentEditor != null) {
-                // Açık dosyayı bul
+                boolean updated = false;
+
+                // Önce açık dosya listesinden kontrol et
                 for (Map.Entry<String, RSyntaxTextArea> entry : openedFiles.entrySet()) {
                     if (entry.getValue() == currentEditor) {
                         updateMembersTree(new File(entry.getKey()));
+                        updated = true;
                         break;
+                    }
+                }
+
+                // Eğer dosya olarak kayıtlı değilse metinden güncelle
+                if (!updated) {
+                    int selectedIndex = tabbedPane.getSelectedIndex();
+                    if (selectedIndex >= 0) {
+                        String title = tabbedPane.getTitleAt(selectedIndex);
+                        updateMembersFromText(currentEditor.getText(), title);
                     }
                 }
             }
@@ -833,31 +1388,41 @@ public class EnhancedIDE extends JFrame {
         }
     }
 
-// updateMembersTree metodunun düzeltilmiş versiyonu
-    private void updateMembersTree(File file) {
+    private void updateMembersFromText(String text, String title) {
         try {
             // Önce tree'yi temizle
-            DefaultMutableTreeNode root = new DefaultMutableTreeNode(file.getName() + " Members");
+            DefaultMutableTreeNode root = new DefaultMutableTreeNode(title + " Members");
             membersTreeModel.setRoot(root);
-
-            // Basit bir Java parser kullanarak sınıf içindeki üyeleri bul
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
 
             DefaultMutableTreeNode methodsNode = new DefaultMutableTreeNode("Methods");
             DefaultMutableTreeNode fieldsNode = new DefaultMutableTreeNode("Fields");
             root.add(methodsNode);
             root.add(fieldsNode);
 
-            // Basit Java parser
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
+            // Süslü parantez seviyesini takip et
+            int bracketLevel = 0;
+            boolean inMethod = false;
 
-                // Metodları bul
-                if ((line.contains("public ") || line.contains("private ")
-                        || line.contains("protected ") || line.startsWith("void ")
-                        || line.contains(" static ")) && line.contains("(")
-                        && !line.contains("=") && !line.contains("new ") && !line.contains(";")) {
+            // Metni satır satır işle
+            String[] lines = text.split("\n");
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i].trim();
+
+                // Süslü parantez seviyesini takip et
+                for (char c : line.toCharArray()) {
+                    if (c == '{') {
+                        bracketLevel++;
+                    }
+                    if (c == '}') {
+                        bracketLevel--;
+                    }
+                }
+
+                // Metod başlangıcını kontrol et
+                if (line.contains("(") && line.contains(")")
+                        && !line.contains("if") && !line.contains("for") && !line.contains("while")
+                        && !line.contains("switch") && (line.endsWith("{")
+                        || (i + 1 < lines.length && lines[i + 1].trim().equals("{")))) {
 
                     // Method adını ayıkla
                     String methodName = line;
@@ -871,31 +1436,53 @@ public class EnhancedIDE extends JFrame {
                         if (closingParenIndex != -1) {  // Eğer ")" karakteri varsa
                             methodName = methodName.substring(0, closingParenIndex + 1);
                             methodsNode.add(new DefaultMutableTreeNode(methodName));
+                            inMethod = true;
                         }
                     }
                 }
 
-                // Alanları bul
-                if ((line.contains("private ") || line.contains("public ")
-                        || line.contains("protected ") || line.contains(" static "))
-                        && line.contains(";") && !line.contains("(")) {
+                // Metod içinde değilsek (bracketLevel = 1 sınıf seviyesi demektir)
+                // ve süslü parantez seviyesi 1 ise (sınıf tanımı içinde ama metod içinde değil)
+                if (!inMethod || bracketLevel == 1) {
+                    // Alanları bul - sadece sınıf seviyesindeki değişkenleri
+                    if (line.contains(";") && !line.contains("(") && !line.contains("import ")
+                            && !line.contains("package ") && !line.startsWith("//") && !line.startsWith("for")
+                            && !line.startsWith("if") && !line.startsWith("while") && !line.startsWith("return")) {
 
-                    // Alan adını ayıkla
-                    String fieldName = line;
-                    // Yorumları temizle
-                    if (fieldName.contains("//")) {
-                        fieldName = fieldName.substring(0, fieldName.indexOf("//"));
-                    }
+                        // Alan adını ayıkla
+                        String fieldName = line;
+                        // Yorumları temizle
+                        if (fieldName.contains("//")) {
+                            fieldName = fieldName.substring(0, fieldName.indexOf("//"));
+                        }
 
-                    // Değişken adını al
-                    int semicolonIndex = fieldName.indexOf(";");
-                    if (semicolonIndex != -1) {  // Eğer ";" karakteri varsa
-                        fieldName = fieldName.substring(0, semicolonIndex);
-                        fieldsNode.add(new DefaultMutableTreeNode(fieldName));
+                        // Değişken adını al
+                        int semicolonIndex = fieldName.indexOf(";");
+                        if (semicolonIndex != -1) {  // Eğer ";" karakteri varsa
+                            fieldName = fieldName.substring(0, semicolonIndex);
+
+                            // Başlangıçtaki erişim belirleyicilerini veya diğer anahtar kelimeleri temizle
+                            fieldName = fieldName.replaceAll("^(public|private|protected|static|final|abstract|transient|volatile)\\s+", "");
+
+                            // Veri tipini ve değişken adını içeren kısmı al
+                            String[] parts = fieldName.split("=")[0].trim().split("\\s+");
+                            if (parts.length >= 2) {
+                                // Veri tipi ve değişken adı bir arada göster
+                                fieldsNode.add(new DefaultMutableTreeNode(fieldName.trim()));
+                            } else if (parts.length == 1) {
+                                // Tek kelimeli, muhtemelen veri tipi olmayan bir atama (int a=5; gibi)
+                                fieldsNode.add(new DefaultMutableTreeNode(fieldName.trim()));
+                            }
+                        }
                     }
                 }
+
+                // Metod sonu kontrolü - süslü parantez seviyesi düştüyse ve 1'e eşitse
+                // (yani sınıf seviyesine döndüysek)
+                if (bracketLevel == 1 && inMethod) {
+                    inMethod = false;
+                }
             }
-            reader.close();
 
             // Eğer boşsa placeholder ekle
             if (methodsNode.getChildCount() == 0) {
@@ -910,7 +1497,134 @@ public class EnhancedIDE extends JFrame {
             for (int i = 0; i < membersTree.getRowCount(); i++) {
                 membersTree.expandRow(i);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void updateMembersTree(File file) {
+        try {
+            // Önce tree'yi temizle
+            DefaultMutableTreeNode root = new DefaultMutableTreeNode(file.getName() + " Members");
+            membersTreeModel.setRoot(root);
+
+            // Basit bir Java parser kullanarak sınıf içindeki üyeleri bul
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
+            String fileContent = "";
+
+            // Tüm dosya içeriğini oku
+            StringBuilder contentBuilder = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                contentBuilder.append(line).append("\n");
+            }
+            reader.close();
+
+            fileContent = contentBuilder.toString();
+
+            DefaultMutableTreeNode methodsNode = new DefaultMutableTreeNode("Methods");
+            DefaultMutableTreeNode fieldsNode = new DefaultMutableTreeNode("Fields");
+            root.add(methodsNode);
+            root.add(fieldsNode);
+
+            // Süslü parantez seviyesini takip et
+            int bracketLevel = 0;
+            boolean inMethod = false;
+
+            // Dosyayı tekrar satır satır işle
+            String[] lines = fileContent.split("\n");
+            for (int i = 0; i < lines.length; i++) {
+                line = lines[i].trim();
+
+                // Süslü parantez seviyesini takip et
+                for (char c : line.toCharArray()) {
+                    if (c == '{') {
+                        bracketLevel++;
+                    }
+                    if (c == '}') {
+                        bracketLevel--;
+                    }
+                }
+
+                // Metod başlangıcını kontrol et
+                if (line.contains("(") && line.contains(")")
+                        && !line.contains("if") && !line.contains("for") && !line.contains("while")
+                        && !line.contains("switch") && (line.endsWith("{")
+                        || (i + 1 < lines.length && lines[i + 1].trim().equals("{")))) {
+
+                    // Method adını ayıkla
+                    String methodName = line;
+                    // Yorumları temizle
+                    if (methodName.contains("//")) {
+                        methodName = methodName.substring(0, methodName.indexOf("//"));
+                    }
+                    // Method signature'ı al
+                    if (methodName.contains("(")) {
+                        int closingParenIndex = methodName.indexOf(")");
+                        if (closingParenIndex != -1) {  // Eğer ")" karakteri varsa
+                            methodName = methodName.substring(0, closingParenIndex + 1);
+                            methodsNode.add(new DefaultMutableTreeNode(methodName));
+                            inMethod = true;
+                        }
+                    }
+                }
+
+                // Metod içinde değilsek (bracketLevel = 1 sınıf seviyesi demektir)
+                // ve süslü parantez seviyesi 1 ise (sınıf tanımı içinde ama metod içinde değil)
+                if (!inMethod || bracketLevel == 1) {
+                    // Alanları bul - sadece sınıf seviyesindeki değişkenleri
+                    if (line.contains(";") && !line.contains("(") && !line.contains("import ")
+                            && !line.contains("package ") && !line.startsWith("//") && !line.startsWith("for")
+                            && !line.startsWith("if") && !line.startsWith("while") && !line.startsWith("return")) {
+
+                        // Alan adını ayıkla
+                        String fieldName = line;
+                        // Yorumları temizle
+                        if (fieldName.contains("//")) {
+                            fieldName = fieldName.substring(0, fieldName.indexOf("//"));
+                        }
+
+                        // Değişken adını al
+                        int semicolonIndex = fieldName.indexOf(";");
+                        if (semicolonIndex != -1) {  // Eğer ";" karakteri varsa
+                            fieldName = fieldName.substring(0, semicolonIndex);
+
+                            // Başlangıçtaki erişim belirleyicilerini veya diğer anahtar kelimeleri temizle
+                            fieldName = fieldName.replaceAll("^(public|private|protected|static|final|abstract|transient|volatile)\\s+", "");
+
+                            // Veri tipini ve değişken adını içeren kısmı al
+                            String[] parts = fieldName.split("=")[0].trim().split("\\s+");
+                            if (parts.length >= 2) {
+                                // Veri tipi ve değişken adı bir arada göster
+                                fieldsNode.add(new DefaultMutableTreeNode(fieldName.trim()));
+                            } else if (parts.length == 1) {
+                                // Tek kelimeli, muhtemelen veri tipi olmayan bir atama (int a=5; gibi)
+                                fieldsNode.add(new DefaultMutableTreeNode(fieldName.trim()));
+                            }
+                        }
+                    }
+                }
+
+                // Metod sonu kontrolü - süslü parantez seviyesi düştüyse ve 1'e eşitse
+                // (yani sınıf seviyesine döndüysek)
+                if (bracketLevel == 1 && inMethod) {
+                    inMethod = false;
+                }
+            }
+
+            // Eğer boşsa placeholder ekle
+            if (methodsNode.getChildCount() == 0) {
+                methodsNode.add(new DefaultMutableTreeNode("No methods found"));
+            }
+            if (fieldsNode.getChildCount() == 0) {
+                fieldsNode.add(new DefaultMutableTreeNode("No fields found"));
+            }
+
+            // Ağacı güncelle ve genişlet
+            membersTreeModel.reload();
+            for (int i = 0; i < membersTree.getRowCount(); i++) {
+                membersTree.expandRow(i);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -974,6 +1688,13 @@ public class EnhancedIDE extends JFrame {
         RSyntaxTextArea currentEditor = getCurrentEditor();
         if (currentEditor != null) {
             currentEditor.setText(sampleCode);
+
+            // Örnek kod ekledikten sonra üyeleri güncelle
+            Component comp = tabbedPane.getSelectedComponent();
+            if (comp != null) {
+                String title = tabbedPane.getTitleAt(tabbedPane.getSelectedIndex());
+                updateMembersFromText(sampleCode, title);
+            }
         }
     }
 
