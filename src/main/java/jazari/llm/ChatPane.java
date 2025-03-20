@@ -2,16 +2,15 @@ package jazari.llm;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.text.html.HTMLEditorKit;
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.util.List;
 
 /**
  * Chat görüntüleme ve mesaj işleme için özel panel
@@ -40,27 +39,24 @@ public class ChatPane extends JEditorPane {
         htmlKit = new HTMLEditorKit();
         setEditorKit(htmlKit);
 
-        // CSS Stilleri - WhatsApp benzeri zikzak görünüm
+        // CSS Stilleri - daha güvenilir hizalama ve sarma için
         String css = "body { font-family: Dialog; font-size: 14pt; color: #cccccc; "
                 + "background-color: #24242c; margin: 10px; }\n"
                 + "a { color: #7289da; text-decoration: none; }\n"
                 + "a:hover { text-decoration: underline; }\n"
                 + ".message-container { margin-top: 10px; margin-bottom: 20px; position: relative; }\n"
                 + ".user-message { margin-right: 100px; margin-left: 10px; }\n"
-                + // Kullanıcı mesajı solda
-                ".ai-message { margin-left: 100px; margin-right: 10px; }\n"
-                + // AI mesajı sağda
-                ".message-bubble { padding: 10px; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); position: relative; }\n"
+                + ".ai-message { margin-left: 100px; margin-right: 10px; }\n"
+                + ".message-bubble { padding: 10px; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); position: relative; }\n"
                 + ".user-bubble { background-color: #005c4b; color: white; }\n"
-                + // WhatsApp yeşili
-                ".ai-bubble { background-color: #3b4a83; color: white; }\n"
-                + // WhatsApp mavisi
-                ".sender { font-weight: bold; margin-bottom: 8px; font-size: 0.9em; }\n"
+                + ".ai-bubble { background-color: #3b4a83; color: white; }\n"
+                + ".sender { font-weight: bold; margin-bottom: 8px; font-size: 0.9em; }\n"
                 + ".user-sender { color: #d1ffc8; }\n"
                 + ".ai-sender { color: #e3e3ff; }\n"
-                + ".message-content { white-space: pre-wrap; }\n"
+                + ".message-content { white-space: normal !important; word-wrap: break-word !important; text-align: left !important; width: 100% !important; display: block !important; }\n"
                 + ".user-content { color: #ffffff; }\n"
                 + ".ai-content { color: #ffffff; }\n"
+                + "p { margin: 0; padding: 0; text-align: left !important; }\n"
                 + ".copy-button { position: absolute; top: 5px; right: 5px; font-size: 0.9em; "
                 + "background-color: rgba(255,255,255,0.15); border-radius: 4px; "
                 + "padding: 3px 8px; cursor: pointer; color: rgba(255,255,255,0.7); }\n"
@@ -146,22 +142,10 @@ public class ChatPane extends JEditorPane {
             messageHtml.append("<div style='background-color: rgba(0, 92, 75, 0.8); padding: 10px; border-radius: 10px; position: relative;'>");
         }
 
-        // Gönderen bilgisi ve kopyalama butonu yan yana - justify-content: space-between kullanarak
-        messageHtml.append("<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;'>");
-
-        // Gönderen bilgisi - solda
-        messageHtml.append("<div style='font-weight: bold; color: white;'>");
+        // Gönderen bilgisi
+        messageHtml.append("<div style='font-weight: bold; color: white; margin-bottom: 8px;'>");
         messageHtml.append(isAI ? sender : "Sen");
         messageHtml.append("</div>");
-
-        // Kopyalama butonu - en sağda
-        messageHtml.append("<a href='copy:").append(messageId).append("' style='text-decoration: none;'>");
-        messageHtml.append("<span id=\"btn_").append(messageId).append("\" ");
-        messageHtml.append("style='font-size: 10pt; padding: 2px 6px; ");
-        messageHtml.append("background-color: rgba(255,255,255,0.2); border-radius: 4px; color: white;'>");
-        messageHtml.append("📋 Copy</span></a>");
-
-        messageHtml.append("</div>"); // Başlık satırını kapat
 
         // Mesaj içeriği
         // Kod içeriği mi kontrol et
@@ -177,7 +161,7 @@ public class ChatPane extends JEditorPane {
             messageHtml.append("</div>");
         } else {
             // Normal metin içeriği - ID'yi çift tırnak kullanıyoruz
-            messageHtml.append("<div id=\"").append(messageId).append("\" style='color: white; white-space: pre-wrap;'>");
+            messageHtml.append("<div id=\"").append(messageId).append("\" style='color: white; white-space: pre-wrap; text-align: left;'>");
             messageHtml.append(escapeHtml(message));
             messageHtml.append("</div>");
         }
@@ -240,13 +224,14 @@ public class ChatPane extends JEditorPane {
                     } else {
                         result.append("<div class='code-language'>KOD</div>");
                     }
+
+                    // Kopyalama butonu
                     result.append("<div>");
-                    // Kopyalama butonu için "Copy" metni eklendi
-                    result.append("<a href='copycode:").append(codeBlockId).append("' data-id='")
-                            .append(codeBlockId).append("' style='text-decoration:none;'>");
+                    result.append("<a href='copycode:").append(codeBlockId).append("' style='text-decoration:none;'>");
                     result.append("<span id=\"btn_").append(codeBlockId).append("\" class='copy-button'>📋 Copy</span>");
                     result.append("</a>");
                     result.append("</div>");
+
                     result.append("</div>"); // header kapatma
 
                     // Kod içeriği - çift tırnak kullanıyoruz
@@ -271,18 +256,9 @@ public class ChatPane extends JEditorPane {
         eventLogger.log("Hyperlink tıklandı: " + url);
 
         try {
-            if (url.startsWith("copy:")) {
-                String messageId = url.substring(5);
-                copyToClipboard(messageId);
-            } else if (url.startsWith("copycode:")) {
+            if (url.startsWith("copycode:")) {
                 String codeBlockId = url.substring(9);
-                copyCodeToClipboard(codeBlockId);
-            } else if (url.startsWith("retry:")) {
-                String messageToRetry = url.substring(6);
-                messageToRetry = unescapeHtml(messageToRetry);
-                retryMessage(messageToRetry);
-            } else {
-                eventLogger.log("Bilinmeyen URL formatı: " + url);
+                copyFormattedCodeToClipboard(codeBlockId);
             }
         } catch (Exception e) {
             eventLogger.log("Hata: " + e.getMessage());
@@ -291,55 +267,9 @@ public class ChatPane extends JEditorPane {
     }
 
     /**
-     * Metin ID'sine göre panoya kopyala
+     * Formatlı kodu panoya kopyala
      */
-    private void copyToClipboard(String messageId) {
-        eventLogger.log("Panoya kopyalama başladı, ID: " + messageId);
-
-        try {
-            // HTML içeriğini al
-            String htmlContent = getText();
-
-            // Element ID'sini bul - ÖNEMLİ: Çift tırnak kullanıyoruz
-            String idAttribute = "id=\"" + messageId + "\"";
-            int elementStartIndex = htmlContent.indexOf(idAttribute);
-
-            if (elementStartIndex != -1) {
-                // Element içeriğini bul
-                int contentStartIndex = htmlContent.indexOf(">", elementStartIndex) + 1;
-                int contentEndIndex = htmlContent.indexOf("</div>", contentStartIndex);
-
-                if (contentStartIndex > 0 && contentEndIndex > contentStartIndex) {
-                    // İçeriği al ve HTML formatından temizle
-                    String content = htmlContent.substring(contentStartIndex, contentEndIndex);
-                    String plainText = unescapeHtml(content);
-
-                    // Panoya kopyala
-                    StringSelection selection = new StringSelection(plainText);
-                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
-
-                    // Kullanıcıya görsel bildirim göster
-                    showCopyFeedback(messageId);
-
-                    eventLogger.log("Metin başarıyla kopyalandı");
-                } else {
-                    eventLogger.log("Metin içeriği bulunamadı: startIndex=" + contentStartIndex + ", endIndex=" + contentEndIndex);
-                }
-            } else {
-                // HTML içeriğini günlüğe ekle (hata ayıklama için)
-                eventLogger.log("Element ID bulunamadı: " + messageId);
-                eventLogger.log("HTML içeriği (ilk 500 karakter): " + htmlContent.substring(0, Math.min(500, htmlContent.length())));
-            }
-        } catch (Exception e) {
-            eventLogger.log("Kopyalama hatası: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Kod bloğunu panoya kopyala
-     */
-    private void copyCodeToClipboard(String codeBlockId) {
+    private void copyFormattedCodeToClipboard(String codeBlockId) {
         try {
             // HTML içeriği al
             String htmlText = getText();
@@ -360,47 +290,17 @@ public class ChatPane extends JEditorPane {
                 // Kod içeriğini al
                 String rawHtml = htmlText.substring(codeStart, codeEnd);
 
-                // HTML karakterlerini temizle, ham metne çevir
-                String plainCode = rawHtml;
+                // HTML ve Unicode karakterlerini çöz
+                String codeText = unescapeHtml(rawHtml);
 
-                // Aşama 1: HTML elementlerini temizle (eğer varsa)
-                plainCode = plainCode.replaceAll("<[^>]*>", "");
-
-                // Aşama 2: HTML karakter referanslarını düz karakterlere çevir
-                plainCode = plainCode.replace("&lt;", "<")
-                        .replace("&gt;", ">")
-                        .replace("&amp;", "&")
-                        .replace("&quot;", "\"")
-                        .replace("&#39;", "'")
-                        .replace("&nbsp;", " ")
-                        .replace("&#160;", " ");
-
-                // Aşama 3: Türkçe karakterleri düzelt
-                plainCode = plainCode.replace("&#287;", "ğ")
-                        .replace("&#305;", "ı")
-                        .replace("&#351;", "ş")
-                        .replace("&#246;", "ö")
-                        .replace("&#252;", "ü")
-                        .replace("&#231;", "ç")
-                        .replace("&#304;", "İ");
-
-                // Son olarak, herhangi bir fazlalığı kaldır (span etiketleri, vs.)
-                plainCode = plainCode.replaceAll("Copy\\s*</span>.*$", "").trim();
-
-                // Eğer hala sorun varsa, Java sınıfı yapısını koruyarak sonuçları oluşturmayı dene
-                if (plainCode.contains("public class")) {
-                    // Bir Java sınıfı ile başlıyorsa, düzgün biçimlendir
-                    plainCode = formatJavaCode(plainCode);
-                }
-
-                // Panoya kopyala
-                StringSelection selection = new StringSelection(plainCode);
+                // Panoya kopyala - formatlı metin olarak
+                StringSelection selection = new StringSelection(codeText);
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
 
-                // Geri bildirim
+                // Kopyalama geri bildirimi göster
                 showCopyFeedback(codeBlockId);
 
-                eventLogger.log("Kod kopyalandı");
+                eventLogger.log("Kod formatlı olarak kopyalandı");
             } else {
                 eventLogger.log("Kod içeriği bulunamadı");
             }
@@ -410,81 +310,12 @@ public class ChatPane extends JEditorPane {
         }
     }
 
-// Java kodunu biçimlendirme (gerekirse)
-    private String formatJavaCode(String messyCode) {
-        try {
-            StringBuilder formattedCode = new StringBuilder();
-            String[] lines = messyCode.split("\n");
-
-            for (String line : lines) {
-                // Fazla boşlukları temizle
-                line = line.replaceAll("\\s+", " ").trim();
-
-                // Açılış ve kapanış parantezleri için satır sonu ekle
-                if (line.contains("{")) {
-                    line = line.replace("{", " {");
-                }
-
-                // Temiz satırı ekle
-                formattedCode.append(line).append("\n");
-            }
-
-            return formattedCode.toString();
-        } catch (Exception e) {
-            return messyCode; // Hata durumunda orijinal kodu döndür
-        }
-    }
-// HTML'den kod içeriğini çıkarma yardımcı metodu
-
-    private String extractCodeContent(String codeBlockId) {
-        try {
-            String htmlContent = getText();
-            String idAttribute = "id=\"" + codeBlockId + "\"";
-            int startIndex = htmlContent.indexOf(idAttribute);
-
-            if (startIndex != -1) {
-                // Kod bloğunun içeriğini bul
-                int contentStart = htmlContent.indexOf(">", startIndex) + 1;
-                int contentEnd = htmlContent.indexOf("</code>", contentStart);
-
-                if (contentStart > 0 && contentEnd > contentStart) {
-                    String content = htmlContent.substring(contentStart, contentEnd);
-
-                    // HTML karakterlerini temizle
-                    content = content.replace("&lt;", "<")
-                            .replace("&gt;", ">")
-                            .replace("&amp;", "&")
-                            .replace("&quot;", "\"")
-                            .replace("&#39;", "'")
-                            .replace("&#160;", " ")
-                            .replace("&nbsp;", " ")
-                            .replace("<br>", "\n");
-
-                    // Türkçe karakterler
-                    content = content.replace("&#287;", "ğ")
-                            .replace("&#305;", "ı")
-                            .replace("&#351;", "ş")
-                            .replace("&#246;", "ö")
-                            .replace("&#252;", "ü")
-                            .replace("&#231;", "ç")
-                            .replace("&#304;", "İ");
-
-                    return content;
-                }
-            }
-            return "";
-        } catch (Exception e) {
-            eventLogger.log("Kod çıkarma hatası: " + e.getMessage());
-            return "";
-        }
-    }
-
     /**
-     * Kopyalama butonunu güncelle - tik işareti ve rengi değiştir
+     * Kopyalama işlemi geri bildirimi göster
      */
-    private void updateCopyButton(String id, boolean isMessage) {
+    private void showCopyFeedback(String id) {
         try {
-            // HTML içeriğini al
+            // Butonu güncelle (geri bildirim için)
             String htmlContent = getText();
             String buttonId = "id=\"btn_" + id + "\"";
 
@@ -532,31 +363,19 @@ public class ChatPane extends JEditorPane {
                     timer.start();
                 }
             }
-        } catch (Exception e) {
-            eventLogger.log("Buton güncelleme hatası: " + e.getMessage());
-        }
-    }
 
-    /**
-     * Kopyalama işlemi geri bildirimi göster - geçici popup
-     */
-    private void showCopyFeedback(String id) {
-        // Butonu güncelle
-        updateCopyButton(id, true);
+            // Kullanıcıya kopyalama bildirimi göster
+            JWindow popup = new JWindow();
+            JLabel label = new JLabel("   Formatted code copied!   ");
+            label.setForeground(Color.WHITE);
+            label.setFont(new Font("Dialog", Font.BOLD, 12));
+            label.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
-        // Geçici popup mesajı
-        JWindow popup = new JWindow();
-        JLabel label = new JLabel("   Copied to clipboard!   ");
-        label.setForeground(Color.WHITE);
-        label.setFont(new Font("Dialog", Font.BOLD, 12));
-        label.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+            popup.getContentPane().add(label);
+            popup.getContentPane().setBackground(new Color(67, 181, 129)); // Yeşil
+            popup.pack();
 
-        popup.getContentPane().add(label);
-        popup.getContentPane().setBackground(new Color(67, 181, 129)); // Yeşil
-        popup.pack();
-
-        // Popup pozisyonu - mevcut pencereye göre
-        try {
+            // Popup pozisyonu - mevcut pencereye göre
             Point p = this.getLocationOnScreen();
             int x = p.x + this.getWidth() - popup.getWidth() - 20;
             int y = p.y + 20;
@@ -564,44 +383,23 @@ public class ChatPane extends JEditorPane {
 
             // Popup göster ve 1.5 saniye sonra kapat
             popup.setVisible(true);
-
             Timer timer = new Timer(1500, e -> popup.dispose());
             timer.setRepeats(false);
             timer.start();
+
         } catch (Exception e) {
-            eventLogger.log("Popup gösterme hatası: " + e.getMessage());
+            eventLogger.log("Feedback gösterme hatası: " + e.getMessage());
         }
-    }
-
-    /**
-     * Mesajı tekrar işle
-     */
-    private void retryMessage(String originalMessage) {
-        eventLogger.log("Mesaj tekrar isteniyor: " + originalMessage);
-        // Bu metod OllamaGemma3SwingChat sınıfında işlenecek
-        firePropertyChange("retryMessage", null, originalMessage);
-    }
-
-    /**
-     * JavaScript metni için özel karakterleri kaçır
-     */
-    private String escapeJavaScriptText(String text) {
-        if (text == null) {
-            return "";
-        }
-
-        return text.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("'", "\\'")
-                .replace("\r", "\\r")
-                .replace("\n", "\\n")
-                .replace("\t", "\\t");
     }
 
     /**
      * HTML metni için özel karakterleri kaçır
      */
     private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+
         return text.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
@@ -617,22 +415,37 @@ public class ChatPane extends JEditorPane {
             return "";
         }
 
-        return text.replace("&lt;", "<")
+        // HTML karakterleri
+        text = text.replace("&lt;", "<")
                 .replace("&gt;", ">")
                 .replace("&amp;", "&")
                 .replace("&quot;", "\"")
-                .replace("&#160;", " ") // HTML indent boşluk karakteri
+                .replace("&#39;", "'")
+                .replace("&nbsp;", " ")
+                .replace("&#160;", " ");
+
+        // Türkçe karakterler
+        text = text.replace("&#287;", "ğ")
                 .replace("&#305;", "ı")
-                .replace("&#231;", "ç")
+                .replace("&#351;", "ş")
                 .replace("&#246;", "ö")
                 .replace("&#252;", "ü")
-                .replace("&#287;", "ğ")
-                .replace("&#350;", "Ş")
-                .replace("&#351;", "ş")
+                .replace("&#231;", "ç")
                 .replace("&#304;", "İ")
-                .replace("&#39;", "'")
-                .replace("<br>", "\n")
-                .replace("&nbsp;", " ");
+                .replace("&#350;", "Ş")
+                .replace("&#286;", "Ğ")
+                .replace("&#220;", "Ü")
+                .replace("&#214;", "Ö")
+                .replace("&#199;", "Ç");
+
+        // HTML satır sonları
+        text = text.replace("<br>", "\n")
+                .replace("<br/>", "\n");
+
+        // Unicode emoji temizleme (&#55357;&#56523; gibi)
+        text = text.replaceAll("&#\\d+;", "");
+
+        return text;
     }
 
     /**
@@ -644,37 +457,16 @@ public class ChatPane extends JEditorPane {
         StringBuilder testHtml = new StringBuilder();
         testHtml.append("<html><body style='font-family:Dialog; color:#ffffff; background-color:#36393f;'>");
         testHtml.append("<div style='margin: 20px;'>");
-        testHtml.append("<h3 style='color:#7289da;'>Test Bağlantıları</h3>");
-        testHtml.append("<p>Aşağıdaki bağlantıları tıklayarak olay işleme mekanizmasını test edin:</p>");
+        testHtml.append("<h3 style='color:#7289da;'>Test İçeriği</h3>");
+        testHtml.append("<p>Test mesajları oluşturuldu.</p>");
 
         // Test ID'leri
         String testMessageId = "test_id_" + System.currentTimeMillis();
-        String testCodeId = "test_code_id_" + System.currentTimeMillis();
 
         // Test mesajı - WhatsApp tarzı
         testHtml.append("<div style='position: relative; margin: 20px 100px 20px 10px;'>");
         testHtml.append("<div style='background-color: #005c4b; padding: 10px; border-radius: 10px; position: relative;'>");
-        testHtml.append("<a href='copy:").append(testMessageId).append("' style='text-decoration:none;'>");
-        testHtml.append("<span id=\"btn_").append(testMessageId).append("\" class='copy-button'>📋 Copy</span>");
-        testHtml.append("</a>");
         testHtml.append("<div id=\"").append(testMessageId).append("\">Bu bir test mesajıdır.</div>");
-        testHtml.append("</div>");
-        testHtml.append("</div>");
-
-        // Test kod bloğu - WhatsApp tarzı
-        testHtml.append("<div style='position: relative; margin: 20px 10px 20px 100px;'>");
-        testHtml.append("<div style='background-color: #3b4a83; padding: 10px; border-radius: 10px; position: relative;'>");
-        testHtml.append("<div class='code-block'>");
-        testHtml.append("<div class='code-header'>");
-        testHtml.append("<div class='code-language'>TEST</div>");
-        testHtml.append("<div>");
-        testHtml.append("<a href='copycode:").append(testCodeId).append("' style='text-decoration:none;'>");
-        testHtml.append("<span id=\"btn_").append(testCodeId).append("\" class='copy-button'>📋 Copy</span>");
-        testHtml.append("</a>");
-        testHtml.append("</div>");
-        testHtml.append("</div>");
-        testHtml.append("<pre><code id=\"").append(testCodeId).append("\" class='code-content'>function testCode() {\n  console.log(\"Test kodu\");\n}</code></pre>");
-        testHtml.append("</div>");
         testHtml.append("</div>");
         testHtml.append("</div>");
 
@@ -682,6 +474,264 @@ public class ChatPane extends JEditorPane {
         testHtml.append("</body></html>");
 
         setText(testHtml.toString());
-        eventLogger.log("Test içeriği yüklendi, ID'ler: " + testMessageId + ", " + testCodeId);
+        eventLogger.log("Test içeriği yüklendi");
+    }
+
+    /**
+     * Belirli bir ID ile AI mesajı ekle (streaming için)
+     */
+    public void addAIMessageWithId(String sender, String message, String messageId) {
+        eventLogger.log("ID ile mesaj ekleniyor: Gönderen=" + sender + ", ID=" + messageId);
+
+        // Mevcut HTML içeriğini al
+        String currentContent = getText();
+
+        // <body> etiketinin kapanışını bul
+        int bodyEndIndex = currentContent.lastIndexOf("</body>");
+        if (bodyEndIndex == -1) {
+            // HTML yapısı beklenen şekilde değilse, yeni bir HTML yapısı oluştur
+            currentContent = "<html><body></body></html>";
+            bodyEndIndex = currentContent.lastIndexOf("</body>");
+        }
+
+        // Mesaj HTML'ini oluştur - tablo kullanarak daha güvenilir hizalama
+        StringBuilder messageHtml = new StringBuilder();
+
+        // AI mesajı - sağda, tablo yapısıyla
+        messageHtml.append("<div class='message-container ai-message'>");
+        messageHtml.append("<div class='message-bubble ai-bubble'>");
+
+        // Gönderen bilgisi
+        messageHtml.append("<table width='100%' cellspacing='0' cellpadding='0' border='0'>");
+        messageHtml.append("<tr>");
+
+        // Gönderen (sol hücre)
+        messageHtml.append("<td align='left'>");
+        messageHtml.append("<span class='sender ai-sender'>").append(sender).append("</span>");
+        messageHtml.append("</td>");
+
+        messageHtml.append("</tr>");
+        messageHtml.append("</table>");
+
+        // Mesaj içeriği - tabloda tek satır, tam genişlik
+        messageHtml.append("<table width='100%' cellspacing='0' cellpadding='0' border='0'>");
+        messageHtml.append("<tr>");
+        messageHtml.append("<td align='left' style='word-wrap: break-word;'>");
+
+        // Her paragrafı ayrı bir <p> içine koyalım
+        messageHtml.append("<div id=\"").append(messageId).append("\" class='message-content ai-content'>");
+
+        // Mesaj içeriğini paragraf olarak formatlayın
+        String processedMessage = processMessageContent(message);
+        messageHtml.append(processedMessage);
+
+        messageHtml.append("</div>");
+        messageHtml.append("</td>");
+        messageHtml.append("</tr>");
+        messageHtml.append("</table>");
+
+        // Kapanış div'leri
+        messageHtml.append("</div></div>");
+
+        // HTML'e mesajı ekle
+        StringBuilder newContent = new StringBuilder(currentContent);
+        newContent.insert(bodyEndIndex, messageHtml.toString());
+
+        // Güncellenmiş HTML'i ayarla
+        setText(newContent.toString());
+
+        // Kaydırmayı en alta ayarla
+        SwingUtilities.invokeLater(() -> {
+            setCaretPosition(getDocument().getLength());
+            scrollRectToVisible(new Rectangle(0, getHeight() - 1, 1, 1));
+        });
+
+        eventLogger.log("ID ile mesaj eklendi: " + messageId);
+    }
+
+    // Mesaj içeriğini paragraf olarak formatlama metodu
+    private String processMessageContent(String message) {
+        if (message == null || message.isEmpty()) {
+            return "";
+        }
+
+        // Kod bloğu varsa özel işle
+        if (message.contains("```") || message.contains("public class")
+                || message.contains("function") || message.contains("def ")
+                || message.contains("import ")) {
+            return processCodeBlocks(message, "msg_" + System.currentTimeMillis());
+        }
+
+        // Normal metin işleme - her satırı paragraf yap
+        String[] lines = message.split("\n");
+        StringBuilder formattedMessage = new StringBuilder();
+
+        for (String line : lines) {
+            String trimmedLine = line.trim();
+            if (trimmedLine.isEmpty()) {
+                // Boş satır için boş paragraf
+                formattedMessage.append("<p>&nbsp;</p>");
+            } else {
+                // Her satırı bir paragraf içine al
+                formattedMessage.append("<p align='left'>").append(escapeHtml(line)).append("</p>");
+            }
+        }
+
+        return formattedMessage.toString();
+    }
+
+    /**
+     * AI tarafından gönderilen son mesajı günceller (streaming için)
+     */
+    public void updateLastAIMessage(String sender, String newContent) {
+        try {
+            // HTML içeriğini al
+            String htmlContent = getText();
+            Document doc = getDocument();
+
+            // HTML belgesini incele
+            if (doc instanceof HTMLDocument) {
+                HTMLDocument htmlDoc = (HTMLDocument) doc;
+
+                // AI mesaj div'lerini bul (sağdaki mavi baloncuklar)
+                Element[] divs = findElementsByStyleClass(htmlDoc, HTML.Tag.DIV, "ai-bubble");
+
+                if (divs != null && divs.length > 0) {
+                    // En son AI div'i (son mesaj)
+                    Element lastAIMessageDiv = divs[divs.length - 1];
+
+                    // İçerik div'ini bul (message-content sınıfı)
+                    Element[] contentDivs = findElementsByStyleClass(htmlDoc,
+                            HTML.Tag.DIV, "message-content", lastAIMessageDiv);
+
+                    if (contentDivs != null && contentDivs.length > 0) {
+                        Element contentDiv = contentDivs[0];
+
+                        // İçeriği güncelle
+                        htmlDoc.setInnerHTML(contentDiv, formatMessageContent(newContent));
+
+                        // Kaydırmayı en alta ayarla
+                        setCaretPosition(getDocument().getLength());
+                        scrollRectToVisible(new Rectangle(0, getHeight() - 1, 1, 1));
+                        return;
+                    }
+                }
+
+                // Elementleri bulamazsak, yeni bir mesaj ekle
+                addAIMessage(sender, newContent);
+            }
+        } catch (Exception e) {
+            eventLogger.log("Son mesaj güncellenirken hata: " + e.getMessage());
+
+            // Hata durumunda yeni mesaj ekle
+            addAIMessage(sender, newContent);
+        }
+    }
+
+    /**
+     * HTML belgesinde belirli tag ve sınıfa sahip elementleri bul
+     */
+    private Element[] findElementsByStyleClass(HTMLDocument doc, HTML.Tag tag,
+            String styleClass) {
+        return findElementsByStyleClass(doc, tag, styleClass, doc.getDefaultRootElement());
+    }
+
+    /**
+     * Belirli bir parent element içinde belirli tag ve sınıfa sahip elementleri
+     * bul
+     */
+    private Element[] findElementsByStyleClass(HTMLDocument doc, HTML.Tag tag,
+            String styleClass, Element parent) {
+        List<Element> matchingElements = new java.util.ArrayList<>();
+
+        int count = parent.getElementCount();
+        for (int i = 0; i < count; i++) {
+            Element element = parent.getElement(i);
+
+            // Element attribute'larını kontrol et
+            AttributeSet attrs = element.getAttributes();
+            if (attrs.getAttribute(HTML.Attribute.CLASS) != null
+                    && attrs.getAttribute(HTML.Attribute.CLASS).toString().contains(styleClass)
+                    && attrs.getAttribute(javax.swing.text.StyleConstants.NameAttribute) == tag) {
+                matchingElements.add(element);
+            }
+
+            // Alt elemanları kontrol et
+            if (element.getElementCount() > 0) {
+                Element[] childMatches = findElementsByStyleClass(doc, tag, styleClass, element);
+                if (childMatches != null && childMatches.length > 0) {
+                    matchingElements.addAll(java.util.Arrays.asList(childMatches));
+                }
+            }
+        }
+
+        return matchingElements.toArray(new Element[0]);
+    }
+
+    /**
+     * Mesaj içeriğini HTML olarak formatlayarak döndürür
+     */
+    private String formatMessageContent(String content) {
+        // Kod bloklarını kontrol et
+        if (content.contains("```") || content.contains("public class")
+                || content.contains("function") || content.contains("def ")
+                || content.contains("import ")) {
+            return processCodeBlocks(content, "msg_" + System.currentTimeMillis());
+        } else {
+            return escapeHtml(content);
+        }
+    }
+
+    /**
+     * Belirli ID'ye sahip AI mesajını güncelle
+     */
+    public void updateAIMessage(String messageId, String newContent) {
+        try {
+            // HTML içeriğini al
+            Document doc = getDocument();
+
+            if (doc instanceof HTMLDocument) {
+                HTMLDocument htmlDoc = (HTMLDocument) doc;
+
+                // HTML elementini ID'ye göre bul
+                Element element = htmlDoc.getElement(messageId);
+
+                if (element != null) {
+                    // Formatlanmış içerik oluştur
+                    String formattedContent = processMessageContent(newContent);
+
+                    try {
+                        // Element içeriğini güncelle - daha güvenli yaklaşım
+                        SwingUtilities.invokeLater(() -> {
+                            try {
+                                htmlDoc.setInnerHTML(element, formattedContent);
+
+                                // Kaydırmayı en alta ayarla
+                                setCaretPosition(getDocument().getLength());
+                                scrollRectToVisible(new Rectangle(0, getHeight() - 1, 1, 1));
+                            } catch (Exception ex) {
+                                eventLogger.log("HTML güncellerken iç hata: " + ex.getMessage());
+                                // Alternatif yaklaşım - tamamen yeni mesaj ekle
+                                addAIMessage("Gemma 3", newContent);
+                            }
+                        });
+                    } catch (Exception e) {
+                        // Hata durumunda tamamen yeni bir mesaj eklemeyi dene
+                        eventLogger.log("setInnerHTML hatası: " + e.getMessage());
+                        addAIMessage("Gemma 3", newContent);
+                    }
+                } else {
+                    // Element bulunamadı, loglama yap ve yeni mesaj ekle
+                    eventLogger.log("Mesaj bulunamadı, ID: " + messageId);
+                    addAIMessage("Gemma 3", newContent);
+                }
+            }
+        } catch (Exception e) {
+            eventLogger.log("Mesaj güncellenirken hata: " + e.getMessage());
+            e.printStackTrace();
+
+            // Hata durumunda tamamen yeni bir mesaj ekle
+            addAIMessage("Gemma 3", newContent);
+        }
     }
 }
