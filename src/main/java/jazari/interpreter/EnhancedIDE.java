@@ -28,7 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.fife.ui.rsyntaxtextarea.templates.*;
-import jazari.gui.FrameMainLLM;
+import jazari.gui.FrameLLMTools;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 public class EnhancedIDE extends JFrame {
@@ -37,7 +37,7 @@ public class EnhancedIDE extends JFrame {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FrameMainLLM.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FrameLLMTools.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

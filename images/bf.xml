@@ -286,10 +286,23 @@
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>701</xmin>
-			<ymin>217</ymin>
-			<xmax>772</xmax>
-			<ymax>300</ymax>
+			<xmin>698</xmin>
+			<ymin>228</ymin>
+			<xmax>769</xmax>
+			<ymax>311</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>flower</name>
+		<occluded>0</occluded>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>44</xmin>
+			<ymin>139</ymin>
+			<xmax>188</xmax>
+			<ymax>319</ymax>
 		</bndbox>
 	</object>
 </annotation>

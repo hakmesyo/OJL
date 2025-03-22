@@ -1,4 +1,4 @@
-package jazari.llm;
+package jazari.llm_forge;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -12,16 +12,13 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
 
-/**
- * Custom panel for chat display and message processing
- */
 public class ChatPane extends JEditorPane {
 
     private final EventLogger eventLogger;
     private final HTMLEditorKit htmlKit;
     private final Color chatBgColor = new Color(36, 36, 40);
-    private final Color userBubbleColor = new Color(0, 132, 87); // WhatsApp green
-    private final Color aiBubbleColor = new Color(59, 74, 131);  // WhatsApp blue
+    private final Color userBubbleColor = new Color(0, 132, 87); // Green
+    private final Color aiBubbleColor = new Color(59, 74, 131);  // Blue
 
     public ChatPane(EventLogger logger) {
         this.eventLogger = logger;
@@ -39,7 +36,7 @@ public class ChatPane extends JEditorPane {
         htmlKit = new HTMLEditorKit();
         setEditorKit(htmlKit);
 
-        // CSS Styles - for more reliable alignment and wrapping
+        // CSS Styles
         String css = "body { font-family: Dialog; font-size: 14pt; color: #cccccc; "
                 + "background-color: #24242c; margin: 10px; }\n"
                 + "a { color: #7289da; text-decoration: none; }\n"
@@ -65,7 +62,11 @@ public class ChatPane extends JEditorPane {
                 + "background-color: #2d2d2d; border-radius: 5px; border-left: 3px solid #7289da; }\n"
                 + ".code-header { display: flex; justify-content: space-between; margin-bottom: 8px; }\n"
                 + ".code-language { color: #7289da; font-weight: bold; font-size: 0.8em; }\n"
-                + ".code-content { font-family: monospace; white-space: pre; color: #cccccc; margin: 0; overflow-x: auto; }";
+                + ".code-content { font-family: monospace; white-space: pre; color: #cccccc; margin: 0; overflow-x: auto; }\n"
+                + ".welcome-container { text-align: center; margin-top: 80px; }\n"
+                + ".welcome-title { color: #7289da; font-size: 24pt; margin-bottom: 20px; }\n"
+                + ".welcome-text { color: #cccccc; font-size: 14pt; margin-bottom: 10px; }\n"
+                + ".welcome-hint { color: #999999; font-size: 12pt; }";
 
         htmlKit.getStyleSheet().addRule(css);
 
@@ -78,39 +79,27 @@ public class ChatPane extends JEditorPane {
         });
     }
 
-    /**
-     * Show welcome message
-     */
     public void showWelcomeMessage() {
         StringBuilder html = new StringBuilder();
         html.append("<html><body>");
-        html.append("<div style='text-align:center; margin-top:100px;'>");
-        html.append("<h2 style='color:#7289da;'>Welcome!</h2>");
-        html.append("<p>Start chatting with the Gemma 3 AI model.</p>");
-        html.append("<p style='color:#999999; font-size:12pt;'>Type your message in the text box below and click the Send button.</p>");
+        html.append("<div class='welcome-container'>");
+        html.append("<div class='welcome-title'>Welcome to Jazari Chat Forge!</div>");
+        html.append("<p class='welcome-text'>Start chatting with your favorite LLM models.</p>");
+        html.append("<p class='welcome-hint'>Select a model from the top menu and type your message below.</p>");
         html.append("</div>");
         html.append("</body></html>");
 
         setText(html.toString());
     }
 
-    /**
-     * Add user message
-     */
     public void addUserMessage(String sender, String message) {
         appendMessageToHTML(sender, message, false);
     }
 
-    /**
-     * Add AI message
-     */
     public void addAIMessage(String sender, String message) {
         appendMessageToHTML(sender, message, true);
     }
 
-    /**
-     * Append message to HTML content - WhatsApp-style zigzag view
-     */
     private void appendMessageToHTML(String sender, String message, boolean isAI) {
         eventLogger.log("Adding message: Sender=" + sender + ", isAI=" + isAI);
 
@@ -131,24 +120,21 @@ public class ChatPane extends JEditorPane {
         // Create message HTML
         StringBuilder messageHtml = new StringBuilder();
 
-        // Simpler and more direct HTML structure - WhatsApp-like appearance
+        // Message container with appropriate class
         if (isAI) {
-            // AI message - on the right
-            messageHtml.append("<div style='margin: 15px 10px 15px 100px;'>");
-            messageHtml.append("<div style='background-color: rgba(59, 74, 131, 0.8); padding: 10px; border-radius: 10px; position: relative;'>");
+            messageHtml.append("<div class='message-container ai-message'>");
+            messageHtml.append("<div class='message-bubble ai-bubble'>");
         } else {
-            // User message - on the left
-            messageHtml.append("<div style='margin: 15px 100px 15px 10px;'>");
-            messageHtml.append("<div style='background-color: rgba(0, 92, 75, 0.8); padding: 10px; border-radius: 10px; position: relative;'>");
+            messageHtml.append("<div class='message-container user-message'>");
+            messageHtml.append("<div class='message-bubble user-bubble'>");
         }
 
         // Sender information
-        messageHtml.append("<div style='font-weight: bold; color: white; margin-bottom: 8px;'>");
-        messageHtml.append(isAI ? sender : "You");
+        messageHtml.append("<div class='sender ").append(isAI ? "ai-sender" : "user-sender").append("'>");
+        messageHtml.append(sender);
         messageHtml.append("</div>");
 
         // Message content
-        // Check if it's code content
         boolean containsCode = isAI && (message.contains("```")
                 || message.contains("public class")
                 || message.contains("function")
@@ -156,12 +142,12 @@ public class ChatPane extends JEditorPane {
                 || message.contains("import "));
 
         if (containsCode) {
-            messageHtml.append("<div style='color: white;'>");
+            messageHtml.append("<div class='message-content ").append(isAI ? "ai-content" : "user-content").append("'>");
             messageHtml.append(processCodeBlocks(message, messageId));
             messageHtml.append("</div>");
         } else {
-            // Normal text content - using double quotes for ID
-            messageHtml.append("<div id=\"").append(messageId).append("\" style='color: white; white-space: pre-wrap; text-align: left;'>");
+            messageHtml.append("<div id=\"").append(messageId).append("\" class='message-content ")
+                      .append(isAI ? "ai-content" : "user-content").append("'>");
             messageHtml.append(escapeHtml(message));
             messageHtml.append("</div>");
         }
@@ -185,9 +171,6 @@ public class ChatPane extends JEditorPane {
         eventLogger.log("Message added, ID: " + messageId);
     }
 
-    /**
-     * Process code blocks and create formatted HTML
-     */
     private String processCodeBlocks(String message, String parentMessageId) {
         StringBuilder result = new StringBuilder();
 
@@ -234,7 +217,7 @@ public class ChatPane extends JEditorPane {
 
                     result.append("</div>"); // close header
 
-                    // Code content - using double quotes
+                    // Code content
                     result.append("<pre><code id=\"").append(codeBlockId).append("\" class='code-content'>");
                     result.append(escapeHtml(codeContent));
                     result.append("</code></pre>");
@@ -242,16 +225,32 @@ public class ChatPane extends JEditorPane {
                 }
             }
         } else {
-            // In case there's no code block
+            // In case there's no code block markers but it still looks like code
+            String codeBlockId = "code_" + parentMessageId + "_full";
+            
+            result.append("<div class='code-block'>");
+            result.append("<div class='code-header'>");
+            result.append("<div class='code-language'>CODE</div>");
+            
+            // Copy button
+            result.append("<div>");
+            result.append("<a href='copycode:").append(codeBlockId).append("' style='text-decoration:none;'>");
+            result.append("<span id=\"btn_").append(codeBlockId).append("\" class='copy-button'>📋 Copy</span>");
+            result.append("</a>");
+            result.append("</div>");
+            
+            result.append("</div>"); // close header
+            
+            // Code content
+            result.append("<pre><code id=\"").append(codeBlockId).append("\" class='code-content'>");
             result.append(escapeHtml(message));
+            result.append("</code></pre>");
+            result.append("</div>"); // close code-block
         }
 
         return result.toString();
     }
 
-    /**
-     * Handle hyperlink actions
-     */
     private void handleHyperlinkAction(String url) {
         eventLogger.log("Hyperlink clicked: " + url);
 
@@ -266,9 +265,6 @@ public class ChatPane extends JEditorPane {
         }
     }
 
-    /**
-     * Copy formatted code to clipboard
-     */
     private void copyFormattedCodeToClipboard(String codeBlockId) {
         try {
             // Get HTML content
@@ -293,14 +289,14 @@ public class ChatPane extends JEditorPane {
                 // Decode HTML and Unicode characters
                 String codeText = unescapeHtml(rawHtml);
 
-                // Copy to clipboard - as formatted text
+                // Copy to clipboard
                 StringSelection selection = new StringSelection(codeText);
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
 
                 // Show copy feedback
                 showCopyFeedback(codeBlockId);
 
-                eventLogger.log("Code copied as formatted");
+                eventLogger.log("Code copied to clipboard");
             } else {
                 eventLogger.log("Code content not found");
             }
@@ -310,9 +306,6 @@ public class ChatPane extends JEditorPane {
         }
     }
 
-    /**
-     * Show copy operation feedback
-     */
     private void showCopyFeedback(String id) {
         try {
             // Update button (for feedback)
@@ -326,7 +319,7 @@ public class ChatPane extends JEditorPane {
                 int buttonContentEnd = htmlContent.indexOf("</span>", buttonTagEnd);
 
                 if (buttonTagStart != -1 && buttonTagEnd != -1 && buttonContentEnd != -1) {
-                    // Update button HTML - will be ✓ and Copied
+                    // Update button HTML
                     String buttonPrefix = htmlContent.substring(buttonTagStart, buttonTagEnd);
                     String updatedButton = buttonPrefix.replace("copy-button", "copy-button copy-feedback") + "✓ Copied";
 
@@ -366,7 +359,7 @@ public class ChatPane extends JEditorPane {
 
             // Show copy notification to user
             JWindow popup = new JWindow();
-            JLabel label = new JLabel("   Formatted code copied!   ");
+            JLabel label = new JLabel("   Code copied to clipboard   ");
             label.setForeground(Color.WHITE);
             label.setFont(new Font("Dialog", Font.BOLD, 12));
             label.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
@@ -375,7 +368,7 @@ public class ChatPane extends JEditorPane {
             popup.getContentPane().setBackground(new Color(67, 181, 129)); // Green
             popup.pack();
 
-            // Popup position - relative to current window
+            // Popup position
             Point p = this.getLocationOnScreen();
             int x = p.x + this.getWidth() - popup.getWidth() - 20;
             int y = p.y + 20;
@@ -392,9 +385,6 @@ public class ChatPane extends JEditorPane {
         }
     }
 
-    /**
-     * Escape special characters for HTML text
-     */
     private String escapeHtml(String text) {
         if (text == null) {
             return "";
@@ -407,9 +397,6 @@ public class ChatPane extends JEditorPane {
                 .replace("  ", "&nbsp;&nbsp;");
     }
 
-    /**
-     * Convert HTML escape characters back
-     */
     private String unescapeHtml(String text) {
         if (text == null) {
             return "";
@@ -424,62 +411,13 @@ public class ChatPane extends JEditorPane {
                 .replace("&nbsp;", " ")
                 .replace("&#160;", " ");
 
-        // Turkish characters
-        text = text.replace("&#287;", "ğ")
-                .replace("&#305;", "ı")
-                .replace("&#351;", "ş")
-                .replace("&#246;", "ö")
-                .replace("&#252;", "ü")
-                .replace("&#231;", "ç")
-                .replace("&#304;", "İ")
-                .replace("&#350;", "Ş")
-                .replace("&#286;", "Ğ")
-                .replace("&#220;", "Ü")
-                .replace("&#214;", "Ö")
-                .replace("&#199;", "Ç");
-
         // HTML line breaks
         text = text.replace("<br>", "\n")
                 .replace("<br/>", "\n");
 
-        // Unicode emoji cleaning (like &#55357;&#56523;)
-        text = text.replaceAll("&#\\d+;", "");
-
         return text;
     }
 
-    /**
-     * Add test content for event testing
-     */
-    public void performEventTest() {
-        eventLogger.log("Starting event test...");
-
-        StringBuilder testHtml = new StringBuilder();
-        testHtml.append("<html><body style='font-family:Dialog; color:#ffffff; background-color:#36393f;'>");
-        testHtml.append("<div style='margin: 20px;'>");
-        testHtml.append("<h3 style='color:#7289da;'>Test Content</h3>");
-        testHtml.append("<p>Test messages created.</p>");
-
-        // Test IDs
-        String testMessageId = "test_id_" + System.currentTimeMillis();
-
-        // Test message - WhatsApp style
-        testHtml.append("<div style='position: relative; margin: 20px 100px 20px 10px;'>");
-        testHtml.append("<div style='background-color: #005c4b; padding: 10px; border-radius: 10px; position: relative;'>");
-        testHtml.append("<div id=\"").append(testMessageId).append("\">This is a test message.</div>");
-        testHtml.append("</div>");
-        testHtml.append("</div>");
-
-        testHtml.append("</div>");
-        testHtml.append("</body></html>");
-
-        setText(testHtml.toString());
-        eventLogger.log("Test content loaded");
-    }
-
-    /**
-     * Add AI message with specific ID (for streaming)
-     */
     public void addAIMessageWithId(String sender, String message, String messageId) {
         eventLogger.log("Adding message with ID: Sender=" + sender + ", ID=" + messageId);
 
@@ -494,43 +432,24 @@ public class ChatPane extends JEditorPane {
             bodyEndIndex = currentContent.lastIndexOf("</body>");
         }
 
-        // Create message HTML - using table for more reliable alignment
+        // Create message HTML
         StringBuilder messageHtml = new StringBuilder();
 
-        // AI message - on right, with table structure
+        // AI message container and bubble
         messageHtml.append("<div class='message-container ai-message'>");
         messageHtml.append("<div class='message-bubble ai-bubble'>");
 
         // Sender information
-        messageHtml.append("<table width='100%' cellspacing='0' cellpadding='0' border='0'>");
-        messageHtml.append("<tr>");
+        messageHtml.append("<div class='sender ai-sender'>").append(sender).append("</div>");
 
-        // Sender (left cell)
-        messageHtml.append("<td align='left'>");
-        messageHtml.append("<span class='sender ai-sender'>").append(sender).append("</span>");
-        messageHtml.append("</td>");
-
-        messageHtml.append("</tr>");
-        messageHtml.append("</table>");
-
-        // Message content - single row in table, full width
-        messageHtml.append("<table width='100%' cellspacing='0' cellpadding='0' border='0'>");
-        messageHtml.append("<tr>");
-        messageHtml.append("<td align='left' style='word-wrap: break-word;'>");
-
-        // Put each paragraph in separate <p>
+        // Message content with ID for future updates
         messageHtml.append("<div id=\"").append(messageId).append("\" class='message-content ai-content'>");
-
-        // Format message content as paragraphs
-        String processedMessage = processMessageContent(message);
+        
+        // Format message content - will be empty initially for streaming messages
+        String processedMessage = escapeHtml(message);
         messageHtml.append(processedMessage);
 
         messageHtml.append("</div>");
-        messageHtml.append("</td>");
-        messageHtml.append("</tr>");
-        messageHtml.append("</table>");
-
-        // Closing divs
         messageHtml.append("</div></div>");
 
         // Add message to HTML
@@ -549,188 +468,84 @@ public class ChatPane extends JEditorPane {
         eventLogger.log("Message added with ID: " + messageId);
     }
 
-    // Method to format message content as paragraphs
-    private String processMessageContent(String message) {
-        if (message == null || message.isEmpty()) {
-            return "";
-        }
-
-        // Process as code block if contains code
-        if (message.contains("```") || message.contains("public class")
-                || message.contains("function") || message.contains("def ")
-                || message.contains("import ")) {
-            return processCodeBlocks(message, "msg_" + System.currentTimeMillis());
-        }
-
-        // Normal text processing - make each line a paragraph
-        String[] lines = message.split("\n");
-        StringBuilder formattedMessage = new StringBuilder();
-
-        for (String line : lines) {
-            String trimmedLine = line.trim();
-            if (trimmedLine.isEmpty()) {
-                // Empty paragraph for blank line
-                formattedMessage.append("<p>&nbsp;</p>");
-            } else {
-                // Put each line in a paragraph
-                formattedMessage.append("<p align='left'>").append(escapeHtml(line)).append("</p>");
-            }
-        }
-
-        return formattedMessage.toString();
-    }
-
-    /**
-     * Update the last message sent by AI (for streaming)
-     */
-    public void updateLastAIMessage(String sender, String newContent) {
-        try {
-            // Get HTML content
-            String htmlContent = getText();
-            Document doc = getDocument();
-
-            // Examine HTML document
-            if (doc instanceof HTMLDocument) {
-                HTMLDocument htmlDoc = (HTMLDocument) doc;
-
-                // Find AI message divs (blue bubbles on the right)
-                Element[] divs = findElementsByStyleClass(htmlDoc, HTML.Tag.DIV, "ai-bubble");
-
-                if (divs != null && divs.length > 0) {
-                    // Last AI div (last message)
-                    Element lastAIMessageDiv = divs[divs.length - 1];
-
-                    // Find content div (message-content class)
-                    Element[] contentDivs = findElementsByStyleClass(htmlDoc,
-                            HTML.Tag.DIV, "message-content", lastAIMessageDiv);
-
-                    if (contentDivs != null && contentDivs.length > 0) {
-                        Element contentDiv = contentDivs[0];
-
-                        // Update content
-                        htmlDoc.setInnerHTML(contentDiv, formatMessageContent(newContent));
-
-                        // Scroll to bottom
-                        setCaretPosition(getDocument().getLength());
-                        scrollRectToVisible(new Rectangle(0, getHeight() - 1, 1, 1));
-                        return;
-                    }
-                }
-
-                // If elements not found, add a new message
-                addAIMessage(sender, newContent);
-            }
-        } catch (Exception e) {
-            eventLogger.log("Error updating last message: " + e.getMessage());
-
-            // Add new message in case of error
-            addAIMessage(sender, newContent);
-        }
-    }
-
-    /**
-     * Find elements with specific tag and class in HTML document
-     */
-    private Element[] findElementsByStyleClass(HTMLDocument doc, HTML.Tag tag,
-            String styleClass) {
-        return findElementsByStyleClass(doc, tag, styleClass, doc.getDefaultRootElement());
-    }
-
-    /**
-     * Find elements with specific tag and class within a parent element
-     */
-    private Element[] findElementsByStyleClass(HTMLDocument doc, HTML.Tag tag,
-            String styleClass, Element parent) {
-        List<Element> matchingElements = new java.util.ArrayList<>();
-
-        int count = parent.getElementCount();
-        for (int i = 0; i < count; i++) {
-            Element element = parent.getElement(i);
-
-            // Check element attributes
-            AttributeSet attrs = element.getAttributes();
-            if (attrs.getAttribute(HTML.Attribute.CLASS) != null
-                    && attrs.getAttribute(HTML.Attribute.CLASS).toString().contains(styleClass)
-                    && attrs.getAttribute(javax.swing.text.StyleConstants.NameAttribute) == tag) {
-                matchingElements.add(element);
-            }
-
-            // Check child elements
-            if (element.getElementCount() > 0) {
-                Element[] childMatches = findElementsByStyleClass(doc, tag, styleClass, element);
-                if (childMatches != null && childMatches.length > 0) {
-                    matchingElements.addAll(java.util.Arrays.asList(childMatches));
-                }
-            }
-        }
-
-        return matchingElements.toArray(new Element[0]);
-    }
-
-    /**
-     * Return message content formatted as HTML
-     */
-    private String formatMessageContent(String content) {
-        // Check for code blocks
-        if (content.contains("```") || content.contains("public class")
-                || content.contains("function") || content.contains("def ")
-                || content.contains("import ")) {
-            return processCodeBlocks(content, "msg_" + System.currentTimeMillis());
-        } else {
-            return escapeHtml(content);
-        }
-    }
-
-    /**
-     * Update AI message with specific ID
-     */
     public void updateAIMessage(String messageId, String newContent) {
         try {
-            // Get HTML content
+            // Get document
             Document doc = getDocument();
 
             if (doc instanceof HTMLDocument) {
                 HTMLDocument htmlDoc = (HTMLDocument) doc;
 
-                // Find HTML element by ID
-                Element element = htmlDoc.getElement(messageId);
+                // Find existing element by ID
+                Element element = findElementById(htmlDoc, messageId);
 
                 if (element != null) {
-                    // Create formatted content
-                    String formattedContent = processMessageContent(newContent);
-
+                    // Process and update content
                     try {
-                        // Update element content - safer approach
+                        // Check if content contains code
+                        boolean containsCode = newContent.contains("```") || 
+                                               newContent.contains("public class") || 
+                                               newContent.contains("function") || 
+                                               newContent.contains("def ") || 
+                                               newContent.contains("import ");
+                        
+                        String formattedContent;
+                        if (containsCode) {
+                            formattedContent = processCodeBlocks(newContent, messageId);
+                        } else {
+                            formattedContent = escapeHtml(newContent);
+                        }
+                        
+                        // Update element content
                         SwingUtilities.invokeLater(() -> {
                             try {
-                                htmlDoc.setInnerHTML(element, formattedContent);
-
+                                ((HTMLDocument)doc).setInnerHTML(element, formattedContent);
+                                
                                 // Scroll to bottom
-                                setCaretPosition(getDocument().getLength());
+                                setCaretPosition(doc.getLength());
                                 scrollRectToVisible(new Rectangle(0, getHeight() - 1, 1, 1));
                             } catch (Exception ex) {
-                                eventLogger.log("Internal error updating HTML: " + ex.getMessage());
-                                // Alternative approach - add completely new message
-                                addAIMessage("Gemma 3", newContent);
+                                eventLogger.log("Error updating HTML: " + ex.getMessage());
                             }
                         });
                     } catch (Exception e) {
-                        // Try adding a completely new message in case of error
                         eventLogger.log("setInnerHTML error: " + e.getMessage());
-                        addAIMessage("Gemma 3", newContent);
                     }
                 } else {
                     // Element not found, log and add new message
-                    eventLogger.log("Message not found, ID: " + messageId);
-                    addAIMessage("Gemma 3", newContent);
+                    eventLogger.log("Message element not found, ID: " + messageId);
+                    addAIMessage("AI", newContent);
                 }
             }
         } catch (Exception e) {
             eventLogger.log("Error updating message: " + e.getMessage());
-            e.printStackTrace();
-
-            // Add completely new message in case of error
-            addAIMessage("Gemma 3", newContent);
+            // Add new message in case of error
+            addAIMessage("AI", newContent);
         }
+    }
+    
+    private Element findElementById(HTMLDocument doc, String id) {
+        // Recursive function to find element with matching ID
+        return findElementByIdRecursive(doc.getDefaultRootElement(), id);
+    }
+    
+    private Element findElementByIdRecursive(Element element, String id) {
+        // Check if this element has the ID we're looking for
+        AttributeSet attrs = element.getAttributes();
+        if (attrs.getAttribute(HTML.Attribute.ID) != null && 
+            attrs.getAttribute(HTML.Attribute.ID).toString().equals(id)) {
+            return element;
+        }
+        
+        // Check child elements
+        for (int i = 0; i < element.getElementCount(); i++) {
+            Element child = element.getElement(i);
+            Element found = findElementByIdRecursive(child, id);
+            if (found != null) {
+                return found;
+            }
+        }
+        
+        return null;
     }
 }

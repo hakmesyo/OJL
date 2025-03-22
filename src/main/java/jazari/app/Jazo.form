@@ -75,6 +75,8 @@
                   <Component id="btn_ide" min="-2" pref="117" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btn_llm" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                  <Component id="btn_llm_tool" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btn_screen_capture" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
@@ -89,6 +91,7 @@
                       <Component id="btn_screen_capture" alignment="3" pref="31" max="32767" attributes="0"/>
                       <Component id="btn_ide" alignment="3" pref="31" max="32767" attributes="0"/>
                       <Component id="btn_llm" alignment="3" pref="31" max="32767" attributes="0"/>
+                      <Component id="btn_llm_tool" alignment="3" pref="31" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -121,6 +124,15 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_llmActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="btn_llm_tool">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="LLM Tools"/>
+            <Property name="toolTipText" type="java.lang.String" value="Open Screen Capture Frame (from videos + stationary)"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_llm_toolActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

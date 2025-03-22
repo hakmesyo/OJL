@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -30,7 +31,7 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
     static {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
-            // FlatDarkLaf tema ayarları
+            // FlatDarkLaf theme settings
             UIManager.put("Button.arc", 10);
             UIManager.put("Component.arc", 10);
             UIManager.put("ProgressBar.arc", 10);
@@ -43,12 +44,12 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         }
     }
 
-    private static final String OLLAMA_URL = "http://localhost:11434/api/generate"; // Ollama serve adresi
-    private static final String MODEL_NAME = "gemma3"; // Kullanılacak modelin adı
+    private static final String OLLAMA_URL = "http://localhost:11434/api/generate"; // Ollama server address
+    private static final String MODEL_NAME = "gemma3"; // Name of the model to use
 
     private ChatPane chatPane;
-    private JTextArea inputTextArea; // JTextField yerine JTextArea
-    private JScrollPane inputScrollPane; // JTextArea için ScrollPane
+    private JTextArea inputTextArea; // JTextArea instead of JTextField
+    private JScrollPane inputScrollPane; // ScrollPane for JTextArea
     private JButton sendButton;
     private JScrollPane scrollPane;
     private JPanel statusPanel;
@@ -60,6 +61,7 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
     private JButton cancelButton;
     private HttpClient httpClient;
     private CompletableFuture<HttpResponse<Stream<String>>> currentRequestFuture;
+    private boolean isResponseCancelled = false;
 
     public OllamaGemma3SwingChat() {
         setTitle("Gemma 3 AI Chat");
@@ -70,13 +72,13 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         setLayout(new BorderLayout(10, 10));
         getRootPane().setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Olay izleyiciyi başlat
+        // Start event logger
         eventLogger = new EventLogger();
 
-        // HttpClient oluştur
+        // Create HttpClient
         httpClient = HttpClient.newHttpClient();
 
-        // Menü ekle
+        // Add menu
         setupMenu();
 
         // Header Panel
@@ -94,125 +96,192 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         JPanel bottomPanel = new JPanel(new BorderLayout());
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // Input Panel oluştur
+        // Create Input Panel
         JPanel inputPanel = createInputPanel();
         bottomPanel.add(inputPanel, BorderLayout.CENTER);
 
-        // Önce Status Panel oluştur
+        // First create Status Panel
         statusPanel = createStatusPanel();
 
-        // Sonra Cancel Button'u ayarla (statusPanel artık null değil)
+        // Then set up Cancel Button (statusPanel is no longer null)
         setupCancelButton();
 
-        // Status panel'i ekle
+        // Add status panel
         bottomPanel.add(statusPanel, BorderLayout.SOUTH);
 
-        // İlk odağı input field'a ver
+        // Set initial focus to input field
         SwingUtilities.invokeLater(() -> inputTextArea.requestFocusInWindow());
 
-        // Animasyon başlatma
+        // Initialize animation
         initStatusAnimation();
 
-        // Frame'i ekranın ortasına yerleştir
+        // Center the frame on screen
         setLocationRelativeTo(null);
         setVisible(true);
 
-        // Hoş geldiniz mesajını göster
+        // Show welcome message
         chatPane.showWelcomeMessage();
     }
 
-    private void setupCancelButton() {
-        // Kırmızı renkli iptal butonu oluştur
-        cancelButton = new JButton("Cancel");
-        cancelButton.setBackground(new Color(220, 53, 69)); // Bootstrap kırmızısı
-        cancelButton.setForeground(Color.WHITE);
-        cancelButton.setFont(new Font("Dialog", Font.BOLD, 12));
-        cancelButton.setFocusPainted(false);
-        cancelButton.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        cancelButton.setVisible(false); // Başlangıçta gizli
-
-        // İptal butonuna tıklandığında çalışacak işlev
-        cancelButton.addActionListener(e -> {
-            cancelCurrentRequest();
-        });
-
-        // Status panel yapısını güncelle ve butonu ekle
-        statusPanel.setLayout(new BorderLayout(10, 0));
-
-        // Sol tarafta durum göstergesi
-        JPanel leftStatusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        leftStatusPanel.setOpaque(false);
-
-        // Küçük yeşil nokta (çevrimiçi göstergesi)
-        JPanel onlineDot = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2d.setColor(new Color(67, 181, 129)); // Yeşil
-                g2d.fillOval(0, 0, 8, 8);
-            }
-
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(8, 8);
-            }
-        };
-
-        statusLabel = new JLabel("Çevrimiçi");
-        statusLabel.setFont(new Font("Dialog", Font.PLAIN, 12));
-        statusLabel.setForeground(new Color(180, 180, 180));
-
-        leftStatusPanel.add(onlineDot);
-        leftStatusPanel.add(statusLabel);
-
-        // Sağ tarafta iptal butonu (gizli)
-        JPanel rightStatusPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        rightStatusPanel.setOpaque(false);
-        rightStatusPanel.add(cancelButton);
-
-        // Status panele ekle
-        statusPanel.add(leftStatusPanel, BorderLayout.WEST);
-        statusPanel.add(rightStatusPanel, BorderLayout.EAST);
-    }
-
-    // Constructor içinde veya init metodunda başlatma
+    // Initialize status animation
     private void initStatusAnimation() {
-        // Durum etiketi animasyonu için timer oluştur (300ms aralıkla)
-        statusAnimationTimer = new Timer(300, new ActionListener() {
+        // Create timer for status label animation (300ms interval)
+        statusAnimationTimer = new Timer(100, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 updateStatusAnimation();
             }
         });
         statusAnimationTimer.setRepeats(true);
+        statusLabel.putClientProperty("html.disable", Boolean.FALSE); // Enable HTML content
     }
 
-// Durum etiketi animasyonunu güncelle
-    private void updateStatusAnimation() {
-        // Nokta sayısını artır ve MAX_DOTS'a ulaşınca sıfırla
-        animationDots = (animationDots + 1) % (MAX_DOTS + 1);
+// OnlineDot sınıfını genişletelim (OllamaGemma3SwingChat içinde iç sınıf olarak)
+    private class AnimatedDot extends JPanel {
 
-        // Nokta sayısına göre durum metnini güncelle
-        StringBuilder dotsText = new StringBuilder();
-        for (int i = 0; i < animationDots; i++) {
-            dotsText.append(".");
+        private float scale = 1.0f;
+        private boolean growing = true;
+        private final float MIN_SCALE = 0.7f;
+        private final float MAX_SCALE = 1.7f;
+        private final float SCALE_STEP = 0.25f;
+        private final Color dotColor;
+
+        public AnimatedDot(Color color) {
+            this.dotColor = color;
+            setOpaque(false);
         }
 
-        // "Yanıtlıyor..." şeklinde durum etiketini güncelle
-        statusLabel.setText("Yanıtlıyor" + dotsText.toString());
+        public void updateAnimation() {
+            // Update scale
+            if (growing) {
+                scale += SCALE_STEP;
+                if (scale >= MAX_SCALE) {
+                    growing = false;
+                }
+            } else {
+                scale -= SCALE_STEP;
+                if (scale <= MIN_SCALE) {
+                    growing = true;
+                }
+            }
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int size = 8;
+            int centerX = getWidth() / 2;
+            int centerY = getHeight() / 2;
+
+            // Calculate scaled size
+            int scaledSize = (int) (size * scale);
+
+            // Draw the dot centered
+            g2d.setColor(dotColor);
+            g2d.fillOval(centerX - scaledSize / 2, centerY - scaledSize / 2, scaledSize, scaledSize);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(12, 12); // Slightly larger to accommodate animation
+        }
+    }
+
+// Create an instance of AnimatedDot
+    private AnimatedDot onlineDot;
+
+// Create a small red square button for cancellation
+    private void setupCancelButton() {
+        // Create a small red square panel instead of a button
+        cancelButton = new JButton();
+        cancelButton.setPreferredSize(new Dimension(16, 16));
+        cancelButton.setBackground(new Color(220, 53, 69)); // Bootstrap red
+        cancelButton.setBorder(BorderFactory.createEmptyBorder());
+        cancelButton.setFocusPainted(false);
+        cancelButton.setVisible(false); // Initially hidden
+
+        // Add tooltip to indicate its purpose
+        cancelButton.setToolTipText("Cancel response");
+
+        // Function when cancel button is clicked
+        cancelButton.addActionListener(e -> {
+            cancelCurrentRequest();
+        });
+
+        // Update status panel structure
+        statusPanel.setLayout(new BorderLayout(10, 0));
+
+        // Status indicator on the left
+        JPanel leftStatusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        leftStatusPanel.setOpaque(false);
+
+        // Create animated green dot
+        onlineDot = new AnimatedDot(new Color(67, 181, 129)); // Green
+
+        statusLabel = new JLabel("Online");
+        statusLabel.setFont(new Font("Dialog", Font.PLAIN, 12));
+        statusLabel.setForeground(new Color(180, 180, 180));
+
+        leftStatusPanel.add(onlineDot);
+        leftStatusPanel.add(statusLabel);
+
+        // Cancel button moved further right after Responding text
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
+        centerPanel.setOpaque(false);
+        centerPanel.add(cancelButton);
+
+        // Add to status panel
+        statusPanel.add(leftStatusPanel, BorderLayout.WEST);
+        statusPanel.add(centerPanel, BorderLayout.CENTER);
+    }
+// Update the status label animation
+
+// Update the status label animation
+    private void updateStatusAnimation() {
+        // Base text "Responding"
+        String baseText = "Responding";
+
+        // Animation character index - increases cyclically
+        animationDots = (animationDots + 1) % baseText.length();
+
+        // Create combined string with HTML - no background, larger font size difference
+        StringBuilder animatedText = new StringBuilder("<html>");
+
+        // For each character
+        for (int i = 0; i < baseText.length(); i++) {
+            if (i == animationDots) {
+                // Highlighted character - with MUCH larger font (18pt instead of 14pt)
+                animatedText.append("<span style='font-size: 18pt;'>")
+                        .append(baseText.charAt(i))
+                        .append("</span>");
+            } else {
+                // Normal character - just append without any styling (no background)
+                animatedText.append(baseText.charAt(i));
+            }
+        }
+
+        animatedText.append("</html>");
+
+        // Update the status label with the animated "Responding" text
+        statusLabel.setText(animatedText.toString());
+
+        // Update the animated dot
+        onlineDot.updateAnimation();
     }
 
     private void setupMenu() {
         JMenuBar menuBar = new JMenuBar();
-        JMenu devMenu = new JMenu("Geliştirici");
+        JMenu devMenu = new JMenu("Developer");
 
-        JMenuItem logMenuItem = new JMenuItem("Olay İzleyici");
+        JMenuItem logMenuItem = new JMenuItem("Event Logger");
         logMenuItem.addActionListener(e -> eventLogger.toggleVisibility());
         devMenu.add(logMenuItem);
 
-        JMenuItem testMenuItem = new JMenuItem("Olay Testi");
+        JMenuItem testMenuItem = new JMenuItem("Event Test");
         testMenuItem.addActionListener(e -> testEventHandling());
         devMenu.add(testMenuItem);
 
@@ -225,11 +294,11 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         headerPanel.setBackground(new Color(36, 36, 40));
         headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Logo ve başlık
+        // Logo and title
         JPanel titleContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titleContainer.setOpaque(false);
 
-        // Basit simüle edilmiş "logo"
+        // Simple simulated "logo"
         JPanel logoPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -261,7 +330,7 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         return headerPanel;
     }
 
-    // Yeni metod: Input Panel oluşturma
+    // New method: Create Input Panel
     private JPanel createInputPanel() {
         JPanel inputPanel = new JPanel(new BorderLayout(8, 0));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
@@ -275,8 +344,8 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         inputScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         inputScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        // Scroll panelin maksimum yüksekliğini sınırla
-        int maxHeight = 120; // maksimum 120 piksel (yaklaşık 6-7 satır)
+        // Limit the maximum height of the scroll pane
+        int maxHeight = 120; // maximum 120 pixels (approximately 6-7 lines)
         inputScrollPane.setPreferredSize(new Dimension(inputScrollPane.getPreferredSize().width,
                 Math.min(inputTextArea.getPreferredSize().height, maxHeight)));
 
@@ -289,25 +358,25 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         return inputPanel;
     }
 
-    // Değişiklik: createInputField yerine createInputTextArea
+    // Change: createInputField to createInputTextArea
     private JTextArea createInputTextArea() {
-        JTextArea textArea = new JTextArea(3, 20); // 3 satır, 20 sütun başlangıç boyutu
+        JTextArea textArea = new JTextArea(3, 20); // 3 rows, 20 columns initial size
         textArea.setFont(new Font("Dialog", Font.PLAIN, 14));
-        textArea.setLineWrap(true); // Satır sonu sarma aktif
-        textArea.setWrapStyleWord(true); // Kelime bazlı sarma
+        textArea.setLineWrap(true); // Line wrapping active
+        textArea.setWrapStyleWord(true); // Word-based wrapping
         textArea.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(60, 60, 64), 1, true),
                 BorderFactory.createEmptyBorder(10, 15, 10, 15)));
         textArea.setBackground(new Color(49, 51, 56));
         textArea.setForeground(Color.WHITE);
         textArea.setCaretColor(Color.WHITE);
-        textArea.setText("Mesajınızı buraya yazın...");
+        textArea.setText("Type your message here...");
 
-        // Placeholder metni için focus dinleyicisi
+        // Focus listener for placeholder text
         textArea.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
-                if (textArea.getText().equals("Mesajınızı buraya yazın...")) {
+                if (textArea.getText().equals("Type your message here...")) {
                     textArea.setText("");
                 }
             }
@@ -315,32 +384,32 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
             @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (textArea.getText().trim().isEmpty()) {
-                    textArea.setText("Mesajınızı buraya yazın...");
+                    textArea.setText("Type your message here...");
                 }
             }
         });
 
-        // Enter ve Shift+Enter tuş dinleyicileri
+        // Enter and Shift+Enter key listeners
         textArea.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                // Enter tuşu basıldığında
+                // When Enter key is pressed
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    // Shift tuşu basılı değilse mesajı gönder ve Enter'ı engelle
+                    // If Shift key is not pressed, send message and prevent Enter
                     if (!e.isShiftDown()) {
-                        e.consume(); // Enter karakterinin eklenmesini engelle
+                        e.consume(); // Prevent Enter character from being added
                         sendMessage();
                     }
-                    // Shift+Enter durumunda hiçbir şey yapmıyoruz, varsayılan davranış çalışacak
+                    // In case of Shift+Enter, do nothing, default behavior will work
                 }
             }
         });
 
-        // InputMap ve ActionMap kullanarak daha güvenilir bir yaklaşım
+        // More reliable approach using InputMap and ActionMap
         InputMap inputMap = textArea.getInputMap();
         ActionMap actionMap = textArea.getActionMap();
 
-        // Enter tuşunu özel bir action ile değiştir
+        // Replace Enter key with a custom action
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
         inputMap.put(enterKey, "sendMessage");
         actionMap.put("sendMessage", new AbstractAction() {
@@ -350,9 +419,9 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
             }
         });
 
-        // Shift+Enter için DEFAULT_ACTION kullanarak varsayılan davranışı koruyoruz
+        // For Shift+Enter, use DEFAULT_ACTION to maintain default behavior
         KeyStroke shiftEnterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK);
-        inputMap.put(shiftEnterKey, "insert-break");  // "insert-break" varsayılan yeni satır action'ı
+        inputMap.put(shiftEnterKey, "insert-break");  // "insert-break" is the default new line action
 
         return textArea;
     }
@@ -377,14 +446,14 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         JPanel onlineStatusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         onlineStatusPanel.setOpaque(false);
 
-        // Küçük yeşil nokta (çevrimiçi göstergesi)
+        // Small green dot (online indicator)
         JPanel onlineDot = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2d.setColor(new Color(67, 181, 129)); // Yeşil
+                g2d.setColor(new Color(67, 181, 129)); // Green
                 g2d.fillOval(0, 0, 8, 8);
             }
 
@@ -394,7 +463,7 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
             }
         };
 
-        statusLabel = new JLabel("Çevrimiçi");
+        statusLabel = new JLabel("Online");
         statusLabel.setFont(new Font("Dialog", Font.PLAIN, 12));
         statusLabel.setForeground(new Color(180, 180, 180));
 
@@ -407,11 +476,11 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
     }
 
     private void testEventHandling() {
-        eventLogger.log("Olay testi başlatılıyor...");
+        eventLogger.log("Starting event test...");
         chatPane.performEventTest();
     }
 
-    // Gönder ikonu oluşturma - Paper plane icon
+    // Create send icon - Paper plane icon
     private ImageIcon createSendIcon() {
         int size = 24;
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
@@ -419,7 +488,7 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
 
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Uçak gövdesi
+        // Plane body
         int[] xPoints = {2, size - 2, 2, 10};
         int[] yPoints = {2, size / 2, size - 2, size / 2};
 
@@ -437,25 +506,31 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         }
     }
 
-// sendMessage metodunu da güncelleyelim
+// Update your sendMessage method to include these lines at the beginning
     private void sendMessage() {
         final String message = inputTextArea.getText().trim();
-        // Placeholder mesajı göndermeyi engelle
-        if (message.equals("Mesajınızı buraya yazın...")) {
+        // Placeholder message check
+        if (message.equals("Type your message here...")) {
             inputTextArea.setText("");
             inputTextArea.requestFocusInWindow();
             return;
         }
 
         if (!message.isEmpty()) {
-            chatPane.addUserMessage("Sen", message);
+            // NEW: Check if previous response was cancelled
+            if (isResponseCancelled) {
+                clearOllamaState();
+                isResponseCancelled = false;
+            }
+
+            chatPane.addUserMessage("You", message);
             inputTextArea.setText("");
             inputTextArea.requestFocusInWindow();
 
-            // Arayüzü kilitle ve durum mesajını güncelle
+            // Lock interface and update status message
             setUIEnabled(false);
 
-            // Streaming kullanarak yanıt al
+            // Get response using streaming
             generateTextStreaming(message);
         }
     }
@@ -465,122 +540,248 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
         sendButton.setEnabled(enabled);
 
         if (enabled) {
-            // UI etkinleştirildiğinde
-            statusLabel.setText("Çevrimiçi");
-            cancelButton.setVisible(false); // İptal butonunu gizle
+            // When UI is enabled
+            statusLabel.setText("Online");
+            cancelButton.setVisible(false); // Hide cancel button
             inputTextArea.requestFocusInWindow();
+            // Stop animation timer
+            statusAnimationTimer.stop();
         } else {
-            // UI devre dışı bırakıldığında
-            statusLabel.setText("Yanıtlıyor");
-            cancelButton.setVisible(true); // İptal butonunu göster
+            // When UI is disabled (waiting for response)
+            statusLabel.setText("Responding");
+            cancelButton.setVisible(true); // Show cancel button
+            // Start animation timer
+            statusAnimationTimer.start();
         }
     }
 
-// Mevcut isteği iptal etme metodu
     private void cancelCurrentRequest() {
-        if (currentRequestFuture != null && !currentRequestFuture.isDone()) {
-            // Asenkron isteği iptal et
-            currentRequestFuture.cancel(true);
+        if (currentRequestFuture != null) {
+            try {
+                // Log the cancellation attempt
+                eventLogger.log("Forcefully terminating streaming response...");
 
-            eventLogger.log("Kullanıcı yanıt üretimini iptal etti");
+                // Cancel the CompletableFuture
+                currentRequestFuture.cancel(true);
 
-            // UI'ı normal durumuna getir
-            SwingUtilities.invokeLater(() -> {
-                // Mesajı güncelle
-                chatPane.addAIMessage("Gemma 3", "Yanıt üretimi kullanıcı tarafından iptal edildi.");
+                // Set flag immediately to stop processing incoming data
+                isResponseCancelled = true;
 
-                // UI'ı etkinleştir
-                setUIEnabled(true);
-            });
+                // Add message about cancellation
+                SwingUtilities.invokeLater(() -> {
+                    chatPane.addAIMessage("Gemma 3", "Response generation was cancelled by the user.");
+
+                    // Re-enable the UI
+                    setUIEnabled(true);
+                });
+
+                // Start an async task to restart the Ollama process
+                CompletableFuture.runAsync(() -> {
+                    forceRestartOllamaProcess();
+                });
+
+                // Reset current request
+                currentRequestFuture = null;
+            } catch (Exception e) {
+                eventLogger.log("Error during cancellation: " + e.getMessage());
+                e.printStackTrace();
+                SwingUtilities.invokeLater(() -> setUIEnabled(true));
+            }
         }
     }
 
-// generateTextStreaming metodunu güncelle
+    private void forceRestartOllamaProcess() {
+        try {
+            eventLogger.log("Forcefully restarting Ollama process...");
+
+            // Determine operating system
+            String os = System.getProperty("os.name").toLowerCase();
+            Process process = null;
+
+            if (os.contains("win")) {
+                // Windows - hide command window
+                ProcessBuilder pb = new ProcessBuilder();
+
+                // First kill
+                pb.command("taskkill", "/F", "/IM", "ollama.exe");
+                process = pb.start();
+                process.waitFor();
+
+                // Then restart - hiding the window
+                pb = new ProcessBuilder();
+                pb.command("cmd", "/c", "start", "/B", "ollama", "serve");
+                // Redirect output to hide window
+                pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+                pb.redirectError(ProcessBuilder.Redirect.DISCARD);
+                process = pb.start();
+            } else if (os.contains("mac") || os.contains("nix") || os.contains("nux")) {
+                // macOS or Linux
+                // First kill
+                process = Runtime.getRuntime().exec("pkill -f ollama");
+                process.waitFor();
+                // Then restart
+                process = Runtime.getRuntime().exec("ollama serve &");
+            }
+
+            if (process != null) {
+                process.waitFor(2, TimeUnit.SECONDS); // Give it a moment to start
+            }
+
+            // Create a fresh HTTP client
+            httpClient = HttpClient.newHttpClient();
+
+            eventLogger.log("Ollama process restart attempted");
+
+            // Proactively warm up the model to reduce delay
+            warmUpOllamaModel();
+
+        } catch (Exception e) {
+            eventLogger.log("Error restarting Ollama process: " + e.getMessage());
+        }
+    }
+
+// New method to warm up the model after restart
+    private void warmUpOllamaModel() {
+        try {
+            eventLogger.log("Warming up Ollama model...");
+
+            // Prepare a simple request to initialize the model
+            Map<String, Object> warmupBody = new HashMap<>();
+            warmupBody.put("model", MODEL_NAME);
+            warmupBody.put("prompt", "Hello, this is a warmup message.");
+            warmupBody.put("stream", false);
+
+            ObjectMapper mapper = new ObjectMapper();
+            String warmupRequestBody = mapper.writeValueAsString(warmupBody);
+
+            HttpRequest warmupRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(OLLAMA_URL))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(warmupRequestBody, StandardCharsets.UTF_8))
+                    .build();
+
+            // Send the warmup request asynchronously
+            CompletableFuture<HttpResponse<String>> warmupFuture
+                    = httpClient.sendAsync(warmupRequest, HttpResponse.BodyHandlers.ofString());
+
+            // Log when it completes
+            warmupFuture.thenAccept(response -> {
+                if (response.statusCode() == 200) {
+                    eventLogger.log("Model warmup completed successfully");
+                } else {
+                    eventLogger.log("Model warmup failed: " + response.statusCode());
+                }
+            }).exceptionally(e -> {
+                eventLogger.log("Error during model warmup: " + e.getMessage());
+                return null;
+            });
+
+        } catch (Exception e) {
+            eventLogger.log("Error warming up model: " + e.getMessage());
+        }
+    }
+
     public void generateTextStreaming(String prompt) {
         try {
+            // Reset cancellation flag at the start of each request
+            isResponseCancelled = false;
+
             ObjectMapper mapper = new ObjectMapper();
 
-            // İstek gövdesini oluştur - stream'i true yapıyoruz
+            // Create request body - set stream to true
             Map<String, Object> requestBodyMap = new HashMap<>();
             requestBodyMap.put("prompt", prompt);
             requestBodyMap.put("model", MODEL_NAME);
-            requestBodyMap.put("stream", true); // Streaming yanıt için true
+            requestBodyMap.put("stream", true); // True for streaming response
 
             String requestBody = mapper.writeValueAsString(requestBodyMap);
 
-            // İstek oluştur
+            // Create request
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(OLLAMA_URL))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
                     .build();
 
-            // Yanıtı okumak için bir StringBuilder oluştur
+            // Create a StringBuilder to read response
             final StringBuilder responseContent = new StringBuilder();
 
-            // Yanıtı başlat - boş bir mesaj ile chat penceresinde göster
-            final String messageId = "msg_" + System.currentTimeMillis(); // Benzersiz ID
+            // Start response - show empty message in chat window
+            final String messageId = "msg_" + System.currentTimeMillis(); // Unique ID
 
             SwingUtilities.invokeLater(() -> {
                 chatPane.addAIMessageWithId("Gemma 3", "", messageId);
             });
 
-            // İsteği asenkron olarak gönder ve yanıtı işle - referansı sakla
+            // Send request asynchronously and process response - store reference
             currentRequestFuture = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines());
 
             currentRequestFuture.thenAccept(response -> {
                 if (response.statusCode() == 200) {
-                    // Yanıt satırlarını işle
+                    // Process response lines
                     try {
                         response.body().forEach(line -> {
+                            // Check if the response has been cancelled
+                            if (isResponseCancelled) {
+                                return; // Skip processing this line
+                            }
+
                             try {
-                                // Her satır bir JSON objesi, ancak boş satırlar olabilir
+                                // Each line is a JSON object, but there may be empty lines
                                 if (line.trim().isEmpty()) {
                                     return;
                                 }
 
                                 JsonNode node = mapper.readTree(line);
 
-                                // Yanıt içeriğini kontrol et
+                                // Check response content
                                 if (node.has("response")) {
                                     String responsePart = node.get("response").asText();
                                     responseContent.append(responsePart);
 
-                                    // UI thread'inde güncellemeleri yap
+                                    // Make updates in UI thread
                                     final String currentResponse = responseContent.toString();
 
-                                    SwingUtilities.invokeLater(() -> {
-                                        try {
-                                            chatPane.updateAIMessage(messageId, currentResponse);
-                                        } catch (Exception e) {
-                                            eventLogger.log("Streaming güncelleme hatası: " + e.getMessage());
-                                        }
-                                    });
+                                    // Check again for cancellation before updating UI
+                                    if (!isResponseCancelled) {
+                                        SwingUtilities.invokeLater(() -> {
+                                            try {
+                                                chatPane.updateAIMessage(messageId, currentResponse);
+                                            } catch (Exception e) {
+                                                eventLogger.log("Streaming update error: " + e.getMessage());
+                                            }
+                                        });
+                                    }
                                 }
 
-                                // Yanıt tamamlandı mı kontrolü
+                                // Check if response is complete
                                 if (node.has("done") && node.get("done").asBoolean()) {
-                                    SwingUtilities.invokeLater(() -> {
-                                        try {
-                                            // Son kez tam içeriği ayarla
-                                            chatPane.updateAIMessage(messageId, responseContent.toString());
-                                        } catch (Exception e) {
-                                            eventLogger.log("Son güncelleme hatası: " + e.getMessage());
-                                        } finally {
-                                            // Her durumda UI'ı etkinleştir
-                                            setUIEnabled(true);
-                                        }
-                                    });
+                                    // Only finalize if not cancelled
+                                    if (!isResponseCancelled) {
+                                        SwingUtilities.invokeLater(() -> {
+                                            try {
+                                                // Set full content one last time
+                                                chatPane.updateAIMessage(messageId, responseContent.toString());
+                                            } catch (Exception e) {
+                                                eventLogger.log("Final update error: " + e.getMessage());
+                                            } finally {
+                                                // Enable UI in any case
+                                                setUIEnabled(true);
+                                            }
+                                        });
+                                    }
                                 }
                             } catch (Exception e) {
-                                eventLogger.log("Streaming yanıt işlenirken hata: " + e.getMessage());
+                                if (!isResponseCancelled) {
+                                    eventLogger.log("Error processing streaming response: " + e.getMessage());
+                                }
                             }
                         });
                     } catch (Exception e) {
-                        // İptal edildiğinde buraya düşebilir
-                        if (!currentRequestFuture.isCancelled()) {
-                            // İptal nedeniyle değilse, bir hata mesajı göster
-                            final String errorMsg = "Yanıt işleme hatası: " + e.getMessage();
+                        // May end up here if canceled
+                        if (!currentRequestFuture.isCancelled() && !isResponseCancelled) {
+                            // If not due to cancellation, show an error message
+                            final String errorMsg = "Response processing error: " + e.getMessage();
                             SwingUtilities.invokeLater(() -> {
                                 chatPane.updateAIMessage(messageId, errorMsg);
                                 setUIEnabled(true);
@@ -588,19 +789,21 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
                         }
                     }
                 } else {
-                    // Hata durumunda
-                    final String errorMsg = "Ollama API hatası: " + response.statusCode();
-                    SwingUtilities.invokeLater(() -> {
-                        chatPane.updateAIMessage(messageId, errorMsg);
-                        setUIEnabled(true);
-                    });
+                    // In case of error
+                    if (!isResponseCancelled) {
+                        final String errorMsg = "Ollama API error: " + response.statusCode();
+                        SwingUtilities.invokeLater(() -> {
+                            chatPane.updateAIMessage(messageId, errorMsg);
+                            setUIEnabled(true);
+                        });
+                    }
                 }
             })
                     .exceptionally(e -> {
-                        // İptal edildiğinde buraya düşebilir
-                        if (!currentRequestFuture.isCancelled()) {
-                            // İptal nedeniyle değilse, bir hata mesajı göster
-                            final String errorMsg = "İstek hatası: " + e.getMessage();
+                        // May end up here if canceled
+                        if (!currentRequestFuture.isCancelled() && !isResponseCancelled) {
+                            // If not due to cancellation, show an error message
+                            final String errorMsg = "Request error: " + e.getMessage();
                             SwingUtilities.invokeLater(() -> {
                                 chatPane.updateAIMessage(messageId, errorMsg);
                                 setUIEnabled(true);
@@ -609,11 +812,44 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
                         return null;
                     });
         } catch (Exception e) {
-            final String errorMsg = "Hata: " + e.getMessage();
-            SwingUtilities.invokeLater(() -> {
-                chatPane.addAIMessage("Gemma 3", errorMsg);
-                setUIEnabled(true);
-            });
+            if (!isResponseCancelled) {
+                final String errorMsg = "Error: " + e.getMessage();
+                SwingUtilities.invokeLater(() -> {
+                    chatPane.addAIMessage("Gemma 3", errorMsg);
+                    setUIEnabled(true);
+                });
+            }
+        }
+    }
+
+    // Add this method to the class
+    private void clearOllamaState() {
+        try {
+            // Send a clear command as a normal prompt
+            Map<String, Object> clearBody = new HashMap<>();
+            clearBody.put("model", MODEL_NAME);
+            clearBody.put("prompt", "/clear");  // or "/bye" depending on which works better
+            clearBody.put("stream", false);
+
+            ObjectMapper mapper = new ObjectMapper();
+            String clearRequestBody = mapper.writeValueAsString(clearBody);
+
+            HttpRequest clearRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(OLLAMA_URL))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(clearRequestBody, StandardCharsets.UTF_8))
+                    .build();
+
+            // Send synchronously and ensure it completes
+            HttpResponse<String> response = httpClient.send(clearRequest, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                eventLogger.log("Model state cleared successfully");
+            } else {
+                eventLogger.log("Failed to clear model state: " + response.statusCode());
+            }
+        } catch (Exception e) {
+            eventLogger.log("Error clearing model state: " + e.getMessage());
         }
     }
 

@@ -1,0 +1,3431 @@
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\APIKeyDialog.java
+============================================================
+package jazari.llm_forge;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class APIKeyDialog extends JDialog {
+    
+    private JTextField apiKeyField;
+    private JPasswordField apiKeyPasswordField;
+    private JCheckBox showApiKeyCheckbox;
+    private JButton saveButton;
+    private JButton cancelButton;
+    private boolean confirmed = false;
+    private Map<String, String> result;
+    
+    public APIKeyDialog(JFrame parent, String providerName, List<String> requiredFields) {
+        super(parent, "API Key for " + providerName, true);
+        
+        result = new HashMap<>();
+        
+        initializeUI(providerName, requiredFields);
+        
+        // Center dialog relative to parent
+        setLocationRelativeTo(parent);
+    }
+    
+    private void initializeUI(String providerName, List<String> requiredFields) {
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
+        setResizable(false);
+        
+        // Main panel with padding
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        // Add information label
+        JLabel infoLabel = new JLabel("Please enter your " + providerName + " API key:");
+        infoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        mainPanel.add(infoLabel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        
+        // Create a panel for each required field
+        for (String field : requiredFields) {
+            JPanel fieldPanel = createFieldPanel(field);
+            fieldPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            mainPanel.add(fieldPanel);
+            mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        }
+        
+        // "Show API Key" checkbox
+        showApiKeyCheckbox = new JCheckBox("Show API Key");
+        showApiKeyCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        showApiKeyCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                togglePasswordVisibility();
+            }
+        });
+        mainPanel.add(showApiKeyCheckbox);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        
+        // Buttons panel
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        
+        saveButton = new JButton("Save");
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveAndClose();
+            }
+        });
+        
+        cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+        
+        buttonsPanel.add(cancelButton);
+        buttonsPanel.add(saveButton);
+        
+        // Add panels to dialog
+        add(mainPanel, BorderLayout.CENTER);
+        add(buttonsPanel, BorderLayout.SOUTH);
+        
+        // Set default button
+        getRootPane().setDefaultButton(saveButton);
+        
+        // Set size and make visible
+        pack();
+        setMinimumSize(new Dimension(400, 200));
+    }
+    
+    private JPanel createFieldPanel(String fieldName) {
+        JPanel panel = new JPanel(new BorderLayout(10, 0));
+        
+        JLabel label = new JLabel(fieldName + ":");
+        panel.add(label, BorderLayout.WEST);
+        
+        if (fieldName.toLowerCase().contains("key") || 
+            fieldName.toLowerCase().contains("password") || 
+            fieldName.toLowerCase().contains("secret")) {
+            
+            // Use password field for sensitive information
+            apiKeyPasswordField = new JPasswordField(30);
+            panel.add(apiKeyPasswordField, BorderLayout.CENTER);
+            
+            // Store reference to the main API key field
+            if (apiKeyField == null) {
+                apiKeyField = new JTextField(30);
+                apiKeyField.setVisible(false);
+            }
+        } else {
+            // Use regular text field for non-sensitive information
+            JTextField textField = new JTextField(30);
+            panel.add(textField, BorderLayout.CENTER);
+            
+            // Add to result map on change
+            textField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+                @Override
+                public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                    result.put(fieldName, textField.getText());
+                }
+                
+                @Override
+                public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                    result.put(fieldName, textField.getText());
+                }
+                
+                @Override
+                public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                    result.put(fieldName, textField.getText());
+                }
+            });
+        }
+        
+        return panel;
+    }
+    
+    private void togglePasswordVisibility() {
+        if (showApiKeyCheckbox.isSelected()) {
+            // Transfer content from password field to text field
+            apiKeyField.setText(new String(apiKeyPasswordField.getPassword()));
+            
+            // Swap visibility
+            apiKeyPasswordField.setVisible(false);
+            apiKeyField.setVisible(true);
+            
+            // Replace password field with text field in UI
+            Container parent = apiKeyPasswordField.getParent();
+            parent.remove(apiKeyPasswordField);
+            parent.add(apiKeyField, BorderLayout.CENTER);
+            parent.revalidate();
+            parent.repaint();
+        } else {
+            // Transfer content from text field to password field
+            apiKeyPasswordField.setText(apiKeyField.getText());
+            
+            // Swap visibility
+            apiKeyField.setVisible(false);
+            apiKeyPasswordField.setVisible(true);
+            
+            // Replace text field with password field in UI
+            Container parent = apiKeyField.getParent();
+            parent.remove(apiKeyField);
+            parent.add(apiKeyPasswordField, BorderLayout.CENTER);
+            parent.revalidate();
+            parent.repaint();
+        }
+    }
+    
+    private void saveAndClose() {
+        // Get API key value
+        String apiKey = showApiKeyCheckbox.isSelected() 
+                ? apiKeyField.getText() 
+                : new String(apiKeyPasswordField.getPassword());
+        
+        // Validate API key
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                    "API key cannot be empty.", 
+                    "Invalid API Key", 
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // Add to result
+        result.put("apiKey", apiKey);
+        
+        // Set confirmed flag and close
+        confirmed = true;
+        dispose();
+    }
+    
+    public boolean isConfirmed() {
+        return confirmed;
+    }
+    
+    public Map<String, String> getResult() {
+        return result;
+    }
+    
+    public static Map<String, String> showDialog(JFrame parent, String providerName, List<String> requiredFields) {
+        APIKeyDialog dialog = new APIKeyDialog(parent, providerName, requiredFields);
+        dialog.setVisible(true);
+        
+        // Wait for dialog to close
+        if (dialog.isConfirmed()) {
+            return dialog.getResult();
+        }
+        
+        return null;
+    }
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\ChatPane.java
+============================================================
+package jazari.llm_forge;
+
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.util.List;
+
+public class ChatPane extends JEditorPane {
+
+    private final EventLogger eventLogger;
+    private final HTMLEditorKit htmlKit;
+    private final Color chatBgColor = new Color(36, 36, 40);
+    private final Color userBubbleColor = new Color(0, 132, 87); // Green
+    private final Color aiBubbleColor = new Color(59, 74, 131);  // Blue
+
+    public ChatPane(EventLogger logger) {
+        this.eventLogger = logger;
+
+        // Set as HTML content
+        setContentType("text/html");
+        setEditable(false);
+        setBackground(chatBgColor);
+
+        // Font settings
+        putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        setFont(new Font("Dialog", Font.PLAIN, 14));
+
+        // Set up HTML Kit
+        htmlKit = new HTMLEditorKit();
+        setEditorKit(htmlKit);
+
+        // CSS Styles
+        String css = "body { font-family: Dialog; font-size: 14pt; color: #cccccc; "
+                + "background-color: #24242c; margin: 10px; }\n"
+                + "a { color: #7289da; text-decoration: none; }\n"
+                + "a:hover { text-decoration: underline; }\n"
+                + ".message-container { margin-top: 10px; margin-bottom: 20px; position: relative; }\n"
+                + ".user-message { margin-right: 100px; margin-left: 10px; }\n"
+                + ".ai-message { margin-left: 100px; margin-right: 10px; }\n"
+                + ".message-bubble { padding: 10px; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); position: relative; }\n"
+                + ".user-bubble { background-color: #005c4b; color: white; }\n"
+                + ".ai-bubble { background-color: #3b4a83; color: white; }\n"
+                + ".sender { font-weight: bold; margin-bottom: 8px; font-size: 0.9em; }\n"
+                + ".user-sender { color: #d1ffc8; }\n"
+                + ".ai-sender { color: #e3e3ff; }\n"
+                + ".message-content { white-space: normal !important; word-wrap: break-word !important; text-align: left !important; width: 100% !important; display: block !important; }\n"
+                + ".user-content { color: #ffffff; }\n"
+                + ".ai-content { color: #ffffff; }\n"
+                + "p { margin: 0; padding: 0; text-align: left !important; }\n"
+                + ".copy-button { position: absolute; top: 5px; right: 5px; font-size: 0.9em; "
+                + "background-color: rgba(255,255,255,0.15); border-radius: 4px; "
+                + "padding: 3px 8px; cursor: pointer; color: rgba(255,255,255,0.7); }\n"
+                + ".copy-feedback { background-color: #43b581 !important; color: #ffffff !important; }\n"
+                + ".code-block { position: relative; margin: 10px 0; padding: 10px; "
+                + "background-color: #2d2d2d; border-radius: 5px; border-left: 3px solid #7289da; }\n"
+                + ".code-header { display: flex; justify-content: space-between; margin-bottom: 8px; }\n"
+                + ".code-language { color: #7289da; font-weight: bold; font-size: 0.8em; }\n"
+                + ".code-content { font-family: monospace; white-space: pre; color: #cccccc; margin: 0; overflow-x: auto; }\n"
+                + ".welcome-container { text-align: center; margin-top: 80px; }\n"
+                + ".welcome-title { color: #7289da; font-size: 24pt; margin-bottom: 20px; }\n"
+                + ".welcome-text { color: #cccccc; font-size: 14pt; margin-bottom: 10px; }\n"
+                + ".welcome-hint { color: #999999; font-size: 12pt; }";
+
+        htmlKit.getStyleSheet().addRule(css);
+
+        // Listen to hyperlink events
+        addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                String url = e.getDescription();
+                handleHyperlinkAction(url);
+            }
+        });
+    }
+
+    public void showWelcomeMessage() {
+        StringBuilder html = new StringBuilder();
+        html.append("<html><body>");
+        html.append("<div class='welcome-container'>");
+        html.append("<div class='welcome-title'>Welcome to Jazari Chat Forge!</div>");
+        html.append("<p class='welcome-text'>Start chatting with your favorite LLM models.</p>");
+        html.append("<p class='welcome-hint'>Select a model from the top menu and type your message below.</p>");
+        html.append("</div>");
+        html.append("</body></html>");
+
+        setText(html.toString());
+    }
+
+    public void addUserMessage(String sender, String message) {
+        appendMessageToHTML(sender, message, false);
+    }
+
+    public void addAIMessage(String sender, String message) {
+        appendMessageToHTML(sender, message, true);
+    }
+
+    private void appendMessageToHTML(String sender, String message, boolean isAI) {
+        eventLogger.log("Adding message: Sender=" + sender + ", isAI=" + isAI);
+
+        // Get current HTML content
+        String currentContent = getText();
+
+        // Find the closing of the <body> tag
+        int bodyEndIndex = currentContent.lastIndexOf("</body>");
+        if (bodyEndIndex == -1) {
+            // If HTML structure is not as expected, create a new HTML structure
+            currentContent = "<html><body></body></html>";
+            bodyEndIndex = currentContent.lastIndexOf("</body>");
+        }
+
+        // Create unique message ID
+        String messageId = "msg_" + System.currentTimeMillis();
+
+        // Create message HTML
+        StringBuilder messageHtml = new StringBuilder();
+
+        // Message container with appropriate class
+        if (isAI) {
+            messageHtml.append("<div class='message-container ai-message'>");
+            messageHtml.append("<div class='message-bubble ai-bubble'>");
+        } else {
+            messageHtml.append("<div class='message-container user-message'>");
+            messageHtml.append("<div class='message-bubble user-bubble'>");
+        }
+
+        // Sender information
+        messageHtml.append("<div class='sender ").append(isAI ? "ai-sender" : "user-sender").append("'>");
+        messageHtml.append(sender);
+        messageHtml.append("</div>");
+
+        // Message content
+        boolean containsCode = isAI && (message.contains("```")
+                || message.contains("public class")
+                || message.contains("function")
+                || message.contains("def ")
+                || message.contains("import "));
+
+        if (containsCode) {
+            messageHtml.append("<div class='message-content ").append(isAI ? "ai-content" : "user-content").append("'>");
+            messageHtml.append(processCodeBlocks(message, messageId));
+            messageHtml.append("</div>");
+        } else {
+            messageHtml.append("<div id=\"").append(messageId).append("\" class='message-content ")
+                      .append(isAI ? "ai-content" : "user-content").append("'>");
+            messageHtml.append(escapeHtml(message));
+            messageHtml.append("</div>");
+        }
+
+        // Close bubble and container divs
+        messageHtml.append("</div></div>");
+
+        // Add message to HTML
+        StringBuilder newContent = new StringBuilder(currentContent);
+        newContent.insert(bodyEndIndex, messageHtml.toString());
+
+        // Set updated HTML
+        setText(newContent.toString());
+
+        // Scroll to bottom
+        SwingUtilities.invokeLater(() -> {
+            setCaretPosition(getDocument().getLength());
+            scrollRectToVisible(new Rectangle(0, getHeight() - 1, 1, 1));
+        });
+
+        eventLogger.log("Message added, ID: " + messageId);
+    }
+
+    private String processCodeBlocks(String message, String parentMessageId) {
+        StringBuilder result = new StringBuilder();
+
+        if (message.contains("```")) {
+            String[] parts = message.split("```");
+
+            for (int i = 0; i < parts.length; i++) {
+                if (i % 2 == 0) {
+                    // Normal text
+                    result.append(escapeHtml(parts[i]));
+                } else {
+                    // Code block
+                    String codeContent = parts[i].trim();
+                    String language = "";
+
+                    // Separate language indicator if present
+                    if (codeContent.contains("\n")) {
+                        String firstLine = codeContent.substring(0, codeContent.indexOf("\n")).trim();
+                        if (!firstLine.contains(" ")) {
+                            language = firstLine;
+                            codeContent = codeContent.substring(codeContent.indexOf("\n") + 1);
+                        }
+                    }
+
+                    String codeBlockId = "code_" + parentMessageId + "_" + i;
+
+                    // Code block HTML
+                    result.append("<div class='code-block'>");
+
+                    // Title bar
+                    result.append("<div class='code-header'>");
+                    if (!language.isEmpty()) {
+                        result.append("<div class='code-language'>").append(language.toUpperCase()).append("</div>");
+                    } else {
+                        result.append("<div class='code-language'>CODE</div>");
+                    }
+
+                    // Copy button
+                    result.append("<div>");
+                    result.append("<a href='copycode:").append(codeBlockId).append("' style='text-decoration:none;'>");
+                    result.append("<span id=\"btn_").append(codeBlockId).append("\" class='copy-button'>📋 Copy</span>");
+                    result.append("</a>");
+                    result.append("</div>");
+
+                    result.append("</div>"); // close header
+
+                    // Code content
+                    result.append("<pre><code id=\"").append(codeBlockId).append("\" class='code-content'>");
+                    result.append(escapeHtml(codeContent));
+                    result.append("</code></pre>");
+                    result.append("</div>"); // close code-block
+                }
+            }
+        } else {
+            // In case there's no code block markers but it still looks like code
+            String codeBlockId = "code_" + parentMessageId + "_full";
+            
+            result.append("<div class='code-block'>");
+            result.append("<div class='code-header'>");
+            result.append("<div class='code-language'>CODE</div>");
+            
+            // Copy button
+            result.append("<div>");
+            result.append("<a href='copycode:").append(codeBlockId).append("' style='text-decoration:none;'>");
+            result.append("<span id=\"btn_").append(codeBlockId).append("\" class='copy-button'>📋 Copy</span>");
+            result.append("</a>");
+            result.append("</div>");
+            
+            result.append("</div>"); // close header
+            
+            // Code content
+            result.append("<pre><code id=\"").append(codeBlockId).append("\" class='code-content'>");
+            result.append(escapeHtml(message));
+            result.append("</code></pre>");
+            result.append("</div>"); // close code-block
+        }
+
+        return result.toString();
+    }
+
+    private void handleHyperlinkAction(String url) {
+        eventLogger.log("Hyperlink clicked: " + url);
+
+        try {
+            if (url.startsWith("copycode:")) {
+                String codeBlockId = url.substring(9);
+                copyFormattedCodeToClipboard(codeBlockId);
+            }
+        } catch (Exception e) {
+            eventLogger.log("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void copyFormattedCodeToClipboard(String codeBlockId) {
+        try {
+            // Get HTML content
+            String htmlText = getText();
+
+            // Find code block ID
+            int idIndex = htmlText.indexOf("id=\"" + codeBlockId + "\"");
+            if (idIndex == -1) {
+                eventLogger.log("Code block not found: " + codeBlockId);
+                return;
+            }
+
+            // Find start of <code> element
+            int codeStart = htmlText.indexOf(">", idIndex) + 1;
+            // Find </code> tag
+            int codeEnd = htmlText.indexOf("</code>", codeStart);
+
+            if (codeStart > 0 && codeEnd > codeStart) {
+                // Get code content
+                String rawHtml = htmlText.substring(codeStart, codeEnd);
+
+                // Decode HTML and Unicode characters
+                String codeText = unescapeHtml(rawHtml);
+
+                // Copy to clipboard
+                StringSelection selection = new StringSelection(codeText);
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
+
+                // Show copy feedback
+                showCopyFeedback(codeBlockId);
+
+                eventLogger.log("Code copied to clipboard");
+            } else {
+                eventLogger.log("Code content not found");
+            }
+        } catch (Exception e) {
+            eventLogger.log("Error copying code: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void showCopyFeedback(String id) {
+        try {
+            // Update button (for feedback)
+            String htmlContent = getText();
+            String buttonId = "id=\"btn_" + id + "\"";
+
+            int buttonStartIndex = htmlContent.indexOf(buttonId);
+            if (buttonStartIndex != -1) {
+                int buttonTagStart = htmlContent.lastIndexOf("<span", buttonStartIndex);
+                int buttonTagEnd = htmlContent.indexOf(">", buttonStartIndex) + 1;
+                int buttonContentEnd = htmlContent.indexOf("</span>", buttonTagEnd);
+
+                if (buttonTagStart != -1 && buttonTagEnd != -1 && buttonContentEnd != -1) {
+                    // Update button HTML
+                    String buttonPrefix = htmlContent.substring(buttonTagStart, buttonTagEnd);
+                    String updatedButton = buttonPrefix.replace("copy-button", "copy-button copy-feedback") + "✓ Copied";
+
+                    StringBuilder updatedContent = new StringBuilder(htmlContent);
+                    updatedContent.replace(buttonTagStart, buttonContentEnd, updatedButton);
+
+                    setText(updatedContent.toString());
+
+                    // Restore button to original state after 2 seconds
+                    Timer timer = new Timer(2000, e -> {
+                        try {
+                            String currentHtml = getText();
+                            int currentButtonStart = currentHtml.indexOf(buttonId);
+
+                            if (currentButtonStart != -1) {
+                                int currentTagStart = currentHtml.lastIndexOf("<span", currentButtonStart);
+                                int currentTagEnd = currentHtml.indexOf(">", currentButtonStart) + 1;
+                                int currentContentEnd = currentHtml.indexOf("</span>", currentTagEnd);
+
+                                if (currentTagStart != -1 && currentTagEnd != -1 && currentContentEnd != -1) {
+                                    String originalButton = buttonPrefix.replace("copy-feedback", "") + "📋 Copy";
+
+                                    StringBuilder restoredContent = new StringBuilder(currentHtml);
+                                    restoredContent.replace(currentTagStart, currentContentEnd, originalButton);
+
+                                    setText(restoredContent.toString());
+                                }
+                            }
+                        } catch (Exception ex) {
+                            eventLogger.log("Button restore error: " + ex.getMessage());
+                        }
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                }
+            }
+
+            // Show copy notification to user
+            JWindow popup = new JWindow();
+            JLabel label = new JLabel("   Code copied to clipboard   ");
+            label.setForeground(Color.WHITE);
+            label.setFont(new Font("Dialog", Font.BOLD, 12));
+            label.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
+            popup.getContentPane().add(label);
+            popup.getContentPane().setBackground(new Color(67, 181, 129)); // Green
+            popup.pack();
+
+            // Popup position
+            Point p = this.getLocationOnScreen();
+            int x = p.x + this.getWidth() - popup.getWidth() - 20;
+            int y = p.y + 20;
+            popup.setLocation(x, y);
+
+            // Show popup and close after 1.5 seconds
+            popup.setVisible(true);
+            Timer timer = new Timer(1500, e -> popup.dispose());
+            timer.setRepeats(false);
+            timer.start();
+
+        } catch (Exception e) {
+            eventLogger.log("Error showing feedback: " + e.getMessage());
+        }
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\n", "<br>")
+                .replace("  ", "&nbsp;&nbsp;");
+    }
+
+    private String unescapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+
+        // HTML characters
+        text = text.replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&amp;", "&")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'")
+                .replace("&nbsp;", " ")
+                .replace("&#160;", " ");
+
+        // HTML line breaks
+        text = text.replace("<br>", "\n")
+                .replace("<br/>", "\n");
+
+        return text;
+    }
+
+    public void addAIMessageWithId(String sender, String message, String messageId) {
+        eventLogger.log("Adding message with ID: Sender=" + sender + ", ID=" + messageId);
+
+        // Get current HTML content
+        String currentContent = getText();
+
+        // Find the closing of the <body> tag
+        int bodyEndIndex = currentContent.lastIndexOf("</body>");
+        if (bodyEndIndex == -1) {
+            // If HTML structure is not as expected, create a new HTML structure
+            currentContent = "<html><body></body></html>";
+            bodyEndIndex = currentContent.lastIndexOf("</body>");
+        }
+
+        // Create message HTML
+        StringBuilder messageHtml = new StringBuilder();
+
+        // AI message container and bubble
+        messageHtml.append("<div class='message-container ai-message'>");
+        messageHtml.append("<div class='message-bubble ai-bubble'>");
+
+        // Sender information
+        messageHtml.append("<div class='sender ai-sender'>").append(sender).append("</div>");
+
+        // Message content with ID for future updates
+        messageHtml.append("<div id=\"").append(messageId).append("\" class='message-content ai-content'>");
+        
+        // Format message content - will be empty initially for streaming messages
+        String processedMessage = escapeHtml(message);
+        messageHtml.append(processedMessage);
+
+        messageHtml.append("</div>");
+        messageHtml.append("</div></div>");
+
+        // Add message to HTML
+        StringBuilder newContent = new StringBuilder(currentContent);
+        newContent.insert(bodyEndIndex, messageHtml.toString());
+
+        // Set updated HTML
+        setText(newContent.toString());
+
+        // Scroll to bottom
+        SwingUtilities.invokeLater(() -> {
+            setCaretPosition(getDocument().getLength());
+            scrollRectToVisible(new Rectangle(0, getHeight() - 1, 1, 1));
+        });
+
+        eventLogger.log("Message added with ID: " + messageId);
+    }
+
+    public void updateAIMessage(String messageId, String newContent) {
+        try {
+            // Get document
+            Document doc = getDocument();
+
+            if (doc instanceof HTMLDocument) {
+                HTMLDocument htmlDoc = (HTMLDocument) doc;
+
+                // Find existing element by ID
+                Element element = findElementById(htmlDoc, messageId);
+
+                if (element != null) {
+                    // Process and update content
+                    try {
+                        // Check if content contains code
+                        boolean containsCode = newContent.contains("```") || 
+                                               newContent.contains("public class") || 
+                                               newContent.contains("function") || 
+                                               newContent.contains("def ") || 
+                                               newContent.contains("import ");
+                        
+                        String formattedContent;
+                        if (containsCode) {
+                            formattedContent = processCodeBlocks(newContent, messageId);
+                        } else {
+                            formattedContent = escapeHtml(newContent);
+                        }
+                        
+                        // Update element content
+                        SwingUtilities.invokeLater(() -> {
+                            try {
+                                ((HTMLDocument)doc).setInnerHTML(element, formattedContent);
+                                
+                                // Scroll to bottom
+                                setCaretPosition(doc.getLength());
+                                scrollRectToVisible(new Rectangle(0, getHeight() - 1, 1, 1));
+                            } catch (Exception ex) {
+                                eventLogger.log("Error updating HTML: " + ex.getMessage());
+                            }
+                        });
+                    } catch (Exception e) {
+                        eventLogger.log("setInnerHTML error: " + e.getMessage());
+                    }
+                } else {
+                    // Element not found, log and add new message
+                    eventLogger.log("Message element not found, ID: " + messageId);
+                    addAIMessage("AI", newContent);
+                }
+            }
+        } catch (Exception e) {
+            eventLogger.log("Error updating message: " + e.getMessage());
+            // Add new message in case of error
+            addAIMessage("AI", newContent);
+        }
+    }
+    
+    private Element findElementById(HTMLDocument doc, String id) {
+        // Recursive function to find element with matching ID
+        return findElementByIdRecursive(doc.getDefaultRootElement(), id);
+    }
+    
+    private Element findElementByIdRecursive(Element element, String id) {
+        // Check if this element has the ID we're looking for
+        AttributeSet attrs = element.getAttributes();
+        if (attrs.getAttribute(HTML.Attribute.ID) != null && 
+            attrs.getAttribute(HTML.Attribute.ID).toString().equals(id)) {
+            return element;
+        }
+        
+        // Check child elements
+        for (int i = 0; i < element.getElementCount(); i++) {
+            Element child = element.getElement(i);
+            Element found = findElementByIdRecursive(child, id);
+            if (found != null) {
+                return found;
+            }
+        }
+        
+        return null;
+    }
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\CloudProvider.java
+============================================================
+package jazari.llm_forge;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+public class CloudProvider implements LLMProvider {
+    
+    public enum ProviderType {
+        ANTHROPIC,
+        OPENAI,
+        GEMINI
+    }
+    
+    private final ProviderType type;
+    private String apiKey;
+    private String apiUrl;
+    private HttpClient httpClient;
+    private CompletableFuture<HttpResponse<Stream<String>>> currentRequestFuture;
+    private boolean isResponseCancelled = false;
+    private final List<String> availableModels;
+    
+    public CloudProvider(ProviderType type) {
+        this.type = type;
+        this.httpClient = HttpClient.newHttpClient();
+        this.availableModels = new ArrayList<>();
+        setupProviderDefaults();
+    }
+    
+    private void setupProviderDefaults() {
+        if (type == ProviderType.ANTHROPIC) {
+            apiUrl = "https://api.anthropic.com/v1/messages";
+            availableModels.addAll(Arrays.asList(
+                "claude-3-5-sonnet-20240620",
+                "claude-3-opus-20240229",
+                "claude-3-sonnet-20240229",
+                "claude-3-haiku-20240307"
+            ));
+        } else if (type == ProviderType.OPENAI) {
+            apiUrl = "https://api.openai.com/v1/chat/completions";
+            availableModels.addAll(Arrays.asList(
+                "gpt-4-turbo",
+                "gpt-4",
+                "gpt-3.5-turbo",
+                "gpt-3.5-turbo-16k"
+            ));
+        } else if (type == ProviderType.GEMINI) {
+            apiUrl = "https://generativelanguage.googleapis.com/v1beta/models";
+            availableModels.addAll(Arrays.asList(
+                "gemini-1.5-pro",
+                "gemini-1.5-flash",
+                "gemini-1.0-pro",
+                "gemini-1.0-ultra"
+            ));
+        }
+    }
+    
+    @Override
+    public String getProviderName() {
+        switch (type) {
+            case ANTHROPIC:
+                return "ANTHROPIC";
+            case OPENAI:
+                return "OPENAI";
+            case GEMINI:
+                return "GEMINI";
+            default:
+                return type.name();
+        }
+    }
+    
+    @Override
+    public List<String> getAvailableModels() {
+        return new ArrayList<>(availableModels);
+    }
+    
+    @Override
+    public boolean isAvailable() {
+        return apiKey != null && !apiKey.isEmpty();
+    }
+    
+    @Override
+    public boolean initialize(Map<String, String> config) {
+        if (config != null && config.containsKey("apiKey")) {
+            this.apiKey = config.get("apiKey");
+            
+            if (config.containsKey("apiUrl")) {
+                this.apiUrl = config.get("apiUrl");
+            }
+            
+            this.httpClient = HttpClient.newHttpClient();
+            
+            return true;
+        }
+        return false;
+    }
+    
+    @Override
+    public CompletableFuture<String> generateResponse(
+            String modelName, 
+            String prompt, 
+            Consumer<String> responseCallback, 
+            Runnable completeCallback) {
+        
+        CompletableFuture<String> result = new CompletableFuture<>();
+        
+        if (apiKey == null || apiKey.isEmpty()) {
+            result.completeExceptionally(new IllegalStateException("API key not set"));
+            return result;
+        }
+        
+        try {
+            isResponseCancelled = false;
+            
+            ObjectMapper mapper = new ObjectMapper();
+            String requestBody;
+            
+            if (type == ProviderType.ANTHROPIC) {
+                requestBody = createAnthropicRequestBody(mapper, modelName, prompt);
+            } else if (type == ProviderType.OPENAI) {
+                requestBody = createOpenAIRequestBody(mapper, modelName, prompt);
+            } else if (type == ProviderType.GEMINI) {
+                requestBody = createGeminiRequestBody(mapper, modelName, prompt);
+            } else {
+                result.completeExceptionally(new IllegalStateException("Unknown provider type"));
+                return result;
+            }
+            
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .header("Content-Type", "application/json");
+            
+            // Build URL and set appropriate headers based on provider
+            String fullUrl = "";
+            if (type == ProviderType.ANTHROPIC) {
+                fullUrl = apiUrl;
+                requestBuilder.header("x-api-key", apiKey)
+                             .header("anthropic-version", "2023-06-01");
+            } else if (type == ProviderType.OPENAI) {
+                fullUrl = apiUrl;
+                requestBuilder.header("Authorization", "Bearer " + apiKey);
+            } else if (type == ProviderType.GEMINI) {
+                // For Gemini, we need to append the model name and the API key as a query parameter
+                fullUrl = apiUrl + "/" + modelName + ":generateContent?key=" + apiKey;
+            }
+            
+            requestBuilder.uri(URI.create(fullUrl));
+            
+            HttpRequest request = requestBuilder
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
+                    .build();
+            
+            final StringBuilder responseContent = new StringBuilder();
+            
+            if (type == ProviderType.ANTHROPIC) {
+                // Anthropic supports streaming similar to OpenAI
+                currentRequestFuture = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines());
+                
+                currentRequestFuture.thenAccept(response -> {
+                    if (response.statusCode() == 200) {
+                        try {
+                            response.body().forEach(line -> {
+                                if (isResponseCancelled) {
+                                    return;
+                                }
+                                
+                                try {
+                                    if (line.trim().isEmpty()) {
+                                        return;
+                                    }
+                                    
+                                    if (line.startsWith("data: ")) {
+                                        String jsonStr = line.substring(6);
+                                        
+                                        if (jsonStr.equals("[DONE]")) {
+                                            if (completeCallback != null) {
+                                                completeCallback.run();
+                                            }
+                                            result.complete(responseContent.toString());
+                                            return;
+                                        }
+                                        
+                                        JsonNode node = mapper.readTree(jsonStr);
+                                        
+                                        if (node.has("content") && node.get("content").isArray()) {
+                                            ArrayNode contentArray = (ArrayNode) node.get("content");
+                                            for (JsonNode content : contentArray) {
+                                                if (content.has("text")) {
+                                                    String text = content.get("text").asText();
+                                                    responseContent.append(text);
+                                                    
+                                                    if (responseCallback != null) {
+                                                        responseCallback.accept(text);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    if (!isResponseCancelled) {
+                                        result.completeExceptionally(e);
+                                    }
+                                }
+                            });
+                            
+                            if (!isResponseCancelled && !result.isDone()) {
+                                if (completeCallback != null) {
+                                    completeCallback.run();
+                                }
+                                result.complete(responseContent.toString());
+                            }
+                        } catch (Exception e) {
+                            if (!currentRequestFuture.isCancelled() && !isResponseCancelled && !result.isDone()) {
+                                result.completeExceptionally(e);
+                            }
+                        }
+                    } else {
+                        if (!isResponseCancelled && !result.isDone()) {
+                            try {
+                                String errorBody = response.body().toString();
+                                result.completeExceptionally(
+                                        new RuntimeException("API error: " + response.statusCode() + " - " + errorBody));
+                            } catch (Exception e) {
+                                result.completeExceptionally(
+                                        new RuntimeException("API error: " + response.statusCode()));
+                            }
+                        }
+                    }
+                }).exceptionally(e -> {
+                    if (!currentRequestFuture.isCancelled() && !isResponseCancelled && !result.isDone()) {
+                        result.completeExceptionally(e);
+                    }
+                    return null;
+                });
+            } else {
+                // For non-streaming APIs or simpler response handling (OpenAI, Gemini)
+                httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                        .thenAccept(response -> {
+                            if (response.statusCode() == 200) {
+                                try {
+                                    JsonNode rootNode = mapper.readTree(response.body());
+                                    String content = extractContentFromResponse(rootNode);
+                                    
+                                    if (responseCallback != null) {
+                                        responseCallback.accept(content);
+                                    }
+                                    
+                                    if (completeCallback != null) {
+                                        completeCallback.run();
+                                    }
+                                    
+                                    result.complete(content);
+                                } catch (Exception e) {
+                                    result.completeExceptionally(e);
+                                }
+                            } else {
+                                result.completeExceptionally(
+                                        new RuntimeException("API error: " + response.statusCode() + " - " + response.body()));
+                            }
+                        })
+                        .exceptionally(e -> {
+                            result.completeExceptionally(e);
+                            return null;
+                        });
+            }
+            
+        } catch (Exception e) {
+            result.completeExceptionally(e);
+        }
+        
+        return result;
+    }
+    
+    private String createAnthropicRequestBody(ObjectMapper mapper, String modelName, String prompt) throws Exception {
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("model", modelName);
+        rootNode.put("stream", true);
+        rootNode.put("max_tokens", 1000);
+        
+        ArrayNode messagesNode = mapper.createArrayNode();
+        ObjectNode userMessageNode = mapper.createObjectNode();
+        userMessageNode.put("role", "user");
+        userMessageNode.put("content", prompt);
+        messagesNode.add(userMessageNode);
+        
+        rootNode.set("messages", messagesNode);
+        
+        return mapper.writeValueAsString(rootNode);
+    }
+    
+    private String createOpenAIRequestBody(ObjectMapper mapper, String modelName, String prompt) throws Exception {
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.put("model", modelName);
+        rootNode.put("stream", false);
+        rootNode.put("max_tokens", 1000);
+        
+        ArrayNode messagesNode = mapper.createArrayNode();
+        ObjectNode userMessageNode = mapper.createObjectNode();
+        userMessageNode.put("role", "user");
+        userMessageNode.put("content", prompt);
+        messagesNode.add(userMessageNode);
+        
+        rootNode.set("messages", messagesNode);
+        
+        return mapper.writeValueAsString(rootNode);
+    }
+    
+    private String createGeminiRequestBody(ObjectMapper mapper, String modelName, String prompt) throws Exception {
+        ObjectNode rootNode = mapper.createObjectNode();
+        
+        // Contents array with the user's message
+        ArrayNode contentsNode = mapper.createArrayNode();
+        ObjectNode contentObj = mapper.createObjectNode();
+        
+        // Parts array with the text part
+        ArrayNode partsNode = mapper.createArrayNode();
+        ObjectNode partObj = mapper.createObjectNode();
+        partObj.put("text", prompt);
+        partsNode.add(partObj);
+        
+        // Add parts to content
+        contentObj.set("parts", partsNode);
+        contentObj.put("role", "user");
+        contentsNode.add(contentObj);
+        
+        // Add contents to root
+        rootNode.set("contents", contentsNode);
+        
+        // Generation config
+        ObjectNode generationConfig = mapper.createObjectNode();
+        generationConfig.put("maxOutputTokens", 1000);
+        generationConfig.put("temperature", 0.7);
+        generationConfig.put("topP", 0.95);
+        generationConfig.put("topK", 40);
+        
+        rootNode.set("generationConfig", generationConfig);
+        
+        return mapper.writeValueAsString(rootNode);
+    }
+    
+    private String extractContentFromResponse(JsonNode responseNode) {
+        StringBuilder content = new StringBuilder();
+        
+        try {
+            if (type == ProviderType.ANTHROPIC) {
+                if (responseNode.has("content") && responseNode.get("content").isArray()) {
+                    for (JsonNode partNode : responseNode.get("content")) {
+                        if (partNode.has("text")) {
+                            content.append(partNode.get("text").asText());
+                        }
+                    }
+                }
+            } else if (type == ProviderType.OPENAI) {
+                if (responseNode.has("choices") && responseNode.get("choices").isArray() && 
+                        responseNode.get("choices").size() > 0) {
+                    JsonNode firstChoice = responseNode.get("choices").get(0);
+                    if (firstChoice.has("message") && firstChoice.get("message").has("content")) {
+                        content.append(firstChoice.get("message").get("content").asText());
+                    }
+                }
+            } else if (type == ProviderType.GEMINI) {
+                if (responseNode.has("candidates") && responseNode.get("candidates").isArray() && 
+                        responseNode.get("candidates").size() > 0) {
+                    JsonNode firstCandidate = responseNode.get("candidates").get(0);
+                    if (firstCandidate.has("content") && 
+                        firstCandidate.get("content").has("parts") && 
+                        firstCandidate.get("content").get("parts").isArray() &&
+                        firstCandidate.get("content").get("parts").size() > 0) {
+                        
+                        JsonNode parts = firstCandidate.get("content").get("parts");
+                        for (JsonNode part : parts) {
+                            if (part.has("text")) {
+                                content.append(part.get("text").asText());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            content.append("Error parsing response: ").append(e.getMessage());
+        }
+        
+        return content.toString();
+    }
+    
+    @Override
+    public boolean cancelGeneration() {
+        if (currentRequestFuture != null) {
+            try {
+                isResponseCancelled = true;
+                currentRequestFuture.cancel(true);
+                currentRequestFuture = null;
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean requiresAuthentication() {
+        return true;
+    }
+    
+    @Override
+    public List<String> getRequiredAuthFields() {
+        List<String> fields = new ArrayList<>();
+        fields.add("apiKey");
+        return fields;
+    }
+    
+    @Override
+    public void shutdown() {
+        if (currentRequestFuture != null) {
+            currentRequestFuture.cancel(true);
+            currentRequestFuture = null;
+        }
+    }
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\EventLogger.java
+============================================================
+package jazari.llm_forge;
+
+import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.Document;
+import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class EventLogger {
+    
+    private JFrame logFrame;
+    private JTextArea logArea;
+    private SimpleDateFormat timeFormat;
+    private boolean isVisible = false;
+    
+    public EventLogger() {
+        timeFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+        initializeUI();
+    }
+    
+    private void initializeUI() {
+        logFrame = new JFrame("Event Logger");
+        logFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        logFrame.setSize(800, 400);
+        
+        logArea = new JTextArea();
+        logArea.setEditable(false);
+        logArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        logArea.setBackground(new Color(30, 30, 30));
+        logArea.setForeground(new Color(200, 200, 200));
+        
+        // Set auto-scroll behavior
+        DefaultCaret caret = (DefaultCaret) logArea.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        
+        JScrollPane scrollPane = new JScrollPane(logArea);
+        
+        // Create toolbar
+        JToolBar toolbar = new JToolBar();
+        toolbar.setFloatable(false);
+        
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(e -> clearLog());
+        
+        JButton exportButton = new JButton("Export");
+        exportButton.addActionListener(e -> exportLog());
+        
+        toolbar.add(clearButton);
+        toolbar.add(exportButton);
+        
+        // Add components to frame
+        logFrame.getContentPane().add(toolbar, BorderLayout.NORTH);
+        logFrame.getContentPane().add(scrollPane, BorderLayout.CENTER);
+        
+        // Center on screen
+        logFrame.setLocationRelativeTo(null);
+    }
+    
+    public void log(String message) {
+        String timestamp = timeFormat.format(new Date());
+        String logEntry = timestamp + " | " + message + "\n";
+        
+        // Add to log area (thread-safe)
+        SwingUtilities.invokeLater(() -> {
+            Document doc = logArea.getDocument();
+            try {
+                doc.insertString(doc.getLength(), logEntry, null);
+                
+                // Limit log size to prevent memory issues
+                if (doc.getLength() > 1000000) {  // ~1MB of text
+                    doc.remove(0, doc.getLength() - 500000);  // Keep last 500K
+                    logArea.setCaretPosition(doc.getLength());
+                }
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        });
+        
+        // Also print to console for debugging
+        System.out.println("[LOG] " + logEntry.trim());
+    }
+    
+    public void toggleVisibility() {
+        isVisible = !isVisible;
+        logFrame.setVisible(isVisible);
+        
+        if (isVisible) {
+            logFrame.toFront();
+        }
+    }
+    
+    private void clearLog() {
+        logArea.setText("");
+        log("Log cleared");
+    }
+    
+    private void exportLog() {
+        // Create log file save dialog
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save Log File");
+        
+        // Set default filename
+        SimpleDateFormat fileFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String defaultName = "chatforge_log_" + fileFormat.format(new Date()) + ".txt";
+        fileChooser.setSelectedFile(new java.io.File(defaultName));
+        
+        int userChoice = fileChooser.showSaveDialog(logFrame);
+        
+        if (userChoice == JFileChooser.APPROVE_OPTION) {
+            try {
+                java.io.File file = fileChooser.getSelectedFile();
+                
+                // Append .txt if not present
+                if (!file.getName().toLowerCase().endsWith(".txt")) {
+                    file = new java.io.File(file.getAbsolutePath() + ".txt");
+                }
+                
+                // Write log content to file
+                java.io.FileWriter writer = new java.io.FileWriter(file);
+                writer.write(logArea.getText());
+                writer.close();
+                
+                log("Log exported to: " + file.getAbsolutePath());
+                
+                // Show success message
+                JOptionPane.showMessageDialog(
+                        logFrame,
+                        "Log saved to:\n" + file.getAbsolutePath(),
+                        "Log Saved",
+                        JOptionPane.INFORMATION_MESSAGE);
+                
+            } catch (Exception e) {
+                log("Error exporting log: " + e.getMessage());
+                JOptionPane.showMessageDialog(
+                        logFrame,
+                        "Error saving log: " + e.getMessage(),
+                        "Export Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    public void showAndPosition(Component relativeTo) {
+        if (relativeTo != null) {
+            // Position dialog relative to parent component
+            Point location = relativeTo.getLocationOnScreen();
+            int x = location.x + 50;
+            int y = location.y + 50;
+            logFrame.setLocation(x, y);
+        }
+        
+        logFrame.setVisible(true);
+        isVisible = true;
+        logFrame.toFront();
+    }
+    
+    public boolean isVisible() {
+        return isVisible;
+    }
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\JazariChatForge.java
+============================================================
+package jazari.llm_forge;
+
+import com.formdev.flatlaf.FlatDarkLaf;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class JazariChatForge extends JFrame implements ActionListener, ModelSelectorPanel.ModelSelectionListener {
+
+    // Initialize FlatDarkLaf theme
+    static {
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+            // FlatDarkLaf theme settings
+            UIManager.put("Button.arc", 10);
+            UIManager.put("Component.arc", 10);
+            UIManager.put("ProgressBar.arc", 10);
+            UIManager.put("TextComponent.arc", 10);
+            UIManager.put("ScrollBar.width", 12);
+            UIManager.put("ScrollBar.thumbArc", 999);
+            UIManager.put("ScrollBar.thumbInsets", new Insets(2, 2, 2, 2));
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(JazariChatForge.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private ChatPane chatPane;
+    private JTextArea inputTextArea;
+    private JScrollPane inputScrollPane;
+    private JButton sendButton;
+    private JScrollPane scrollPane;
+    private JPanel statusPanel;
+    private JLabel statusLabel;
+    private EventLogger eventLogger;
+    private Timer statusAnimationTimer;
+    private int animationDots = 0;
+    private JButton cancelButton;
+    private ModelSelectorPanel modelSelectorPanel;
+    
+    private ModelManager modelManager;
+    private SettingsManager settingsManager;
+    
+    private String currentProvider;
+    private String currentModel;
+    private boolean isResponseCancelled = false;
+    private boolean isGeneratingResponse = false;
+    private CompletableFuture<String> currentResponseFuture;
+    private AnimatedDot onlineDot;
+
+    public JazariChatForge() {
+        setTitle("Jazari Chat Forge");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(900, 700);
+        setMinimumSize(new Dimension(700, 500));
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setLayout(new BorderLayout(10, 10));
+        getRootPane().setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // Initialize managers
+        settingsManager = new SettingsManager();
+        modelManager = new ModelManager();
+        
+        // Start event logger
+        eventLogger = new EventLogger();
+        
+        // Register providers
+        registerProviders();
+
+        // Add menu
+        setupMenu();
+
+        // Header Panel
+        JPanel headerPanel = createHeaderPanel();
+        add(headerPanel, BorderLayout.NORTH);
+
+        // Chat Area
+        chatPane = new ChatPane(eventLogger);
+        scrollPane = new JScrollPane(chatPane);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrollPane, BorderLayout.CENTER);
+
+        // Input Panel
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        // Create Input Panel
+        JPanel inputPanel = createInputPanel();
+        bottomPanel.add(inputPanel, BorderLayout.CENTER);
+
+        // First create Status Panel
+        statusPanel = createStatusPanel();
+
+        // Then set up Cancel Button (statusPanel is no longer null)
+        setupCancelButton();
+
+        // Add status panel
+        bottomPanel.add(statusPanel, BorderLayout.SOUTH);
+
+        // Set initial focus to input field
+        SwingUtilities.invokeLater(() -> inputTextArea.requestFocusInWindow());
+
+        // Initialize animation
+        initStatusAnimation();
+
+        // Center the frame on screen
+        setLocationRelativeTo(null);
+        setVisible(true);
+
+        // Show welcome message
+        showWelcomeMessage();
+    }
+    
+    private void registerProviders() {
+        // Register Ollama provider
+        OllamaProvider ollamaProvider = new OllamaProvider();
+        if (ollamaProvider.isAvailable()) {
+            modelManager.registerProvider(ollamaProvider);
+            eventLogger.log("Registered Ollama provider with " + 
+                            ollamaProvider.getAvailableModels().size() + " models");
+        } else {
+            eventLogger.log("Ollama provider not available");
+        }
+        
+        // Always register cloud providers
+        
+        // Register Anthropic provider
+        CloudProvider claudeProvider = new CloudProvider(CloudProvider.ProviderType.ANTHROPIC);
+        String claudeKey = settingsManager.getApiKey("ANTHROPIC");
+        if (!claudeKey.isEmpty()) {
+            Map<String, String> config = new HashMap<>();
+            config.put("apiKey", claudeKey);
+            claudeProvider.initialize(config);
+            eventLogger.log("Initialized Claude provider with saved key");
+        }
+        modelManager.registerProvider(claudeProvider);
+        eventLogger.log("Registered Claude provider");
+        
+        // Register OpenAI provider
+        CloudProvider openaiProvider = new CloudProvider(CloudProvider.ProviderType.OPENAI);
+        String openaiKey = settingsManager.getApiKey("OPENAI");
+        if (!openaiKey.isEmpty()) {
+            Map<String, String> config = new HashMap<>();
+            config.put("apiKey", openaiKey);
+            openaiProvider.initialize(config);
+            eventLogger.log("Initialized OpenAI provider with saved key");
+        }
+        modelManager.registerProvider(openaiProvider);
+        eventLogger.log("Registered OpenAI provider");
+        
+        // Register Gemini provider
+        CloudProvider geminiProvider = new CloudProvider(CloudProvider.ProviderType.GEMINI);
+        String geminiKey = settingsManager.getApiKey("GEMINI");
+        if (!geminiKey.isEmpty()) {
+            Map<String, String> config = new HashMap<>();
+            config.put("apiKey", geminiKey);
+            geminiProvider.initialize(config);
+            eventLogger.log("Initialized Gemini provider with saved key");
+        }
+        modelManager.registerProvider(geminiProvider);
+        eventLogger.log("Registered Gemini provider");
+    }
+
+    private void setupMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        
+        // Developer menu
+        JMenu devMenu = new JMenu("Developer");
+        JMenuItem logMenuItem = new JMenuItem("Event Logger");
+        logMenuItem.addActionListener(e -> eventLogger.toggleVisibility());
+        devMenu.add(logMenuItem);
+        
+        // Settings menu
+        JMenu settingsMenu = new JMenu("Settings");
+        JMenuItem clearKeysMenuItem = new JMenuItem("Clear API Keys");
+        clearKeysMenuItem.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to clear all saved API keys?",
+                    "Clear API Keys",
+                    JOptionPane.YES_NO_OPTION);
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                settingsManager.clearApiKeys();
+                modelSelectorPanel.refreshProviders();
+                JOptionPane.showMessageDialog(
+                        this,
+                        "All API keys have been cleared.",
+                        "Keys Cleared",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+        settingsMenu.add(clearKeysMenuItem);
+        
+        menuBar.add(devMenu);
+        menuBar.add(settingsMenu);
+        setJMenuBar(menuBar);
+    }
+
+    private JPanel createHeaderPanel() {
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(new Color(36, 36, 40));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        // Logo and title
+        JPanel titleContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        titleContainer.setOpaque(false);
+
+        // Simple logo
+        JPanel logoPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(new Color(114, 137, 218));
+                g2d.fillOval(0, 0, 24, 24);
+                g2d.setColor(Color.WHITE);
+                g2d.fillRect(7, 7, 10, 10);
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(24, 24);
+            }
+        };
+
+        JLabel titleLabel = new JLabel("Jazari Chat Forge", JLabel.LEFT);
+        titleLabel.setFont(new Font("Dialog", Font.BOLD, 18));
+        titleLabel.setForeground(new Color(114, 137, 218));
+
+        titleContainer.add(logoPanel);
+        titleContainer.add(Box.createHorizontalStrut(10));
+        titleContainer.add(titleLabel);
+
+        // Add Model Selector Panel
+        modelSelectorPanel = new ModelSelectorPanel(this, modelManager, settingsManager);
+        modelSelectorPanel.addModelSelectionListener(this);
+        
+        headerPanel.add(titleContainer, BorderLayout.WEST);
+        headerPanel.add(modelSelectorPanel, BorderLayout.CENTER);
+
+        return headerPanel;
+    }
+
+    private JPanel createInputPanel() {
+        JPanel inputPanel = new JPanel(new BorderLayout(8, 0));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
+
+        // Text Area
+        inputTextArea = createInputTextArea();
+
+        // Scroll Pane
+        inputScrollPane = new JScrollPane(inputTextArea);
+        inputScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        inputScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        inputScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        // Limit the maximum height of the scroll pane
+        int maxHeight = 120; // maximum 120 pixels (approximately 6-7 lines)
+        inputScrollPane.setPreferredSize(new Dimension(inputScrollPane.getPreferredSize().width,
+                Math.min(inputTextArea.getPreferredSize().height, maxHeight)));
+
+        inputPanel.add(inputScrollPane, BorderLayout.CENTER);
+
+        // Send Button
+        sendButton = createSendButton();
+        inputPanel.add(sendButton, BorderLayout.EAST);
+
+        return inputPanel;
+    }
+
+    private JTextArea createInputTextArea() {
+        JTextArea textArea = new JTextArea(3, 20); // 3 rows, 20 columns initial size
+        textArea.setFont(new Font("Dialog", Font.PLAIN, 14));
+        textArea.setLineWrap(true); // Line wrapping active
+        textArea.setWrapStyleWord(true); // Word-based wrapping
+        textArea.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(60, 60, 64), 1, true),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)));
+        textArea.setBackground(new Color(49, 51, 56));
+        textArea.setForeground(Color.WHITE);
+        textArea.setCaretColor(Color.WHITE);
+        textArea.setText("Type your message here...");
+
+        // Focus listener for placeholder text
+        textArea.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (textArea.getText().equals("Type your message here...")) {
+                    textArea.setText("");
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (textArea.getText().trim().isEmpty()) {
+                    textArea.setText("Type your message here...");
+                }
+            }
+        });
+
+        // Enter and Shift+Enter key listeners
+        textArea.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // When Enter key is pressed
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    // If Shift key is not pressed, send message and prevent Enter
+                    if (!e.isShiftDown()) {
+                        e.consume(); // Prevent Enter character from being added
+                        sendMessage();
+                    }
+                    // In case of Shift+Enter, do nothing, default behavior will work
+                }
+            }
+        });
+
+        // More reliable approach using InputMap and ActionMap
+        InputMap inputMap = textArea.getInputMap();
+        ActionMap actionMap = textArea.getActionMap();
+
+        // Replace Enter key with a custom action
+        KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        inputMap.put(enterKey, "sendMessage");
+        actionMap.put("sendMessage", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendMessage();
+            }
+        });
+
+        // For Shift+Enter, use DEFAULT_ACTION to maintain default behavior
+        KeyStroke shiftEnterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK);
+        inputMap.put(shiftEnterKey, "insert-break");  // "insert-break" is the default new line action
+
+        return textArea;
+    }
+
+    private JButton createSendButton() {
+        JButton button = new JButton();
+        button.setIcon(createSendIcon());
+        button.setBackground(new Color(114, 137, 218));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        button.setMargin(new Insets(0, 0, 0, 0));
+        button.addActionListener(this);
+        return button;
+    }
+
+    private JPanel createStatusPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+        panel.setOpaque(false);
+
+        JPanel onlineStatusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        onlineStatusPanel.setOpaque(false);
+
+        // Online status indicator (will be replaced by animated dot)
+        JPanel staticDot = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(new Color(67, 181, 129)); // Green
+                g2d.fillOval(0, 0, 8, 8);
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(8, 8);
+            }
+        };
+
+        statusLabel = new JLabel("No model selected");
+        statusLabel.setFont(new Font("Dialog", Font.PLAIN, 12));
+        statusLabel.setForeground(new Color(180, 180, 180));
+
+        onlineStatusPanel.add(staticDot);
+        onlineStatusPanel.add(statusLabel);
+
+        panel.add(onlineStatusPanel, BorderLayout.WEST);
+
+        return panel;
+    }
+    
+    private class AnimatedDot extends JPanel {
+        private float scale = 1.0f;
+        private boolean growing = true;
+        private final float MIN_SCALE = 0.7f;
+        private final float MAX_SCALE = 1.7f;
+        private final float SCALE_STEP = 0.25f;
+        private final Color dotColor;
+
+        public AnimatedDot(Color color) {
+            this.dotColor = color;
+            setOpaque(false);
+        }
+
+        public void updateAnimation() {
+            // Update scale
+            if (growing) {
+                scale += SCALE_STEP;
+                if (scale >= MAX_SCALE) {
+                    growing = false;
+                }
+            } else {
+                scale -= SCALE_STEP;
+                if (scale <= MIN_SCALE) {
+                    growing = true;
+                }
+            }
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int size = 8;
+            int centerX = getWidth() / 2;
+            int centerY = getHeight() / 2;
+
+            // Calculate scaled size
+            int scaledSize = (int) (size * scale);
+
+            // Draw the dot centered
+            g2d.setColor(dotColor);
+            g2d.fillOval(centerX - scaledSize / 2, centerY - scaledSize / 2, scaledSize, scaledSize);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(12, 12); // Slightly larger to accommodate animation
+        }
+    }
+
+    private void setupCancelButton() {
+        // Create cancel button
+        cancelButton = new JButton();
+        cancelButton.setPreferredSize(new Dimension(16, 16));
+        cancelButton.setBackground(new Color(220, 53, 69)); // Red
+        cancelButton.setBorder(BorderFactory.createEmptyBorder());
+        cancelButton.setFocusPainted(false);
+        cancelButton.setVisible(false); // Initially hidden
+
+        // Add tooltip
+        cancelButton.setToolTipText("Cancel response");
+
+        // Function when cancel button is clicked
+        cancelButton.addActionListener(e -> {
+            cancelCurrentResponse();
+        });
+
+        // Update status panel structure
+        statusPanel.setLayout(new BorderLayout(10, 0));
+
+        // Status indicator on the left
+        JPanel leftStatusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        leftStatusPanel.setOpaque(false);
+
+        // Create animated green dot
+        onlineDot = new AnimatedDot(new Color(67, 181, 129)); // Green
+
+        statusLabel = new JLabel("No model selected");
+        statusLabel.setFont(new Font("Dialog", Font.PLAIN, 12));
+        statusLabel.setForeground(new Color(180, 180, 180));
+
+        leftStatusPanel.add(onlineDot);
+        leftStatusPanel.add(statusLabel);
+
+        // Cancel button moved further right after status text
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
+        centerPanel.setOpaque(false);
+        centerPanel.add(cancelButton);
+
+        // Add to status panel
+        statusPanel.add(leftStatusPanel, BorderLayout.WEST);
+        statusPanel.add(centerPanel, BorderLayout.CENTER);
+    }
+
+    private void initStatusAnimation() {
+        // Create timer for status label animation (100ms interval)
+        statusAnimationTimer = new Timer(100, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateStatusAnimation();
+            }
+        });
+        statusAnimationTimer.setRepeats(true);
+    }
+
+    private void updateStatusAnimation() {
+        // Base text "Responding"
+        String baseText = "Responding";
+
+        // Animation character index - increases cyclically
+        animationDots = (animationDots + 1) % baseText.length();
+
+        // Create combined string with HTML
+        StringBuilder animatedText = new StringBuilder("<html>");
+
+        // For each character
+        for (int i = 0; i < baseText.length(); i++) {
+            if (i == animationDots) {
+                // Highlighted character
+                animatedText.append("<span style='font-size: 18pt;'>")
+                        .append(baseText.charAt(i))
+                        .append("</span>");
+            } else {
+                // Normal character
+                animatedText.append(baseText.charAt(i));
+            }
+        }
+
+        animatedText.append("</html>");
+
+        // Update the status label with the animated text
+        statusLabel.setText(animatedText.toString());
+
+        // Update the animated dot
+        onlineDot.updateAnimation();
+    }
+
+    private ImageIcon createSendIcon() {
+        int size = 24;
+        BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = img.createGraphics();
+
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Plane body
+        int[] xPoints = {2, size - 2, 2, 10};
+        int[] yPoints = {2, size / 2, size - 2, size / 2};
+
+        g2d.setColor(Color.WHITE);
+        g2d.fillPolygon(xPoints, yPoints, 4);
+
+        g2d.dispose();
+        return new ImageIcon(img);
+    }
+
+    private void showWelcomeMessage() {
+        chatPane.showWelcomeMessage();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == sendButton) {
+            sendMessage();
+        }
+    }
+
+    private void sendMessage() {
+        final String message = inputTextArea.getText().trim();
+        
+        // Skip if message is the placeholder text
+        if (message.equals("Type your message here...")) {
+            inputTextArea.setText("");
+            inputTextArea.requestFocusInWindow();
+            return;
+        }
+
+        // Skip if message is empty
+        if (message.isEmpty()) {
+            return;
+        }
+        
+        // Debug: Check model selection state
+        eventLogger.log("Current provider: " + (currentProvider != null ? currentProvider : "null"));
+        eventLogger.log("Current model: " + (currentModel != null ? currentModel : "null"));
+        eventLogger.log("ModelManager current provider: " + 
+                       (modelManager.getCurrentProvider() != null ? 
+                        modelManager.getCurrentProvider().getProviderName() : "null"));
+        eventLogger.log("ModelManager current model: " + modelManager.getCurrentModel());
+        
+        // Check if a model is selected in both UI and ModelManager
+        if (currentModel == null || currentProvider == null || 
+            modelManager.getCurrentModel() == null || 
+            modelManager.getCurrentProvider() == null) {
+            
+            // Try to force model selection if UI shows a selection
+            if (modelSelectorPanel != null) {
+                String uiProvider = (String) modelSelectorPanel.getProviderComboBox().getSelectedItem();
+                String uiModel = (String) modelSelectorPanel.getModelComboBox().getSelectedItem();
+                
+                if (uiProvider != null && uiModel != null) {
+                    eventLogger.log("Attempting to force-select model: " + uiProvider + " - " + uiModel);
+                    boolean success = modelManager.setCurrentModel(uiProvider, uiModel);
+                    if (success) {
+                        currentProvider = uiProvider;
+                        currentModel = uiModel;
+                        eventLogger.log("Force-selected model: " + uiModel);
+                    } else {
+                        eventLogger.log("Force-selection failed");
+                        JOptionPane.showMessageDialog(
+                            this,
+                            "Failed to initialize model. Please select a different model.",
+                            "Model Selection Error",
+                            JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "Please select a model first.",
+                        "No Model Selected",
+                        JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            } else {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Please select a model first.",
+                    "No Model Selected",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+        
+        // Check if API key is required and set
+        if (modelManager.requiresAuthentication(currentProvider)) {
+            String apiKey = settingsManager.getApiKey(currentProvider);
+            if (apiKey.isEmpty()) {
+                // Prompt for API key
+                eventLogger.log("API key required for " + currentProvider);
+                
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please set an API key for " + currentProvider + ".",
+                        "API Key Required",
+                        JOptionPane.WARNING_MESSAGE);
+                
+                // Open API key dialog
+                if (modelSelectorPanel != null) {
+                    modelSelectorPanel.promptForApiKey();
+                    
+                    // Check if key was set
+                    apiKey = settingsManager.getApiKey(currentProvider);
+                    if (apiKey.isEmpty()) {
+                        eventLogger.log("API key dialog cancelled or empty key");
+                        return;
+                    } else {
+                        eventLogger.log("API key set for " + currentProvider);
+                    }
+                } else {
+                    return;
+                }
+            }
+        }
+
+        // Reset cancellation flag
+        isResponseCancelled = false;
+
+        // Add user message to chat
+        chatPane.addUserMessage("You", message);
+        
+        // Clear input
+        inputTextArea.setText("");
+        inputTextArea.requestFocusInWindow();
+
+        // Disable UI and update status
+        setUIEnabled(false);
+
+        // Generate response
+        String messageId = "msg_" + System.currentTimeMillis();
+        chatPane.addAIMessageWithId(currentModel, "", messageId);
+        
+        // Message callbacks
+        final StringBuilder fullResponse = new StringBuilder();
+        Consumer<String> updateCallback = chunk -> {
+            fullResponse.append(chunk);
+            SwingUtilities.invokeLater(() -> {
+                if (!isResponseCancelled) {
+                    chatPane.updateAIMessage(messageId, fullResponse.toString());
+                }
+            });
+        };
+        
+        Runnable completeCallback = () -> {
+            SwingUtilities.invokeLater(() -> {
+                if (!isResponseCancelled) {
+                    setUIEnabled(true);
+                }
+            });
+        };
+        
+        try {
+            // Store the future for potential cancellation
+            isGeneratingResponse = true;
+            currentResponseFuture = modelManager.generateResponse(message, updateCallback, completeCallback);
+            
+            // Handle completion or errors
+            currentResponseFuture.whenComplete((result, ex) -> {
+                isGeneratingResponse = false;
+                if (ex != null && !isResponseCancelled) {
+                    String errorMsg = ex.getMessage();
+                    eventLogger.log("Response error: " + errorMsg);
+                    
+                    SwingUtilities.invokeLater(() -> {
+                        chatPane.updateAIMessage(messageId, "Error: " + errorMsg);
+                        setUIEnabled(true);
+                        
+                        // Show more user-friendly message for common errors
+                        if (errorMsg != null && 
+                            (errorMsg.contains("API key") || 
+                             errorMsg.contains("authentication") || 
+                             errorMsg.contains("Authorization"))) {
+                            
+                            JOptionPane.showMessageDialog(
+                                this,
+                                "There was a problem with your API key for " + currentProvider + 
+                                ".\nPlease check that your API key is correct and has sufficient credits.",
+                                "API Key Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                }
+            });
+        } catch (Exception e) {
+            isGeneratingResponse = false;
+            String errorMsg = e.getMessage();
+            eventLogger.log("Exception: " + errorMsg);
+            
+            if (!isResponseCancelled) {
+                chatPane.updateAIMessage(messageId, "Error: " + errorMsg);
+                setUIEnabled(true);
+            }
+        }
+    }
+
+    private void cancelCurrentResponse() {
+        if (isGeneratingResponse) {
+            isResponseCancelled = true;
+            
+            // Try to cancel via model manager
+            modelManager.cancelGeneration();
+            
+            // Also try to cancel the future
+            if (currentResponseFuture != null && !currentResponseFuture.isDone()) {
+                currentResponseFuture.cancel(true);
+            }
+            
+            // Add a message about cancellation
+            chatPane.addAIMessage(currentModel, "Response generation was cancelled by the user.");
+            
+            // Re-enable the UI
+            setUIEnabled(true);
+            
+            // Reset state
+            isGeneratingResponse = false;
+        }
+    }
+
+    private void setUIEnabled(boolean enabled) {
+        inputTextArea.setEnabled(enabled);
+        sendButton.setEnabled(enabled);
+
+        if (enabled) {
+            // When UI is enabled
+            if (currentModel != null) {
+                statusLabel.setText("Model: " + currentModel);
+                statusLabel.setForeground(new Color(0, 120, 0)); // Green for active
+            } else {
+                statusLabel.setText("No model selected");
+                statusLabel.setForeground(Color.GRAY);
+            }
+            cancelButton.setVisible(false); // Hide cancel button
+            inputTextArea.requestFocusInWindow();
+            // Stop animation timer
+            statusAnimationTimer.stop();
+        } else {
+            // When UI is disabled (waiting for response)
+            statusLabel.setText("Responding");
+            cancelButton.setVisible(true); // Show cancel button
+            // Start animation timer
+            statusAnimationTimer.start();
+        }
+    }
+
+    @Override
+    public void onModelSelected(String provider, String model) {
+        eventLogger.log("Model selected: " + provider + " - " + model);
+        currentProvider = provider;
+        currentModel = model;
+        statusLabel.setText("Model: " + model);
+        
+        // Update UI state to show model is selected
+        setUIEnabled(true);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(JazariChatForge::new);
+    }
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\LLMProvider.java
+============================================================
+package jazari.llm_forge;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
+public interface LLMProvider {
+    
+    String getProviderName();
+    
+    List<String> getAvailableModels();
+    
+    boolean isAvailable();
+    
+    boolean initialize(Map<String, String> config);
+    
+    CompletableFuture<String> generateResponse(
+        String modelName,
+        String prompt,
+        Consumer<String> responseCallback,
+        Runnable completeCallback
+    );
+    
+    boolean cancelGeneration();
+    
+    boolean requiresAuthentication();
+    
+    List<String> getRequiredAuthFields();
+    
+    void shutdown();
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\ModelManager.java
+============================================================
+package jazari.llm_forge;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
+public class ModelManager {
+    
+    private Map<String, LLMProvider> providers;
+    private LLMProvider currentProvider;
+    private String currentModel;
+    
+    public ModelManager() {
+        providers = new HashMap<>();
+    }
+    
+    public void registerProvider(LLMProvider provider) {
+        if (provider != null && provider.isAvailable()) {
+            providers.put(provider.getProviderName(), provider);
+        }
+    }
+    
+    public List<String> getAllProviders() {
+        return new ArrayList<>(providers.keySet());
+    }
+    
+    public List<String> getModelsForProvider(String providerName) {
+        LLMProvider provider = providers.get(providerName);
+        if (provider != null) {
+            return provider.getAvailableModels();
+        }
+        return new ArrayList<>();
+    }
+    
+    public boolean setCurrentModel(String providerName, String modelName) {
+        LLMProvider provider = providers.get(providerName);
+        if (provider != null && provider.getAvailableModels().contains(modelName)) {
+            currentProvider = provider;
+            currentModel = modelName;
+            return true;
+        }
+        return false;
+    }
+    
+    public LLMProvider getCurrentProvider() {
+        return currentProvider;
+    }
+    
+    public String getCurrentModel() {
+        return currentModel;
+    }
+    
+    public CompletableFuture<String> generateResponse(
+            String prompt, 
+            Consumer<String> responseCallback, 
+            Runnable completeCallback) {
+        
+        if (currentProvider == null || currentModel == null) {
+            throw new IllegalStateException("No model selected");
+        }
+        
+        return currentProvider.generateResponse(
+                currentModel, 
+                prompt, 
+                responseCallback, 
+                completeCallback);
+    }
+    
+    public boolean cancelGeneration() {
+        if (currentProvider != null) {
+            return currentProvider.cancelGeneration();
+        }
+        return false;
+    }
+    
+    public boolean requiresAuthentication(String providerName) {
+        LLMProvider provider = providers.get(providerName);
+        return provider != null && provider.requiresAuthentication();
+    }
+    
+    public List<String> getRequiredAuthFields(String providerName) {
+        LLMProvider provider = providers.get(providerName);
+        if (provider != null) {
+            return provider.getRequiredAuthFields();
+        }
+        return new ArrayList<>();
+    }
+    
+    public boolean initializeProvider(String providerName, Map<String, String> config) {
+        LLMProvider provider = providers.get(providerName);
+        if (provider != null) {
+            return provider.initialize(config);
+        }
+        return false;
+    }
+    
+    public void shutdown() {
+        for (LLMProvider provider : providers.values()) {
+            provider.shutdown();
+        }
+        providers.clear();
+        currentProvider = null;
+        currentModel = null;
+    }
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\ModelSelectorPanel.java
+============================================================
+package jazari.llm_forge;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ModelSelectorPanel extends JPanel {
+    
+    private JComboBox<String> providerComboBox;
+    private JComboBox<String> modelComboBox;
+    private JButton authButton;
+    private JLabel statusLabel;
+    
+    private ModelManager modelManager;
+    private SettingsManager settingsManager;
+    private JFrame parentFrame;
+    
+    private List<ModelSelectionListener> listeners;
+    private EventLogger logger;
+    
+    public ModelSelectorPanel(JFrame parent, ModelManager modelManager, SettingsManager settingsManager) {
+        this.parentFrame = parent;
+        this.modelManager = modelManager;
+        this.settingsManager = settingsManager;
+        this.listeners = new ArrayList<>();
+        this.logger = new EventLogger();
+        
+        initializeUI();
+        populateProviders();
+    }
+    
+    public ModelSelectorPanel(JFrame parent, ModelManager modelManager, SettingsManager settingsManager, EventLogger logger) {
+        this.parentFrame = parent;
+        this.modelManager = modelManager;
+        this.settingsManager = settingsManager;
+        this.listeners = new ArrayList<>();
+        this.logger = logger;
+        
+        initializeUI();
+        populateProviders();
+    }
+    
+    private void initializeUI() {
+        setLayout(new BorderLayout(10, 0));
+        setBorder(new EmptyBorder(5, 10, 5, 10));
+        
+        // Create provider selection panel
+        JPanel providerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        JLabel providerLabel = new JLabel("Provider:");
+        providerComboBox = new JComboBox<>();
+        providerComboBox.setPreferredSize(new Dimension(150, 30));
+        providerPanel.add(providerLabel);
+        providerPanel.add(providerComboBox);
+        
+        // Create model selection panel
+        JPanel modelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        JLabel modelLabel = new JLabel("Model:");
+        modelComboBox = new JComboBox<>();
+        modelComboBox.setPreferredSize(new Dimension(200, 30));
+        modelPanel.add(modelLabel);
+        modelPanel.add(modelComboBox);
+        
+        // Create auth button
+        authButton = new JButton("Set API Key");
+        authButton.setPreferredSize(new Dimension(150, 30));
+        authButton.setBackground(new Color(108, 117, 125)); // Default gray
+        authButton.setForeground(Color.WHITE);
+        authButton.setFocusPainted(false);
+        authButton.setBorderPainted(false);
+        authButton.setOpaque(true);
+        
+        // Create status label
+        statusLabel = new JLabel("No model selected");
+        statusLabel.setForeground(Color.GRAY);
+        
+        // Add components to a flow layout panel
+        JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        controlsPanel.add(providerPanel);
+        controlsPanel.add(modelPanel);
+        controlsPanel.add(authButton);
+        
+        // Add main components to this panel
+        add(controlsPanel, BorderLayout.CENTER);
+        add(statusLabel, BorderLayout.EAST);
+        
+        // Add listeners
+        providerComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    handleProviderSelection();
+                }
+            }
+        });
+        
+        modelComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    handleModelSelection();
+                }
+            }
+        });
+        
+        authButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showApiKeyDialog();
+            }
+        });
+    }
+    
+    private void populateProviders() {
+        try {
+            // Temporarily remove item listener to prevent events during population
+            ItemListener[] listeners = providerComboBox.getItemListeners();
+            for (ItemListener listener : listeners) {
+                providerComboBox.removeItemListener(listener);
+            }
+            
+            // Clear the combobox
+            providerComboBox.removeAllItems();
+            
+            // Get all available providers from model manager
+            List<String> providers = modelManager.getAllProviders();
+            if (providers.isEmpty()) {
+                log("No providers available");
+                return;
+            }
+            
+            // Add providers to combobox
+            for (String provider : providers) {
+                providerComboBox.addItem(provider);
+            }
+            
+            // Re-add listeners
+            for (ItemListener listener : listeners) {
+                providerComboBox.addItemListener(listener);
+            }
+            
+            // Select first provider
+            if (providerComboBox.getItemCount() > 0) {
+                providerComboBox.setSelectedIndex(0);
+                handleProviderSelection();
+            }
+            
+        } catch (Exception e) {
+            log("Error populating providers: " + e.getMessage());
+        }
+    }
+    
+    private void handleProviderSelection() {
+        try {
+            String selectedProvider = (String) providerComboBox.getSelectedItem();
+            if (selectedProvider == null) {
+                log("No provider selected");
+                return;
+            }
+            
+            log("Provider selected: " + selectedProvider);
+            
+            // Update auth button state based on provider
+            updateAuthButtonState();
+            
+            // Populate models for this provider
+            populateModelsForProvider(selectedProvider);
+            
+        } catch (Exception e) {
+            log("Error handling provider selection: " + e.getMessage());
+        }
+    }
+    
+    private void populateModelsForProvider(String provider) {
+        try {
+            // Temporarily remove item listener to prevent events during population
+            ItemListener[] listeners = modelComboBox.getItemListeners();
+            for (ItemListener listener : listeners) {
+                modelComboBox.removeItemListener(listener);
+            }
+            
+            // Clear the model combobox
+            modelComboBox.removeAllItems();
+            
+            // Get models for the selected provider
+            List<String> models = modelManager.getModelsForProvider(provider);
+            if (models.isEmpty()) {
+                log("No models available for provider: " + provider);
+                return;
+            }
+            
+            // Add models to combobox
+            for (String model : models) {
+                modelComboBox.addItem(model);
+            }
+            
+            // Re-add listeners
+            for (ItemListener listener : listeners) {
+                modelComboBox.addItemListener(listener);
+            }
+            
+            // Select first model
+            if (modelComboBox.getItemCount() > 0) {
+                modelComboBox.setSelectedIndex(0);
+                handleModelSelection();
+            }
+            
+        } catch (Exception e) {
+            log("Error populating models: " + e.getMessage());
+        }
+    }
+    
+    private void handleModelSelection() {
+        try {
+            String selectedProvider = (String) providerComboBox.getSelectedItem();
+            String selectedModel = (String) modelComboBox.getSelectedItem();
+            
+            if (selectedProvider == null || selectedModel == null) {
+                log("Provider or model is null");
+                statusLabel.setText("No model selected");
+                statusLabel.setForeground(Color.GRAY);
+                return;
+            }
+            
+            log("Model selected: " + selectedProvider + " - " + selectedModel);
+            
+            // Check if the provider requires authentication
+            boolean requiresAuth = modelManager.requiresAuthentication(selectedProvider);
+            
+            // Check if API key is set if required
+            if (requiresAuth) {
+                String apiKey = settingsManager.getApiKey(selectedProvider);
+                if (apiKey.isEmpty()) {
+                    log("API key required but not set");
+                    statusLabel.setText("API key required");
+                    statusLabel.setForeground(Color.RED);
+                    return;
+                }
+            }
+            
+            // Try to set the current model in the model manager
+            boolean success = modelManager.setCurrentModel(selectedProvider, selectedModel);
+            
+            if (success) {
+                log("Model set successfully");
+                statusLabel.setText("Model: " + selectedModel);
+                statusLabel.setForeground(new Color(0, 120, 0)); // Green
+                
+                // Notify listeners
+                notifyListeners(selectedProvider, selectedModel);
+                
+                // If provider requires auth, make sure it's initialized
+                if (requiresAuth) {
+                    String apiKey = settingsManager.getApiKey(selectedProvider);
+                    if (!apiKey.isEmpty()) {
+                        Map<String, String> config = new HashMap<>();
+                        config.put("apiKey", apiKey);
+                        boolean initSuccess = modelManager.initializeProvider(selectedProvider, config);
+                        log("Provider initialization " + (initSuccess ? "successful" : "failed"));
+                    }
+                }
+            } else {
+                log("Failed to set model");
+                statusLabel.setText("Failed to select model");
+                statusLabel.setForeground(Color.RED);
+            }
+            
+        } catch (Exception e) {
+            log("Error handling model selection: " + e.getMessage());
+            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setForeground(Color.RED);
+        }
+    }
+    
+    private void updateAuthButtonState() {
+        try {
+            String selectedProvider = (String) providerComboBox.getSelectedItem();
+            if (selectedProvider == null) {
+                authButton.setEnabled(false);
+                authButton.setText("No Provider");
+                authButton.setBackground(new Color(108, 117, 125)); // Gray
+                return;
+            }
+            
+            boolean requiresAuth = modelManager.requiresAuthentication(selectedProvider);
+            authButton.setEnabled(true);
+            
+            if (requiresAuth) {
+                String apiKey = settingsManager.getApiKey(selectedProvider);
+                if (!apiKey.isEmpty()) {
+                    // API key is set
+                    String maskedKey = settingsManager.hashApiKey(apiKey);
+                    authButton.setText("API Key: " + maskedKey);
+                    authButton.setToolTipText("Change API key for " + selectedProvider);
+                    authButton.setBackground(new Color(40, 167, 69)); // Green
+                } else {
+                    // API key required but not set
+                    authButton.setText("Set API Key");
+                    authButton.setToolTipText("Required: Set API key for " + selectedProvider);
+                    authButton.setBackground(new Color(220, 53, 69)); // Red
+                }
+            } else {
+                // No auth needed
+                authButton.setText("No Auth Needed");
+                authButton.setToolTipText(selectedProvider + " does not require authentication");
+                authButton.setBackground(new Color(108, 117, 125)); // Gray
+            }
+            
+        } catch (Exception e) {
+            log("Error updating auth button state: " + e.getMessage());
+        }
+    }
+    
+    private void showApiKeyDialog() {
+        try {
+            String selectedProvider = (String) providerComboBox.getSelectedItem();
+            if (selectedProvider == null) {
+                return;
+            }
+            
+            // Get required fields for this provider
+            List<String> requiredFields = modelManager.getRequiredAuthFields(selectedProvider);
+            
+            // Show API key dialog
+            Map<String, String> apiKeyData = APIKeyDialog.showDialog(parentFrame, selectedProvider, requiredFields);
+            
+            // If dialog was cancelled or no data returned
+            if (apiKeyData == null || !apiKeyData.containsKey("apiKey")) {
+                log("API key dialog cancelled or returned no data");
+                return;
+            }
+            
+            // Save API key
+            settingsManager.setApiKey(selectedProvider, apiKeyData.get("apiKey"));
+            log("API key saved for " + selectedProvider);
+            
+            // Initialize provider with new API key
+            Map<String, String> config = new HashMap<>();
+            config.putAll(apiKeyData);
+            boolean success = modelManager.initializeProvider(selectedProvider, config);
+            
+            log("Provider initialization " + (success ? "successful" : "failed"));
+            
+            // Update UI
+            updateAuthButtonState();
+            handleModelSelection();
+            
+        } catch (Exception e) {
+            log("Error showing API key dialog: " + e.getMessage());
+        }
+    }
+    
+    public void addModelSelectionListener(ModelSelectionListener listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+    
+    public void removeModelSelectionListener(ModelSelectionListener listener) {
+        listeners.remove(listener);
+    }
+    
+    private void notifyListeners(String provider, String model) {
+        for (ModelSelectionListener listener : listeners) {
+            try {
+                listener.onModelSelected(provider, model);
+            } catch (Exception e) {
+                log("Error notifying listener: " + e.getMessage());
+            }
+        }
+    }
+    
+    public void refreshProviders() {
+        populateProviders();
+    }
+    
+    public void forceModelSelection() {
+        handleModelSelection();
+    }
+    
+    public boolean selectProvider(String providerName) {
+        for (int i = 0; i < providerComboBox.getItemCount(); i++) {
+            String item = providerComboBox.getItemAt(i);
+            if (item.equals(providerName)) {
+                providerComboBox.setSelectedIndex(i);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean selectModel(String modelName) {
+        for (int i = 0; i < modelComboBox.getItemCount(); i++) {
+            String item = modelComboBox.getItemAt(i);
+            if (item.equals(modelName)) {
+                modelComboBox.setSelectedIndex(i);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public void promptForApiKey() {
+        showApiKeyDialog();
+    }
+    
+    public JComboBox<String> getProviderComboBox() {
+        return providerComboBox;
+    }
+    
+    public JComboBox<String> getModelComboBox() {
+        return modelComboBox;
+    }
+    
+    private void log(String message) {
+        if (logger != null) {
+            logger.log("ModelSelector: " + message);
+        }
+    }
+    
+    public interface ModelSelectionListener {
+        void onModelSelected(String provider, String model);
+    }
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\OllamaProvider.java
+============================================================
+package jazari.llm_forge;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+public class OllamaProvider implements LLMProvider {
+    
+    private static final String DEFAULT_OLLAMA_URL = "http://localhost:11434";
+    private String ollamaUrl;
+    private HttpClient httpClient;
+    private CompletableFuture<HttpResponse<Stream<String>>> currentRequestFuture;
+    private boolean isResponseCancelled = false;
+    private List<String> availableModels;
+    
+    public OllamaProvider() {
+        this(DEFAULT_OLLAMA_URL);
+    }
+    
+    public OllamaProvider(String ollamaUrl) {
+        this.ollamaUrl = ollamaUrl;
+        this.httpClient = HttpClient.newHttpClient();
+        this.availableModels = new ArrayList<>();
+    }
+    
+    @Override
+    public String getProviderName() {
+        return "Ollama";
+    }
+    
+    @Override
+    public List<String> getAvailableModels() {
+        if (availableModels.isEmpty()) {
+            refreshAvailableModels();
+        }
+        return new ArrayList<>(availableModels);
+    }
+    
+    private void refreshAvailableModels() {
+        availableModels.clear();
+        
+        try {
+            // Try with Ollama API first
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ollamaUrl + "/api/tags"))
+                    .GET()
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode rootNode = mapper.readTree(response.body());
+                JsonNode modelsNode = rootNode.get("models");
+                
+                if (modelsNode != null && modelsNode.isArray()) {
+                    for (JsonNode model : modelsNode) {
+                        String modelName = model.get("name").asText();
+                        availableModels.add(modelName);
+                    }
+                }
+            } else {
+                // Fallback to command line if API fails
+                fetchModelsFromCommandLine();
+            }
+        } catch (Exception e) {
+            // Fallback to command line
+            fetchModelsFromCommandLine();
+        }
+    }
+    
+    private void fetchModelsFromCommandLine() {
+        try {
+            Process process = Runtime.getRuntime().exec("ollama list");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            
+            String line;
+            boolean headerSkipped = false;
+            
+            while ((line = reader.readLine()) != null) {
+                // Skip the header line
+                if (!headerSkipped) {
+                    headerSkipped = true;
+                    continue;
+                }
+                
+                // Parse the model name from the line
+                String[] parts = line.trim().split("\\s+");
+                if (parts.length > 0) {
+                    availableModels.add(parts[0]);
+                }
+            }
+            
+            process.waitFor();
+        } catch (Exception e) {
+            // Ignore errors, models will be empty
+        }
+    }
+    
+    @Override
+    public boolean isAvailable() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ollamaUrl))
+                    .GET()
+                    .timeout(java.time.Duration.ofSeconds(2))
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() < 400;
+        } catch (Exception e) {
+            try {
+                // Try running a simple command to check if ollama is installed
+                Process process = Runtime.getRuntime().exec("ollama --version");
+                int exitCode = process.waitFor();
+                return exitCode == 0;
+            } catch (Exception ex) {
+                return false;
+            }
+        }
+    }
+    
+    @Override
+    public boolean initialize(Map<String, String> config) {
+        if (config != null && config.containsKey("url")) {
+            this.ollamaUrl = config.get("url");
+        }
+        
+        // Re-create HTTP client
+        this.httpClient = HttpClient.newHttpClient();
+        
+        // Try to refresh models to validate connection
+        try {
+            refreshAvailableModels();
+            return !availableModels.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    @Override
+    public CompletableFuture<String> generateResponse(
+            String modelName, 
+            String prompt, 
+            Consumer<String> responseCallback, 
+            Runnable completeCallback) {
+        
+        CompletableFuture<String> result = new CompletableFuture<>();
+        
+        try {
+            // Reset cancellation flag
+            isResponseCancelled = false;
+            
+            ObjectMapper mapper = new ObjectMapper();
+            
+            // Create request body
+            Map<String, Object> requestBodyMap = new HashMap<>();
+            requestBodyMap.put("prompt", prompt);
+            requestBodyMap.put("model", modelName);
+            requestBodyMap.put("stream", true);
+            
+            String requestBody = mapper.writeValueAsString(requestBodyMap);
+            
+            // Create request
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ollamaUrl + "/api/generate"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
+                    .build();
+            
+            // Create a StringBuilder to accumulate the response
+            final StringBuilder responseContent = new StringBuilder();
+            
+            // Send request asynchronously
+            currentRequestFuture = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines());
+            
+            currentRequestFuture.thenAccept(response -> {
+                if (response.statusCode() == 200) {
+                    // Process response lines
+                    try {
+                        response.body().forEach(line -> {
+                            // Check if cancelled
+                            if (isResponseCancelled) {
+                                return;
+                            }
+                            
+                            try {
+                                // Skip empty lines
+                                if (line.trim().isEmpty()) {
+                                    return;
+                                }
+                                
+                                JsonNode node = mapper.readTree(line);
+                                
+                                // Check response content
+                                if (node.has("response")) {
+                                    String responsePart = node.get("response").asText();
+                                    responseContent.append(responsePart);
+                                    
+                                    // Call callback with current chunk
+                                    if (responseCallback != null) {
+                                        responseCallback.accept(responsePart);
+                                    }
+                                }
+                                
+                                // Check if response is complete
+                                if (node.has("done") && node.get("done").asBoolean()) {
+                                    // Only complete if not cancelled
+                                    if (!isResponseCancelled) {
+                                        // Call complete callback
+                                        if (completeCallback != null) {
+                                            completeCallback.run();
+                                        }
+                                        
+                                        // Complete the future
+                                        result.complete(responseContent.toString());
+                                    }
+                                }
+                            } catch (Exception e) {
+                                if (!isResponseCancelled) {
+                                    result.completeExceptionally(e);
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        if (!currentRequestFuture.isCancelled() && !isResponseCancelled) {
+                            result.completeExceptionally(e);
+                        }
+                    }
+                } else {
+                    if (!isResponseCancelled) {
+                        result.completeExceptionally(
+                                new RuntimeException("Ollama API error: " + response.statusCode()));
+                    }
+                }
+            }).exceptionally(e -> {
+                if (!currentRequestFuture.isCancelled() && !isResponseCancelled) {
+                    result.completeExceptionally(e);
+                }
+                return null;
+            });
+            
+        } catch (Exception e) {
+            result.completeExceptionally(e);
+        }
+        
+        return result;
+    }
+    
+    @Override
+    public boolean cancelGeneration() {
+        if (currentRequestFuture != null) {
+            try {
+                isResponseCancelled = true;
+                currentRequestFuture.cancel(true);
+                
+                // Restart the Ollama process - this is optional and might be aggressive
+                // forceRestartOllamaProcess();
+                
+                // Reset current request
+                currentRequestFuture = null;
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
+    }
+    
+    private void forceRestartOllamaProcess() {
+        try {
+            // Get the operating system
+            String os = System.getProperty("os.name").toLowerCase();
+            Process process = null;
+            
+            if (os.contains("win")) {
+                // Windows
+                ProcessBuilder pb = new ProcessBuilder();
+                
+                // Kill
+                pb.command("taskkill", "/F", "/IM", "ollama.exe");
+                process = pb.start();
+                process.waitFor();
+                
+                // Restart
+                pb = new ProcessBuilder();
+                pb.command("cmd", "/c", "start", "/B", "ollama", "serve");
+                pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+                pb.redirectError(ProcessBuilder.Redirect.DISCARD);
+                process = pb.start();
+            } else {
+                // macOS or Linux
+                process = Runtime.getRuntime().exec("pkill -f ollama");
+                process.waitFor();
+                process = Runtime.getRuntime().exec("ollama serve &");
+            }
+            
+            if (process != null) {
+                process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+            }
+            
+            // Create a fresh HTTP client
+            httpClient = HttpClient.newHttpClient();
+            
+            // Warm up the model
+            warmUpOllamaModel();
+        } catch (Exception e) {
+            // Ignore errors during restart
+        }
+    }
+    
+    private void warmUpOllamaModel() {
+        try {
+            // Simple request to warm up the model
+            Map<String, Object> warmupBody = new HashMap<>();
+            warmupBody.put("model", availableModels.isEmpty() ? "gemma3" : availableModels.get(0));
+            warmupBody.put("prompt", "Hello, this is a warmup message.");
+            warmupBody.put("stream", false);
+            
+            ObjectMapper mapper = new ObjectMapper();
+            String warmupRequestBody = mapper.writeValueAsString(warmupBody);
+            
+            HttpRequest warmupRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(ollamaUrl + "/api/generate"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(warmupRequestBody, StandardCharsets.UTF_8))
+                    .build();
+            
+            httpClient.sendAsync(warmupRequest, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            // Ignore errors during warmup
+        }
+    }
+    
+    @Override
+    public boolean requiresAuthentication() {
+        return false; // Ollama doesn't require authentication
+    }
+    
+    @Override
+    public List<String> getRequiredAuthFields() {
+        return new ArrayList<>(); // No auth fields needed
+    }
+    
+    @Override
+    public void shutdown() {
+        // Cancel any ongoing requests
+        if (currentRequestFuture != null) {
+            currentRequestFuture.cancel(true);
+            currentRequestFuture = null;
+        }
+    }
+}
+
+
+============================================================
+FILE: D:\Dropbox\NetbeansProjects\OJL\src\main\java\jazari\llm_forge\SettingsManager.java
+============================================================
+package jazari.llm_forge;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+
+public class SettingsManager {
+    
+    private static final String SETTINGS_DIR = System.getProperty("user.home") + File.separator + ".jazari_chat_forge";
+    private static final String SETTINGS_FILE = "settings.properties";
+    private static final String API_KEYS_FILE = "api_keys.enc";
+    private static final String SALT_FILE = "salt.bin";
+    
+    private Properties settings;
+    private Map<String, String> apiKeys;
+    private byte[] salt;
+    private final String masterPassword;
+    
+    public SettingsManager() {
+        this("JazariChatForge"); // Default master password
+    }
+    
+    public SettingsManager(String masterPassword) {
+        this.masterPassword = masterPassword;
+        this.settings = new Properties();
+        this.apiKeys = new HashMap<>();
+        initialize();
+    }
+    
+    private void initialize() {
+        try {
+            // Create settings directory if it doesn't exist
+            File settingsDir = new File(SETTINGS_DIR);
+            if (!settingsDir.exists()) {
+                settingsDir.mkdirs();
+            }
+            
+            // Load settings file if it exists
+            File settingsFile = new File(SETTINGS_DIR + File.separator + SETTINGS_FILE);
+            if (settingsFile.exists()) {
+                try (FileInputStream fis = new FileInputStream(settingsFile)) {
+                    settings.load(fis);
+                }
+            }
+            
+            // Check if salt exists, create if not
+            File saltFile = new File(SETTINGS_DIR + File.separator + SALT_FILE);
+            if (saltFile.exists()) {
+                salt = Files.readAllBytes(saltFile.toPath());
+            } else {
+                salt = generateSalt();
+                Files.write(saltFile.toPath(), salt);
+            }
+            
+            // Load API keys if they exist
+            File apiKeysFile = new File(SETTINGS_DIR + File.separator + API_KEYS_FILE);
+            if (apiKeysFile.exists()) {
+                loadEncryptedApiKeys();
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error initializing settings: " + e.getMessage());
+            // Create empty settings and API keys in case of error
+            settings = new Properties();
+            apiKeys = new HashMap<>();
+        }
+    }
+    
+    private byte[] generateSalt() {
+        byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
+        return salt;
+    }
+    
+    public void setSetting(String key, String value) {
+        settings.setProperty(key, value);
+        saveSettings();
+    }
+    
+    public String getSetting(String key, String defaultValue) {
+        return settings.getProperty(key, defaultValue);
+    }
+    
+    public void setApiKey(String provider, String apiKey) {
+        apiKeys.put(provider, apiKey);
+        saveEncryptedApiKeys();
+    }
+    
+    public String getApiKey(String provider) {
+        return apiKeys.getOrDefault(provider, "");
+    }
+    
+    private void saveSettings() {
+        try {
+            File settingsFile = new File(SETTINGS_DIR + File.separator + SETTINGS_FILE);
+            try (FileOutputStream fos = new FileOutputStream(settingsFile)) {
+                settings.store(fos, "JazariChatForge Settings");
+            }
+        } catch (Exception e) {
+            System.err.println("Error saving settings: " + e.getMessage());
+        }
+    }
+    
+    private void saveEncryptedApiKeys() {
+        try {
+            // Create string representation of API keys
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, String> entry : apiKeys.entrySet()) {
+                sb.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+            }
+            String apiKeysStr = sb.toString();
+            
+            // Encrypt API keys
+            byte[] encryptedData = encrypt(apiKeysStr.getBytes(StandardCharsets.UTF_8));
+            
+            // Save to file
+            Path path = Paths.get(SETTINGS_DIR + File.separator + API_KEYS_FILE);
+            Files.write(path, encryptedData);
+            
+        } catch (Exception e) {
+            System.err.println("Error saving API keys: " + e.getMessage());
+        }
+    }
+    
+    private void loadEncryptedApiKeys() {
+        try {
+            // Read encrypted data
+            Path path = Paths.get(SETTINGS_DIR + File.separator + API_KEYS_FILE);
+            byte[] encryptedData = Files.readAllBytes(path);
+            
+            // Decrypt data
+            byte[] decryptedData = decrypt(encryptedData);
+            String apiKeysStr = new String(decryptedData, StandardCharsets.UTF_8);
+            
+            // Parse API keys
+            apiKeys = new HashMap<>();
+            String[] lines = apiKeysStr.split("\n");
+            for (String line : lines) {
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+                
+                int separatorIndex = line.indexOf('=');
+                if (separatorIndex > 0) {
+                    String provider = line.substring(0, separatorIndex);
+                    String apiKey = line.substring(separatorIndex + 1);
+                    apiKeys.put(provider, apiKey);
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error loading API keys: " + e.getMessage());
+            apiKeys = new HashMap<>();
+        }
+    }
+    
+    private byte[] encrypt(byte[] data) throws Exception {
+        // Derive key from password
+        SecretKey key = deriveKey(masterPassword);
+        
+        // Initialize cipher
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        SecureRandom random = new SecureRandom();
+        byte[] iv = new byte[16];
+        random.nextBytes(iv);
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
+        cipher.init(Cipher.ENCRYPT_MODE, key, ivspec);
+        
+        // Encrypt
+        byte[] encryptedData = cipher.doFinal(data);
+        
+        // Prepend IV to encrypted data
+        byte[] combined = new byte[iv.length + encryptedData.length];
+        System.arraycopy(iv, 0, combined, 0, iv.length);
+        System.arraycopy(encryptedData, 0, combined, iv.length, encryptedData.length);
+        
+        return combined;
+    }
+    
+    private byte[] decrypt(byte[] encryptedData) throws Exception {
+        // Derive key from password
+        SecretKey key = deriveKey(masterPassword);
+        
+        // Extract IV from the beginning of the data
+        byte[] iv = new byte[16];
+        System.arraycopy(encryptedData, 0, iv, 0, iv.length);
+        
+        // Extract actual encrypted data
+        byte[] actualData = new byte[encryptedData.length - iv.length];
+        System.arraycopy(encryptedData, iv.length, actualData, 0, actualData.length);
+        
+        // Initialize cipher
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
+        cipher.init(Cipher.DECRYPT_MODE, key, ivspec);
+        
+        // Decrypt
+        return cipher.doFinal(actualData);
+    }
+    
+    private SecretKey deriveKey(String password) throws Exception {
+        int iterations = 10000;
+        int keyLength = 256;
+        
+        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keyLength);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        byte[] keyBytes = skf.generateSecret(spec).getEncoded();
+        return new SecretKeySpec(keyBytes, "AES");
+    }
+    
+    public void clearAllSettings() {
+        settings = new Properties();
+        apiKeys = new HashMap<>();
+        saveSettings();
+        saveEncryptedApiKeys();
+    }
+    
+    public void clearApiKeys() {
+        apiKeys = new HashMap<>();
+        saveEncryptedApiKeys();
+    }
+    
+    public Map<String, String> getSettings() {
+        Map<String, String> result = new HashMap<>();
+        for (String key : settings.stringPropertyNames()) {
+            result.put(key, settings.getProperty(key));
+        }
+        return result;
+    }
+    
+    public boolean hasSettingsFile() {
+        File settingsFile = new File(SETTINGS_DIR + File.separator + SETTINGS_FILE);
+        return settingsFile.exists();
+    }
+    
+    public String hashApiKey(String apiKey) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(apiKey.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(digest).substring(0, 8);
+        } catch (NoSuchAlgorithmException e) {
+            return apiKey.substring(0, 3) + "...";
+        }
+    }
+}
+
+

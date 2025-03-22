@@ -20,20 +20,20 @@ import java.util.stream.Stream;
  *
  * @author cezerilab
  */
-public class FrameMainLLM extends javax.swing.JFrame {
+public class FrameLLMTools extends javax.swing.JFrame {
 
     static {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(FrameMainLLM.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FrameLLMTools.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     /**
      * Creates new form FrameMainLLM
      */
-    public FrameMainLLM() {
+    public FrameLLMTools() {
         initComponents();
         logArea.setDoubleBuffered(true);
     }
@@ -222,7 +222,6 @@ public class FrameMainLLM extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("LLM Tools");
-        setPreferredSize(new java.awt.Dimension(800, 600));
 
         jLabel1.setText("Project Directory:");
 
@@ -415,7 +414,7 @@ public class FrameMainLLM extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                FrameMainLLM frm = new FrameMainLLM();
+                FrameLLMTools frm = new FrameLLMTools();
                 frm.setVisible(true);
             }
         });
