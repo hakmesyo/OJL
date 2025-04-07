@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.io.File;
 import java.util.HashMap;
+import jazari.speech_to_text_vosk.VoiceRecognitionService;
 
 public class JazariChatApp {
 
@@ -38,6 +39,7 @@ public class JazariChatApp {
             .build();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Preferences prefs = Preferences.userNodeForPackage(JazariChatApp.class);
+    private static VoiceIntegration voiceIntegration;
 
     // Sohbet geçmişi için sınıf
     private static class ChatMessage {
@@ -67,6 +69,20 @@ public class JazariChatApp {
         public LocalDateTime getTimestamp() {
             return timestamp;
         }
+    }
+
+    private static void setupWindowCloseHandler() {
+        mainFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                savePreferences();
+
+                // Ses tanıma kaynakları da temizlenecek
+                if (voiceIntegration != null) {
+                    voiceIntegration.cleanup();
+                }
+            }
+        });
     }
 
     // Sohbet oturumu sınıfı
@@ -202,6 +218,14 @@ public class JazariChatApp {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         chatPanel.add(scrollPane, BorderLayout.CENTER);
 
+        // Durum çubuğu - ÖNEMLİ: statusLabel'ı VoiceIntegration'dan önce oluşturun
+        JPanel statusPanel = new JPanel(new BorderLayout());
+        statusPanel.setBorder(new EmptyBorder(5, 15, 5, 15));
+        statusPanel.setBackground(LIGHT_THEME_BG);
+        statusLabel = new JLabel("Hazır");
+        statusLabel.setForeground(Color.GRAY);
+        statusPanel.add(statusLabel, BorderLayout.WEST);
+
         // Giriş alanı paneli
         JPanel inputPanel = new JPanel(new BorderLayout(10, 0));
         inputPanel.setBackground(LIGHT_THEME_BG);
@@ -311,18 +335,13 @@ public class JazariChatApp {
 
         chatPanel.add(inputPanel, BorderLayout.SOUTH);
 
-        // Durum çubuğu
-        JPanel statusPanel = new JPanel(new BorderLayout());
-        statusPanel.setBorder(new EmptyBorder(5, 15, 5, 15));
-        statusPanel.setBackground(LIGHT_THEME_BG);
-        statusLabel = new JLabel("Hazır");
-        statusLabel.setForeground(Color.GRAY);
-        statusPanel.add(statusLabel, BorderLayout.WEST);
-
         // Pencere içeriğini düzenle
         mainFrame.add(sidePanel, BorderLayout.WEST);
         mainFrame.add(chatPanel, BorderLayout.CENTER);
         mainFrame.add(statusPanel, BorderLayout.SOUTH);
+
+        // SES TANIMA ENTEGRASYONU - statusLabel oluşturulduktan sonra
+        voiceIntegration = VoiceIntegration.integrate(inputArea, bottomPanel, statusLabel);
 
         // Pencereyi gösterme
         mainFrame.setLocationRelativeTo(null);
@@ -334,6 +353,8 @@ public class JazariChatApp {
         // Pencere kapatıldığında ayarları kaydet
         setupWindowCloseHandler();
     }
+    
+    
 
     /**
      * Sol kenar panelini oluşturur
@@ -1632,15 +1653,4 @@ public class JazariChatApp {
 
     }
 
-    /**
-     * Pencere kapanırken çalıştırılacak işlemler
-     */
-    private static void setupWindowCloseHandler() {
-        mainFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                savePreferences();
-            }
-        });
-    }
 }

@@ -21,6 +21,7 @@ import jazari.gui.FrameScreenCapture;
 import jazari.interpreter.EnhancedIDE;
 import jazari.llm.OllamaGemma3SwingChat;
 import jazari.llm_chat.JazariChatApp;
+import jazari.llm_forge.JazariChatForge;
 
 
 /*
@@ -65,8 +66,9 @@ public class Jazo extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         btn_screen_capture = new javax.swing.JButton();
         btn_ide = new javax.swing.JButton();
-        btn_llm = new javax.swing.JButton();
+        btn_llm_web = new javax.swing.JButton();
         btn_llm_tool = new javax.swing.JButton();
+        btn_llm_local = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Jazari Annotation Tool Version:21.11.2024");
@@ -97,11 +99,11 @@ public class Jazo extends javax.swing.JFrame {
             }
         });
 
-        btn_llm.setText("Open LLM Chat");
-        btn_llm.setToolTipText("Open Screen Capture Frame (from videos + stationary)");
-        btn_llm.addActionListener(new java.awt.event.ActionListener() {
+        btn_llm_web.setText("Web-LLM");
+        btn_llm_web.setToolTipText("Open Screen Capture Frame (from videos + stationary)");
+        btn_llm_web.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_llmActionPerformed(evt);
+                btn_llm_webActionPerformed(evt);
             }
         });
 
@@ -113,6 +115,14 @@ public class Jazo extends javax.swing.JFrame {
             }
         });
 
+        btn_llm_local.setText("Local-LMM");
+        btn_llm_local.setToolTipText("Open Screen Capture Frame (from videos + stationary)");
+        btn_llm_local.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_llm_localActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -121,8 +131,10 @@ public class Jazo extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(btn_ide, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_llm)
-                .addGap(5, 5, 5)
+                .addComponent(btn_llm_local)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btn_llm_web)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_llm_tool)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_screen_capture)
@@ -135,8 +147,9 @@ public class Jazo extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btn_screen_capture, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
                     .addComponent(btn_ide, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                    .addComponent(btn_llm, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                    .addComponent(btn_llm_tool, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE))
+                    .addComponent(btn_llm_web, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(btn_llm_tool, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(btn_llm_local, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -183,14 +196,19 @@ public class Jazo extends javax.swing.JFrame {
         new EnhancedIDE().setVisible(true);
     }//GEN-LAST:event_btn_ideActionPerformed
 
-    private void btn_llmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_llmActionPerformed
+    private void btn_llm_webActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_llm_webActionPerformed
         //new OllamaGemma3SwingChat().setVisible(true);
         JazariChatApp.show();
-    }//GEN-LAST:event_btn_llmActionPerformed
+    }//GEN-LAST:event_btn_llm_webActionPerformed
 
     private void btn_llm_toolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_llm_toolActionPerformed
         new FrameLLMTools().setVisible(true);
     }//GEN-LAST:event_btn_llm_toolActionPerformed
+
+    private void btn_llm_localActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_llm_localActionPerformed
+        new JazariChatForge().setVisible(true);
+       //new OllamaGemma3SwingChat().setVisible(true);
+    }//GEN-LAST:event_btn_llm_localActionPerformed
 
     /**
      * @param args the command line arguments
@@ -207,8 +225,9 @@ public class Jazo extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_ide;
-    private javax.swing.JButton btn_llm;
+    private javax.swing.JButton btn_llm_local;
     private javax.swing.JButton btn_llm_tool;
+    private javax.swing.JButton btn_llm_web;
     private javax.swing.JButton btn_open;
     private javax.swing.JButton btn_screen_capture;
     private javax.swing.JPanel jPanel1;

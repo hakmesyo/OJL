@@ -24,6 +24,25 @@
     </properties>
     
     <dependencies>
+        <!--         https://mvnrepository.com/artifact/io.github.givimad/whisper-jni 
+        <dependency>
+            <groupId>io.github.givimad</groupId>
+            <artifactId>whisper-jni</artifactId>
+            <version>1.7.1</version>
+        </dependency>-->
+        
+        <!-- https://mvnrepository.com/artifact/black.ninia/jep -->
+        <dependency>
+            <groupId>black.ninia</groupId>
+            <artifactId>jep</artifactId>
+            <version>4.2.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.alphacephei/vosk -->
+        <dependency>
+            <groupId>com.alphacephei</groupId>
+            <artifactId>vosk</artifactId>
+            <version>0.3.45</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.drjekyll/fontchooser -->
         <dependency>
             <groupId>org.drjekyll</groupId>
