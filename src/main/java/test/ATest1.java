@@ -20,6 +20,7 @@ CMatrix cm = CMatrix.getInstance()
                 .transpose()
                 .replicateRow(5)
                 .dump()
+                .plot()
                 ;
 
 //        CMatrix cm = CMatrix.getInstance()

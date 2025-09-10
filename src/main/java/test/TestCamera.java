@@ -27,11 +27,11 @@ import jazari.matrix.CMatrix;
 public class TestCamera {
 
     public static void main(String[] args) {
-        //        CMatrix cm = CMatrix.getInstance() //                .startCamera(0, new Dimension(1280, 720),new Dimension(640,360))  
+                CMatrix cm = CMatrix.getInstance() //                .startCamera(0, new Dimension(1280, 720),new Dimension(640,360))  
         //                .startCamera(new Dimension(640, 480), 30)
         //                .startCamera(0, new Dimension(1280, 720)) 
         //                .startCamera(0, new Dimension(1920, 1080), new Dimension(640,360))               
-        //                .startCamera(0, new Dimension(1920, 1080))               
+                        .startCamera(1, new Dimension(1280,720), 30)
         //                .startCamera(0)               
         ;
 //        FactoryWebCam factoryWebCam = new FactoryWebCam().openWebCam(0).startWebCAM(30);
@@ -80,23 +80,23 @@ public class TestCamera {
 //            }
 //        });
         //CMatrix cm1 = CMatrix.getInstance();
-        FrameBasicImage frm=new FrameBasicImage();
-        frm.setVisible(true);
-        CMatrix cm = CMatrix.getInstance()
-//                .startCamera(0)
-                .startCamera(0,false, (BufferedImage image) -> {
-                    //image = ImageProcess.rgb2gray(image);
-                    image = ImageProcess.flipImageLeft2Right(image);
-                    //image = ImageProcess.rgb2hsv(image);
-                    //image = ImageProcess.edgeDetectionCannyAsImage(image);
-                    //image = ImageProcess.mosaicImageFast(image, 15);
-                    frm.setImage(image);
-                    return image;
-        })
-        ;
-        
-        FactoryUtils.bekleUntilPressEnter();
-        System.exit(0);
+//        FrameBasicImage frm=new FrameBasicImage();
+//        frm.setVisible(true);
+//        CMatrix cm = CMatrix.getInstance()
+////                .startCamera(0)
+//                .startCamera(1,false, (BufferedImage image) -> {
+//                    //image = ImageProcess.rgb2gray(image);
+//                    image = ImageProcess.flipImageLeft2Right(image);
+//                    //image = ImageProcess.rgb2hsv(image);
+//                    //image = ImageProcess.edgeDetectionCannyAsImage(image);
+//                    //image = ImageProcess.mosaicImageFast(image, 15);
+//                    frm.setImage(image);
+//                    return image;
+//        })
+//        ;
+//        
+//        FactoryUtils.bekleUntilPressEnter();
+//        System.exit(0);
 
     }
 
