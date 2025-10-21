@@ -81,9 +81,7 @@
                   <Component id="btn_llm_local" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btn_llm_web" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btn_pixelFix" min="-2" pref="85" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="71" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="162" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -91,15 +89,12 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="btn_pixelFix" max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="btn_screen_capture" alignment="3" pref="31" max="32767" attributes="0"/>
-                          <Component id="btn_ide" alignment="3" pref="31" max="32767" attributes="0"/>
-                          <Component id="btn_llm_web" alignment="3" pref="31" max="32767" attributes="0"/>
-                          <Component id="btn_llm_tool" alignment="3" pref="31" max="32767" attributes="0"/>
-                          <Component id="btn_llm_local" alignment="3" pref="31" max="32767" attributes="0"/>
-                      </Group>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="btn_screen_capture" alignment="3" pref="31" max="32767" attributes="0"/>
+                      <Component id="btn_ide" alignment="3" pref="31" max="32767" attributes="0"/>
+                      <Component id="btn_llm_web" alignment="3" pref="31" max="32767" attributes="0"/>
+                      <Component id="btn_llm_tool" alignment="3" pref="31" max="32767" attributes="0"/>
+                      <Component id="btn_llm_local" alignment="3" pref="31" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -136,7 +131,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btn_llm_tool">
           <Properties>
-            <Property name="text" type="java.lang.String" value="LLM Tools"/>
+            <Property name="text" type="java.lang.String" value="Project X-Ray"/>
             <Property name="toolTipText" type="java.lang.String" value="Open Screen Capture Frame (from videos + stationary)"/>
           </Properties>
           <Events>
@@ -150,14 +145,6 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_llm_localActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="btn_pixelFix">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Pixel-Fix"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_pixelFixActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

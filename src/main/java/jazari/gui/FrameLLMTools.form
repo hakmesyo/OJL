@@ -79,17 +79,23 @@
                               </Group>
                           </Group>
                           <Component id="jPanel3" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="customExtensionsField" pref="548" max="32767" attributes="0"/>
-                          </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="startButton" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
+                                  <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="startButton" min="-2" pref="120" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="reOpenFileButton" min="-2" pref="120" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="chkMethod" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="423" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel4" min="-2" pref="246" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="customExtensionsField" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -121,7 +127,11 @@
                           <Component id="customExtensionsField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="startButton" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="reOpenFileButton" alignment="3" max="32767" attributes="0"/>
+                          <Component id="chkMethod" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="startButton" max="32767" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jScrollPane1" pref="327" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -219,6 +229,19 @@
             <Component class="javax.swing.JTextField" name="customExtensionsField">
               <Properties>
                 <Property name="toolTipText" type="java.lang.String" value="Add custom extensions separated by commas (e.g. json,md,xml)"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="reOpenFileButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Re-Open File"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reOpenFileButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkMethod">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Show Methods"/>
               </Properties>
             </Component>
           </SubComponents>

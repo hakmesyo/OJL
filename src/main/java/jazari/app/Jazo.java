@@ -50,7 +50,7 @@ public class Jazo extends javax.swing.JFrame {
     public Jazo() {
         initComponents();
         btn_open.setTransferHandler(new ImageTransferHandler());
-        this.setTitle("Open Jazari Library (Jazari Annotation Tool)  [10.09.2025]");
+        this.setTitle("Open Jazari Library (Jazari Annotation Tool)  [21.10.2025]");
         setLocationRelativeTo(null);
     }
 
@@ -70,7 +70,6 @@ public class Jazo extends javax.swing.JFrame {
         btn_llm_web = new javax.swing.JButton();
         btn_llm_tool = new javax.swing.JButton();
         btn_llm_local = new javax.swing.JButton();
-        btn_pixelFix = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Jazari Annotation Tool Version:17.07.2025");
@@ -109,7 +108,7 @@ public class Jazo extends javax.swing.JFrame {
             }
         });
 
-        btn_llm_tool.setText("LLM Tools");
+        btn_llm_tool.setText("Project X-Ray");
         btn_llm_tool.setToolTipText("Open Screen Capture Frame (from videos + stationary)");
         btn_llm_tool.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -122,13 +121,6 @@ public class Jazo extends javax.swing.JFrame {
         btn_llm_local.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btn_llm_localActionPerformed(evt);
-            }
-        });
-
-        btn_pixelFix.setText("Pixel-Fix");
-        btn_pixelFix.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_pixelFixActionPerformed(evt);
             }
         });
 
@@ -147,22 +139,18 @@ public class Jazo extends javax.swing.JFrame {
                 .addComponent(btn_llm_local)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_llm_web)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_pixelFix, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(71, 71, 71))
+                .addGap(162, 162, 162))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btn_pixelFix, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btn_screen_capture, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                        .addComponent(btn_ide, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                        .addComponent(btn_llm_web, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                        .addComponent(btn_llm_tool, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                        .addComponent(btn_llm_local, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_screen_capture, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(btn_ide, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(btn_llm_web, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(btn_llm_tool, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(btn_llm_local, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -223,10 +211,6 @@ public class Jazo extends javax.swing.JFrame {
        //new OllamaGemma3SwingChat().setVisible(true);
     }//GEN-LAST:event_btn_llm_localActionPerformed
 
-    private void btn_pixelFixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_pixelFixActionPerformed
-        StuckPixelFix.process();
-    }//GEN-LAST:event_btn_pixelFixActionPerformed
-
     /**
      * @param args the command line arguments
      */
@@ -246,7 +230,6 @@ public class Jazo extends javax.swing.JFrame {
     private javax.swing.JButton btn_llm_tool;
     private javax.swing.JButton btn_llm_web;
     private javax.swing.JButton btn_open;
-    private javax.swing.JButton btn_pixelFix;
     private javax.swing.JButton btn_screen_capture;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
