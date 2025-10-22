@@ -79,6 +79,11 @@
                               </Group>
                           </Group>
                           <Component id="jPanel3" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel4" min="-2" pref="246" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="customExtensionsField" max="32767" attributes="0"/>
+                          </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
@@ -88,14 +93,13 @@
                                       <Component id="reOpenFileButton" min="-2" pref="120" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="chkMethod" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="chkExcludeCodes" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnOpenProjectFolder" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace min="0" pref="423" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabel4" min="-2" pref="246" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="customExtensionsField" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="170" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -131,6 +135,8 @@
                           <Component id="reOpenFileButton" alignment="3" max="32767" attributes="0"/>
                           <Component id="chkMethod" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="startButton" max="32767" attributes="0"/>
+                          <Component id="chkExcludeCodes" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnOpenProjectFolder" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jScrollPane1" pref="327" max="32767" attributes="0"/>
@@ -241,8 +247,22 @@
             </Component>
             <Component class="javax.swing.JCheckBox" name="chkMethod">
               <Properties>
+                <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Show Methods"/>
               </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="chkExcludeCodes">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Exclude Codes"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="btnOpenProjectFolder">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Open Project Folder"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnOpenProjectFolderActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

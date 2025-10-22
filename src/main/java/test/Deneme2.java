@@ -18,7 +18,7 @@ import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
  */
 public class Deneme2 {
     public static void main(String[] args) {
-        CMatrix cm = CMatrix.getInstance().range(100).perlinNoise().tr().plot();
+        CMatrix cm = CMatrix.getInstance().rand(10,10, 0).range(100).perlinNoise().tr().plot();
         System.out.println("merhaba");
 //        Polygon poly=new Polygon();
 //        for (int i = 0; i < 10; i++) {

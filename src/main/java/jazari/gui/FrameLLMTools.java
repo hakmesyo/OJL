@@ -103,12 +103,11 @@ public class FrameLLMTools extends javax.swing.JFrame {
     private List<String> getSelectedExtensions() {
         List<String> extensions = new ArrayList<>();
 
-        // Add extensions from checkboxes
+        // 1. Checkbox'lardan uzantıları ekle
         for (Map.Entry<String, JCheckBox> entry : extensionCheckboxes.entrySet()) {
             if (entry.getValue().isSelected()) {
                 String key = entry.getKey();
-
-                // Special handling for yaml/yml
+                // yaml/yml için özel durum
                 if (key.equals("yaml/yml")) {
                     extensions.add("yaml");
                     extensions.add("yml");
@@ -118,22 +117,15 @@ public class FrameLLMTools extends javax.swing.JFrame {
             }
         }
 
-        // Add custom extensions if any
-        String customExtText = customExtensionsField.getText().trim();
-        if (!customExtText.isEmpty()) {
-            Arrays.stream(customExtText.split(","))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .forEach(ext -> {
-                        // Remove leading dot if present
-                        if (ext.startsWith(".")) {
-                            ext = ext.substring(1);
-                        }
-                        // Don't add duplicates
-                        if (!extensions.contains(ext)) {
-                            extensions.add(ext);
-                        }
-                    });
+        // 2. Özel uzantı alanını YENİ ve SAĞLAM metodumuzla ayrıştır
+        String customExtText = customExtensionsField.getText();
+        List<String> customExtensions = parseCustomExtensions(customExtText);
+
+        // 3. Özel uzantıları, eğer ana listede zaten yoksa ekle
+        for (String ext : customExtensions) {
+            if (!extensions.contains(ext)) {
+                extensions.add(ext);
+            }
         }
 
         return extensions;
@@ -484,6 +476,8 @@ public class FrameLLMTools extends javax.swing.JFrame {
         customExtensionsField = new javax.swing.JTextField();
         reOpenFileButton = new javax.swing.JButton();
         chkMethod = new javax.swing.JCheckBox();
+        chkExcludeCodes = new javax.swing.JCheckBox();
+        btnOpenProjectFolder = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -545,7 +539,17 @@ public class FrameLLMTools extends javax.swing.JFrame {
             }
         });
 
+        chkMethod.setSelected(true);
         chkMethod.setText("Show Methods");
+
+        chkExcludeCodes.setText("Exclude Codes");
+
+        btnOpenProjectFolder.setText("Open Project Folder");
+        btnOpenProjectFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOpenProjectFolderActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -569,6 +573,10 @@ public class FrameLLMTools extends javax.swing.JFrame {
                             .addComponent(browseProjectButton)))
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(customExtensionsField))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -576,12 +584,12 @@ public class FrameLLMTools extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(reOpenFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(chkMethod)))
-                        .addGap(0, 423, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(customExtensionsField)))
+                                .addComponent(chkMethod)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(chkExcludeCodes)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnOpenProjectFolder)))
+                        .addGap(0, 170, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -609,7 +617,9 @@ public class FrameLLMTools extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(reOpenFileButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(chkMethod)
-                    .addComponent(startButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(startButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(chkExcludeCodes)
+                    .addComponent(btnOpenProjectFolder))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
                 .addContainerGap())
@@ -721,15 +731,19 @@ public class FrameLLMTools extends javax.swing.JFrame {
                     publish("Eşleşen dosya bulunamadı!");
                     return null;
                 }
-                publish("Toplam " + sourceFiles.size() + " adet dosya bulundu. Birleştiriliyor...");
 
-                // 2. Proje ağacını ve istatistikleri oluştur
+                // "Exclude Codes" checkbox'ının durumunu en başta oku
+                boolean excludeCodes = chkExcludeCodes.isSelected();
+
+                if (excludeCodes) {
+                    publish("Sadece proje yapısı analiz ediliyor (kodlar hariç)...");
+                } else {
+                    publish("Toplam " + sourceFiles.size() + " adet dosya bulundu. Birleştiriliyor...");
+                }
+
+                // 2. Proje ağacını ve istatistikleri oluştur (her iki durumda da ortak)
                 Path projectRoot = Paths.get(projectPathField.getText());
-
-                // İstatistikleri hesapla
                 String statistics = generateStatistics(sourceFiles, projectRoot);
-
-                // Checkbox'ın durumuna göre dinamik olarak proje ağacını oluştur
                 boolean shouldShowSignatures = chkMethod.isSelected();
                 String directoryTree = generateDirectoryTree(projectRoot, shouldShowSignatures);
 
@@ -747,15 +761,21 @@ public class FrameLLMTools extends javax.swing.JFrame {
                     writer.write(directoryTree);
                     writer.newLine();
 
-                    // 4. Tüm dosyaları döngüye alıp içeriğini dosyaya ekle
-                    int totalFiles = sourceFiles.size();
-                    for (int i = 0; i < totalFiles; i++) {
-                        Path sourceFile = sourceFiles.get(i);
-                        appendFileToWriter(sourceFile, writer, projectRoot);
+                    // Checkbox işaretli DEĞİLSE dosyaları birleştir
+                    if (!excludeCodes) {
+                        // 4. Tüm dosyaları döngüye alıp içeriğini dosyaya ekle
+                        int totalFiles = sourceFiles.size();
+                        for (int i = 0; i < totalFiles; i++) {
+                            Path sourceFile = sourceFiles.get(i);
+                            appendFileToWriter(sourceFile, writer, projectRoot);
 
-                        // 5. İlerlemeyi hesapla ve UI'ı güncellemek için setProgress'i çağır
-                        int progress = (int) (((i + 1.0) / totalFiles) * 100);
-                        setProgress(progress);
+                            // 5. İlerlemeyi hesapla ve UI'ı güncelle
+                            int progress = (int) (((i + 1.0) / totalFiles) * 100);
+                            setProgress(progress);
+                        }
+                    } else {
+                        // Eğer kodlar hariç tutuluyorsa, progress bar'ı anında %100 yap
+                        setProgress(100);
                     }
                 }
                 return null;
@@ -891,6 +911,56 @@ public class FrameLLMTools extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_reOpenFileButtonActionPerformed
 
+    private void btnOpenProjectFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenProjectFolderActionPerformed
+
+        String projectPath = projectPathField.getText().trim();
+        if (projectPath.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Açılacak bir proje dizini seçilmemiş.",
+                    "Hata", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        File projectDir = new File(projectPath);
+        if (!projectDir.exists() || !projectDir.isDirectory()) {
+            JOptionPane.showMessageDialog(this,
+                    "Proje dizini bulunamadı veya geçerli bir klasör değil:\n" + projectPath,
+                    "Hata", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            // Bu komut, tüm işletim sistemlerinde (Windows, macOS, Linux)
+            // varsayılan dosya gezginini açmak için en doğru yöntemdir.
+            Desktop.getDesktop().open(projectDir);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Proje dizini açılamadı: " + e.getMessage(),
+                    "Hata", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnOpenProjectFolderActionPerformed
+
+    private List<String> parseCustomExtensions(String customExtText) {
+        if (customExtText == null || customExtText.trim().isEmpty()) {
+            return Collections.emptyList(); // Boşsa, boş bir liste döndür
+        }
+
+        // Virgül, boşluk veya noktalı virgül gibi birden fazla ayraç türüne göre böl
+        String[] parts = customExtText.split("[\\s,;]+");
+
+        return Arrays.stream(parts)
+                // Her bir parçayı alıp temizleyelim
+                .map(ext -> ext
+                .trim() // Baştaki/sondaki boşlukları kaldır
+                .replaceAll("[^a-zA-Z0-9]", "") // Sadece harf ve rakamları tut, geri kalan her şeyi sil
+                )
+                // Temizlikten sonra boş kalanları filtrele (örneğin ",," durumu)
+                .filter(ext -> !ext.isEmpty())
+                .collect(Collectors.toList());
+    }
+
     /**
      * İşlem tamamlandığında kullanıcıya dosyayı açma seçeneği sunan yardımcı
      * metot.
@@ -929,6 +999,8 @@ public class FrameLLMTools extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseOutputButton;
     private javax.swing.JButton browseProjectButton;
+    private javax.swing.JButton btnOpenProjectFolder;
+    private javax.swing.JCheckBox chkExcludeCodes;
     private javax.swing.JCheckBox chkMethod;
     private javax.swing.JTextField customExtensionsField;
     private javax.swing.JLabel jLabel1;

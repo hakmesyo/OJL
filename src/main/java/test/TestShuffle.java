@@ -13,6 +13,11 @@ import jazari.matrix.CMatrix;
  */
 public class TestShuffle {
     public static void main(String[] args) {
-        CMatrix cm = CMatrix.getInstance().rand(10, 5, 0, 255).round().dump("before shuffling").shuffleRows().dump("after shuffling");
+        CMatrix cm = CMatrix.getInstance()
+                .rand(10, 5, 0, 255)
+                .round()
+                .dump("before shuffling")
+                .shuffleRows()
+                .dump("after shuffling");
     }
 }
