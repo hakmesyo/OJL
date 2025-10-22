@@ -3161,7 +3161,7 @@ public final class FactoryMatrix implements Serializable {
         return ret;
     }
 
-    public static float[][] make_blobs(int n_samples, int n_features, int n_groups, int mean_scale, int var_scale, Random random) {
+    public static float[][] make_blobs(int n_samples, int n_features, int n_groups, double mean_scale, double var_scale, Random random) {
         if (n_samples < n_groups) {
             FactoryUtils.showMessage("number of samples can't be less than number of groups");
             return null;

@@ -4142,7 +4142,7 @@ public final class CMatrix implements Serializable {
         for (int i = 0; i < this.getRowNumber(); i++) {
             String r = "";
             for (int j = 0; j < this.getColumnNumber(); j++) {
-                r += f[i][j] + ";";
+                r += f[i][j] + ",";
             }
             s += r + "\n";
         }
@@ -4279,6 +4279,7 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix toNewFileCSV(String file) {
+        tr();
         FactoryUtils.writeToFile(file, this.toCSVString());
         return this;
     }
@@ -8348,7 +8349,7 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
-    public CMatrix make_blobs(int n_samples, int n_features, int n_groups, int mean_scale, int var_scale, int seedRandom) {
+    public CMatrix make_blobs(int n_samples, int n_features, int n_groups, double mean_scale, double var_scale, int seedRandom) {
         SecureRandom rnd = new SecureRandom();
         rnd.setSeed(seedRandom);
         float[][] f = FactoryMatrix.make_blobs(n_samples, n_features, n_groups, mean_scale, var_scale, rnd);

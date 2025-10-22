@@ -19,8 +19,14 @@ public class OJLMachineLearning {
         // CMatrix.make_blobs() metodu, sınıflandırma için uygun, kümelenmiş bir veri seti oluşturur.
         // Parametreler: (örnek sayısı, öznitelik sayısı, sınıf sayısı, rastgelelik için başlangıç değeri)
         System.out.println("1. Adım: Sahte veri seti oluşturuluyor...");
-        CMatrix data = CMatrix.getInstance().make_blobs(1500, 4, 3, 42);
-        data.scatterBlob();
+        int n_features=5;
+        CMatrix data1 = CMatrix
+                .getInstance()
+                .make_blobs(1500, n_features, 5, 30, 1, 42)
+                //.make_blobs(1500, n_features, 3, 42)
+                .scatterBlob()
+                ;
+        CMatrix data=data1.clone();
 
         // OJL'nin MLP modülü DataLoader sınıfı ile çalıştığı için,
         // oluşturduğumuz CMatrix'i geçici bir CSV dosyasına kaydedip oradan yükleyeceğiz.
@@ -32,8 +38,8 @@ public class OJLMachineLearning {
         System.out.println("\n2. Adım: Veri seti yükleniyor ve train/validation/test olarak ayrılıyor...");
         DataLoader dataLoader = new DataLoader();
         
-        // CSV dosyasını yükle. Son sütun (indeks 4) etiket sütunudur. Başlık satırı yok.
-        dataLoader.loadCSV(csvPath, 4, false);
+        // CSV dosyasını yükle. Başlık satırı yok.
+        dataLoader.loadCSV(csvPath, n_features, false);
         
         // Veriyi %70 train, %15 validation ve %15 test olarak ayır.
         dataLoader.splitData(0.70, 0.15, 0.15);
