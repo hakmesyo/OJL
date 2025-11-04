@@ -1677,31 +1677,72 @@ public final class FactoryMatrix implements Serializable {
      * @return 2D float array
      */
     public static float[][] cov(float[][] array) {
-        float[][] d = transpose(array);
-        int nr = array.length;
-        int nc = array[0].length;
-        float[][] ret = new float[nc][nc];
-        float m_i = 0;
-        float m_j = 0;
+        // Gelen matrisi transpoze ederek her satırı bir özellik vektörü yap
+        float[][] featuresAsRows = transpose(array);
 
-        for (int i = 0; i < nc; i++) {
-            for (int j = 0; j < nc; j++) {
-                m_i = FactoryUtils.mean(d[i]);
-                m_j = FactoryUtils.mean(d[j]);
+        int n_features = featuresAsRows.length;
+        if (n_features == 0) {
+            return new float[0][0];
+        }
+        int n_samples = featuresAsRows[0].length;
+        if (n_samples <= 1) {
+            // Varyans/Kovaryans hesaplamak için en az 2 örnek gerekir.
+            return FactoryMatrix.matrixFloatZeros(n_features, n_features);
+        }
+
+        // Her bir özelliğin (her satırın) ortalamasını önceden hesapla
+        float[] means = new float[n_features];
+        for (int i = 0; i < n_features; i++) {
+            means[i] = FactoryUtils.mean(featuresAsRows[i]);
+        }
+
+        float[][] covMatrix = new float[n_features][n_features];
+
+        // Kovaryans matrisini hesapla
+        for (int i = 0; i < n_features; i++) {
+            // Matris simetrik olduğu için j=i'den başlatarak optimizasyon yapabiliriz
+            for (int j = i; j < n_features; j++) {
                 float sum = 0;
-                for (int k = 0; k < nr; k++) {
-                    sum += (d[i][k] - m_i) * (d[j][k] - m_j);
+                for (int k = 0; k < n_samples; k++) {
+                    sum += (featuresAsRows[i][k] - means[i]) * (featuresAsRows[j][k] - means[j]);
                 }
-                if (i != j) {
-                    sum = sum / (nr - 1);
-                } else {
-                    sum = FactoryUtils.var(d[i]);
-                }
-                ret[i][j] = sum;
+
+                // Örneklem kovaryansı için (n-1)'e böl.
+                // Bu tek formül hem varyans (i==j) hem de kovaryans (i!=j) için çalışır.
+                float covariance = sum / (n_samples - 1);
+
+                covMatrix[i][j] = covariance;
+                covMatrix[j][i] = covariance; // Simetrik olduğu için diğer tarafı da doldur
             }
         }
-        return ret;
+        return covMatrix;
     }
+//    public static float[][] cov(float[][] array) {
+//        float[][] d = transpose(array);
+//        int nr = array.length;
+//        int nc = array[0].length;
+//        float[][] ret = new float[nc][nc];
+//        float m_i = 0;
+//        float m_j = 0;
+//
+//        for (int i = 0; i < nc; i++) {
+//            for (int j = 0; j < nc; j++) {
+//                m_i = FactoryUtils.mean(d[i]);
+//                m_j = FactoryUtils.mean(d[j]);
+//                float sum = 0;
+//                for (int k = 0; k < nr; k++) {
+//                    sum += (d[i][k] - m_i) * (d[j][k] - m_j);
+//                }
+//                if (i != j) {
+//                    sum = sum / (nr - 1);
+//                } else {
+//                    sum = FactoryUtils.var(d[i]);
+//                }
+//                ret[i][j] = sum;
+//            }
+//        }
+//        return ret;
+//    }
 
     /**
      * column based correlation coefficient values
@@ -1982,11 +2023,11 @@ public final class FactoryMatrix implements Serializable {
         float min = FactoryUtils.getMinimum(d);
         float max = FactoryUtils.getMaximum(d);
         float delta = (max - min) / nBins;
-        int offset=(int) (min / delta);
+        int offset = (int) (min / delta);
         for (int j = 0; j < d.length; j++) {
-            int bin = (int) (d[j] / delta)-offset;
-            if (bin==nBins) {
-                bin-=1;
+            int bin = (int) (d[j] / delta) - offset;
+            if (bin == nBins) {
+                bin -= 1;
             }
             ret[bin]++;
         }
@@ -3170,7 +3211,7 @@ public final class FactoryMatrix implements Serializable {
         for (int i = 0; i < n_groups; i++) {
             float[][] cm = new float[n_samples][1];
 
-            for (int j = 0; j < n_features; j++) {                
+            for (int j = 0; j < n_features; j++) {
 //                float mean = (float) (Math.random() * mean_scale - mean_scale / 2);
 //                float var = (float) (Math.sqrt(var_scale) + Math.random() * var_scale);
                 float mean = (float) (random.nextDouble() * mean_scale - mean_scale / 2);
@@ -3363,7 +3404,7 @@ public final class FactoryMatrix implements Serializable {
         int nr = d.length;
         int nc = d[0].length;
         float[][] ret = new float[nr - 2 * mid][nc - 2 * mid];
-        int n=kernel.length * kernel[0].length;
+        int n = kernel.length * kernel[0].length;
         for (int i = mid; i < nr - mid; i++) {
             for (int j = mid; j < nc - mid; j++) {
                 float t = 0;
@@ -3372,7 +3413,7 @@ public final class FactoryMatrix implements Serializable {
                         t += kernel[k][l] * d[i - mid + k][j - mid + l];
                     }
                 }
-                ret[i - mid][j - mid] = t/n;
+                ret[i - mid][j - mid] = t / n;
             }
         }
         return ret;

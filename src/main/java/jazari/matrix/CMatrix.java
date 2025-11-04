@@ -792,7 +792,7 @@ public final class CMatrix implements Serializable {
      * @param d: array of int
      * @return CMatrix float type
      */
-    public static CMatrix getInstance(double[] d) {
+    public static CMatrix getInstance(double... d) {
         return new CMatrix(d);
     }
 
@@ -2086,6 +2086,14 @@ public final class CMatrix implements Serializable {
         CMatrix ret = this.clone();
         ret = ret.cmd(":", columns).cat(1, ret.cmd(":", "-1"));
         FrameScatterBlob frm = new FrameScatterBlob(ret, attr);
+        frm.setVisible(true);
+        return ret;
+    }
+
+    public CMatrix scatterBlob(String columns) {
+        CMatrix ret = this.clone();
+        ret = ret.clone().cmd(":", columns).clone().cat(1, ret.clone().cmd(":", "-1"));
+        FrameScatterBlob frm = new FrameScatterBlob(ret);
         frm.setVisible(true);
         return ret;
     }
@@ -6146,6 +6154,15 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix cat(int dim, CMatrix cm) {
+        // --- Boş Matris Kontrolleri ---
+        // Eğer mevcut matris boşsa, diğer matrisin bir kopyasını döndür.
+        if (this.array == null || this.getRowNumber() == 0 || this.getColumnNumber() == 0) {
+            return cm.clone();
+        }
+        // Eğer eklenecek matris boşsa, mevcut matrisin bir kopyasını döndür.
+        if (cm.array == null || cm.getRowNumber() == 0 || cm.getColumnNumber() == 0) {
+            return this.clone();
+        }
         if (dim == 1) {
             if (getRowNumber() != cm.getRowNumber()) {
                 System.err.println("Matrix first dimension (number of rows) should be the same as the base matrix");
@@ -6163,6 +6180,24 @@ public final class CMatrix implements Serializable {
         image = null;
         return this;
     }
+//    public CMatrix cat(int dim, CMatrix cm) {
+//        if (dim == 1) {
+//            if (getRowNumber() != cm.getRowNumber()) {
+//                System.err.println("Matrix first dimension (number of rows) should be the same as the base matrix");
+//                return this;
+//            }
+//            array = Nd4j.concat(dim, array, cm.array);
+//        }
+//        if (dim == 2) {
+//            if (getColumnNumber() != cm.getColumnNumber()) {
+//                System.err.println("Matrix second dimension (number of columns) should be the same as the base matrix");
+//                return this;
+//            }
+//            array = Nd4j.concat(dim - 2, array, cm.array);
+//        }
+//        image = null;
+//        return this;
+//    }
 
     /**
      * Matlab Compatibility
@@ -10246,5 +10281,146 @@ public final class CMatrix implements Serializable {
 
     public BufferedImage toBufferedImage() {
         return this.getImage();
+    }
+
+    /**
+     * Matris içindeki NaN (Not-a-Number) değerlerini göz ardı ederek tüm
+     * elemanların aritmetik ortalamasını hesaplar. Eğer matris boşsa veya
+     * sadece NaN değerleri içeriyorsa, Float.NaN döner.
+     *
+     * @return NaN olmayan elemanların ortalamasını float olarak döner.
+     */
+    public float nanmean() {
+        if (this.array == null) {
+            return Float.NaN;
+        }
+        double sum = 0.0;
+        long count = 0;
+        for (int i = 0; i < this.getRowNumber(); i++) {
+            for (int j = 0; j < this.getColumnNumber(); j++) {
+                float value = this.array.getFloat(i, j);
+                if (!Float.isNaN(value)) {
+                    sum += value;
+                    count++;
+                }
+            }
+        }
+        if (count == 0) {
+            return Float.NaN; // Veya 0.0f döndürmek de bir seçenek olabilir.
+        }
+        return (float) (sum / count);
+    }
+
+    /**
+     * Matris içindeki tüm NaN (Not-a-Number) değerlerini, parametre olarak
+     * verilen değer ile değiştirir. Bu işlem yeni bir CMatrix nesnesi oluşturur
+     * ve orijinal matrisi değiştirmez.
+     *
+     * @param fillValue NaN değerlerinin yerine yazılacak olan float değer.
+     * @return NaN değerleri doldurulmuş yeni bir CMatrix nesnesi.
+     */
+    public CMatrix fillNaN(float fillValue) {
+        if (this.array == null) {
+            return this; // Veya boş bir CMatrix döndürülebilir.
+        }
+        int rows = this.getRowNumber();
+        int cols = this.getColumnNumber();
+        float[][] newArray = new float[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                float currentValue = this.array.getFloat(i, j);
+                if (Float.isNaN(currentValue)) {
+                    newArray[i][j] = fillValue;
+                } else {
+                    newArray[i][j] = currentValue;
+                }
+            }
+        }
+        return CMatrix.getInstance(newArray);
+    }
+
+    /**
+     * Matrisin tüm elemanlarını tek bir dizi olarak ele alıp, belirtilen
+     * yüzdelik dilim değerini hesaplar. Veri sıralı değilse, metot kendi içinde
+     * sıralama yapar.
+     * <p>
+     * Yüzdelik dilim, doğrusal enterpolasyon yöntemi kullanılarak hesaplanır.
+     * Bu, istatistiksel olarak daha doğru sonuçlar verir.
+     *
+     * @param percentile Hesaplanacak yüzdelik dilim (0 ile 100 arasında bir
+     * değer). Örneğin, medyan için 50, birinci çeyrek (Q1) için 25.
+     * @return Hesaplanan yüzdelik dilim değeri. Matris boşsa Double.NaN döner.
+     * @throws IllegalArgumentException percentile 0'dan küçük veya 100'den
+     * büyükse.
+     */
+    public float getPercentile(float percentile) {
+        if (percentile < 0 || percentile > 100) {
+            throw new IllegalArgumentException("Yüzdelik dilim 0 ile 100 arasında olmalıdır.");
+        }
+
+        // Matrisi tek boyutlu bir diziye düzleştir (flatten)
+        float[] flatArray = this.flattenArray();
+
+        if (flatArray.length == 0) {
+            return Float.NaN;
+        }
+
+        // Yüzdelik dilim hesabı için diziyi sırala
+        java.util.Arrays.sort(flatArray);
+
+        // Yüzdelik dilimin denk geldiği indeksi hesapla (doğrusal enterpolasyon için)
+        // (n-1) * (p/100) formülü kullanılır.
+        float index = (flatArray.length - 1) * (percentile / 100.0f);
+
+        // İndeksin tam ve kesirli kısımlarını ayır
+        int lowerIndex = (int) Math.floor(index);
+        float fraction = index - lowerIndex;
+
+        // Eğer indeks tam sayı ise veya son elemana denk geliyorsa, doğrudan o elemanı döndür
+        if (lowerIndex >= flatArray.length - 1) {
+            return flatArray[flatArray.length - 1];
+        }
+
+        // İndeks kesirli ise, iki komşu değer arasında doğrusal enterpolasyon yap
+        float lowerValue = flatArray[lowerIndex];
+        float upperValue = flatArray[lowerIndex + 1];
+
+        return lowerValue + fraction * (upperValue - lowerValue);
+    }
+
+    /**
+     * Bir vektör (tek satır veya tek sütun) olan mevcut CMatrix'i, One-Hot
+     * Encoding formatına dönüştürür. Bu metot, her bir sınıf etiketini (0, 1,
+     * 2, ...) alıp, ilgili pozisyonda 1 ve diğerlerinde 0 olan bir vektöre
+     * çevirir.
+     *
+     * @param numClasses Veri setindeki toplam benzersiz sınıf sayısı. Örneğin,
+     * etiketler 0, 1, 2 ise numClasses 3 olmalıdır.
+     * @return Her satırı bir etiketin one-hot encoded versiyonu olan yeni bir
+     * CMatrix nesnesi.
+     * @throws IllegalArgumentException Matris bir vektör değilse (birden fazla
+     * satır ve sütuna sahipse).
+     */
+    public CMatrix getOneHotEncoding(int numClasses) {
+        if (this.getRowNumber() != 1 && this.getColumnNumber() != 1) {
+            throw new IllegalArgumentException("Hata: getOneHotEncoding metodu sadece vektörler (tek satır veya tek sütun) üzerinde çalışır.");
+        }
+
+        // Matrisi tek boyutlu bir diziye düzleştir
+        float[] labels = this.flattenArray();
+        int numSamples = labels.length;
+
+        // Sonuçları tutacak olan 2D dizi
+        float[][] oneHotResult = new float[numSamples][numClasses];
+
+        for (int i = 0; i < numSamples; i++) {
+            int classIndex = (int) labels[i];
+
+            // Mevcut FactoryUtils metodunu kullanarak her bir etiket için one-hot dizisini oluştur
+            oneHotResult[i] = FactoryUtils.getOneHotEncoding(numClasses, classIndex);
+        }
+
+        return CMatrix.getInstance(oneHotResult);
     }
 }
