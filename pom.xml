@@ -439,12 +439,21 @@
             <version>3.3.0</version>
         </dependency>
         
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-common</artifactId>
+            <version>1.0.0-M1.1</version>
+            <type>jar</type>
+        </dependency>
+
+        
         <!-- https://mvnrepository.com/artifact/com.github.javaparser/javaparser-symbol-solver-core -->
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-symbol-solver-core</artifactId>
             <version>3.26.3</version>
         </dependency>
+        
 
 
 
