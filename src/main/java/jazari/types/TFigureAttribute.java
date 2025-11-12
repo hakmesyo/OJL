@@ -32,6 +32,7 @@ public class TFigureAttribute {
     public ArrayList<Float> perfMetricVal = new ArrayList();
     public boolean isStroke = false;
     public ArrayList<Stroke> stroke = new ArrayList<>();
+    public boolean isLegend;
 
     public TFigureAttribute() { 
         int a=3;

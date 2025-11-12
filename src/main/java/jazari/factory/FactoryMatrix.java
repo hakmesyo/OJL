@@ -2035,21 +2035,62 @@ public final class FactoryMatrix implements Serializable {
     }
 
     public static float[] getHistogram(float[][] d, int nBins) {
+        // Girdi matrisinin boş olma durumunu kontrol et
+        if (d == null || d.length == 0 || d[0].length == 0) {
+            return new float[nBins]; // Boş histogram döndür
+        }
+
         float[] ret = new float[nBins];
         int nr = d.length;
         int nc = d[0].length;
+
         float min = FactoryUtils.getMinimum(d);
         float max = FactoryUtils.getMaximum(d);
-        float delta = Math.round((max - min) / nBins);
+
+        // Eğer tüm değerler aynıysa, hepsi ilk göze (bin) düşer.
+        if (min == max) {
+            ret[0] = nr * nc; // Toplam eleman sayısını ilk göze ata
+            return ret;
+        }
+
+        // 1. DOĞRU HESAPLAMA: 'delta' (veya binWidth) ondalıklı kalmalı.
+        float binWidth = (max - min) / nBins;
+
         for (int j = 0; j < nr; j++) {
             for (int k = 0; k < nc; k++) {
-                int index = (int) (d[j][k] / delta);
+                float value = d[j][k];
+
+                // 2. DOĞRU FORMÜL: Değerin hangi aralığa düştüğünü hesapla.
+                int index = (int) ((value - min) / binWidth);
+
+                // 3. SINIR KONTROLÜ: En önemli adımlardan biri.
+                // 'max' değerinin kendisi 'nBins' indeksini verebilir, bu da hataya yol açar.
+                // Bu yüzden indeksi [0, nBins-1] aralığında kalmaya zorlamalıyız.
+                if (index >= nBins) {
+                    index = nBins - 1;
+                }
+
                 ret[index]++;
             }
         }
         return ret;
     }
 
+//    public static float[] getHistogram(float[][] d, int nBins) {
+//        float[] ret = new float[nBins];
+//        int nr = d.length;
+//        int nc = d[0].length;
+//        float min = FactoryUtils.getMinimum(d);
+//        float max = FactoryUtils.getMaximum(d);
+//        float delta = Math.round((max - min) / nBins);
+//        for (int j = 0; j < nr; j++) {
+//            for (int k = 0; k < nc; k++) {
+//                int index = (int) (d[j][k] / delta);
+//                ret[index]++;
+//            }
+//        }
+//        return ret;
+//    }
     public static float[] getHistogram(int[][] d, int nBins) {
         float[] ret = new float[nBins];
         int nr = d.length;
@@ -3639,66 +3680,126 @@ public final class FactoryMatrix implements Serializable {
         return ret;
     }
 
+    /**
+     * Bir matrisin belirli bir dilimini, performansı en üst düzeye çıkaracak
+     * şekilde döndürür. Bu metot, gereksiz matris kopyalamalarından kaçınır ve
+     * mümkün olan yerlerde hızlı bellek kopyalama için System.arraycopy()
+     * kullanır.
+     *
+     * @param d İşlem yapılacak kaynak float matrisi.
+     * @param p1 Satırları belirten string parametresi.
+     * @param p2 Sütunları belirten string parametresi.
+     * @return Matrisin istenen dilimini içeren yeni bir float matrisi.
+     */
     public static float[][] cmd(float[][] d, String p1, String p2) {
-        float[][] ret = clone(d);
-        p1 = p1.replace("[", "").replace("]", "").replace("(", "").replace(")", "");
-        p2 = p2.replace("[", "").replace("]", "").replace("(", "").replace(")", "");
+        if (d == null || d.length == 0 || d[0].length == 0) {
+            throw new IllegalArgumentException("Girdi matrisi boş veya geçersiz olamaz.");
+        }
+
         int nr = d.length;
         int nc = d[0].length;
 
-        //eğer komut tüm matrisi ilgilendir diyorsa tüm matrisi ger gönder
-        if (p1.equals(":") && p2.equals(":")) {
-            return ret;
-        } //eğer komut tüm satırları ama belirli sutunları ilgilendiriyorsa
-        else if (p1.equals(":") && !p2.equals(":")) {
-            if (p2.length() == 1) {
-                int c = Integer.parseInt(p2);
-                if (c < nc) {
-                    ret = columns(ret, new int[]{c});
-                    return ret;
-                }
-            } else if (p2.split(":").length == 2) {
-                float[] p = FactoryUtils.resolveParam(p2, nc);
-                if (p[0] == p[1]) {
-                    if (p[0] < nc) {
-                        ret = columns(ret, new int[]{(int) p[0]});
-                        return ret;
-                    }
-                } else {
-                    ret = columns(ret, FactoryUtils.toIntArray1D(p));
-                    return ret;
-                }
+        // Parametreleri ön işleme (end, parantezler)
+        p1 = p1.replace("end", String.valueOf(nr - 1)).replaceAll("[\\[\\]()]", "");
+        p2 = p2.replace("end", String.valueOf(nc - 1)).replaceAll("[\\[\\]()]", "");
 
-            } else {
-                float[] p = FactoryUtils.resolveParam(p2, nc);
-                ret = columns(ret, FactoryUtils.toIntArray1D(p));
-                return ret;
-            }
-            //eğer komut belirli satırları ama tüm sutunları ilgilendiriyor ise
-        } else if (p2.equals(":") && !p1.equals(":")) {
-            if (p1.length() == 1) {
-                int r = Integer.parseInt(p1);
-                if (r < nr) {
-                    ret = rows(ret, new int[]{r});
-                    return ret;
-                }
-            } else {
-                float[] p = FactoryUtils.resolveParam(p1, nr);
-                ret = rows(ret, FactoryUtils.toIntArray1D(p));
-                return ret;
-            }
-        } //her iki parametre de birer matris aralığı belirtiyor ise
-        //ilkönce matrisin ilgili satırlarını slice'la sonra sutunlarına geç
-        else {
-            int[] pr = FactoryUtils.toIntArray1D(FactoryUtils.resolveParam(p1, nr));
-            int[] pc = FactoryUtils.toIntArray1D(FactoryUtils.resolveParam(p2, nc));
-            ret = rows(ret, pr);
-            ret = columns(ret, pc);
-            return ret;
+        // 1. Hedef satır ve sütun indekslerini belirle
+        int[] sourceRowIndices = FactoryUtils.toIntArray1D(FactoryUtils.resolveParam(p1, nr));
+
+        // 2. Sonuç matrisinin boyutlarını ve kendisini oluştur
+        int newRowCount = sourceRowIndices.length;
+
+        // Eğer hiç satır seçilmediyse, hemen boş bir matris döndür
+        if (newRowCount == 0) {
+            return new float[0][0];
         }
-        return ret;
+
+        // --- PERFORMANS KRİTİK BÖLGE ---
+        // Eğer TÜM sütunlar isteniyorsa (p2 = ":"), en hızlı yol olan System.arraycopy'yi kullan.
+        if (p2.equals(":")) {
+            float[][] result = new float[newRowCount][nc];
+            for (int i = 0; i < newRowCount; i++) {
+                int sourceRow = sourceRowIndices[i];
+                // Kaynak matrisin ilgili satırını, sonuç matrisinin yeni satırına blok olarak kopyala.
+                System.arraycopy(d[sourceRow], 0, result[i], 0, nc);
+            }
+            return result;
+        } // Eğer belirli sütunlar isteniyorsa, eleman eleman kopyalama yap.
+        else {
+            int[] sourceColIndices = FactoryUtils.toIntArray1D(FactoryUtils.resolveParam(p2, nc));
+            int newColCount = sourceColIndices.length;
+
+            float[][] result = new float[newRowCount][newColCount];
+            for (int i = 0; i < newRowCount; i++) {
+                int sourceRow = sourceRowIndices[i];
+                for (int j = 0; j < newColCount; j++) {
+                    int sourceCol = sourceColIndices[j];
+                    result[i][j] = d[sourceRow][sourceCol];
+                }
+            }
+            return result;
+        }
     }
 
+//    public static float[][] cmd(float[][] d, String p1, String p2) {
+//        float[][] ret = clone(d);
+//        p1 = p1.replace("[", "").replace("]", "").replace("(", "").replace(")", "");
+//        p2 = p2.replace("[", "").replace("]", "").replace("(", "").replace(")", "");
+//        int nr = d.length;
+//        int nc = d[0].length;
+//
+//        //eğer komut tüm matrisi ilgilendir diyorsa tüm matrisi ger gönder
+//        if (p1.equals(":") && p2.equals(":")) {
+//            return ret;
+//        } //eğer komut tüm satırları ama belirli sutunları ilgilendiriyorsa
+//        else if (p1.equals(":") && !p2.equals(":")) {
+//            if (p2.length() == 1) {
+//                int c = Integer.parseInt(p2);
+//                if (c < nc) {
+//                    ret = columns(ret, new int[]{c});
+//                    return ret;
+//                }
+//            } else if (p2.split(":").length == 2) {
+//                float[] p = FactoryUtils.resolveParam(p2, nc);
+//                if (p[0] == p[1]) {
+//                    if (p[0] < nc) {
+//                        ret = columns(ret, new int[]{(int) p[0]});
+//                        return ret;
+//                    }
+//                } else {
+//                    ret = columns(ret, FactoryUtils.toIntArray1D(p));
+//                    return ret;
+//                }
+//
+//            } else {
+//                float[] p = FactoryUtils.resolveParam(p2, nc);
+//                ret = columns(ret, FactoryUtils.toIntArray1D(p));
+//                return ret;
+//            }
+//            //eğer komut belirli satırları ama tüm sutunları ilgilendiriyor ise
+//        } else if (p2.equals(":") && !p1.equals(":")) {
+//            if (p1.length() == 1) {
+//                int r = Integer.parseInt(p1);
+//                if (r < nr) {
+//                    ret = rows(ret, new int[]{r});
+//                    return ret;
+//                }
+//            } else {
+//                float[] p = FactoryUtils.resolveParam(p1, nr);
+//                ret = rows(ret, FactoryUtils.toIntArray1D(p));
+//                return ret;
+//            }
+//        } //her iki parametre de birer matris aralığı belirtiyor ise
+//        //ilkönce matrisin ilgili satırlarını slice'la sonra sutunlarına geç
+//        else {
+//            int[] pr = FactoryUtils.toIntArray1D(FactoryUtils.resolveParam(p1, nr));
+//            int[] pc = FactoryUtils.toIntArray1D(FactoryUtils.resolveParam(p2, nc));
+//            ret = rows(ret, pr);
+//            ret = columns(ret, pc);
+//            return ret;
+//        }
+//        return ret;
+//    }
     private static float[][] getColumns(float[][] d, int[] indices) {
         int nr = d.length;
         float[][] ret = new float[nr][indices.length];

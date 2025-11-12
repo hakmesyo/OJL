@@ -2969,9 +2969,9 @@ public final class CMatrix implements Serializable {
         }
         float[] d = FactoryMatrix.getHistogram(array.toFloatMatrix(), nBins);
         setArray(d);
-//        FrameImageHistogram frm = new FrameImageHistogram(this);
-//        frm.setTitle("");
-//        frm.setVisible(true);
+        FrameImageHistogram frm = new FrameImageHistogram(this);
+        frm.setTitle("");
+        frm.setVisible(true);
         return this;
     }
 
@@ -3690,6 +3690,11 @@ public final class CMatrix implements Serializable {
 
     public CMatrix sigmoid() {
         array = Transforms.sigmoid(array);
+        return this.tr();
+    }
+
+    public CMatrix softmax() {
+        array = Transforms.softmax(array);
         return this;
     }
 
@@ -4797,15 +4802,15 @@ public final class CMatrix implements Serializable {
         return ret;
     }
 
-    public float[] getRow(int i) {
+    public float[] getRowAsArray(int i) {
         return array.toFloatMatrix()[i];
     }
 
-    public CMatrix getRowMatrix(int i) {
+    public CMatrix getRow(int i) {
         return CMatrix.getInstance(array.toFloatMatrix()[i]);
     }
 
-    public float[] getColumn(int i) {
+    public float[] getColumnAsArray(int i) {
         return array.transpose().toFloatMatrix()[i];
     }
 
@@ -4827,7 +4832,7 @@ public final class CMatrix implements Serializable {
         return array.transpose().toFloatMatrix()[getColumnNumber() - 1];
     }
 
-    public CMatrix getColumnMatrix(int i) {
+    public CMatrix getColumn(int i) {
         return CMatrix.getInstance(array.transpose().toFloatMatrix()[i]);
     }
 
@@ -7103,7 +7108,7 @@ public final class CMatrix implements Serializable {
         }
         CMatrix cm = CMatrix.getInstance().zeros(1, nCols);
         for (int i = (nFolds - 1) * delta; i < nRows; i++) {
-            CMatrix temp = randData.getRowMatrix(i).transpose();
+            CMatrix temp = randData.getRow(i).transpose();
             cm = cm.cat(2, temp);
         }
         cm = cm.deleteRow(0);
@@ -7215,7 +7220,7 @@ public final class CMatrix implements Serializable {
         }
         CMatrix cm = CMatrix.getInstance().zeros(1, nCols);
         for (int i = (nFolds - 1) * delta; i < nRows; i++) {
-            CMatrix temp = randData.getRowMatrix(i).transpose();
+            CMatrix temp = randData.getRow(i).transpose();
             cm = cm.cat(2, temp);
         }
         cm = cm.deleteRow(0);

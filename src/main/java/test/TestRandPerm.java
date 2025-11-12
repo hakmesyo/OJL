@@ -28,7 +28,7 @@ public class TestRandPerm {
         }
         CMatrix cm=CMatrix.getInstance().zeros(1,nCols);
         for (int i = (nFolds-1)*delta; i < nRows; i++) {
-            CMatrix temp=randData.getRowMatrix(i).transpose();
+            CMatrix temp=randData.getRow(i).transpose();
             cm=cm.cat(2, temp);
         }
         cm=cm.deleteRow(0);

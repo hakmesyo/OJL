@@ -53,10 +53,10 @@ public class TestDJLText2Vec {
 
             System.out.println("\nİlk cümlenin diğer cümlelerle anlamsal benzerliği (Kosinüs Benzerliği):");
 
-            CMatrix firstSentenceVector = sentenceVectors.getRowMatrix(0);
+            CMatrix firstSentenceVector = sentenceVectors.getRow(0);
 
             for (int i = 0; i < sentences.length; i++) {
-                CMatrix otherSentenceVector = sentenceVectors.getRowMatrix(i);
+                CMatrix otherSentenceVector = sentenceVectors.getRow(i);
                 float similarity = firstSentenceVector.cosineSimilarity(otherSentenceVector).meanTotal();
 
                 System.out.printf("Benzerlik ('%s' <-> '%s'): %.4f\n", sentences[0], sentences[i], similarity);

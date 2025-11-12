@@ -29,10 +29,12 @@ public class ScatterPlotViewer extends JPanel {
     private static final int PADDING = 60;
     private static final int LEGEND_WIDTH = 150;
     private static final int POINT_SIZE = 8;
-    private static final int TARGET_GRID_COUNT = 10; // Hedeflenen grid çizgi sayısı
+    private static final int TARGET_GRID_COUNT = 10;
     private final Font LABEL_FONT = new Font("SansSerif", Font.PLAIN, 11);
     private final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 14);
     private final Font AXIS_FONT = new Font("SansSerif", Font.PLAIN, 12);
+    // YENİ: Vurgulama için renk sabiti
+    private static final Color COLOR_HIGHLIGHT = new Color(255, 100, 0, 150); // Yarı saydam turuncu
 
     // Interactive features
     private float scale = 1.0f;
@@ -43,12 +45,14 @@ public class ScatterPlotViewer extends JPanel {
     private String tooltipText = null;
     private JPopupMenu popup;
     private int nClass = 0;
+    // YENİ: Vurgulanan noktanın indeksini tutan değişken
+    private int highlightedPointIndex = -1;
 
     public ScatterPlotViewer(float[][] points, String[] labels) {
         this.points = points;
         this.labels = labels;
         this.title = "Scatter Plot";
-        
+
         calculateBounds();
         initColors();
         setupInteractions();
@@ -60,19 +64,24 @@ public class ScatterPlotViewer extends JPanel {
         ToolTipManager.sharedInstance().setInitialDelay(0);
         setToolTipText("");
     }
-    
-    // Varsayılan etiketlerle başlatmak için ek constructor
+
     public ScatterPlotViewer(float[][] points) {
         this(points, generateDefaultLabels(points.length));
     }
-    
-    // Varsayılan etiketleri oluşturan yardımcı metod
+
     private static String[] generateDefaultLabels(int count) {
         String[] defaultLabels = new String[count];
         for (int i = 0; i < count; i++) {
-            defaultLabels[i] = "0";  // Varsayılan olarak tüm noktalar "0" kümesinde
+            defaultLabels[i] = "0";
         }
         return defaultLabels;
+    }
+
+    // YENİ: İpucu kutusunun konumunu mouse'a göre ayarlayan metot
+    @Override
+    public Point getToolTipLocation(MouseEvent event) {
+        // İpucu kutusunu imlecin biraz sağında ve altında göster
+        return new Point(event.getX() + 15, event.getY() + 15);
     }
 
     private void calculateBounds() {
@@ -88,7 +97,6 @@ public class ScatterPlotViewer extends JPanel {
             maxY = Math.max(maxY, point[1]);
         }
 
-        // Add margins
         float xMargin = (maxX - minX) * 0.1f;
         float yMargin = (maxY - minY) * 0.1f;
         minX -= xMargin;
@@ -112,14 +120,14 @@ public class ScatterPlotViewer extends JPanel {
         scale = 1.0f;
         translateX = 0;
         translateY = 0;
+        highlightedPointIndex = -1; // DEĞİŞTİ: Görünüm sıfırlanınca vurguyu kaldır
         repaint();
     }
 
     private void saveImage() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Save Plot As");
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "PNG Images", "png");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG Images", "png");
         fileChooser.setFileFilter(filter);
 
         if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -130,44 +138,38 @@ public class ScatterPlotViewer extends JPanel {
                     file = new File(path + ".png");
                 }
 
-                BufferedImage image = new BufferedImage(getWidth(), getHeight(),
-                        BufferedImage.TYPE_INT_ARGB);
+                BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g2 = image.createGraphics();
                 paint(g2);
                 g2.dispose();
 
                 ImageIO.write(image, "png", file);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error saving image: " + ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error saving image: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
     private void initColors() {
-        // Benzersiz etiketleri topla
         Set<String> uniqueLabels = new HashSet<>();
         for (String label : labels) {
             uniqueLabels.add(label);
         }
-        
-        // nClass'ı güncelle
+
         nClass = uniqueLabels.size();
-        
+
         float hue = 0.0f;
         float saturation = 0.8f;
         float brightness = 0.9f;
-        float hueStep = 1.0f / Math.max(1, nClass);  // Sıfıra bölünmeyi önlemek için
+        float hueStep = 1.0f / Math.max(1, nClass);
 
-        // Her benzersiz etiket için renk ata
         for (String label : uniqueLabels) {
-            if (!colors.containsKey(label)) {  // Eğer key yoksa
+            if (!colors.containsKey(label)) {
                 colors.put(label, Color.getHSBColor(hue, saturation, brightness));
                 hue += hueStep;
             }
         }
-        
-        // Eğer colors haritası boşsa varsayılan bir renk ekle
+
         if (colors.isEmpty()) {
             colors.put("default", Color.BLUE);
         }
@@ -194,22 +196,17 @@ public class ScatterPlotViewer extends JPanel {
             @Override
             public void mouseMoved(MouseEvent e) {
                 mousePosition = e.getPoint();
-                updateTooltip(e.getX(), e.getY());
+                updateTooltipAndHighlight(e.getX(), e.getY()); // DEĞİŞTİ: Metot adı daha açıklayıcı
                 repaint();
             }
 
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
-                // Mouse pozisyonunun plot içinde olup olmadığını kontrol et
-                if (e.getX() < PADDING || e.getX() > getWidth() - LEGEND_WIDTH - 10
-                        || e.getY() < PADDING || e.getY() > getHeight() - PADDING) {
+                if (e.getX() < PADDING || e.getX() > getWidth() - LEGEND_WIDTH - 10 || e.getY() < PADDING || e.getY() > getHeight() - PADDING) {
                     return;
                 }
 
-                // Eski scale değerini sakla
                 float oldScale = scale;
-
-                // Zoom faktörünü hesapla (daha yumuşak zoom için)
                 scale *= Math.pow(1.05, -e.getWheelRotation());
                 scale = Math.max(0.1f, Math.min(10.0f, scale));
 
@@ -235,23 +232,36 @@ public class ScatterPlotViewer extends JPanel {
         addMouseWheelListener(adapter);
     }
 
-    private void updateTooltip(int mouseX, int mouseY) {
-        tooltipText = null;
+    // DEĞİŞTİ: Bu metot artık hem ipucu metnini hazırlıyor hem de vurgulanacak noktanın indeksini ayarlıyor
+    private void updateTooltipAndHighlight(int mouseX, int mouseY) {
         float worldX = screenToWorldX(mouseX);
         float worldY = screenToWorldY(mouseY);
+
+        // Her kontrolden önce vurguyu sıfırla
+        highlightedPointIndex = -1;
 
         for (int i = 0; i < points.length; i++) {
             float dx = points[i][0] - worldX;
             float dy = points[i][1] - worldY;
-            float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < 0.5 / scale) {  // Scale'e göre ayarlanmış mesafe kontrolü
+            // Dünya koordinatlarında mesafeyi hesaplamak yerine, ekran koordinatlarında daha basit bir kontrol yapalım
+            int screenX = worldToScreenX(points[i][0]);
+            int screenY = worldToScreenY(points[i][1]);
+
+            // Mouse'un noktanın merkezine olan uzaklığı
+            double distance = Math.sqrt(Math.pow(screenX - mouseX, 2) + Math.pow(screenY - mouseY, 2));
+
+            // Eğer mouse, noktanın yarıçapından daha yakınsa
+            if (distance < POINT_SIZE) {
                 tooltipText = String.format("<html>Cluster: %s<br>X: %.2f<br>Y: %.2f</html>",
                         labels[i], points[i][0], points[i][1]);
                 setToolTipText(tooltipText);
+                highlightedPointIndex = i; // Bu noktayı vurgula
                 return;
             }
         }
+
+        // Eğer hiçbir noktanın üzerinde değilse, ipucunu ve vurguyu kaldır
         setToolTipText(null);
     }
 
@@ -263,7 +273,6 @@ public class ScatterPlotViewer extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Zoom bilgisini çiz
         g2.setColor(Color.BLACK);
         g2.setFont(LABEL_FONT);
         g2.drawString(String.format("Zoom: %.2fx", scale), 10, 20);
@@ -277,13 +286,9 @@ public class ScatterPlotViewer extends JPanel {
     }
 
     private float calculateStep(float range) {
-        // Hedeflenen aralık sayısına göre yaklaşık step büyüklüğünü hesapla
         float roughStep = range / TARGET_GRID_COUNT;
-
-        // En yakın "güzel" sayıyı bul (1, 2, 5 veya bunların 10'un katları)
         float exponent = (float) Math.floor(Math.log10(roughStep));
         float fraction = roughStep / (float) Math.pow(10, exponent);
-
         float niceFraction;
         if (fraction < 1.5) {
             niceFraction = 1;
@@ -294,34 +299,24 @@ public class ScatterPlotViewer extends JPanel {
         } else {
             niceFraction = 10;
         }
-
         return niceFraction * (float) Math.pow(10, exponent);
     }
 
     private void drawGrid(Graphics2D g2) {
         g2.setColor(new Color(220, 220, 220));
         g2.setStroke(new BasicStroke(0.5f));
-
-        // Görünür alan sınırlarını hesapla
         float visibleMinX = screenToWorldX(PADDING);
         float visibleMaxX = screenToWorldX(getWidth() - LEGEND_WIDTH - 10);
         float visibleMinY = screenToWorldY(getHeight() - PADDING);
         float visibleMaxY = screenToWorldY(PADDING);
-
-        // Grid aralıklarını hesapla
         float xStep = calculateStep(Math.abs(visibleMaxX - visibleMinX));
         float yStep = calculateStep(Math.abs(visibleMaxY - visibleMinY));
-
-        // İlk grid çizgisinin konumunu hesapla
         float xStart = (float) Math.floor(visibleMinX / xStep) * xStep;
         float yStart = (float) Math.floor(visibleMinY / yStep) * yStep;
-
-        // Grid çizgilerini çiz
         for (float x = xStart; x <= visibleMaxX + xStep / 2; x += xStep) {
             int screenX = worldToScreenX(x);
             g2.drawLine(screenX, PADDING, screenX, getHeight() - PADDING);
         }
-
         for (float y = yStart; y <= visibleMaxY + yStep / 2; y += yStep) {
             int screenY = worldToScreenY(y);
             g2.drawLine(PADDING, screenY, getWidth() - LEGEND_WIDTH - 10, screenY);
@@ -339,17 +334,11 @@ public class ScatterPlotViewer extends JPanel {
     private void drawAxes(Graphics2D g2) {
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(1.5f));
-
-        // Draw X axis
-        g2.drawLine(PADDING, getHeight() - PADDING,
-                getWidth() - LEGEND_WIDTH - 10, getHeight() - PADDING);
-
-        // Draw Y axis
+        g2.drawLine(PADDING, getHeight() - PADDING, getWidth() - LEGEND_WIDTH - 10, getHeight() - PADDING);
         g2.drawLine(PADDING, PADDING, PADDING, getHeight() - PADDING);
     }
 
     private DecimalFormat createDynamicFormatter(float step) {
-        // Step değerine göre dinamik format oluştur
         int decimals = Math.max(0, -(int) Math.floor(Math.log10(step)));
         StringBuilder pattern = new StringBuilder("0");
         if (decimals > 0) {
@@ -364,45 +353,27 @@ public class ScatterPlotViewer extends JPanel {
     private void drawAxisLabels(Graphics2D g2) {
         g2.setFont(AXIS_FONT);
         FontMetrics metrics = g2.getFontMetrics();
-
-        // Görünür alan sınırlarını hesapla
         float visibleMinX = screenToWorldX(PADDING);
         float visibleMaxX = screenToWorldX(getWidth() - LEGEND_WIDTH - 10);
         float visibleMinY = screenToWorldY(getHeight() - PADDING);
         float visibleMaxY = screenToWorldY(PADDING);
-
-        // Grid aralıklarını hesapla
         float xStep = calculateStep(Math.abs(visibleMaxX - visibleMinX));
         float yStep = calculateStep(Math.abs(visibleMaxY - visibleMinY));
-
-        // İlk grid çizgisinin konumunu hesapla
         float xStart = (float) Math.floor(visibleMinX / xStep) * xStep;
         float yStart = (float) Math.floor(visibleMinY / yStep) * yStep;
-
-        // Etiketleri formatla ve çiz
         DecimalFormat labelFormat = createDynamicFormatter(xStep);
-
-        // X ekseni etiketleri
         for (float x = xStart; x <= visibleMaxX + xStep / 2; x += xStep) {
             int screenX = worldToScreenX(x);
             String label = labelFormat.format(x);
-            g2.drawString(label, screenX - metrics.stringWidth(label) / 2,
-                    getHeight() - PADDING + metrics.getHeight() + 5);
+            g2.drawString(label, screenX - metrics.stringWidth(label) / 2, getHeight() - PADDING + metrics.getHeight() + 5);
         }
-
-        // Y ekseni etiketleri
         labelFormat = createDynamicFormatter(yStep);
         for (float y = yStart; y <= visibleMaxY + yStep / 2; y += yStep) {
             int screenY = worldToScreenY(y);
             String label = labelFormat.format(y);
-
-            g2.drawString(label, PADDING - metrics.stringWidth(label) - 5,
-                    screenY + metrics.getHeight() / 2 - 2);
+            g2.drawString(label, PADDING - metrics.stringWidth(label) - 5, screenY + metrics.getHeight() / 2 - 2);
         }
-
-        // Eksen başlıkları
         g2.drawString("X", getWidth() - LEGEND_WIDTH - 30, getHeight() - PADDING / 3);
-
         AffineTransform original = g2.getTransform();
         g2.rotate(-Math.PI / 2);
         g2.drawString("Y", -getHeight() / 2, PADDING / 2);
@@ -410,65 +381,71 @@ public class ScatterPlotViewer extends JPanel {
     }
 
     private void drawPoints(Graphics2D g2) {
-        // Noktaları çiz
+        // Önce tüm noktaları normal şekilde çiz
         for (int i = 0; i < points.length; i++) {
-            // labels[i] için renk bulunamadığında varsayılan renk kullan
             Color pointColor = colors.getOrDefault(labels[i], Color.BLUE);
             g2.setColor(pointColor);
-            
+
             int x = worldToScreenX(points[i][0]) - POINT_SIZE / 2;
             int y = worldToScreenY(points[i][1]) - POINT_SIZE / 2;
 
-            // Ekran sınırları içinde olan noktaları çiz
-            if (x > PADDING - POINT_SIZE && x < getWidth() - LEGEND_WIDTH - 10 + POINT_SIZE
-                    && y > PADDING - POINT_SIZE && y < getHeight() - PADDING + POINT_SIZE) {
+            if (x > PADDING - POINT_SIZE && x < getWidth() - LEGEND_WIDTH - 10 + POINT_SIZE && y > PADDING - POINT_SIZE && y < getHeight() - PADDING + POINT_SIZE) {
                 g2.fillOval(x, y, POINT_SIZE, POINT_SIZE);
             }
+        }
+
+        // YENİ: Eğer vurgulanmış bir nokta varsa, onun etrafına bir halka çiz ve noktayı tekrar üstüne çiz
+        if (highlightedPointIndex != -1) {
+            float[] point = points[highlightedPointIndex];
+            int x = worldToScreenX(point[0]);
+            int y = worldToScreenY(point[1]);
+
+            // Vurgu halkasını çiz
+            int highlightSize = (int) (POINT_SIZE * 2.5);
+            g2.setColor(COLOR_HIGHLIGHT);
+            g2.fillOval(x - highlightSize / 2, y - highlightSize / 2, highlightSize, highlightSize);
+
+            // Orijinal noktayı vurgunun üzerine tekrar çizerek belirginleştir
+            Color pointColor = colors.getOrDefault(labels[highlightedPointIndex], Color.BLUE);
+            g2.setColor(pointColor);
+            g2.fillOval(x - POINT_SIZE / 2, y - POINT_SIZE / 2, POINT_SIZE, POINT_SIZE);
+            // İsteğe bağlı: Noktanın etrafına siyah bir kenarlık da ekleyebiliriz
+            g2.setColor(Color.BLACK);
+            g2.drawOval(x - POINT_SIZE / 2, y - POINT_SIZE / 2, POINT_SIZE, POINT_SIZE);
         }
     }
 
     private void drawLegend(Graphics2D g2) {
-        // Renk haritası boşsa legend çizme
         if (colors.isEmpty()) {
             return;
         }
-        
+
         int legendX = getWidth() - LEGEND_WIDTH + 10;
         int legendY = PADDING;
         int itemHeight = 20;
 
-        // Legend arka planı
         g2.setColor(new Color(250, 250, 250, 240));
-        g2.fillRoundRect(legendX - 5, legendY, LEGEND_WIDTH - 15,
-                Math.max(1, nClass) * itemHeight + 30, 10, 10);
+        g2.fillRoundRect(legendX - 5, legendY, LEGEND_WIDTH - 15, Math.max(1, nClass) * itemHeight + 30, 10, 10);
         g2.setColor(new Color(200, 200, 200));
-        g2.drawRoundRect(legendX - 5, legendY, LEGEND_WIDTH - 15,
-                Math.max(1, nClass) * itemHeight + 30, 10, 10);
+        g2.drawRoundRect(legendX - 5, legendY, LEGEND_WIDTH - 15, Math.max(1, nClass) * itemHeight + 30, 10, 10);
 
-        // Legend başlığı
         g2.setColor(Color.BLACK);
         g2.setFont(new Font("SansSerif", Font.BOLD, 12));
         g2.drawString("Clusters", legendX, legendY + 20);
 
-        // Legend itemları
         g2.setFont(LABEL_FONT);
         String[] keys = colors.keySet().toArray(new String[0]);
-        
-        // Boş kontrol
+
         if (keys.length == 0) {
             return;
         }
-        
+
         for (int i = 0; i < Math.min(nClass, keys.length); i++) {
             int y = legendY + 35 + i * itemHeight;
-
-            // Renk kutusu
             String key = keys[i];
             Color color_value = colors.get(key);
             g2.setColor(color_value);
             g2.fillRect(legendX, y, 12, 12);
-
-            // Etiket
             g2.setColor(Color.BLACK);
             g2.drawString("Cluster " + i, legendX + 20, y + 10);
         }
@@ -501,7 +478,7 @@ public class ScatterPlotViewer extends JPanel {
 
     public void show() {
         JFrame frame = new JFrame(title);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.add(this);
         frame.pack();
         frame.setLocationRelativeTo(null);

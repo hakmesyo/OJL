@@ -40,11 +40,11 @@ public class Matrix implements Serializable {
     }
 
     public float[] getRow(int row) {
-        return data.getRow(row);
+        return data.getRowAsArray(row);
     }
 
     public float[] getCol(int col) {
-        return data.getColumn(col);
+        return data.getColumnAsArray(col);
     }
 
     public void set(int row, int col, float v) {

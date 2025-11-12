@@ -1,188 +1,242 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package jazari.gui;
 
-import jazari.types.TPanelData;
 import jazari.matrix.CMatrix;
-import jazari.factory.FactoryUtils;
-import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Shape; // YENİ: Gerekli import
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.geom.Rectangle2D;
+import javax.swing.JPanel;
 
 /**
+ * Matplotlib'den ilham alan, modern, sağlam ve İNTERAKTİF bir histogram çizim paneli.
+ * Bu panel, zoom ve pan özellikleriyle ve KIRPMA (clipping) desteğiyle çalışır.
  *
- * @author BAP1
+ * @author BAP1 (Orijinal Yazar), Gemini (Modernizasyon ve İnteraktivite)
  */
-public class PanelImageHistogram extends TPanelData {
+public class PanelImageHistogram extends JPanel {
 
-    private int[][] hist;
-    private float scale = 1;
+    private CMatrix matrix;
+
+    // --- STİL SABİTLERİ ---
+    private static final Color COLOR_BACKGROUND = Color.WHITE;
+    private static final Color COLOR_AXIS = Color.BLACK;
+    private static final Color COLOR_GRID = new Color(220, 220, 220);
+    private static final Color COLOR_BAR_FILL = new Color(70, 130, 180);
+    private static final Color COLOR_BAR_BORDER = new Color(30, 80, 130);
+    private static final Color COLOR_TEXT = Color.BLACK;
+    private static final Color COLOR_NO_DATA = Color.GRAY;
+    private static final Font FONT_AXIS_LABELS = new Font("SansSerif", Font.PLAIN, 11);
+    private static final Font FONT_NO_DATA = new Font("SansSerif", Font.BOLD, 16);
+    private static final Font FONT_INFO = new Font("SansSerif", Font.PLAIN, 12);
+
+    // --- PADDING ---
+    private static final int PADDING_TOP = 20;
+    private static final int PADDING_BOTTOM = 40;
+    private static final int PADDING_LEFT = 50;
+    private static final int PADDING_RIGHT = 20;
+
+    // --- ETKİLEŞİM DEĞİŞKENLERİ ---
+    private float scale = 1.0f;
+    private float translateX = 0;
+    private Point lastPoint;
 
     public PanelImageHistogram(CMatrix cm) {
-        super(cm);
-//        this.hist = cm.to1DArrayInteger();
-        if (cm.getMaxTotal() < 1) {
-            cm = cm.multiplyScalar(10000);
-        }
-        this.hist = cm.toIntArray2D();
-        initialize();
+        this.matrix = cm;
+        setBackground(COLOR_BACKGROUND);
+        setupInteractions();
+    }
+
+    private void setupInteractions() {
+        MouseAdapter adapter = new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                lastPoint = e.getPoint();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    resetView();
+                }
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                float oldScale = scale;
+                scale *= Math.pow(1.05, -e.getWheelRotation());
+                scale = Math.max(0.1f, Math.min(100.0f, scale));
+
+                translateX = e.getX() - (e.getX() - translateX) * scale / oldScale;
+                repaint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (lastPoint != null) {
+                    translateX += e.getX() - lastPoint.x;
+                    lastPoint = e.getPoint();
+                    repaint();
+                }
+            }
+        };
+
+        addMouseListener(adapter);
+        addMouseMotionListener(adapter);
+        addMouseWheelListener(adapter);
+    }
+
+    public void resetView() {
+        scale = 1.0f;
+        translateX = 0;
         repaint();
     }
 
-    public int[][] getHistogramData() {
-        return this.hist;
-    }
-
-    private void initialize() {
-        this.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        this.updateUI();
-    }
-
     @Override
-    public void paint(Graphics gr1) {
-        this.hist = getMatrix().toIntArray2D();
-//        this.hist = getMatrix().to1DArrayDouble();
-        Graphics2D gr = (Graphics2D) gr1;
-        gr.setRenderingHint(
-                RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
- //        Font fnt = gr.getFont();
-//        gr.setFont(new Font(fnt.getFontName(), 1, 18));
-        gr.setColor(Color.white);
-        int w = getWidth();
-        int h = getHeight();
-        gr.fillRect(0, 0, w, h);
-        int px = 50;
-        int py = 50;
-        int dx = w - 2 * px;
-        int dy = h - 2 * py;
-        float normX = dx * 1.0f / hist[0].length;
-        int maxY = (int) FactoryUtils.getMaximum(hist);
-        float normY = (dy - 50) * 1.0f / maxY;
-        int x = 0;
-        int y = 0;
-        Color[] rgb={Color.red,Color.green,Color.blue};
-        for (int i = 0; i < hist.length; i++) {
-            for (int j = 0; j < hist[0].length; j++) {
-                x = (int) (j * normX);
-                y = (int) (hist[i][j] * normY);
-                if (i > 255) {
-                    continue;
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+
+        if (matrix == null || matrix.toFloatArray1D() == null || matrix.toFloatArray1D().length == 0) {
+            drawNoDataMessage(g2d);
+            return;
+        }
+        float[] data = matrix.toFloatArray1D();
+
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+        int plotWidth = panelWidth - PADDING_LEFT - PADDING_RIGHT;
+        int plotHeight = panelHeight - PADDING_TOP - PADDING_BOTTOM;
+
+        int startBin = Math.max(0, (int) screenToWorldX(-translateX, plotWidth, data.length));
+        int endBin = Math.min(data.length - 1, (int) screenToWorldX(plotWidth - translateX, plotWidth, data.length));
+
+        float visibleYMax = 0;
+        for (int i = startBin; i <= endBin; i++) {
+            if (data[i] > visibleYMax) {
+                visibleYMax = data[i];
+            }
+        }
+        visibleYMax *= 1.1f;
+        if (visibleYMax == 0) visibleYMax = 1;
+
+        // --- YENİ: KIRPMA (CLIPPING) İŞLEMİ ---
+        // 1. Mevcut kırpma alanını sakla (iyi bir pratiktir)
+        Shape oldClip = g2d.getClip();
+
+        // 2. Kırpma alanını sadece çizim bölgesi olarak ayarla
+        g2d.setClip(PADDING_LEFT, PADDING_TOP, plotWidth, plotHeight);
+
+        // 3. Sadece bu bölge içinde çizilecek olan metotları çağır
+        drawGrid(g2d, plotWidth, plotHeight, visibleYMax);
+        drawBars(g2d, data, plotWidth, plotHeight, visibleYMax, startBin, endBin);
+
+        // 4. Kırpma alanını eski haline getir ki eksenler ve etiketler çizilebilsin
+        g2d.setClip(oldClip);
+        // --- KIRPMA İŞLEMİ SONU ---
+
+        // Bu metotlar artık kırpma alanı dışındadır ve normal şekilde çizilirler
+        drawAxes(g2d, plotWidth, plotHeight);
+        drawAxisLabels(g2d, plotWidth, plotHeight, data.length, visibleYMax, startBin, endBin);
+        drawInfoText(g2d);
+    }
+
+    private void drawBars(Graphics2D g2d, float[] data, int plotWidth, int plotHeight, float yMax, int startBin, int endBin) {
+        float barSlotWidth = (float) plotWidth / data.length * scale;
+        float barActualWidth = Math.max(1.0f, barSlotWidth * 0.8f);
+
+        for (int i = startBin; i <= endBin; i++) {
+            float value = data[i];
+            int barHeight = (int) ((value / yMax) * plotHeight);
+            int barX = PADDING_LEFT + (int) (i * barSlotWidth + translateX + (barSlotWidth - barActualWidth) / 2);
+            int barY = PADDING_TOP + plotHeight - barHeight;
+
+            g2d.setColor(COLOR_BAR_FILL);
+            g2d.fillRect(barX, barY, (int) barActualWidth, barHeight);
+            g2d.setColor(COLOR_BAR_BORDER);
+            g2d.drawRect(barX, barY, (int) barActualWidth, barHeight);
+        }
+    }
+    
+    private void drawAxisLabels(Graphics2D g2d, int plotWidth, int plotHeight, int numBins, float yMax, int startBin, int endBin) {
+        g2d.setColor(COLOR_TEXT);
+        g2d.setFont(FONT_AXIS_LABELS);
+        FontMetrics fm = g2d.getFontMetrics();
+
+        int numYLabels = 5;
+        for (int i = 0; i <= numYLabels; i++) {
+            float value = (yMax / numYLabels) * i;
+            String label = String.format("%,.0f", value);
+            int x = PADDING_LEFT - fm.stringWidth(label) - 5;
+            int y = PADDING_TOP + plotHeight - (int) ((value / yMax) * plotHeight) + (fm.getAscent() / 2);
+            g2d.drawString(label, x, y);
+        }
+
+        if (numBins == 0) return;
+        float barSlotWidth = (float) plotWidth / numBins * scale;
+        int step = 1;
+        if (barSlotWidth < 20) {
+            step = (int) Math.ceil(20 / barSlotWidth);
+        }
+
+        for (int i = startBin; i <= endBin; i++) {
+            if (i % step == 0) {
+                String label = String.valueOf(i);
+                int x = PADDING_LEFT + (int) (i * barSlotWidth + translateX + barSlotWidth / 2) - (fm.stringWidth(label) / 2);
+                int y = PADDING_TOP + plotHeight + 15;
+                if (x > PADDING_LEFT - 20 && x < PADDING_LEFT + plotWidth + 20) {
+                    g2d.drawString(label, x, y);
                 }
-                gr.setColor(new Color(j, j, j));
-                gr.fillRect(px + x, (py + dy - 20), px + x + (int) normX + 1, 20);
-                
-                Composite oldComposite=gr.getComposite();
-                float alpha = 0.35f;
-                AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-                gr.setComposite(alcom);
-                
-                if (hist.length==1) {
-                    gr.setColor(Color.BLUE);
-                }else if(hist.length==3){
-                    gr.setColor(rgb[i]);
-                }else{
-                    gr.setColor(new Color((float)Math.random(),(float)Math.random(), (float)Math.random()));
-                }                
-                gr.drawLine(px + x, py + dy - y - 20, px + x, py + dy - 20);
-                gr.setComposite(oldComposite);
             }
-        }
-
-//        Point[][] mp = mappingDataToScreenCoordinates(getMatrix().get2DArrayDouble(), dx, dy, px, py);
-//        if (isActivateDataCursor()) {
-//            gr.setColor(Color.red);
-//            checkDataPoints(gr1, mp);
-//        }
-
-        gr.setColor(Color.black);
-        gr.drawRect(px - 2, py, dx + 2, dy);
-        drawAxisX(gr, dx, dy, px, py);
-        drawAxisY(gr, dx, dy, px, py);
-        gr.setColor(Color.red);
-        gr.drawRect(0, 0, w - 1, h - 1);
-        gr.drawRect(1, 1, w - 3, h - 3);
-        this.paintComponents(gr);
-    }
-
-    private void drawAxisX(Graphics2D gr, int dx, int dy, int px, int py) {
-//        float[] d = getMatrix().getRow(0);
-//        CMatrix cc=getMatrix();
-        float[] d = FactoryUtils.toFloatArray1D(hist[0]);
-//        float[] d = (hist);
-        int n = d.length / 5;
-        int nd = FactoryUtils.getDigitNumber(n);
-        int coeff = (nd) * 10;
-        //biiznillah yuvarlıyor 0,50,100 mesela
-        n = n / coeff * coeff;
-        for (int i = 0; i <= 5; i++) {
-            int x = px + (int) (dx * n * 1.0 / d.length * i);
-            gr.drawString(i * n + "", x - 5, dy + py + 20);
-            gr.drawLine(x, py, x, py + 5);
-            gr.drawLine(x, dy + py, x, dy + py + 5);
         }
     }
 
-    private void drawAxisY(Graphics2D gr, int dx, int dy, int px, int py) {
-        int maxY = (int) FactoryUtils.getMaximum(hist);
-        int minY = (int) FactoryUtils.getMinimum(hist);
-        float normY = (dy - 50) * 1.0f / maxY;
-        int qy = (int) (maxY * normY);
-        qy = ((qy / 10) + 1) * 10;
-        int deltaY = qy / 5;
-        int nd = FactoryUtils.getDigitNumber(maxY);
-        if (nd > 0) {
-            int coeff = (int) Math.pow(10, nd - 1);
-            //biiznillah yuvarlıyor 0,50,100 mesela
-            int n = (maxY / coeff + 1) * coeff / 5;
-            for (int i = 0; i <= 5; i++) {
-                int y = py + deltaY * i - 30;
-                gr.drawString(n * i + "", px - 40, dy + py - y);
-                gr.drawLine(px, dy + py - y, px + 5, dy + py - y);
-                gr.drawLine(px + dx - 5, dy + py - y, px + dx, dy + py - y);
-            }
-        } else {
-            float n = (maxY - minY) / 5;
-            for (int i = 0; i <= 5; i++) {
-                int y = py + deltaY * i - 30;
-                gr.drawString(String.format("%5.2e", n * i) + "", px - 40, dy + py - y);
-                gr.drawLine(px, dy + py - y, px + 5, dy + py - y);
-                gr.drawLine(px + dx - 5, dy + py - y, px + dx, dy + py - y);
-            }
-
-        }
+    private float screenToWorldX(float screenX, int plotWidth, int numBins) {
+        return (screenX / scale) * numBins / plotWidth;
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void drawInfoText(Graphics2D g2d) {
+        g2d.setFont(FONT_INFO);
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.drawString(String.format("Zoom: %.2fx", scale), 10, 15);
+    }
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
-    }// </editor-fold>//GEN-END:initComponents
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+    public CMatrix getMatrix() { return matrix; }
+    public void setMatrix(CMatrix cm) { this.matrix = cm; repaint(); }
+    private void drawGrid(Graphics2D g2d, int plotWidth, int plotHeight, float yMax) {
+        g2d.setColor(COLOR_GRID);
+        g2d.setStroke(new BasicStroke(1.0f));
+        int numGridLines = 5;
+        for (int i = 1; i <= numGridLines; i++) {
+            float value = (yMax / numGridLines) * i;
+            int y = PADDING_TOP + plotHeight - (int) ((value / yMax) * plotHeight);
+            g2d.drawLine(PADDING_LEFT, y, PADDING_LEFT + plotWidth, y);
+        }
+    }
+    private void drawAxes(Graphics2D g2d, int plotWidth, int plotHeight) {
+        g2d.setColor(COLOR_AXIS);
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.drawLine(PADDING_LEFT, PADDING_TOP, PADDING_LEFT, PADDING_TOP + plotHeight);
+        g2d.drawLine(PADDING_LEFT, PADDING_TOP + plotHeight, PADDING_LEFT + plotWidth, PADDING_TOP + plotHeight);
+    }
+    private void drawNoDataMessage(Graphics2D g2d) {
+        g2d.setColor(COLOR_NO_DATA);
+        g2d.setFont(FONT_NO_DATA);
+        String msg = "Görüntülenecek Veri Yok";
+        FontMetrics fm = g2d.getFontMetrics();
+        Rectangle2D bounds = fm.getStringBounds(msg, g2d);
+        int x = (getWidth() - (int) bounds.getWidth()) / 2;
+        int y = (getHeight() - (int) bounds.getHeight()) / 2 + fm.getAscent();
+        g2d.drawString(msg, x, y);
+    }
 }

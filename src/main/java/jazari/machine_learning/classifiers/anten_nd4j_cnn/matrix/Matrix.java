@@ -51,12 +51,12 @@ public class Matrix implements Iterable<MatrixElement>, Serializable {
     }
 
     public double[] getRow(int row) {
-        double[] data = FactoryUtils.toDoubleArray1D(myMatrix.getRow(row));
+        double[] data = FactoryUtils.toDoubleArray1D(myMatrix.getRowAsArray(row));
         return data;
     }
 
     public double[] getCol(int col) {
-        double[] data = FactoryUtils.toDoubleArray1D(myMatrix.getColumn(col));
+        double[] data = FactoryUtils.toDoubleArray1D(myMatrix.getColumnAsArray(col));
         return data;
     }
 

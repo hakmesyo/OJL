@@ -201,8 +201,8 @@ public class C_NaiveBayes {
         CMatrix positives = CMatrix.getInstance();
         CMatrix negatives = CMatrix.getInstance();
         CMatrix[][] cv = ds.crossValidationSets(nFolds);
-        float[] class_labels = FactoryUtils.getDistinctValues(ds.getColumn(ds.getColumnNumber() - 1));
-        float[] values = FactoryUtils.getDistinctValues(ds.getColumn(0));
+        float[] class_labels = FactoryUtils.getDistinctValues(ds.getColumnAsArray(ds.getColumnNumber() - 1));
+        float[] values = FactoryUtils.getDistinctValues(ds.getColumnAsArray(0));
         float avgAccuracy = 0;
         for (int k = 0; k < nFolds; k++) {
             CMatrix train = cv[k][0];
@@ -310,7 +310,7 @@ public class C_NaiveBayes {
         CMatrix positives = CMatrix.getInstance();
         CMatrix negatives = CMatrix.getInstance();
         CMatrix[][] cv = ds.crossValidationSets(nFolds);
-        float[] class_labels = FactoryUtils.getDistinctValues(ds.getColumn(ds.getColumnNumber() - 1));
+        float[] class_labels = FactoryUtils.getDistinctValues(ds.getColumnAsArray(ds.getColumnNumber() - 1));
         float avgAccuracy = 0;
         for (int k = 0; k < nFolds; k++) {
             CMatrix train = cv[k][0];

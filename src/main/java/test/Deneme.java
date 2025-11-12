@@ -36,8 +36,57 @@ import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
 public class Deneme {
 
     public static void main(String[] args) {
-        System.out.println(System.getProperty("file.encoding"));
-        System.out.println("çerçeveşğıi");
+        CMatrix cm = CMatrix.getInstance().range(-100, 100,1.0f);
+        CMatrix cm1=cm.clone().sigmoid().plot();
+        CMatrix cm2=cm.clone().gaussmf(12, 0).plot();
+        cm1.clone().cat(2, cm2.clone()).plot();
+        
+        
+        
+        
+        
+//        CMatrix kategoriler = CMatrix.getInstance(0, 1, 2, 0, 1); 
+//        kategoriler.println("Orijinal Sınıf Etiketleri:");
+//// 2. Adım: Yeni eklenen getOneHotEncoding metodunu çağır. 
+//// Veri setinde 3 farklı sınıf (0, 1, 2) olduğu için numClasses=3 olarak belirtiyoruz. 
+//        int nclass = FactoryUtils.getUniqueValues(kategoriler.toFloatArray1D()).length;
+//        CMatrix oneHotKodlar = kategoriler.getOneHotEncoding(nclass);
+//// 3: toplam sınıf sayısı 
+//        oneHotKodlar.println("\nTek Satırda One-Hot Kodlanmış Veriler:");
+
+//        CMatrix cm_img = CMatrix.getInstance().imread("images/peppers.png").imshow().rgb2gray().imhist();
+
+//        CMatrix cm = CMatrix.getInstance().readARFF("dataset/iris.arff").head();
+//        
+//        CMatrix cm_features = cm.clone().getColumns(0, 3).head();
+//        cm_features.clone().normalizeMinMax().hist(100);
+//        
+//        CMatrix cm_index = cm.clone().getColumn(4);
+//        CMatrix cm_unique=CMatrix.getInstance(FactoryUtils.getUniqueValues(cm_index.toFloatArray1D())).println();
+//        cm_index.hist(cm_unique.getRowNumber());
+//        
+//        cm.clone().scatter(0, 1);
+//        cm.clone().scatter(0, 2);
+//        cm.clone().scatter(0, 3);
+//        cm.clone().scatter(0, 4);
+//        cm.clone().corrcoef().heatmap(true);
+//        
+//        CMatrix cm_rand = CMatrix.getInstance()
+//                .rand(5,5)
+//                .map(0, 255)
+//                .corrcoef()
+//                .heatmap(true)
+//                ;
+        
+
+
+
+
+
+        
+        
+//        System.out.println(System.getProperty("file.encoding"));
+//        System.out.println("çerçeveşğıi");
 //        CMatrix cm = CMatrix.getInstance()
 //                .imread("images/bird.jpg")
 //                .imshow()
@@ -55,7 +104,6 @@ public class Deneme {
 //        img=ImageProcess.drawRectangle(img, rect, 5, Color.yellow);
 //        CMatrix.getInstance(img).imshow();
 //        System.out.println("");
-
 //        TFigureAttribute attr = new TFigureAttribute(
 //                "Lane Detection Performance Evaluation",
 //                new String[]{"Accuracy", "Groups"},

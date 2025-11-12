@@ -57,6 +57,7 @@ public class FramePlot extends javax.swing.JFrame {
         //cm.plotPanel = getPlotPanel();
         initialize();
         getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
+        getPlotPanel().setLegend(chk_legend.isSelected());
     }
 
     public FramePlot(float[][] data, boolean isPlotRefreshed) {
@@ -75,6 +76,7 @@ public class FramePlot extends javax.swing.JFrame {
         //cm.plotPanel = getPlotPanel();
         initialize();
         getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
+        getPlotPanel().setLegend(chk_legend.isSelected());
     }
 
     public FramePlot(float[][] data, float[] x) {
@@ -89,6 +91,7 @@ public class FramePlot extends javax.swing.JFrame {
         //cm.plotPanel = getPlotPanel();
         initialize();
         getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
+        getPlotPanel().setLegend(chk_legend.isSelected());
     }
 
     public FramePlot(float[][] data, TFigureAttribute attr) {
@@ -101,6 +104,7 @@ public class FramePlot extends javax.swing.JFrame {
         //this.cm.plotPanel = getPlotPanel();
         initialize();
         getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
+        getPlotPanel().setLegend(chk_legend.isSelected());
     }
 
     public FramePlot(float[][] data, TFigureAttribute attr, float[] x) {
@@ -114,6 +118,7 @@ public class FramePlot extends javax.swing.JFrame {
         getPlotPanel().setXAxis(x);
         initialize();
         getPlotPanel().setDarkMode(chk_dark_mode.isSelected());
+        getPlotPanel().setLegend(chk_legend.isSelected());
     }
 
     public void setMatrix(float[][] data) {
@@ -371,7 +376,7 @@ public class FramePlot extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_saveActionPerformed
 
     private void btn_refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_refreshActionPerformed
-        getPlotPanel().setMatrix(data);
+        getPlotPanel().setRandomSeed(System.currentTimeMillis());
     }//GEN-LAST:event_btn_refreshActionPerformed
 
     private void chk_legendPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_chk_legendPropertyChange

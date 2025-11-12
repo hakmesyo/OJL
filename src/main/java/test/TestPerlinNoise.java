@@ -16,6 +16,7 @@ public class TestPerlinNoise {
         CMatrix cm = CMatrix.getInstance()
                 .range(-100, 100,1,3)
                 .shape()
+                .tr()
                 .perlinNoise(0.1f)
                 .plot()
                 ;

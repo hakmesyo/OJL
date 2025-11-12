@@ -1,969 +1,704 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package jazari.gui;
 
 import jazari.types.TFigureAttribute;
-import jazari.matrix.CPoint;
-import jazari.factory.FactoryUtils;
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Stroke;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.geom.Rectangle2D;
+import java.text.DecimalFormat;
 import javax.swing.JColorChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import jazari.factory.FactoryMatrix;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import jazari.factory.FactoryUtils;
 import org.drjekyll.fontchooser.FontDialog;
 
 /**
+ * Matplotlib'den ilham alan, modern, sağlam ve tamamen interaktif bir çizgi
+ * grafiği paneli. Bu son versiyon, yeniden boyutlandırmaya duyarlı legend ve
+ * mouse merkezli zoom özelliklerini içerir.
  *
- * @author BAP1
+ * @author BAP1 (Orijinal Yazar), Gemini (Kapsamlı Modernizasyon ve
+ * İnteraktivite)
  */
-public class PanelPlot extends javax.swing.JPanel implements MouseWheelListener {
+public class PanelPlot extends JPanel {
+
+    private float[][] data;
     private float[] xAxis;
-    private Color[] color;
-    private boolean isShowPoint = false;
-    private Point mousePos = new Point(0, 0);
-    private float scale = 1;
     private TFigureAttribute figureAttribute;
-    private String[] items;
-    private long rand_seed;
-    private float alpha_blending = 0.65f;
-    private boolean isMousePressed = false;
-    Graphics2D gr;
-    CPoint[][] mp;
-    private int fromRight = 50;
-    private int fromLeft = 100;
-    private int fromTop = 50;
-    private int fromBottom = 70;
-    private int canvas_width = 300;
-    private int canvas_height = 200;
-    private boolean[] itemSelected;
-    private AffineTransform afft = new AffineTransform();
-    private AffineTransform inverseScale = new AffineTransform();
-    private float zoom = 1;
-    private Color prevColor;
-    private Stroke prevStroke;
-    private AlphaComposite prevAlcom;
-    private float prevAlpha;
-    private boolean isDarkMode = true;
+    private Color[] colors;
+    private long randomSeed = System.currentTimeMillis();
+    private int paletteOffset = 0;
+
+    // --- KONTROL EDİLEBİLİR STİL DEĞİŞKENLERİ ---
+    private boolean isDarkMode = false;
     private boolean isGridX = true;
     private boolean isGridY = true;
-    private boolean isLegend = true;
-    private Rectangle rectPlotCanvas;
-    private Rectangle rectInnerCanvas = new Rectangle();
-    private Rectangle rectTitle;
-    private Rectangle rectAxisX;
-    private Rectangle rectAxisY;
-    private Rectangle rectLegend;
-    private Color colorLine = new Color(255, 255, 0);
-    private int legendTextWidth;
-    private int legendTextHeight;
-    private int titleWidth;
-    private int titleHeight;
-    private float[][] data = null;
-    private boolean isMouseDragged;
-    Rectangle r1 = new Rectangle();
+
+    // --- STİL SABİTLERİ ---
+    private Color colorBackground, colorPlotArea, colorAxis, colorGrid, colorText;
+    private static final Color COLOR_HIGHLIGHT = new Color(255, 100, 0, 150);
+    private static final Color COLOR_ZOOM_RECT = new Color(0, 120, 215, 50);
+    private static final Color COLOR_ZOOM_RECT_BORDER = new Color(0, 120, 215);
+    private static final Font FONT_TITLE = new Font("SansSerif", Font.BOLD, 16);
+    private static final Font FONT_AXIS_TITLE = new Font("SansSerif", Font.BOLD, 12);
+    private static final Font FONT_AXIS_LABELS = new Font("SansSerif", Font.PLAIN, 11);
+    private static final Color[] HIGH_CONTRAST_PALETTE = {
+        new Color(31, 119, 180), new Color(255, 127, 14), new Color(44, 160, 44),
+        new Color(214, 39, 40), new Color(148, 103, 189), new Color(140, 86, 75),
+        new Color(227, 119, 194), new Color(127, 127, 127), new Color(188, 189, 34),
+        new Color(23, 190, 207)
+    };
+
+    // --- PADDING ---
+    private static final int PADDING_TOP = 50;
+    private static final int PADDING_BOTTOM = 60;
+    private static final int PADDING_LEFT = 70;
+    private static final int PADDING_RIGHT = 30;
+
+    // --- ETKİLEŞİM DEĞİŞKENLERİ ---
+    private float scaleX = 1.0f, scaleY = 1.0f;
+    private float translateX = 0, translateY = 0;
+    private Point lastPoint;
+    private Rectangle zoomRect;
+    private int highlightedSeriesIndex = -1, highlightedPointIndex = -1;
+    private boolean isDraggingPoint = false;
+    private boolean isDraggingLegend = false;
+    private Point legendDragOffset;
+    private boolean isLegendPositionDefault = true;
+
+    // --- DİNAMİK DÜZENLEME İÇİN ALANLAR ---
+    private Rectangle rectTitle, rectAxisX, rectAxisY, rectLegend;
+
+    // --- VERİ SINIRLARI (DÜNYA KOORDİNATLARI) ---
+    private float minX, maxX, minY, maxY;
 
     public PanelPlot(float[][] data) {
         this.data = data;
-        if (figureAttribute == null) {
-            this.figureAttribute = new TFigureAttribute();
-            this.figureAttribute.items = new String[this.data.length];
-            for (int i = 0; i < this.figureAttribute.items.length; i++) {
-                this.figureAttribute.items[i] = "Line - " + (i + 1);
-            }
-            items=this.figureAttribute.items;
-        }
-        initialize();
+        this.figureAttribute = new TFigureAttribute();
+        this.figureAttribute.items = generateDefaultItems(data.length);
+
+        initializePanel();
+        assignColorsFromPalette(data.length);
+        calculateBounds();
     }
 
-    public void setXAxis(float[] x) {
-        this.xAxis = x;
-        repaint();
+    private void initializePanel() {
+        updateColors();
+        setupInteractions();
+        rectTitle = new Rectangle();
+        rectAxisX = new Rectangle();
+        rectAxisY = new Rectangle();
+        rectLegend = new Rectangle();
     }
 
-    @Override
-    public void paint(Graphics g) {
-
-        gr = (Graphics2D) g;
-        gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        Font fnt = gr.getFont();
-        gr.setFont(new Font(fnt.getFontName(), 1, 14));
-        int w = getWidth();
-        int h = getHeight();
-        int px = fromLeft;
-        int py = h - 90;
-
-        //ekranın tümünü dark mode veya beyaz ile boya
-        if (isDarkMode) {
-            gr.setColor(Color.DARK_GRAY);
-        } else {
-            gr.setColor(Color.white);
-        }
-        gr.fillRect(0, 0, w, h);
-
-        drawTitle(gr, w);
-        drawTitleAxisX(gr);
-        drawTitleAxisY(gr);
-
-        //çizim tuvali
-        drawPlotCanvas(gr);
-
-        mp = mappingDataToScreenCoordinates(data, fromLeft + 10, fromTop + 10, canvas_width - 20, canvas_height - 20);
-        int[][] mappedVal = getMaxMinValue(mp);
-        drawYAxis(gr, mp, mappedVal, px, py, w - fromRight - 20, fromRight, data);
-        drawXAxis(gr, mp, mappedVal, px, py, w - fromRight, fromRight, data);
-        for (int r = 0; r < items.length; r++) {
-            drawPolyLines(gr, mp, r);
-        }
-
-        rectInnerCanvas.x = rectPlotCanvas.x + 10;
-        rectInnerCanvas.y = rectPlotCanvas.y;
-        rectInnerCanvas.width = rectPlotCanvas.width - 20;
-        rectInnerCanvas.height = rectPlotCanvas.height;
-        if (isMouseDragged && rectInnerCanvas.contains(mousePos)) {
-            if (isDarkMode) {
-                gr.setColor(Color.lightGray);
-            }else{
-                gr.setColor(Color.darkGray);
-            }
-            gr.drawLine(mousePos.x, rectPlotCanvas.y, mousePos.x, rectPlotCanvas.y + rectPlotCanvas.height);
-            int pxx = mousePos.x;
-            int index = (int)(FactoryUtils.map(pxx, rectInnerCanvas.x, rectInnerCanvas.x + rectInnerCanvas.width, 0, data[0].length));
-            for (int i = 0; i < mp.length; i++) {
-                r1.x = mp[i][index].column - 4;
-                r1.y = mp[i][index].row - 4;
-                r1.width = 8;
-                r1.height = 8;
-                if (r1.contains(mousePos.x, mp[i][index].row)) {
-                    if (isDarkMode) {
-                        gr.setColor(Color.darkGray);
-                        gr.fillRect(mousePos.x, mp[i][index].row - 10, 50, 17);
-                        gr.setColor(color[i]);
-                        if (xAxis == null) {
-                            gr.drawString("" + index + " , " + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
-                        } else {
-                            int fv=Math.round(FactoryUtils.map(mousePos.x-mappedVal[0][0], 0, mappedVal[0][1]-mappedVal[0][0], xAxis[0], xAxis[xAxis.length-1]));
-                            gr.drawString("" + fv + " , " + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
-                            //gr.drawString("" + (index + xAxis[0]) + "," + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
-                        }
-                    } else {
-                        gr.setColor(Color.white);
-                        gr.fillRect(mousePos.x, mp[i][index].row - 10, 50, 17);
-                        gr.setColor(color[i]);
-                        if (xAxis == null) {
-                            gr.drawString("" + index + " , " + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
-                        } else {
-                            int fv=Math.round(FactoryUtils.map(mousePos.x-mappedVal[0][0], 0, mappedVal[0][1]-mappedVal[0][0], xAxis[0], xAxis[xAxis.length-1]));
-                            gr.drawString("" + fv + " , " + FactoryUtils.formatFloatAsString(data[i][index], 2), mousePos.x, mp[i][index].row);
-                        }
+    private void setupInteractions() {
+        MouseAdapter adapter = new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                lastPoint = e.getPoint();
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    if (figureAttribute.isLegend && rectLegend.contains(e.getPoint())) {
+                        isDraggingLegend = true;
+                        isLegendPositionDefault = false;
+                        legendDragOffset = new Point(e.getX() - rectLegend.x, e.getY() - rectLegend.y);
+                        return;
+                    }
+                    if (!tryStartPointDrag(e.getPoint())) {
+                        zoomRect = new Rectangle(e.getX(), e.getY(), 0, 0);
                     }
                 }
             }
 
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (zoomRect != null) {
+                    if (Math.abs(zoomRect.width) > 5 && Math.abs(zoomRect.height) > 5) {
+                        applyZoomToRect();
+                    }
+                    zoomRect = null;
+                    repaint();
+                }
+                isDraggingPoint = false;
+                isDraggingLegend = false;
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    handleDoubleClick(e.getPoint());
+                }
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                float worldXBeforeZoom = screenToWorldX(e.getX());
+                float worldYBeforeZoom = screenToWorldY(e.getY());
+
+                double zoomFactor = Math.pow(1.1, -e.getWheelRotation());
+                scaleX *= zoomFactor;
+                scaleY *= zoomFactor;
+                scaleX = Math.max(0.1f, Math.min(100.0f, scaleX));
+                scaleY = Math.max(0.1f, Math.min(100.0f, scaleY));
+
+                int screenXAfterZoom = worldToScreenX(worldXBeforeZoom);
+                int screenYAfterZoom = worldToScreenY(worldYBeforeZoom);
+
+                translateX += e.getX() - screenXAfterZoom;
+                translateY += e.getY() - screenYAfterZoom;
+
+                repaint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (isDraggingLegend) {
+                    rectLegend.x = e.getX() - legendDragOffset.x;
+                    rectLegend.y = e.getY() - legendDragOffset.y;
+                    repaint();
+                    return;
+                }
+                if (isDraggingPoint) {
+                    float newY = screenToWorldY(e.getY());
+                    data[highlightedSeriesIndex][highlightedPointIndex] = newY;
+                    repaint();
+                } else if (SwingUtilities.isMiddleMouseButton(e)) {
+                    translateX += e.getX() - lastPoint.x;
+                    translateY += e.getY() - lastPoint.y;
+                    lastPoint = e.getPoint();
+                    repaint();
+                } else if (zoomRect != null) {
+                    zoomRect.setFrameFromDiagonal(lastPoint, e.getPoint());
+                    repaint();
+                }
+            }
+        };
+        addMouseListener(adapter);
+        addMouseMotionListener(adapter);
+        addMouseWheelListener(adapter);
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                if (isLegendPositionDefault) {
+                    updateDefaultLegendPosition();
+                }
+            }
+        });
+    }
+
+    private void updateDefaultLegendPosition() {
+        int plotWidth = getWidth() - PADDING_LEFT - PADDING_RIGHT;
+        if (plotWidth <= 0) {
+            return; // Henüz boyutlar ayarlanmamışsa çık
+        }
+        int legendWidth = 140;
+        int margin = 10;
+        rectLegend.x = PADDING_LEFT + plotWidth - legendWidth - margin;
+        rectLegend.y = PADDING_TOP + margin;
+    }
+
+    public void resetView() {
+        scaleX = 1.0f;
+        scaleY = 1.0f;
+        translateX = 0;
+        translateY = 0;
+        isLegendPositionDefault = true;
+        updateDefaultLegendPosition();
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+
+        if (data == null || data.length == 0) {
+            return;
         }
 
-        if (isLegend) {
-            drawLegend(gr);
+        int plotWidth = getWidth() - PADDING_LEFT - PADDING_RIGHT;
+        int plotHeight = getHeight() - PADDING_TOP - PADDING_BOTTOM;
+
+        g2d.setColor(colorPlotArea);
+        g2d.fillRect(PADDING_LEFT, PADDING_TOP, plotWidth, plotHeight);
+
+        Shape oldClip = g2d.getClip();
+        g2d.setClip(PADDING_LEFT, PADDING_TOP, plotWidth, plotHeight);
+        drawGrid(g2d, plotWidth, plotHeight);
+        drawLines(g2d, plotWidth, plotHeight);
+        drawHighlight(g2d);
+        g2d.setClip(oldClip);
+
+        drawAxes(g2d, plotWidth, plotHeight);
+        drawAxisLabels(g2d, plotWidth, plotHeight);
+        drawTitles(g2d, plotWidth, plotHeight);
+        drawLegend(g2d, plotWidth, plotHeight);
+        drawZoomRect(g2d);
+    }
+
+    private void drawLegend(Graphics2D g2d, int plotWidth, int plotHeight) {
+        if (!figureAttribute.isLegend) {
+            return;
         }
 
+        if (isLegendPositionDefault) {
+            updateDefaultLegendPosition();
+        }
+
+        int legendX = rectLegend.x;
+        int legendY = rectLegend.y;
+        int itemHeight = 20;
+        int legendWidth = 140;
+        int legendHeight = data.length * itemHeight + 10;
+        rectLegend.setSize(legendWidth, legendHeight);
+
+        g2d.setColor(isDarkMode ? new Color(50, 50, 50, 220) : new Color(255, 255, 255, 220));
+        g2d.fillRoundRect(legendX, legendY, legendWidth, legendHeight, 10, 10);
+        g2d.setColor(isDarkMode ? Color.DARK_GRAY : Color.LIGHT_GRAY);
+        g2d.drawRoundRect(legendX, legendY, legendWidth, legendHeight, 10, 10);
+
+        g2d.setFont(FONT_AXIS_LABELS);
+        for (int i = 0; i < data.length; i++) {
+            g2d.setColor(colors[i]);
+            g2d.setStroke(new BasicStroke(2.0f));
+            g2d.drawLine(legendX + 10, legendY + (i * itemHeight) + 15, legendX + 30, legendY + (i * itemHeight) + 15);
+            g2d.setColor(colorText);
+            g2d.drawString(figureAttribute.items[i], legendX + 40, legendY + (i * itemHeight) + 20);
+        }
     }
 
-    private void push(Color col) {
-        prevColor = gr.getColor();
-        gr.setColor(col);
-        prevStroke = gr.getStroke();
-        Stroke s = new BasicStroke(2.0f, // Width 
-                BasicStroke.CAP_SQUARE, // End cap 
-                BasicStroke.JOIN_MITER, // Join style 
-                10.0f, // Miter limit 
-                new float[]{5.0f, 5.0f}, // Dash pattern 
-                0.0f);
-        gr.setStroke(s);
-        prevAlpha = 0.35f;
-        prevAlcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, prevAlpha);
-        gr.setComposite(prevAlcom);
+    // --- Diğer Tüm Metotlar (Değişiklik Yok, Tamlık İçin Eklendi) ---
+    private void updateColors() {
+        if (isDarkMode) {
+            colorBackground = new Color(45, 45, 45);
+            colorPlotArea = new Color(30, 30, 30);
+            colorAxis = Color.LIGHT_GRAY;
+            colorGrid = new Color(60, 60, 60);
+            colorText = Color.WHITE;
+        } else {
+            colorBackground = new Color(240, 240, 240);
+            colorPlotArea = Color.WHITE;
+            colorAxis = Color.BLACK;
+            colorGrid = new Color(220, 220, 220);
+            colorText = Color.BLACK;
+        }
+        setBackground(colorBackground);
     }
 
-    private void pop() {
-        prevAlpha = 1f;
-        prevAlcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, prevAlpha);
-        gr.setComposite(prevAlcom);
-        gr.setStroke(prevStroke);
-        gr.setColor(prevColor);
+    private void calculateBounds() {
+        if (data == null || data.length == 0 || data[0].length == 0) {
+            return;
+        }
+        minX = (xAxis != null && xAxis.length > 0) ? FactoryUtils.getMinimum(xAxis) : 0;
+        maxX = (xAxis != null && xAxis.length > 0) ? FactoryUtils.getMaximum(xAxis) : data[0].length - 1;
+        minY = FactoryUtils.getMinimum(data);
+        maxY = FactoryUtils.getMaximum(data);
+        float xMargin = (maxX - minX) * 0.05f, yMargin = (maxY - minY) * 0.1f;
+        if (xMargin == 0) {
+            xMargin = 1;
+        }
+        if (yMargin == 0) {
+            yMargin = 1;
+        }
+        minX -= xMargin;
+        maxX += xMargin;
+        minY -= yMargin;
+        maxY += yMargin;
     }
 
-    private CPoint[][] mappingDataToScreenCoordinates(float[][] d, int fromLeft, int fromTop, int w, int h) {
-        CPoint[][] ret = new CPoint[d.length][d[0].length];
-        float maxY = FactoryUtils.getMaximum(d);
-        float minY = FactoryUtils.getMinimum(d);
-        float deltaY = maxY - minY;
-        float maxX = d[0].length;
-        float cellWidth = w / (maxX - 1);
-        float cellHeight = h / deltaY;
-        for (int i = 0; i < d.length; i++) {
-            for (int j = 0; j < d[0].length; j++) {
-                CPoint p = new CPoint();
-                p.column = (int) Math.round(fromLeft + (j) * cellWidth);
-                p.row = (int) Math.round((fromTop + h) - (d[i][j] - minY) * cellHeight);
-                ret[i][j] = p;
+    private boolean tryStartPointDrag(Point p) {
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data[i].length; j++) {
+                float xVal = (xAxis != null) ? xAxis[j] : j;
+                int screenX = worldToScreenX(xVal);
+                int screenY = worldToScreenY(data[i][j]);
+                if (p.distance(screenX, screenY) < 8) {
+                    highlightedSeriesIndex = i;
+                    highlightedPointIndex = j;
+                    isDraggingPoint = true;
+                    return true;
+                }
             }
         }
-        return ret;
+        highlightedSeriesIndex = -1;
+        highlightedPointIndex = -1;
+        return false;
+    }
+
+    private void applyZoomToRect() {
+        Rectangle r = zoomRect.getBounds();
+        if (r.width < 0) {
+            r.x += r.width;
+            r.width = -r.width;
+        }
+        if (r.height < 0) {
+            r.y += r.height;
+            r.height = -r.height;
+        }
+        int plotWidth = getWidth() - PADDING_LEFT - PADDING_RIGHT;
+        int plotHeight = getHeight() - PADDING_TOP - PADDING_BOTTOM;
+        float worldX1 = screenToWorldX(r.x);
+        float worldY1 = screenToWorldY(r.y);
+        float worldX2 = screenToWorldX(r.x + r.width);
+        float worldY2 = screenToWorldY(r.y + r.height);
+        float newScaleX = scaleX * plotWidth / Math.abs(worldToScreenX(worldX2) - worldToScreenX(worldX1));
+        float newScaleY = scaleY * plotHeight / Math.abs(worldToScreenY(worldY2) - worldToScreenY(worldY1));
+        translateX = translateX * (newScaleX / scaleX) - (worldToScreenX(worldX1) - PADDING_LEFT) * (newScaleX / scaleX - 1);
+        translateY = translateY * (newScaleY / scaleY) - (worldToScreenY(worldY1) - PADDING_TOP) * (newScaleY / scaleY - 1);
+        scaleX = newScaleX;
+        scaleY = newScaleY;
+    }
+
+    private void handleDoubleClick(Point p) {
+        if (rectTitle.contains(p)) {
+            String newTitle = JOptionPane.showInputDialog(this, "Enter new title:", figureAttribute.title);
+            if (newTitle != null) {
+                figureAttribute.title = newTitle;
+            }
+            editFont(figureAttribute.fontTitle, newFont -> figureAttribute.fontTitle = newFont);
+        } else if (rectAxisX.contains(p)) {
+            String newLabel = JOptionPane.showInputDialog(this, "Enter new X-axis label:", figureAttribute.axis_names[1]);
+            if (newLabel != null) {
+                figureAttribute.axis_names[1] = newLabel;
+            }
+            editFont(figureAttribute.fontAxisX, newFont -> figureAttribute.fontAxisX = newFont);
+        } else if (rectAxisY.contains(p)) {
+            String newLabel = JOptionPane.showInputDialog(this, "Enter new Y-axis label:", figureAttribute.axis_names[0]);
+            if (newLabel != null) {
+                figureAttribute.axis_names[0] = newLabel;
+            }
+            editFont(figureAttribute.fontAxisY, newFont -> figureAttribute.fontAxisY = newFont);
+        } else if (rectLegend.contains(p)) {
+            int itemHeight = 20;
+            int index = (p.y - (rectLegend.y + 10)) / itemHeight;
+            if (index >= 0 && index < figureAttribute.items.length) {
+                String newText = JOptionPane.showInputDialog(this, "Enter new legend text:", figureAttribute.items[index]);
+                if (newText != null) {
+                    figureAttribute.items[index] = newText;
+                }
+                Color newColor = JColorChooser.showDialog(this, "Choose color for " + figureAttribute.items[index], colors[index]);
+                if (newColor != null) {
+                    colors[index] = newColor;
+                }
+            }
+        } else {
+            resetView();
+        }
+        repaint();
+    }
+
+    private interface FontConsumer {
+
+        void accept(Font font);
+    }
+
+    private void editFont(Font currentFont, FontConsumer consumer) {
+        JLabel label = new JLabel();
+        label.setFont(currentFont);
+        FontDialog.showDialog(label);
+        if (!label.getFont().equals(currentFont)) {
+            consumer.accept(label.getFont());
+        }
+    }
+
+    private void drawGrid(Graphics2D g2d, int plotWidth, int plotHeight) {
+        g2d.setColor(colorGrid);
+        g2d.setStroke(new BasicStroke(1.0f));
+        float visibleMinX = screenToWorldX(PADDING_LEFT), visibleMaxX = screenToWorldX(PADDING_LEFT + plotWidth);
+        float visibleMinY = screenToWorldY(PADDING_TOP + plotHeight), visibleMaxY = screenToWorldY(PADDING_TOP);
+        float xStep = calculateNiceStep(visibleMaxX - visibleMinX), yStep = calculateNiceStep(visibleMaxY - visibleMinY);
+        if (isGridX) {
+            for (float x = (float) (Math.floor(visibleMinX / xStep) * xStep); x <= visibleMaxX; x += xStep) {
+                g2d.drawLine(worldToScreenX(x), PADDING_TOP, worldToScreenX(x), PADDING_TOP + plotHeight);
+            }
+        }
+        if (isGridY) {
+            for (float y = (float) (Math.floor(visibleMinY / yStep) * yStep); y <= visibleMaxY; y += yStep) {
+                g2d.drawLine(PADDING_LEFT, worldToScreenY(y), PADDING_LEFT + plotWidth, worldToScreenY(y));
+            }
+        }
+    }
+
+    private void drawLines(Graphics2D g2d, int plotWidth, int plotHeight) {
+        for (int i = 0; i < data.length; i++) {
+            g2d.setColor(colors[i]);
+            g2d.setStroke(getStrokeForLine(i));
+            int[] xPoints = new int[data[i].length], yPoints = new int[data[i].length];
+            for (int j = 0; j < data[i].length; j++) {
+                float xVal = (xAxis != null) ? xAxis[j] : j;
+                xPoints[j] = worldToScreenX(xVal);
+                yPoints[j] = worldToScreenY(data[i][j]);
+            }
+            if (figureAttribute.pointType.equals("-")) {
+                g2d.drawPolyline(xPoints, yPoints, xPoints.length);
+            } else {
+                g2d.drawPolyline(xPoints, yPoints, xPoints.length);
+                drawPoints(g2d, xPoints, yPoints, figureAttribute.pointType);
+            }
+        }
+    }
+
+    private void drawHighlight(Graphics2D g2d) {
+        if (highlightedPointIndex != -1) {
+            float xVal = (xAxis != null) ? xAxis[highlightedPointIndex] : highlightedPointIndex;
+            float yVal = data[highlightedSeriesIndex][highlightedPointIndex];
+            int x = worldToScreenX(xVal);
+            int y = worldToScreenY(yVal);
+            g2d.setColor(COLOR_HIGHLIGHT);
+            g2d.fillOval(x - 8, y - 8, 16, 16);
+            g2d.setColor(colors[highlightedSeriesIndex]);
+            g2d.setStroke(new BasicStroke(2.0f));
+            drawPoints(g2d, new int[]{x}, new int[]{y}, "o");
+        }
+    }
+
+    private void drawZoomRect(Graphics2D g2d) {
+        if (zoomRect != null) {
+            g2d.setColor(COLOR_ZOOM_RECT);
+            g2d.fill(zoomRect);
+            g2d.setColor(COLOR_ZOOM_RECT_BORDER);
+            g2d.draw(zoomRect);
+        }
+    }
+
+    private void drawTitles(Graphics2D g2d, int plotWidth, int plotHeight) {
+        g2d.setColor(colorText);
+        FontMetrics fm;
+        g2d.setFont(figureAttribute.fontTitle != null ? figureAttribute.fontTitle : FONT_TITLE);
+        fm = g2d.getFontMetrics();
+        String title = figureAttribute.title;
+        int titleX = (getWidth() - fm.stringWidth(title)) / 2;
+        int titleY = PADDING_TOP - 20;
+        g2d.drawString(title, titleX, titleY);
+        rectTitle.setBounds(titleX, titleY - fm.getAscent(), fm.stringWidth(title), fm.getHeight());
+        g2d.setFont(figureAttribute.fontAxisX != null ? figureAttribute.fontAxisX : FONT_AXIS_TITLE);
+        fm = g2d.getFontMetrics();
+        String xLabel = figureAttribute.axis_names[1];
+        int xLabelX = (getWidth() - fm.stringWidth(xLabel)) / 2;
+        int xLabelY = getHeight() - 15;
+        g2d.drawString(xLabel, xLabelX, xLabelY);
+        rectAxisX.setBounds(xLabelX, xLabelY - fm.getAscent(), fm.stringWidth(xLabel), fm.getHeight());
+        g2d.setFont(figureAttribute.fontAxisY != null ? figureAttribute.fontAxisY : FONT_AXIS_TITLE);
+        fm = g2d.getFontMetrics();
+        String yLabel = figureAttribute.axis_names[0];
+        AffineTransform old = g2d.getTransform();
+        g2d.rotate(-Math.PI / 2);
+        int yLabelX = -(getHeight() + fm.stringWidth(yLabel)) / 2;
+        int yLabelY = 20;
+        g2d.drawString(yLabel, yLabelX, yLabelY);
+        g2d.setTransform(old);
+        rectAxisY.setBounds(0, PADDING_TOP, PADDING_LEFT - 10, plotHeight);
+    }
+
+    private void drawPoints(Graphics2D g2d, int[] xPoints, int[] yPoints, String type) {
+        for (int i = 0; i < xPoints.length; i++) {
+            int x = xPoints[i], y = yPoints[i];
+            switch (type) {
+                case ".":
+                    g2d.fillOval(x - 2, y - 2, 4, 4);
+                    break;
+                case "o":
+                    g2d.drawOval(x - 4, y - 4, 8, 8);
+                    break;
+                case "*":
+                    g2d.drawLine(x - 4, y, x + 4, y);
+                    g2d.drawLine(x, y - 4, x, y + 4);
+                    g2d.drawLine(x - 3, y - 3, x + 3, y + 3);
+                    g2d.drawLine(x - 3, y + 3, x + 3, y - 3);
+                    break;
+            }
+        }
+    }
+
+    private Stroke getStrokeForLine(int index) {
+        if (figureAttribute.isStroke && figureAttribute.stroke != null && index < figureAttribute.stroke.size()) {
+            return figureAttribute.stroke.get(index);
+        }
+        return new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+    }
+
+    private void drawAxes(Graphics2D g2d, int plotWidth, int plotHeight) {
+        g2d.setColor(colorAxis);
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.drawLine(PADDING_LEFT, PADDING_TOP + plotHeight, PADDING_LEFT + plotWidth, PADDING_TOP + plotHeight);
+        g2d.drawLine(PADDING_LEFT, PADDING_TOP, PADDING_LEFT, PADDING_TOP + plotHeight);
+    }
+
+    private void drawAxisLabels(Graphics2D g2d, int plotWidth, int plotHeight) {
+        g2d.setColor(colorText);
+        g2d.setFont(FONT_AXIS_LABELS);
+        FontMetrics fm = g2d.getFontMetrics();
+        float visibleMinX = screenToWorldX(PADDING_LEFT), visibleMaxX = screenToWorldX(PADDING_LEFT + plotWidth);
+        float visibleMinY = screenToWorldY(PADDING_TOP + plotHeight), visibleMaxY = screenToWorldY(PADDING_TOP);
+        float xStep = calculateNiceStep(visibleMaxX - visibleMinX), yStep = calculateNiceStep(visibleMaxY - visibleMinY);
+        DecimalFormat xFmt = createDynamicFormatter(xStep);
+        for (float x = (float) (Math.floor(visibleMinX / xStep) * xStep); x <= visibleMaxX; x += xStep) {
+            int screenX = worldToScreenX(x);
+            String label = xFmt.format(x);
+            g2d.drawString(label, screenX - fm.stringWidth(label) / 2, PADDING_TOP + plotHeight + 20);
+        }
+        DecimalFormat yFmt = createDynamicFormatter(yStep);
+        for (float y = (float) (Math.floor(visibleMinY / yStep) * yStep); y <= visibleMaxY; y += yStep) {
+            int screenY = worldToScreenY(y);
+            String label = yFmt.format(y);
+            g2d.drawString(label, PADDING_LEFT - fm.stringWidth(label) - 5, screenY + fm.getAscent() / 2);
+        }
+    }
+
+    private int worldToScreenX(float worldX) {
+        int plotWidth = getWidth() - PADDING_LEFT - PADDING_RIGHT;
+        return (int) (PADDING_LEFT + ((worldX - minX) / (maxX - minX)) * plotWidth * scaleX + translateX);
+    }
+
+    private int worldToScreenY(float worldY) {
+        int plotHeight = getHeight() - PADDING_TOP - PADDING_BOTTOM;
+        return (int) (PADDING_TOP + plotHeight - ((worldY - minY) / (maxY - minY)) * plotHeight * scaleY + translateY);
+    }
+
+    private float screenToWorldX(int screenX) {
+        int plotWidth = getWidth() - PADDING_LEFT - PADDING_RIGHT;
+        if (plotWidth * scaleX == 0) {
+            return 0;
+        }
+        return minX + ((screenX - PADDING_LEFT - translateX) / (plotWidth * scaleX)) * (maxX - minX);
+    }
+
+    private float screenToWorldY(int screenY) {
+        int plotHeight = getHeight() - PADDING_TOP - PADDING_BOTTOM;
+        if (plotHeight * scaleY == 0) {
+            return 0;
+        }
+        return minY + ((PADDING_TOP + plotHeight - screenY + translateY) / (plotHeight * scaleY)) * (maxY - minY);
+    }
+
+    private float calculateNiceStep(float range) {
+        if (range <= 0) {
+            return 1;
+        }
+        float roughStep = range / 10.0f;
+        float exponent = (float) Math.floor(Math.log10(roughStep));
+        float fraction = roughStep / (float) Math.pow(10, exponent);
+        float niceFraction;
+        if (fraction < 1.5) {
+            niceFraction = 1;
+        } else if (fraction < 3) {
+            niceFraction = 2;
+        } else if (fraction < 7) {
+            niceFraction = 5;
+        } else {
+            niceFraction = 10;
+        }
+        return niceFraction * (float) Math.pow(10, exponent);
+    }
+
+    private DecimalFormat createDynamicFormatter(float step) {
+        int decimals = Math.max(0, -(int) Math.floor(Math.log10(step)));
+        StringBuilder pattern = new StringBuilder("0");
+        if (decimals > 0) {
+            pattern.append(".");
+            for (int i = 0; i < decimals; i++) {
+                pattern.append("0");
+            }
+        }
+        return new DecimalFormat(pattern.toString());
+    }
+
+    private String[] generateDefaultItems(int count) {
+        String[] items = new String[count];
+        for (int i = 0; i < count; i++) {
+            items[i] = "Line " + (i + 1);
+        }
+        return items;
     }
 
     public void setMatrix(float[][] data) {
         this.data = data;
-        rand_seed = System.currentTimeMillis();
-        figureAttribute.items = generateItemText(this.data.length);
-        color = FactoryUtils.getRandomColors(figureAttribute.items.length, rand_seed);
+        this.paletteOffset = 0;
+        assignColorsFromPalette(data.length);
+        calculateBounds();
         repaint();
     }
 
     public void setMatrix(float[][] data, boolean isColorPersist) {
-        this.data = FactoryMatrix.transpose(FactoryMatrix.clone(data));
-        //this.data = data;
-        rand_seed = System.currentTimeMillis();
-        if (isColorPersist) {
-            if (color == null) {
-                color = FactoryUtils.getRandomColors(this.data.length, rand_seed);
-            }
-        } else {
-            color = FactoryUtils.getRandomColors(this.data.length, rand_seed);
+        this.data = data;
+        if (!isColorPersist) {
+            this.paletteOffset = 0;
         }
+        assignColorsFromPalette(data.length);
+        calculateBounds();
+        repaint();
+    }
 
-        figureAttribute.items = generateItemText(this.data.length);
+    private void assignColorsFromPalette(int numSeries) {
+        if (numSeries == 0) {
+            this.colors = new Color[0];
+            return;
+        }
+        this.colors = new Color[numSeries];
+        for (int i = 0; i < numSeries; i++) {
+            int colorIndex = (i + this.paletteOffset) % HIGH_CONTRAST_PALETTE.length;
+            this.colors[i] = HIGH_CONTRAST_PALETTE[colorIndex];
+        }
+    }
+
+    public void setRandomSeed(long seed) {
+        if (data != null) {
+            this.paletteOffset = (int) (seed % HIGH_CONTRAST_PALETTE.length);
+            assignColorsFromPalette(data.length);
+        }
+        repaint();
+    }
+
+    public void setDarkMode(boolean isDarkMode) {
+        this.isDarkMode = isDarkMode;
+        updateColors();
+        repaint();
+    }
+
+    public void setLegend(boolean isLegend) {
+        this.figureAttribute.isLegend = isLegend;
+        repaint();
+    }
+
+    public void setGridx(boolean isGridX) {
+        this.isGridX = isGridX;
+        repaint();
+    }
+
+    public void setGridy(boolean isGridY) {
+        this.isGridY = isGridY;
+        repaint();
+    }
+
+    public void setPointType(String type) {
+        this.figureAttribute.pointType = type;
+        repaint();
+    }
+
+    public void setPlotType(String type) {
+        setPointType(type);
+    }
+
+    public void setFigureAttribute(TFigureAttribute attr) {
+        this.figureAttribute = attr;
+        repaint();
+    }
+
+    public void setXAxis(float[] xAxis) {
+        this.xAxis = xAxis;
+        calculateBounds();
         repaint();
     }
 
     public float[][] getMatrix() {
         return data;
     }
-
-    private void initialize() {
-        FactoryUtils.formatFloat(data, 2);
-        float[] yy = calculateYAxisLabels();
-        int length = FactoryUtils.getLongestStringLength(FactoryUtils.formatFloat(data, 3));
-        fromLeft = 50 + length * 5;
-        fromRight = 50;
-        fromTop = 50;
-        fromBottom = 70;
-        itemSelected = new boolean[items.length];
-        //henüz paint olayı çağrılmadığı için panelin büyüklüğünü bilmiyor o yüzden width ve height olarak 100,100 değerleri girildi
-        rectPlotCanvas = new Rectangle(fromLeft, fromRight, 100, 100);
-        rectLegend = new Rectangle(0, 0, 100, 100);
-        rectTitle = new Rectangle(0, 0, 100, 100);
-        rectAxisX = new Rectangle(0, 0, 100, 100);
-        rectAxisY = new Rectangle(0, 0, 100, 100);
-
-        addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent evt) {  // Added method for double click detection
-                if (evt.getClickCount() == 2) {  // Check for double click
-                    mousePos = evt.getPoint();
-                    if (isLegend && rectLegend.contains(mousePos)) {
-                        for (int i = 0; i < items.length; i++) {
-                            Rectangle rectLine = new Rectangle(rectLegend.x + 10, rectLegend.y + (i * legendTextHeight) + 10, 30, legendTextHeight);
-                            if (rectLine.contains(mousePos)) {
-                                colorLine = JColorChooser.showDialog(null, "Choose Color for BoundingBox", colorLine);
-                                color[i] = colorLine != null ? colorLine : color[i];
-                                repaint();
-                                return;
-                            }
-                            Rectangle textLine = new Rectangle(rectLegend.x + 50, rectLegend.y + (i * legendTextHeight) + 10, legendTextWidth, legendTextHeight);
-                            if (textLine.contains(mousePos)) {
-                                String st = JOptionPane.showInputDialog(null, "set legend text as", items[i]);
-                                if (st != null) {
-                                    items[i] = st;
-                                }
-                                repaint();
-                                return;
-                            }
-                        }
-                    }
-                    if (rectPlotCanvas.contains(mousePos)) {
-                        int selLineIndex = selectLine(mp);
-                        if (selLineIndex != -1) {
-                            itemSelected[selLineIndex] = !itemSelected[selLineIndex];
-                        } else {
-                            for (int i = 0; i < itemSelected.length; i++) {
-                                itemSelected[i] = false;
-                            }
-                        }
-                        checkDataPoints(gr, mp, fromLeft, fromTop, canvas_width, canvas_height);
-                        repaint();
-                    } else if (rectTitle.contains(mousePos)) {
-                        String st = JOptionPane.showInputDialog(null, "set title as", figureAttribute.title);
-                        if (st != null) {
-                            figureAttribute.title = st;
-                        }
-                        JLabel lbl = new JLabel();
-                        Font temp = lbl.getFont();
-                        FontDialog.showDialog(lbl);
-                        if (!temp.equals(lbl.getFont())) {
-                            figureAttribute.fontTitle = lbl.getFont();
-                        }
-                        repaint();
-                    } else if (rectAxisX.contains(mousePos)) {
-                        String st = JOptionPane.showInputDialog(null, "set axis name as", figureAttribute.axis_names[1]);
-                        if (st != null) {
-                            figureAttribute.axis_names[1] = st;
-                        }
-                        JLabel lbl = new JLabel();
-                        Font temp = lbl.getFont();
-                        FontDialog.showDialog(lbl);
-                        if (!temp.equals(lbl.getFont())) {
-                            figureAttribute.fontAxisX = lbl.getFont();
-                        }
-                        repaint();
-                    } else if (rectAxisY.contains(mousePos)) {
-                        String st = JOptionPane.showInputDialog(null, "set axis name as", figureAttribute.axis_names[0]);
-                        if (st != null) {
-                            figureAttribute.axis_names[0] = st;
-                        }
-                        JLabel lbl = new JLabel();
-                        Font temp = lbl.getFont();
-                        FontDialog.showDialog(lbl);
-                        if (!temp.equals(lbl.getFont())) {
-                            figureAttribute.fontAxisY = lbl.getFont();
-                        }
-                        repaint();
-                    } else {
-                        if (isMousePressed) {
-                            isMousePressed = false;
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                mousePos = evt.getPoint();
-                isMousePressed = true;
-                repaint();
-            }
-
-            @Override
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                isMouseDragged = false;
-                //setCursor(Cursor.getDefaultCursor());
-                repaint();
-            }
-
-        });
-
-        this.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-
-            @Override
-            public void mouseMoved(java.awt.event.MouseEvent e) {
-                //System.out.println("e = " + e.getPoint());
-                mousePos=e.getPoint();
-            }
-
-            @Override
-            public void mouseDragged(java.awt.event.MouseEvent e) {
-                mousePos = e.getPoint();
-                isMouseDragged = true;
-                repaint();
-            }
-        });
-
-    }
-
-    private int selectLine(CPoint[][] mp) {
-        int ret = -1;
-        int nr = mp.length;
-        int nc = mp[0].length;
-        for (int i = 0; i < nr; i++) {
-            for (int j = 0; j < nc; j++) {
-                if (mp[i][j].row > mousePos.y - 5
-                        && mp[i][j].row < mousePos.y + 5
-                        && mp[i][j].column > mousePos.x - 5
-                        && mp[i][j].column < mousePos.x + 5) {
-                    ret = i;
-                    return ret;
-
-                }
-            }
-        }
-        return ret;
-    }
-
-    private String[] generateItemText(int n) {
-        if (figureAttribute.items.length != 0) {
-            return figureAttribute.items;
-        }
-        String[] ret = new String[n];
-        for (int i = 0; i < n; i++) {
-            ret[i] = "Item-" + (i + 1);
-        }
-        return ret;
-    }
-
-    private void drawPolyLines(Graphics2D gr, CPoint[][] mp, int nr) {
-        gr.setColor(color[nr]);
-        int nc = mp[0].length;
-        int[] xp = new int[nc];
-        int[] yp = new int[nc];
-        for (int j = 0; j < nc; j++) {
-            CPoint p = mp[nr][j];
-            yp[j] = p.row;
-            xp[j] = p.column;
-        }
-        String pType = figureAttribute.pointType;
-        Stroke prev = gr.getStroke();
-        Stroke stroke = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-
-        float alpha = this.alpha_blending;
-        if (itemSelected[nr]) {
-            alpha = 0.85f;
-            stroke = new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-        } else if (checkItemSelected()) {
-            alpha = this.alpha_blending;
-            stroke = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-        }
-        AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-        gr.setComposite(alcom);
-
-        if (pType.equals("-")) {
-            if (figureAttribute.isStroke) {
-                gr.setStroke(figureAttribute.stroke.get(nr));
-                gr.drawPolyline(xp, yp, nc);
-            } else {
-                gr.setStroke(stroke);
-                gr.drawPolyline(xp, yp, nc);
-            }
-        } else if (pType.equals(".")) {
-            if (figureAttribute.isStroke) {
-                gr.setStroke(figureAttribute.stroke.get(nr));
-                gr.drawPolyline(xp, yp, nc);
-            } else {
-                gr.setStroke(stroke);
-                int pointRadius = 2;
-                for (int i = 0; i < xp.length - 1; i++) {
-                    gr.fillOval(xp[i] - pointRadius, yp[i] - pointRadius, pointRadius * 2, pointRadius * 2);
-                    gr.drawLine(xp[i], yp[i], xp[i + 1], yp[i + 1]);
-                }
-            }
-        } else if (pType.equals("*")) {
-            if (figureAttribute.isStroke) {
-                gr.setStroke(figureAttribute.stroke.get(nr));
-                gr.drawPolyline(xp, yp, nc);
-            } else {
-                gr.setStroke(stroke);
-                for (int i = 0; i < xp.length - 1; i++) {
-                    gr.drawString(pType, xp[i] - 4, yp[i] + 6);
-                    gr.drawLine(xp[i], yp[i], xp[i + 1], yp[i + 1]);
-                }
-            }
-        } else if (pType.equals("o")) {
-            if (figureAttribute.isStroke) {
-                gr.setStroke(figureAttribute.stroke.get(nr));
-                gr.drawPolyline(xp, yp, nc);
-            } else {
-                gr.setStroke(stroke);
-                int pointRadius = 4;
-                for (int i = 0; i < xp.length - 1; i++) {
-                    gr.drawOval(xp[i] - pointRadius, yp[i] - pointRadius, pointRadius * 2, pointRadius * 2);
-                    gr.drawLine(xp[i], yp[i], xp[i + 1], yp[i + 1]);
-                }
-                gr.drawOval(xp[xp.length - 1] - pointRadius, yp[xp.length - 1] - pointRadius, pointRadius * 2, pointRadius * 2);
-            }
-        }
-        if (isShowPoint) {
-            paintDataPoints(gr, xp, yp);
-        }
-        alpha = 1f;
-        alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-        gr.setComposite(alcom);
-        gr.setStroke(prev);
-    }
-
-    private void drawMouseAxis(Graphics2D gr, Point mousePos, int fromLeft, int fromTop, int canvas_width, int canvas_height) {
-        Color prevColor = gr.getColor();
-        gr.setColor(Color.red);
-        Stroke prev = gr.getStroke();
-        Stroke s = new BasicStroke(2.0f, // Width 
-                BasicStroke.CAP_SQUARE, // End cap 
-                BasicStroke.JOIN_MITER, // Join style 
-                10.0f, // Miter limit 
-                new float[]{5.0f, 5.0f}, // Dash pattern 
-                0.0f);
-        gr.setStroke(s);
-        float alpha = 0.35f;
-        AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-        gr.setComposite(alcom);
-        //gr.drawLine(fromLeft, mousePos.y, fromLeft + canvas_width, mousePos.y);
-        gr.drawLine(mousePos.x - 3, fromTop, mousePos.x - 3, fromTop + canvas_height);
-
-        alpha = 1f;
-        alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-        gr.setComposite(alcom);
-        gr.setStroke(prev);
-        gr.setColor(prevColor);
-    }
-
-    private int[] checkDataPoints(Graphics2D gr, CPoint[][] mp, int fromLeft, int fromTop, int canvas_width, int canvas_height) {
-        int[] vals = new int[items.length];
-        for (int i = 0; i < mp.length; i++) {
-            for (int j = 0; j < mp[0].length; j++) {
-                if (mp[i][j].column > mousePos.x - 5 && mp[i][j].column < mousePos.x + 5) {
-                    gr.setColor(Color.red);
-                    //red squares on the lines
-                    gr.fillRect(mp[i][j].column - 1, mp[i][j].row - 1, 5, 5);
-
-                    gr.drawRect(fromLeft - 55, mp[i][j].row - 11, 50, 20);
-                    gr.drawRect(fromLeft + canvas_width + 2, mp[i][j].row - 11, 50, 20);
-                    push(color[i]);
-                    gr.drawString("" + FactoryUtils.formatFloat(data[i][j], 3), fromLeft - 50, mp[i][j].row + 6);
-                    gr.drawString("" + FactoryUtils.formatFloat(data[i][j], 3), fromLeft + canvas_width + 5, mp[i][j].row + 6);
-                    gr.drawLine(fromLeft, mp[i][j].row + 1, fromLeft + canvas_width, mp[i][j].row + 1);
-                    gr.drawLine(mp[i][j].column + 1, fromTop, mp[i][j].column + 1, fromTop + canvas_height);
-                    pop();
-
-                    //red rectangles denoting index values on the X axis bottom and up
-                    gr.drawRect(mp[i][j].column - 25, fromTop - 20, 50, 20);
-                    gr.drawRect(mp[i][j].column - 25, fromTop + canvas_height + 3, 50, 20);
-                    //red rectangles denoting y value  
-//                    gr.drawRect(fromLeft-50, mousePos.y-10, 50, 20);
-//                    gr.drawRect(fromLeft+canvas_width, mousePos.y-10, 50, 20);
-
-                    gr.setColor(Color.gray);
-                    gr.drawString("" + i, mp[i][j].column - 17, fromTop - 3);
-                    gr.drawString("" + i, mp[i][j].column - 17, fromTop + canvas_height + 20);
-
-//                    gr.drawString("" + FactoryUtils.formatDouble(cm.toDoubleArray2D()[i][j]), fromLeft-50, mousePos.y-10);
-                    //lst.add(items[i] + ":" + cm.toDoubleArray2D()[i][j]);
-                    vals[i] = i;
-                    break;
-                }
-            }
-        }
-        return vals;
-    }
-
-    private void paintDataPoints(Graphics gr, int[] xp, int[] yp) {
-        int r = 6;
-        for (int i = 0; i < xp.length; i++) {
-            gr.fillRect(xp[i] - r / 2, yp[i] - r / 2, r, r);
-        }
-    }
-
-    private float[] calculateYAxisLabels() {
-        float[][] d = data;
-        int y = (getHeight() - 90);
-        float n = Math.round(y / 100.0);
-        float maxY = FactoryUtils.getMaximum(d);
-        float minY = FactoryUtils.getMinimum(d);
-        float deltaY = maxY - minY;
-        float[] yVal = new float[(int) n + 1];
-        float delta = deltaY / n;
-        for (int i = 0; i <= n; i++) {
-            if (maxY > 10) {
-                yVal[i] = Math.round(Math.round((i * delta + minY) * n) / n);
-            } else {
-                yVal[i] = (i * delta + minY);
-            }
-
-        }
-        return yVal;
-    }
-
-    private void drawYAxis(Graphics gr, CPoint[][] mp, int[][] mappedVal, int x0, int y0, int w, int fromRight, float[][] d) {
-        float maxY = FactoryUtils.getMaximum(d);
-        float minY = FactoryUtils.getMinimum(d);
-        float deltaY = maxY - minY;
-        float n = Math.round(y0 / 100.0);
-        //int l = y0 - 50;
-        int l = mappedVal[1][1] - mappedVal[1][0];
-        //int top = 50;
-        y0 = mappedVal[1][1];
-        //gr.drawLine(x0, top, x0, y0);
-        float delta = deltaY / n;
-        float[] yVal = new float[(int) n + 1];
-        float dY = l / n;
-        int q = 0;
-        int art = 5;
-        int shift = 20;
-        for (int i = 0; i <= n; i++) {
-            if (isDarkMode) {
-                gr.setColor(Color.lightGray);
-            } else {
-                gr.setColor(Color.darkGray);
-            }
-            if (maxY > 10) {
-                yVal[i] = Math.round(Math.round((i * delta + minY) * n) / n);
-            } else {
-                yVal[i] = (i * delta + minY);
-            }
-            String val = FactoryUtils.formatFloatAsString(yVal[i], 3);
-            gr.drawString(val, x0 - 10 - FactoryUtils.getGraphicsTextWidth(gr, val), (int) (y0 - i * dY) + art);
-            gr.drawLine(x0 - 5, (int) (y0 - i * dY), x0, (int) (y0 - i * dY));
-
-            if (isGridX) {
-                q = (int) (y0 - i * dY + shift);
-                if (isDarkMode) {
-                    gr.setColor(Color.decode("#4F4F4F"));
-                } else {
-                    //gr.setColor(Color.white);
-                    gr.setColor(Color.lightGray);
-                }
-                if (i < n) {
-                    gr.drawLine(x0 + 2, q - (int) dY / 2, x0 + w - fromRight - 12, q - (int) dY / 2);
-                }
-                if (i > 0) {
-                    gr.drawLine(x0 + 2, q, x0 + w - fromRight - 12, q);
-                }
-            }
-        }
-    }
-
-    private void drawXAxis(Graphics gr, CPoint[][] mp, int[][] mappedVal, int x0, int y0, int w, int fromRight, float[][] d) {
-        gr.setColor(Color.darkGray);
-        int nc = d[0].length;
-        float n = (Math.round(w / 150.0) >= nc) ? nc - 1 : Math.round(w / 150.0) - 1;
-        float incr = nc / n;
-        if (nc <= 10) {
-            incr = 1;
-            n = nc;
-        }
-        for (int i = 0; i <= n; i++) {
-            if (nc <= 10 && i == nc) {
-                continue;
-            }
-            if (isDarkMode) {
-                gr.setColor(Color.lightGray);
-            } else {
-                gr.setColor(Color.darkGray);
-            }
-            int index = Math.round(i * incr);
-            int offset = FactoryUtils.getGraphicsTextWidth(gr, index + "") / 2;
-            if (i == n) {
-                index = nc - 1;
-            }
-            if (xAxis == null || xAxis.length == 0) {
-                gr.drawString("" + index, mp[0][index].column - offset, y0 + 40);
-            } else {
-                gr.drawString("" + FactoryUtils.formatFloatAsString(xAxis[index], 3), mp[0][index].column - offset, y0 + 40);
-            }
-            gr.drawLine(mp[0][index].column, y0 + 20, mp[0][index].column, y0 + 25);
-            if (isGridY) {
-                if (isDarkMode) {
-                    gr.setColor(Color.decode("#4F4F4F"));
-                } else {
-                    gr.setColor(Color.lightGray);
-                }
-                gr.drawLine(mp[0][index].column, fromTop + 2, mp[0][index].column, y0 + 18);
-            }
-        }
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
-    private void initComponents() {
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGap(0, 300, Short.MAX_VALUE)
-        );
-    }// </editor-fold>                        
-
-    // Variables declaration - do not modify                     
-    // End of variables declaration                   
-    public void setScale(float scale) {
-        this.scale = scale;
-        repaint();
-    }
-
-    public float getScale() {
-        return scale;
-    }
-
-    public void setPlotType(String type) {
-        this.figureAttribute.pointType = type;
-        repaint();
-    }
-
-    public void setFigureAttribute(TFigureAttribute figureAttribute) {
-        this.figureAttribute = figureAttribute;
-        if (figureAttribute.items != null || figureAttribute.items.length > 0) {
-            this.items = figureAttribute.items;
-        }
-        //this.items=figureAttribute.items;
-        repaint();
-    }
-
-    public TFigureAttribute getFigureAttribute() {
-        return this.figureAttribute;
-    }
-
-    public void setRandomSeed(long currentTimeMillis) {
-        this.rand_seed = currentTimeMillis;
-        color = FactoryUtils.getRandomColors(data.length, rand_seed);
-    }
-
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-
-            Point2D p1 = e.getPoint();
-            p1.setLocation(p1.getX(), getHeight() - p1.getY());
-            Point2D p2 = null;
-            try {
-                p2 = afft.inverseTransform(p1, null);
-            } catch (NoninvertibleTransformException ex) {
-                ex.printStackTrace();
-                return;
-            }
-
-            zoom -= (0.1 * e.getWheelRotation());
-            zoom = (float) Math.max(0.01, zoom);
-
-            afft.setToIdentity();
-            afft.translate(p1.getX(), p1.getY());
-            afft.scale(zoom, zoom);
-            afft.translate(-p2.getX(), -p2.getY());
-
-            try {
-                inverseScale = afft.createInverse();
-            } catch (NoninvertibleTransformException ex) {
-                Logger.getLogger(PanelPlot.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            revalidate();
-            repaint();
-        }
-    }
-
-    private Point2D getScreenCoordinate() {
-        Point2D c = new Point2D.Double(
-                mousePos.x,
-                mousePos.y);
-        Point2D screenPoint = inverseScale.transform(c, new Point2D.Double());
-        screenPoint.setLocation(FactoryUtils.formatDouble(screenPoint.getX(), 2), FactoryUtils.formatDouble(screenPoint.getY(), 2));
-        return screenPoint;
-    }
-
-    private boolean checkItemSelected() {
-        boolean ret = false;
-        for (int i = 0; i < items.length; i++) {
-            if (itemSelected[i]) {
-                return true;
-            }
-        }
-        return ret;
-    }
-
-    public void setDarkMode(boolean isDarkMode) {
-        this.isDarkMode = isDarkMode;
-        repaint();
-    }
-
-    public void setGridy(boolean selected) {
-        this.isGridY = selected;
-        repaint();
-    }
-
-    public void setGridx(boolean selected) {
-        this.isGridX = selected;
-        repaint();
-    }
-
-    public void setPointType(String selected) {
-        figureAttribute.pointType = selected;
-        repaint();
-    }
-
-    public void setLegend(boolean selected) {
-        isLegend = selected;
-        repaint();
-    }
-
-    private void drawLegend(Graphics2D gr) {
-        legendTextWidth = FactoryUtils.getMaxGraphicsTextWidth(gr, items);
-        legendTextHeight = FactoryUtils.getMaxGraphicsTextHeight(gr, items);
-        int w = legendTextWidth + 60;
-        int px = rectPlotCanvas.x + rectPlotCanvas.width - w - 10;
-        int py = rectPlotCanvas.y + 10;
-        int h = (items.length + 1) * legendTextHeight;
-
-        rectLegend.x = px;
-        rectLegend.y = py;
-        rectLegend.width = w;
-        rectLegend.height = h;
-
-        if (isDarkMode) {
-            gr.setColor(Color.darkGray);
-            gr.fillRoundRect(px, py, w, h, 5, 5);
-            gr.setColor(Color.decode("#9F9F9F"));
-            gr.drawRoundRect(px, py, w, h, 5, 5);
-            gr.setColor(Color.decode("#BFBFBF"));
-        } else {
-            gr.setColor(Color.white);
-            gr.fillRoundRect(px, py, w, h, 5, 5);
-            gr.setColor(Color.decode("#BFBFBF"));
-            gr.drawRoundRect(px, py, w, h, 5, 5);
-            gr.setColor(Color.darkGray);
-        }
-        Stroke prev = gr.getStroke();
-        Stroke stroke = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-        AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f);
-        gr.setComposite(alcom);
-        gr.setStroke(stroke);
-        int k = 0;
-        Color temp = gr.getColor();
-        for (String item : items) {
-            gr.setColor(color[k]);
-            int yy = py + 20 + (k) * legendTextHeight;
-            gr.drawLine(px + 10, yy - 5, px + 35, yy - 5);
-            gr.setColor(temp);
-            gr.drawString(item, px + 50, yy);
-            k++;
-        }
-        alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f);
-        gr.setComposite(alcom);
-        gr.setStroke(prev);
-    }
-
-    private void drawTitle(Graphics2D gr, int w) {
-        if (isDarkMode) {
-            gr.setColor(Color.lightGray);
-        } else {
-            gr.setColor(Color.darkGray);
-        }
-        gr.setFont(figureAttribute.fontTitle);
-        titleWidth = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.title);
-        titleHeight = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.title);
-        int pTitleX = (w + 30 - titleWidth) / 2;
-        gr.drawString(figureAttribute.title, pTitleX, 30);
-        rectTitle.x = pTitleX;
-        rectTitle.y = 20;
-        rectTitle.width = titleWidth;
-        rectTitle.height = titleHeight;
-        gr.setFont(FactoryUtils.getDefaultFont());
-    }
-
-    private void drawTitleAxisX(Graphics2D gr) {
-        if (isDarkMode) {
-            gr.setColor(Color.lightGray);
-        } else {
-            gr.setColor(Color.darkGray);
-        }
-        gr.setFont(figureAttribute.fontAxisX);
-        int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[1]);
-        int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[1]);
-        int px = (getWidth() - axis_width) / 2;
-        int py = getHeight() - 20;
-        gr.drawString(figureAttribute.axis_names[1], px, py);
-        rectAxisX.x = px;
-        rectAxisX.y = py - 10;
-        rectAxisX.width = axis_width;
-        rectAxisX.height = axis_height;
-        gr.setFont(FactoryUtils.getDefaultFont());
-    }
-
-    private void drawTitleAxisY(Graphics2D gr) {
-        if (isDarkMode) {
-            gr.setColor(Color.lightGray);
-        } else {
-            gr.setColor(Color.darkGray);
-        }
-        gr.setFont(figureAttribute.fontAxisY);
-        int axis_width = FactoryUtils.getGraphicsTextWidth(gr, figureAttribute.axis_names[0]);
-        int axis_height = FactoryUtils.getGraphicsTextHeight(gr, figureAttribute.axis_names[0]);
-        int px = 30;
-        int py = getHeight() - (getHeight() - axis_width) / 2 - 10;
-        Point p = FactoryUtils.drawRotatedString(gr, figureAttribute.axis_names[0], px, py, -Math.PI / 2);
-        rectAxisY.x = px - 10;
-        rectAxisY.y = py - axis_width;
-        //90 derece döndüğü için tersi alındı
-        rectAxisY.width = axis_height;
-        rectAxisY.height = axis_width;
-        gr.setFont(FactoryUtils.getDefaultFont());
-    }
-
-    private void drawPlotCanvas(Graphics2D gr) {
-        canvas_width = getWidth() - (fromLeft + fromRight);
-        canvas_height = getHeight() - (fromBottom + fromTop);
-
-        //plot alanını ilgili renkle boya
-        rectPlotCanvas.x = fromLeft;
-        rectPlotCanvas.y = fromTop;
-        rectPlotCanvas.width = canvas_width;
-        rectPlotCanvas.height = canvas_height;
-        if (isDarkMode) {
-            gr.setColor(Color.darkGray);
-            gr.fillRect(fromLeft, fromTop, canvas_width, canvas_height);
-            gr.setColor(Color.lightGray);
-            gr.drawRect(fromLeft, fromTop, canvas_width, canvas_height);
-        } else {
-            // gr.setColor(Color.decode("#EAEAF2"));
-            gr.setColor(Color.white);
-            gr.fillRect(fromLeft, fromTop, canvas_width, canvas_height);
-            gr.setColor(Color.black);
-            gr.drawRect(fromLeft, fromTop, canvas_width, canvas_height);
-        }
-    }
-
-    private int[][] getMaxMinValue(CPoint[][] d) {
-        int[][] ret = new int[2][2];
-        int maxX = Integer.MIN_VALUE;
-        int minX = Integer.MAX_VALUE;
-        int maxY = Integer.MIN_VALUE;
-        int minY = Integer.MAX_VALUE;
-        for (int i = 0; i < d.length; i++) {
-            for (int j = 0; j < d[0].length; j++) {
-                if (d[i][j].row > maxY) {
-                    maxY = d[i][j].row;
-                }
-                if (d[i][j].row < minY) {
-                    minY = d[i][j].row;
-                }
-                if (d[i][j].column > maxX) {
-                    maxX = d[i][j].column;
-                }
-                if (d[i][j].column < minX) {
-                    minX = d[i][j].column;
-                }
-            }
-        }
-        ret[0][0] = minX;
-        ret[0][1] = maxX;
-        ret[1][0] = minY;
-        ret[1][1] = maxY;
-        return ret;
-    }
-
 }

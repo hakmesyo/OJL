@@ -5763,21 +5763,54 @@ public final class FactoryUtils {
     }
 
     public static float[] vector(float from, float to, float incr) {
+        // Girdi kontrolleri
+        if (incr == 0) {
+            throw new IllegalArgumentException("Artış (incr) sıfır olamaz.");
+        }
         if (from < to && incr < 0) {
-            throw new UnsupportedOperationException("incr should be positive");
+            throw new IllegalArgumentException("Başlangıç bitişten küçükse artış pozitif olmalıdır.");
         }
         if (from > to && incr > 0) {
-            throw new UnsupportedOperationException("incr should be negative");
+            throw new IllegalArgumentException("Başlangıç bitişten büyükse artış negatif olmalıdır.");
         }
-        float delta = Math.abs(to - from);
-        int n = Math.abs((int) (delta / incr));
-        float[] ret = new float[n];
-        for (int i = 0; i < n; i++) {
-            ret[i] = from + i * incr;
+
+        List<Float> resultList = new ArrayList<>();
+
+        // Artış pozitifken
+        if (incr > 0) {
+            for (float current = from; current <= to; current += incr) {
+                resultList.add(current);
+            }
+        } // Artış negatifken
+        else {
+            for (float current = from; current >= to; current += incr) {
+                resultList.add(current);
+            }
+        }
+
+        // Sonucu float[] dizisine çevir
+        float[] ret = new float[resultList.size()];
+        for (int i = 0; i < resultList.size(); i++) {
+            ret[i] = resultList.get(i);
         }
         return ret;
     }
 
+//    public static float[] vector(float from, float to, float incr) {
+//        if (from < to && incr < 0) {
+//            throw new UnsupportedOperationException("incr should be positive");
+//        }
+//        if (from > to && incr > 0) {
+//            throw new UnsupportedOperationException("incr should be negative");
+//        }
+//        float delta = Math.abs(to - from);
+//        int n = Math.abs((int) (delta / incr));
+//        float[] ret = new float[n];
+//        for (int i = 0; i < n; i++) {
+//            ret[i] = from + i * incr;
+//        }
+//        return ret;
+//    }
     public static boolean canBeDotProduct(float[][] p1, float[][] p2) {
         if (p1[0].length == p2.length) {
             return true;
@@ -7767,110 +7800,211 @@ public final class FactoryUtils {
     }
 
     public static float[] resolveParam(String s, int max) {
-        float[] ret = null;
-        if (s.contains(":")) {
-            String[] ss = s.split(":");
-            if (ss.length == 3) {
-                float from = Float.parseFloat(ss[0]);
-                float to = Float.parseFloat(ss[1]);
-                float incr = Float.parseFloat(ss[2]);
-                ret = vector(from, to, incr);
-            } else if (ss.length <= 2 && !s.contains(",")) {
-                if (ss.length == 1) {
-                    s = ss[0] + ":end";
-                    ss = s.split(":");
-                    ss[1] = ss[1].replace("end", (max - 1) + "");
-                } else if (ss[1].indexOf("end") != -1) {
-                    ss[1] = ss[1].replace("end", (max - 1) + "");
-                }
-//                else {
-                try {
-                    if (ss[0].isEmpty() && ss[1].isEmpty()) {
-                        ss[0] = "0";
-                        ss[1] = (max - 1) + "";
-                    } else if (ss[0].isEmpty()) {
-                        ss[0] = "0";
-                        int q = Integer.parseInt(ss[1]);
-                        if (q < 0) {
-                            ss[1] = (max + q) + "";
-                        }
-                    } else if (ss[1].isEmpty()) {
-                        int q = Integer.parseInt(ss[0]);
-                        if (q < 0) {
-                            ss[0] = (max + q) + "";
-                        }
-                        ss[1] = (max - 1) + "";
-                    } else {
-                        int q = Integer.parseInt(ss[0]);
-                        if (q < 0) {
-                            ss[0] = (max + q) + "";
-                        }
-                        q = Integer.parseInt(ss[1]);
-                        if (q < 0) {
-                            ss[1] = (max + q) + "";
+        // --- ÇÖZÜM 1: ":" durumunu en başta ve net bir şekilde ele al ---
+        // Eğer girdi sadece ":" ise, tüm indeksleri (0'dan max-1'e) oluştur ve hemen döndür.
+        if (s.equals(":")) {
+            // FactoryUtils.vector(0, max - 1) metodunuzun bu işi yaptığını varsayıyorum.
+            return FactoryUtils.vector(0, max - 1);
+        }
+
+        // Virgül içeren karmaşık bir parametre mi ("1,3,5:7")?
+        if (s.contains(",")) {
+            List<Float> lst = new ArrayList<>();
+            String[] parts = s.split(",");
+            for (String part : parts) {
+                if (part.contains(":")) {
+                    // "5:7" gibi bir aralık varsa, onu da çözmesi için metodu tekrar çağır (recursive).
+                    float[] range = resolveParam(part, max);
+                    if (range != null) {
+                        for (float val : range) {
+                            lst.add(val);
                         }
                     }
-                } catch (Exception e) {
-                }
-//                }
-                int from = Integer.parseInt(ss[0]);
-                int to = Integer.parseInt(ss[1]);
-                if (from >= max || to > max) {
-                    System.out.println("range check error please correct from:to range index");
-                    ret = null;
-                } else if (from == to) {
-                    ret = new float[]{from, from};
-                } else if (from < to) {
-                    ret = FactoryUtils.vector(from, to);
-                } else if (from > to) {
-                    ret = FactoryUtils.vector(to, from);
-                }
-            } //belki de gelen parametre 1,3,7:13,15,-2 gibi bir şeydir
-            else {
-                String[] p = s.split(",");
-                //ilkönce negatif olanları işle
-                List<Float> lst = new ArrayList();
-                for (int i = 0; i < p.length; i++) {
-                    if (!p[i].contains("-") && !p[i].contains(":")) {
-                        lst.add(Float.parseFloat(p[i]));
-                    } else if (p[i].contains("-") && !p[i].contains(":")) {
-                        lst.add((max - 1) + Float.parseFloat(p[i]));
-                    } else if (p[i].contains(":")) {
-                        String[] q = p[i].split(":");
-                        if (q[0].contains("-")) {
-                            q[0] = (max - 1 + Integer.parseInt(q[0])) + "";
+                } else {
+                    // "1" veya "-2" gibi tek bir sayı varsa
+                    try {
+                        int val = Integer.parseInt(part.trim());
+                        if (val < 0) {
+                            val = max + val; // Standart negatif indeks hesaplaması
                         }
-                        if (q[1].contains("-")) {
-                            q[1] = (max - 1 + Integer.parseInt(q[1])) + "";
-                        }
-                        int from = Integer.parseInt(q[0]);
-                        int to = Integer.parseInt(q[1]);
-                        float[] d = FactoryUtils.vector(from, to);
-                        for (int j = 0; j < d.length; j++) {
-                            lst.add(d[j]);
-                        }
+                        lst.add((float) val);
+                    } catch (NumberFormatException e) {
+                        System.err.println("Geçersiz sayı formatı: " + part);
+                        // Hata durumunda null döndürerek işlemi durdurabiliriz.
+                        return null;
                     }
-                }
-                ret = new float[lst.size()];
-                for (int i = 0; i < ret.length; i++) {
-                    ret[i] = lst.get(i);
                 }
             }
-        } else {
-            String[] p = s.split(",");
-            ret = new float[p.length];
-            for (int i = 0; i < p.length; i++) {
-                if (p[i].contains("-")) {
-                    ret[i] = max + Integer.parseInt(p[i]);
+            // Listeyi float[] dizisine çevir
+            float[] ret = new float[lst.size()];
+            for (int i = 0; i < lst.size(); i++) {
+                ret[i] = lst.get(i);
+            }
+            return ret;
+        }
+
+        // Sadece aralık içeren basit bir parametre mi ("2:5", ":-1", "3:")?
+        if (s.contains(":")) {
+            String[] ss = s.split(":", -1); // -1 limiti, "3:" gibi durumlarda sondaki boş string'i korur
+            String fromStr = ss[0].trim();
+            String toStr = ss[1].trim();
+
+            int from, to;
+
+            try {
+                // Başlangıç değerini belirle
+                if (fromStr.isEmpty()) {
+                    from = 0;
                 } else {
-                    ret[i] = Integer.parseInt(p[i]);
+                    from = Integer.parseInt(fromStr);
+                    if (from < 0) {
+                        from = max + from; // Standart negatif indeks
+                    }
                 }
 
+                // Bitiş değerini belirle
+                if (toStr.isEmpty()) {
+                    to = max - 1;
+                } else {
+                    to = Integer.parseInt(toStr);
+                    if (to < 0) {
+                        to = max + to; // Standart negatif indeks
+                    }
+                }
+
+                // Aralık kontrolü
+                if (from >= max || to >= max || from < 0 || to < 0) {
+                    System.err.println("Aralık hatası: " + s + ". Matris boyutu: " + max);
+                    return null;
+                }
+
+                // FactoryUtils.vector'un başlangıç > bitiş durumunu yönettiğini varsayıyoruz.
+                return FactoryUtils.vector(from, to);
+
+            } catch (NumberFormatException e) {
+                System.err.println("Geçersiz aralık formatı: " + s);
+                e.printStackTrace(); // --- ÇÖZÜM 2: Hataları asla yutma! ---
+                return null;
             }
         }
-        return ret;
+
+        // Sadece tek bir sayı ise ("5" veya "-1")
+        try {
+            int val = Integer.parseInt(s.trim());
+            if (val < 0) {
+                val = max + val; // --- ÇÖZÜM 3: Tutarlı negatif indeks ---
+            }
+            return new float[]{(float) val};
+        } catch (NumberFormatException e) {
+            System.err.println("Geçersiz sayı formatı: " + s);
+            return null;
+        }
     }
 
+//    public static float[] resolveParam(String s, int max) {
+//        float[] ret = null;
+//        if (s.contains(":")) {
+//            String[] ss = s.split(":");
+//            if (ss.length == 3) {
+//                float from = Float.parseFloat(ss[0]);
+//                float to = Float.parseFloat(ss[1]);
+//                float incr = Float.parseFloat(ss[2]);
+//                ret = vector(from, to, incr);
+//            } else if (ss.length <= 2 && !s.contains(",")) {
+//                if (ss.length == 1) {
+//                    s = ss[0] + ":end";
+//                    ss = s.split(":");
+//                    ss[1] = ss[1].replace("end", (max - 1) + "");
+//                } else if (ss[1].indexOf("end") != -1) {
+//                    ss[1] = ss[1].replace("end", (max - 1) + "");
+//                }
+////                else {
+//                try {
+//                    if (ss[0].isEmpty() && ss[1].isEmpty()) {
+//                        ss[0] = "0";
+//                        ss[1] = (max - 1) + "";
+//                    } else if (ss[0].isEmpty()) {
+//                        ss[0] = "0";
+//                        int q = Integer.parseInt(ss[1]);
+//                        if (q < 0) {
+//                            ss[1] = (max + q) + "";
+//                        }
+//                    } else if (ss[1].isEmpty()) {
+//                        int q = Integer.parseInt(ss[0]);
+//                        if (q < 0) {
+//                            ss[0] = (max + q) + "";
+//                        }
+//                        ss[1] = (max - 1) + "";
+//                    } else {
+//                        int q = Integer.parseInt(ss[0]);
+//                        if (q < 0) {
+//                            ss[0] = (max + q) + "";
+//                        }
+//                        q = Integer.parseInt(ss[1]);
+//                        if (q < 0) {
+//                            ss[1] = (max + q) + "";
+//                        }
+//                    }
+//                } catch (Exception e) {
+//                }
+////                }
+//                int from = Integer.parseInt(ss[0]);
+//                int to = Integer.parseInt(ss[1]);
+//                if (from >= max || to > max) {
+//                    System.out.println("range check error please correct from:to range index");
+//                    ret = null;
+//                } else if (from == to) {
+//                    ret = new float[]{from, from};
+//                } else if (from < to) {
+//                    ret = FactoryUtils.vector(from, to);
+//                } else if (from > to) {
+//                    ret = FactoryUtils.vector(to, from);
+//                }
+//            } //belki de gelen parametre 1,3,7:13,15,-2 gibi bir şeydir
+//            else {
+//                String[] p = s.split(",");
+//                //ilkönce negatif olanları işle
+//                List<Float> lst = new ArrayList();
+//                for (int i = 0; i < p.length; i++) {
+//                    if (!p[i].contains("-") && !p[i].contains(":")) {
+//                        lst.add(Float.parseFloat(p[i]));
+//                    } else if (p[i].contains("-") && !p[i].contains(":")) {
+//                        lst.add((max - 1) + Float.parseFloat(p[i]));
+//                    } else if (p[i].contains(":")) {
+//                        String[] q = p[i].split(":");
+//                        if (q[0].contains("-")) {
+//                            q[0] = (max - 1 + Integer.parseInt(q[0])) + "";
+//                        }
+//                        if (q[1].contains("-")) {
+//                            q[1] = (max - 1 + Integer.parseInt(q[1])) + "";
+//                        }
+//                        int from = Integer.parseInt(q[0]);
+//                        int to = Integer.parseInt(q[1]);
+//                        float[] d = FactoryUtils.vector(from, to);
+//                        for (int j = 0; j < d.length; j++) {
+//                            lst.add(d[j]);
+//                        }
+//                    }
+//                }
+//                ret = new float[lst.size()];
+//                for (int i = 0; i < ret.length; i++) {
+//                    ret[i] = lst.get(i);
+//                }
+//            }
+//        } else {
+//            String[] p = s.split(",");
+//            ret = new float[p.length];
+//            for (int i = 0; i < p.length; i++) {
+//                if (p[i].contains("-")) {
+//                    ret[i] = max + Integer.parseInt(p[i]);
+//                } else {
+//                    ret[i] = Integer.parseInt(p[i]);
+//                }
+//
+//            }
+//        }
+//        return ret;
+//    }
     public static float[] resolveParamForRange(String s) {
         float[] ret = null;
         if (s.contains(",")) {
