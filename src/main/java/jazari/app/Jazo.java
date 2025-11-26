@@ -116,7 +116,7 @@ public class Jazo extends javax.swing.JFrame {
             }
         });
 
-        btn_llm_local.setText("Local-LMM");
+        btn_llm_local.setText("Local-LLM");
         btn_llm_local.setToolTipText("Open Screen Capture Frame (from videos + stationary)");
         btn_llm_local.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

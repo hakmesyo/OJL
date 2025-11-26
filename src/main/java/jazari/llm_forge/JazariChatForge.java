@@ -62,7 +62,7 @@ public class JazariChatForge extends JFrame implements ActionListener, ModelSele
 
     public JazariChatForge() {
         setTitle("Jazari Chat Forge");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(900, 700);
         setMinimumSize(new Dimension(700, 500));
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -600,94 +600,54 @@ public class JazariChatForge extends JFrame implements ActionListener, ModelSele
     private void sendMessage() {
         final String message = inputTextArea.getText().trim();
 
-        // Skip if message is the placeholder text
+        // Placeholder kontrolü
         if (message.equals("Type your message here...")) {
             inputTextArea.setText("");
             inputTextArea.requestFocusInWindow();
             return;
         }
 
-        // Skip if message is empty
         if (message.isEmpty()) {
             return;
         }
 
-        // Debug: Check model selection state
-        eventLogger.log("Current provider: " + (currentProvider != null ? currentProvider : "null"));
-        eventLogger.log("Current model: " + (currentModel != null ? currentModel : "null"));
-        eventLogger.log("ModelManager current provider: "
-                + (modelManager.getCurrentProvider() != null
-                ? modelManager.getCurrentProvider().getProviderName() : "null"));
-        eventLogger.log("ModelManager current model: " + modelManager.getCurrentModel());
-
-        // Check if a model is selected in both UI and ModelManager
+        // Model seçili mi kontrolü
         if (currentModel == null || currentProvider == null
                 || modelManager.getCurrentModel() == null
                 || modelManager.getCurrentProvider() == null) {
 
-            // Try to force model selection if UI shows a selection
+            // Eğer UI'da seçili görünüyorsa zorla set etmeyi dene
             if (modelSelectorPanel != null) {
                 String uiProvider = (String) modelSelectorPanel.getProviderComboBox().getSelectedItem();
                 String uiModel = (String) modelSelectorPanel.getModelComboBox().getSelectedItem();
 
                 if (uiProvider != null && uiModel != null) {
-                    eventLogger.log("Attempting to force-select model: " + uiProvider + " - " + uiModel);
                     boolean success = modelManager.setCurrentModel(uiProvider, uiModel);
                     if (success) {
                         currentProvider = uiProvider;
                         currentModel = uiModel;
-                        eventLogger.log("Force-selected model: " + uiModel);
                     } else {
-                        eventLogger.log("Force-selection failed");
-                        JOptionPane.showMessageDialog(
-                                this,
-                                "Failed to initialize model. Please select a different model.",
-                                "Model Selection Error",
-                                JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Failed to initialize model.", "Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 } else {
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Please select a model first.",
-                            "No Model Selected",
-                            JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Please select a model first.", "No Model Selected", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
             } else {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Please select a model first.",
-                        "No Model Selected",
-                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
         }
 
-        // Check if API key is required and set
+        // API Key kontrolü
         if (modelManager.requiresAuthentication(currentProvider)) {
             String apiKey = settingsManager.getApiKey(currentProvider);
             if (apiKey.isEmpty()) {
-                // Prompt for API key
-                eventLogger.log("API key required for " + currentProvider);
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Please set an API key for " + currentProvider + ".",
-                        "API Key Required",
-                        JOptionPane.WARNING_MESSAGE);
-
-                // Open API key dialog
+                JOptionPane.showMessageDialog(this, "Please set an API key for " + currentProvider, "API Key Required", JOptionPane.WARNING_MESSAGE);
                 if (modelSelectorPanel != null) {
                     modelSelectorPanel.promptForApiKey();
-
-                    // Check if key was set
-                    apiKey = settingsManager.getApiKey(currentProvider);
-                    if (apiKey.isEmpty()) {
-                        eventLogger.log("API key dialog cancelled or empty key");
+                    if (settingsManager.getApiKey(currentProvider).isEmpty()) {
                         return;
-                    } else {
-                        eventLogger.log("API key set for " + currentProvider);
                     }
                 } else {
                     return;
@@ -695,29 +655,23 @@ public class JazariChatForge extends JFrame implements ActionListener, ModelSele
             }
         }
 
-        // Reset cancellation flag
         isResponseCancelled = false;
-
-        // Add user message to chat
         chatPane.addUserMessage("You", message);
-
-        // Clear input
         inputTextArea.setText("");
         inputTextArea.requestFocusInWindow();
-
-        // Disable UI and update status
         setUIEnabled(false);
 
-        // Generate response
         String messageId = "msg_" + System.currentTimeMillis();
         chatPane.addAIMessageWithId(currentModel, "", messageId);
 
-        // Message callbacks
+        // --- DEĞİŞİKLİK BURADA: Thread Safety sağlandı ---
         final StringBuilder fullResponse = new StringBuilder();
+
         Consumer<String> updateCallback = chunk -> {
-            fullResponse.append(chunk);
+            // Veriyi UI thread'ine taşıyıp orada birleştiriyoruz
             SwingUtilities.invokeLater(() -> {
                 if (!isResponseCancelled) {
+                    fullResponse.append(chunk);
                     chatPane.updateAIMessage(messageId, fullResponse.toString());
                 }
             });
@@ -732,49 +686,207 @@ public class JazariChatForge extends JFrame implements ActionListener, ModelSele
         };
 
         try {
-            // Store the future for potential cancellation
             isGeneratingResponse = true;
             currentResponseFuture = modelManager.generateResponse(message, updateCallback, completeCallback);
 
-            // Handle completion or errors
             currentResponseFuture.whenComplete((result, ex) -> {
                 isGeneratingResponse = false;
                 if (ex != null && !isResponseCancelled) {
                     String errorMsg = ex.getMessage();
                     eventLogger.log("Response error: " + errorMsg);
-
                     SwingUtilities.invokeLater(() -> {
                         chatPane.updateAIMessage(messageId, "Error: " + errorMsg);
                         setUIEnabled(true);
-
-                        // Show more user-friendly message for common errors
-                        if (errorMsg != null
-                                && (errorMsg.contains("API key")
-                                || errorMsg.contains("authentication")
-                                || errorMsg.contains("Authorization"))) {
-
-                            JOptionPane.showMessageDialog(
-                                    this,
-                                    "There was a problem with your API key for " + currentProvider
-                                    + ".\nPlease check that your API key is correct and has sufficient credits.",
-                                    "API Key Error",
-                                    JOptionPane.ERROR_MESSAGE);
-                        }
                     });
                 }
             });
         } catch (Exception e) {
             isGeneratingResponse = false;
-            String errorMsg = e.getMessage();
-            eventLogger.log("Exception: " + errorMsg);
-
+            eventLogger.log("Exception: " + e.getMessage());
             if (!isResponseCancelled) {
-                chatPane.updateAIMessage(messageId, "Error: " + errorMsg);
+                chatPane.updateAIMessage(messageId, "Error: " + e.getMessage());
                 setUIEnabled(true);
             }
         }
     }
 
+//    private void sendMessage() {
+//        final String message = inputTextArea.getText().trim();
+//
+//        // Skip if message is the placeholder text
+//        if (message.equals("Type your message here...")) {
+//            inputTextArea.setText("");
+//            inputTextArea.requestFocusInWindow();
+//            return;
+//        }
+//
+//        // Skip if message is empty
+//        if (message.isEmpty()) {
+//            return;
+//        }
+//
+//        // Debug: Check model selection state
+//        eventLogger.log("Current provider: " + (currentProvider != null ? currentProvider : "null"));
+//        eventLogger.log("Current model: " + (currentModel != null ? currentModel : "null"));
+//        eventLogger.log("ModelManager current provider: "
+//                + (modelManager.getCurrentProvider() != null
+//                ? modelManager.getCurrentProvider().getProviderName() : "null"));
+//        eventLogger.log("ModelManager current model: " + modelManager.getCurrentModel());
+//
+//        // Check if a model is selected in both UI and ModelManager
+//        if (currentModel == null || currentProvider == null
+//                || modelManager.getCurrentModel() == null
+//                || modelManager.getCurrentProvider() == null) {
+//
+//            // Try to force model selection if UI shows a selection
+//            if (modelSelectorPanel != null) {
+//                String uiProvider = (String) modelSelectorPanel.getProviderComboBox().getSelectedItem();
+//                String uiModel = (String) modelSelectorPanel.getModelComboBox().getSelectedItem();
+//
+//                if (uiProvider != null && uiModel != null) {
+//                    eventLogger.log("Attempting to force-select model: " + uiProvider + " - " + uiModel);
+//                    boolean success = modelManager.setCurrentModel(uiProvider, uiModel);
+//                    if (success) {
+//                        currentProvider = uiProvider;
+//                        currentModel = uiModel;
+//                        eventLogger.log("Force-selected model: " + uiModel);
+//                    } else {
+//                        eventLogger.log("Force-selection failed");
+//                        JOptionPane.showMessageDialog(
+//                                this,
+//                                "Failed to initialize model. Please select a different model.",
+//                                "Model Selection Error",
+//                                JOptionPane.ERROR_MESSAGE);
+//                        return;
+//                    }
+//                } else {
+//                    JOptionPane.showMessageDialog(
+//                            this,
+//                            "Please select a model first.",
+//                            "No Model Selected",
+//                            JOptionPane.WARNING_MESSAGE);
+//                    return;
+//                }
+//            } else {
+//                JOptionPane.showMessageDialog(
+//                        this,
+//                        "Please select a model first.",
+//                        "No Model Selected",
+//                        JOptionPane.WARNING_MESSAGE);
+//                return;
+//            }
+//        }
+//
+//        // Check if API key is required and set
+//        if (modelManager.requiresAuthentication(currentProvider)) {
+//            String apiKey = settingsManager.getApiKey(currentProvider);
+//            if (apiKey.isEmpty()) {
+//                // Prompt for API key
+//                eventLogger.log("API key required for " + currentProvider);
+//
+//                JOptionPane.showMessageDialog(
+//                        this,
+//                        "Please set an API key for " + currentProvider + ".",
+//                        "API Key Required",
+//                        JOptionPane.WARNING_MESSAGE);
+//
+//                // Open API key dialog
+//                if (modelSelectorPanel != null) {
+//                    modelSelectorPanel.promptForApiKey();
+//
+//                    // Check if key was set
+//                    apiKey = settingsManager.getApiKey(currentProvider);
+//                    if (apiKey.isEmpty()) {
+//                        eventLogger.log("API key dialog cancelled or empty key");
+//                        return;
+//                    } else {
+//                        eventLogger.log("API key set for " + currentProvider);
+//                    }
+//                } else {
+//                    return;
+//                }
+//            }
+//        }
+//
+//        // Reset cancellation flag
+//        isResponseCancelled = false;
+//
+//        // Add user message to chat
+//        chatPane.addUserMessage("You", message);
+//
+//        // Clear input
+//        inputTextArea.setText("");
+//        inputTextArea.requestFocusInWindow();
+//
+//        // Disable UI and update status
+//        setUIEnabled(false);
+//
+//        // Generate response
+//        String messageId = "msg_" + System.currentTimeMillis();
+//        chatPane.addAIMessageWithId(currentModel, "", messageId);
+//
+//        // Message callbacks
+//        final StringBuilder fullResponse = new StringBuilder();
+//        Consumer<String> updateCallback = chunk -> {
+//            fullResponse.append(chunk);
+//            SwingUtilities.invokeLater(() -> {
+//                if (!isResponseCancelled) {
+//                    chatPane.updateAIMessage(messageId, fullResponse.toString());
+//                }
+//            });
+//        };
+//
+//        Runnable completeCallback = () -> {
+//            SwingUtilities.invokeLater(() -> {
+//                if (!isResponseCancelled) {
+//                    setUIEnabled(true);
+//                }
+//            });
+//        };
+//
+//        try {
+//            // Store the future for potential cancellation
+//            isGeneratingResponse = true;
+//            currentResponseFuture = modelManager.generateResponse(message, updateCallback, completeCallback);
+//
+//            // Handle completion or errors
+//            currentResponseFuture.whenComplete((result, ex) -> {
+//                isGeneratingResponse = false;
+//                if (ex != null && !isResponseCancelled) {
+//                    String errorMsg = ex.getMessage();
+//                    eventLogger.log("Response error: " + errorMsg);
+//
+//                    SwingUtilities.invokeLater(() -> {
+//                        chatPane.updateAIMessage(messageId, "Error: " + errorMsg);
+//                        setUIEnabled(true);
+//
+//                        // Show more user-friendly message for common errors
+//                        if (errorMsg != null
+//                                && (errorMsg.contains("API key")
+//                                || errorMsg.contains("authentication")
+//                                || errorMsg.contains("Authorization"))) {
+//
+//                            JOptionPane.showMessageDialog(
+//                                    this,
+//                                    "There was a problem with your API key for " + currentProvider
+//                                    + ".\nPlease check that your API key is correct and has sufficient credits.",
+//                                    "API Key Error",
+//                                    JOptionPane.ERROR_MESSAGE);
+//                        }
+//                    });
+//                }
+//            });
+//        } catch (Exception e) {
+//            isGeneratingResponse = false;
+//            String errorMsg = e.getMessage();
+//            eventLogger.log("Exception: " + errorMsg);
+//
+//            if (!isResponseCancelled) {
+//                chatPane.updateAIMessage(messageId, "Error: " + errorMsg);
+//                setUIEnabled(true);
+//            }
+//        }
+//    }
     private void cancelCurrentResponse() {
         if (isGeneratingResponse) {
             isResponseCancelled = true;

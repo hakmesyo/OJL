@@ -45,7 +45,7 @@ public class OllamaGemma3SwingChat extends JFrame implements ActionListener {
     }
 
     private static final String OLLAMA_URL = "http://localhost:11434/api/generate"; // Ollama server address
-    private static final String MODEL_NAME = "gemma3"; // Name of the model to use
+    private static final String MODEL_NAME = "gemma3:4b"; // Name of the model to use
 
     private ChatPane chatPane;
     private JTextArea inputTextArea; // JTextArea instead of JTextField
