@@ -33,6 +33,7 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
         this.frame = frame;
         initComponents();
         init();
+
     }
 
     /**
@@ -340,7 +341,7 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
             dir = FactoryUtils.browseDirectory();
         }
         setExtendedState(Frame.NORMAL);
-        txt_folderPath.setText(dir.getAbsolutePath());
+        txt_folderPath.setText(dir.getAbsolutePath() + "/yolo_ds");
     }//GEN-LAST:event_btn_browseActionPerformed
 
     private void slider_testStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_slider_testStateChanged
@@ -456,6 +457,11 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
         } else if (frame.chkLane.isSelected()) {
             detection_type = "lane";
         }
+        if (FactoryUtils.isFolderExist(txt_folderPath.getText())) {
+            FactoryUtils.showMessage(this,txt_folderPath.getText() + " is already exist please delete it beforehand and retry again...");
+            return;
+        }
+
         //eğer voc xml seçili ise
         if (combo_annotation_type.getSelectedIndex() == 0) {
             File dir = new File(txt_folderPath.getText());
@@ -468,7 +474,11 @@ public class FrameBuildYoloDataSet extends javax.swing.JFrame {
                     n_val,
                     n_test
             );
-            FactoryUtils.showMessageTemp("Yolo Dataset b. generated successfully from yolo txt annotations!", 3000, null);
+            if (msg == null) {
+                FactoryUtils.showMessageTemp("Something went wrong!", 3000, null);
+            } else {
+                FactoryUtils.showMessageTemp("Yolo Dataset b. generated successfully from yolo txt annotations!", 3000, null);
+            }
 
         } //eğer yolo txt seçili ise
         else if (combo_annotation_type.getSelectedIndex() == 1) {

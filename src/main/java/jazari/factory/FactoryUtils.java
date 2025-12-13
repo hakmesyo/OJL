@@ -67,6 +67,7 @@ import jazari.utils.ReaderCSV;
 import jazari.utils.UniqueRandomNumbers;
 import jazari.websocket.SocketServer;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.Font;
@@ -1295,7 +1296,10 @@ public final class FactoryUtils {
      */
     public static void showMessage(String str) {
         JOptionPane.showMessageDialog(null, str);
-//        System.out.println(str);
+    }
+    
+    public static void showMessage(Component component, String str) {
+        JOptionPane.showMessageDialog(component, str);
     }
 
     /**
@@ -6312,7 +6316,11 @@ public final class FactoryUtils {
         txtFiles = new File[listTxtFiles.size()];
         listTxtFiles.toArray(txtFiles);
 
-        removeDirectoryRecursively(pathTarget);
+        //removeDirectoryRecursively(pathTarget);
+        if (FactoryUtils.isFolderExist(pathTarget)) {
+            FactoryUtils.showMessage(pathTarget+" is already exist please delete it beforehand and retry again...");
+            return;
+        }
         makeDirectory(pathTarget);
         makeDirectory(pathTarget + "/images");
         makeDirectory(pathTarget + "/images/train");
@@ -6350,20 +6358,43 @@ public final class FactoryUtils {
 
     }
 
-    public static void removeDirectoryRecursively(String folderPath) {
+    public static boolean removeDirectoryRecursively(String folderPath) {
         if (!isFolderExist(folderPath)) {
-            System.err.println("folder path does'nt exist");
-            return;
+            System.err.println("folder path doesn't exist");
+            return false;
         }
+
+        // --- JOPTIONPANE ONAYI BAŞLANGIÇ ---
+        int choice = JOptionPane.showConfirmDialog(
+                null,
+                "DİKKAT: '" + folderPath + "' klasörü ve tüm içeriği TAMAMEN silinecek ve geri alınamaz.\nBu işleme devam etmek istediğinize emin misiniz?",
+                "Klasör Silme Onayı",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        // Eğer kullanıcı 'Yes' (Evet) demezse işlemi durdur
+        if (choice != JOptionPane.YES_OPTION) {
+            System.out.println("Silme işlemi kullanıcı tarafından iptal edildi.");
+            return false;
+        }
+        // --- JOPTIONPANE ONAYI BİTİŞ ---
+
         Path path = Paths.get(folderPath);
         try {
             Files.walk(path)
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);
+
+            // İsterseniz işlem bitince de ufak bir bilgi verebilirsiniz:
+            // JOptionPane.showMessageDialog(null, "Klasör başarıyla silindi.");
         } catch (IOException ex) {
             Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
+            // Hata durumunda da ekrana basmak isterseniz:
+            // JOptionPane.showMessageDialog(null, "Hata oluştu: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
         }
+        return true;
     }
 
     public static void generateCoCoYamlYolo(String pathTarget, String[] classLabels) {
@@ -8939,8 +8970,12 @@ public final class FactoryUtils {
      * @param r_val
      * @param r_test
      */
-    public static void prepareYoloDataSet(String[] classIndex, String targetFolderName, int r_train, int r_val, int r_test) {
-        removeDirectoryRecursively(targetFolderName);
+    public static boolean prepareYoloDataSet(String[] classIndex, String targetFolderName, int r_train, int r_val, int r_test) {
+        //if (!removeDirectoryRecursively(targetFolderName)) return false;
+//        if (FactoryUtils.isFolderExist(targetFolderName)) {
+//            FactoryUtils.showMessage(targetFolderName+" is already exist please delete it beforehand and retry again...");
+//            return false;
+//        }
         FactoryUtils.makeDirectory(targetFolderName);
         FactoryUtils.makeDirectory(targetFolderName + "/images");
         FactoryUtils.makeDirectory(targetFolderName + "/images/train");
@@ -8981,6 +9016,7 @@ public final class FactoryUtils {
         }
         File dir = new File(targetFolderName);
         FactoryUtils.writeToFile(targetFolderName + "/" + dir.getName() + ".yaml", str_yaml);
+        return true;
     }
 
     /**
@@ -9007,7 +9043,7 @@ public final class FactoryUtils {
             int r_test
     ) {
         String[] classIndex = getClassIndexArray(mainFolderPath + "/class_labels.txt");
-        prepareYoloDataSet(classIndex, targetFolderName, r_train, r_val, r_test);
+        if (!prepareYoloDataSet(classIndex, targetFolderName, r_train, r_val, r_test)) return null;
         int k = 0;
         File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "xml");
         files = FactoryUtils.shuffle(files, 121);
