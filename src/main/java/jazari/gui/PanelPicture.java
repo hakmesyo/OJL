@@ -429,9 +429,75 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 paintMouseDashedLines(gr, wPanel, hPanel, colorDashedLine);
             }
 
+            paintWatermarkInfo(gr);
         }
         paintFrameRectangle(gr, wPanel, hPanel);
         paintComponents(g);
+    }
+    
+    /**
+     * Kullanıcıya kısayolları ve durumu gösteren bilgi kutusunu çizer.
+     */
+    private void paintWatermarkInfo(Graphics2D gr) {
+        // --- AYARLAR ---
+        // Yazıların jilet gibi (Google tarzı) pürüzsüz olması için Anti-Aliasing açıyoruz
+        gr.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        
+        // Font Ayarı: SansSerif modern ve temizdir.
+        Font mainFont = new Font("SansSerif", Font.BOLD, 14);
+        Font subFont = new Font("SansSerif", Font.PLAIN, 12);
+        
+        // --- MESAJ İÇERİĞİ ---
+        // Varsayılan mesaj (Navigasyon ve Zoom)
+        String titleMsg = "Nav: [← →]  |  Zoom: [Tekerlek]  |  Pan: [Orta Tuş]";
+        String subMsg = "İpucu: Filtreler, YOLO Dönüşümü ve Araçlar için SAĞ TIKLA";
+
+        // Eğer BBox modu açıksa mesajı özelleştir
+        if (activateBoundingBox) {
+            titleMsg = "Mod: Bounding Box  |  Kaydet & İlerle: [S]  |  Sil: [Del]";
+            subMsg = "İpucu: Etiketleri YOLO formatına çevirmek için SAĞ TIKLA -> Build YOLO Dataset";
+        } 
+        // Eğer Polygon modu açıksa
+        else if (activatePolygon) {
+             titleMsg = "Mod: Polygon  |  Nokta Ekle: [Sol Tık]  |  Bitir: [Sağ Tık]";
+        }
+
+        // --- HESAPLAMALAR ---
+        gr.setFont(mainFont);
+        java.awt.FontMetrics fmMain = gr.getFontMetrics();
+        int wMain = fmMain.stringWidth(titleMsg);
+        int hMain = fmMain.getHeight();
+
+        gr.setFont(subFont);
+        java.awt.FontMetrics fmSub = gr.getFontMetrics();
+        int wSub = fmSub.stringWidth(subMsg);
+        int hSub = fmSub.getHeight();
+
+        // En geniş yazıya göre kutu genişliğini ayarla
+        int boxWidth = Math.max(wMain, wSub) + 40;
+        int boxHeight = hMain + hSub + 20;
+        
+        // Konum: Üst Orta
+        int xPos = (this.getWidth() - boxWidth) / 2;
+        int yPos = 20; // Üstten boşluk
+
+        // --- ÇİZİM ---
+        // 1. Gölge/Kutu (Yarı saydam koyu gri - Modern görünüm)
+        gr.setColor(new Color(30, 30, 30, 200)); 
+        gr.fillRoundRect(xPos, yPos, boxWidth, boxHeight, 20, 20);
+
+        // 2. Üst Satır (Kalın ve Beyaz)
+        gr.setColor(Color.WHITE);
+        gr.setFont(mainFont);
+        // Yazıyı kutunun içinde ortala
+        gr.drawString(titleMsg, xPos + (boxWidth - wMain) / 2, yPos + hMain + 5);
+
+        // 3. Alt Satır (İnce ve Hafif Gri/Sarımsı - Dikkat çekmesi için)
+        gr.setColor(new Color(220, 220, 220)); // Kırık beyaz
+        if(activateBoundingBox) gr.setColor(new Color(255, 200, 100)); // BBox modunda alt satır sarımsı olsun
+        
+        gr.setFont(subFont);
+        gr.drawString(subMsg, xPos + (boxWidth - wSub) / 2, yPos + hMain + hSub + 10);
     }
 
     public void updateObjectProperties(String ret, String objectType) {
@@ -1826,7 +1892,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
         }
         setImage(bf, imagePath, caption, isClearBbox);
-        if (!frame.chk_customZoom.isSelected()) frame.img = bf;
+        if (!frame.chk_customZoom.isSelected()) {
+            frame.img = bf;
+        }
         frame.imagePath = imagePath;
         frame.autoResizeFrame();
         return bf;
@@ -2416,9 +2484,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 //                FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(file.getName()) + ".xml");
 //            }
 //        }
-}
+    }
 
-private void saveLanesAsTxt() {
+    private void saveLanesAsTxt() {
         String txtFilePath = imageFolder + "/" + FactoryUtils.getFileName(fileName) + ".lane";
         String content = "";
         for (PascalVocLane lane : splines) {
@@ -2479,11 +2547,11 @@ private void saveLanesAsTxt() {
     }
 
     @Override
-public void keyTyped(KeyEvent e) {
+    public void keyTyped(KeyEvent e) {
     }
 
     @Override
-public void keyPressed(KeyEvent e) {
+    public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_UP) {
             if (imageFiles != null) {
@@ -2627,6 +2695,6 @@ public void keyPressed(KeyEvent e) {
     }
 
     @Override
-public void keyReleased(KeyEvent e) {
+    public void keyReleased(KeyEvent e) {
     }
 }
