@@ -49,11 +49,21 @@ import jazari.utils.pascalvoc.AnnotationPascalVOCFormat;
 import jazari.utils.pascalvoc.PascalVocAttribute;
 import jazari.utils.pascalvoc.PascalVocBoundingBox;
 import jazari.utils.pascalvoc.PascalVocLane;
+import jazari.utils.pascalvoc.PascalVocLine;
 import jazari.utils.pascalvoc.PascalVocObject;
 import jazari.utils.pascalvoc.PascalVocPolygon;
 import jazari.utils.pascalvoc.PascalVocSource;
 
 public class PanelPicture extends JPanel implements KeyListener, MouseWheelListener {
+
+    public boolean activateLine = false; // Checkbox ile tetiklenecek ana bayrak
+    private boolean isLinePressed = false; // Çizim başladı mı?
+    private PascalVocLine selectedLine = null; // Üzerine tıklanan çizgi
+    private boolean isLineDragged = false; // Çizgi taşınıyor mu?
+    private boolean isLineStartDragged = false; // Başlangıç noktası mı taşınıyor?
+    private boolean isLineEndDragged = false; // Bitiş noktası mı taşınıyor?
+    private Point referenceLineDragPos; // Taşıma referans noktası
+    private Color lastSelectedLineColor; // Son seçilen renk
 
     private Point p = new Point();
     public boolean isChainProcessing = false;
@@ -258,7 +268,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         this.caption = caption;
         String folderName = FactoryUtils.getFolderPath(imagePath);
         currentFolderName = folderName;
-        if ((activateBoundingBox || activatePolygon || activateLaneDetection) && imagePath != null && !imagePath.isEmpty()) {
+        if ((activateBoundingBox || activatePolygon || activateLaneDetection || activateLine) && imagePath != null && !imagePath.isEmpty()) {
             //if pascal voc xml format was selected
             if (frame.combo_format.getSelectedIndex() == 0) {
                 //String fileName = FactoryUtils.getFileName(imagePath) + ".xml";
@@ -416,8 +426,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     paintBoundingBoxes(gr);
                 } else if (activatePolygon) {
                     paintPolygons(gr);
-                } else if (activateLaneDetection) {
+                } else if (activateLaneDetection) { // Lane (Spline)
                     paintLaneSpline(gr);
+                } else if (activateLine) { // YENİ EKLENEN KISIM
+                    paintLines(gr);        // Düz Çizgiler
                 } else if (activateCrop && isCropStarted) {
                     paintCrop(gr);
                 } else if (activateCrop && selectionRect != null) {
@@ -434,7 +446,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         paintFrameRectangle(gr, wPanel, hPanel);
         paintComponents(g);
     }
-    
+
     /**
      * Kullanıcıya kısayolları ve durumu gösteren bilgi kutusunu çizer.
      */
@@ -442,11 +454,11 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         // --- AYARLAR ---
         // Yazıların jilet gibi (Google tarzı) pürüzsüz olması için Anti-Aliasing açıyoruz
         gr.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        
+
         // Font Ayarı: SansSerif modern ve temizdir.
         Font mainFont = new Font("SansSerif", Font.BOLD, 14);
         Font subFont = new Font("SansSerif", Font.PLAIN, 12);
-        
+
         // --- MESAJ İÇERİĞİ ---
         // Varsayılan mesaj (Navigasyon ve Zoom)
         String titleMsg = "Nav: [← →]  |  Zoom: [Tekerlek]  |  Pan: [Orta Tuş]";
@@ -456,10 +468,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         if (activateBoundingBox) {
             titleMsg = "Mod: Bounding Box  |  Kaydet & İlerle: [S]  |  Sil: [Del]";
             subMsg = "İpucu: Etiketleri YOLO formatına çevirmek için SAĞ TIKLA -> Build YOLO Dataset";
-        } 
-        // Eğer Polygon modu açıksa
+        } // Eğer Polygon modu açıksa
         else if (activatePolygon) {
-             titleMsg = "Mod: Polygon  |  Nokta Ekle: [Sol Tık]  |  Bitir: [Sağ Tık]";
+            titleMsg = "Mod: Polygon  |  Nokta Ekle: [Sol Tık]  |  Bitir: [Sağ Tık]";
         }
 
         // --- HESAPLAMALAR ---
@@ -476,14 +487,14 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         // En geniş yazıya göre kutu genişliğini ayarla
         int boxWidth = Math.max(wMain, wSub) + 40;
         int boxHeight = hMain + hSub + 20;
-        
+
         // Konum: Üst Orta
         int xPos = (this.getWidth() - boxWidth) / 2;
         int yPos = 20; // Üstten boşluk
 
         // --- ÇİZİM ---
         // 1. Gölge/Kutu (Yarı saydam koyu gri - Modern görünüm)
-        gr.setColor(new Color(30, 30, 30, 200)); 
+        gr.setColor(new Color(30, 30, 30, 200));
         gr.fillRoundRect(xPos, yPos, boxWidth, boxHeight, 20, 20);
 
         // 2. Üst Satır (Kalın ve Beyaz)
@@ -494,14 +505,16 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
         // 3. Alt Satır (İnce ve Hafif Gri/Sarımsı - Dikkat çekmesi için)
         gr.setColor(new Color(220, 220, 220)); // Kırık beyaz
-        if(activateBoundingBox) gr.setColor(new Color(255, 200, 100)); // BBox modunda alt satır sarımsı olsun
-        
+        if (activateBoundingBox) {
+            gr.setColor(new Color(255, 200, 100)); // BBox modunda alt satır sarımsı olsun
+        }
         gr.setFont(subFont);
         gr.drawString(subMsg, xPos + (boxWidth - wSub) / 2, yPos + hMain + hSub + 10);
     }
 
     public void updateObjectProperties(String ret, String objectType) {
         mapBBoxColor = buildHashMap(currentFolderName + "/class_labels.txt");
+
         if (objectType.equals("bbox")) {
             if (selectedBBox == null) {
                 if (ret != null && !ret.split(":")[0].isEmpty()) {
@@ -516,7 +529,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 }
                 PascalVocBoundingBox bbox = new PascalVocBoundingBox(lastSelectedClassName, currentBoundingBox, 0, 0, lastSelectedBoundingBoxColor);
                 selectedBBox = bbox;
-                listPascalVocObject.add(new PascalVocObject(selectedBBox.name, "Unspecified", 0, 0, 0, selectedBBox, null, null));
+                // Line ve Polygon null
+                listPascalVocObject.add(new PascalVocObject(selectedBBox.name, "Unspecified", 0, 0, 0, selectedBBox, null, null, null));
                 repaint();
                 selectedBBox = null;
             } else {
@@ -526,8 +540,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     selectedPascalVocObject.name = lastSelectedClassName;
                     isBBoxCancelled = false;
                     selectedBBox.name = lastSelectedClassName;
-                    lastSelectedClassName = ret.split(":")[0];
-                    lastSelectedBoundingBoxColor = buildColor(ret.split(":")[1]);
+                    // lastSelectedClassName ve color zaten güncellendi
                 } else {
                     isBBoxCancelled = true;
                 }
@@ -544,7 +557,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 selectedPolygon.name = lastSelectedClassName;
                 selectedPolygon.color = lastSelectedPolygonColor;
                 for (PascalVocObject pvo : listPascalVocObject) {
-                    if (pvo.polygonContainer.equals(selectedPolygon)) {
+                    if (pvo.polygonContainer != null && pvo.polygonContainer.equals(selectedPolygon)) {
                         pvo.name = lastSelectedClassName;
                         if (pvo.bndbox != null) {
                             pvo.bndbox.name = pvo.name;
@@ -561,7 +574,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     pol = unScaleWithZoomFactor(pol);
                     PascalVocPolygon poly = new PascalVocPolygon(lastSelectedClassName, pol, 0, 0, lastSelectedPolygonColor);
                     selectedPolygon = poly;
-                    listPascalVocObject.add(new PascalVocObject(selectedPolygon.name, "Unspecified", 0, 0, 0, null, selectedPolygon, null));
+                    // BBox ve Line null
+                    listPascalVocObject.add(new PascalVocObject(selectedPolygon.name, "Unspecified", 0, 0, 0, null, selectedPolygon, null, null));
                 } else {
                     isPolygonCancelled = true;
                 }
@@ -570,7 +584,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 pol = unScaleWithZoomFactor(pol);
                 PascalVocPolygon poly = new PascalVocPolygon(lastSelectedClassName, pol, 0, 0, lastSelectedPolygonColor);
                 selectedPolygon = poly;
-                listPascalVocObject.add(new PascalVocObject(selectedPolygon.name, "Unspecified", 0, 0, 0, null, selectedPolygon, null));
+                // BBox ve Line null
+                listPascalVocObject.add(new PascalVocObject(selectedPolygon.name, "Unspecified", 0, 0, 0, null, selectedPolygon, null, null));
 
             }
             polygon.reset();
@@ -579,6 +594,41 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             selectedPolygon = null;
             repaint();
 
+        } else if (objectType.equals("line")) { // YENİ EKLENEN KISIM
+            if (ret == null) {
+                return;
+            }
+
+            String[] s = ret.split(":");
+            String newName = (s.length > 0) ? s[0] : "";
+            Color newColor = (s.length > 1) ? buildColor(s[1]) : Color.YELLOW;
+
+            if (newName.isEmpty()) {
+                // İsimsiz gelirse iptal et veya işlem yapma
+                return;
+            }
+
+            lastSelectedClassName = newName;
+            lastSelectedBoundingBoxColor = newColor; // Line için de bbox rengini kullanıyoruz şimdilik
+
+            if (selectedLine != null) {
+                // Var olan bir çizgi güncelleniyor
+                selectedLine.name = newName;
+                selectedLine.color = newColor;
+
+                // Listeyi de güncelle ki obje ismi ile çizgi ismi tutarlı olsun
+                for (PascalVocObject pvo : listPascalVocObject) {
+                    if (pvo.lineContainer != null && pvo.lineContainer.equals(selectedLine)) {
+                        pvo.name = newName;
+                    }
+                }
+            } else {
+                // Yeni bir çizgi oluşturuluyor (Asenkron akışta burası nadiren kullanılır, genelde mouseReleased içinde oluşturulur)
+                // Ancak "FrameObjectProperties" kapatıldığında yeni çizgi eklenmesi isteniyorsa burası kullanılır.
+                // Şu anki mouseReleased mantığında çizgi zaten ekleniyor, sonra özellikleri güncelleniyor.
+                // Bu yüzden buraya ekleme mantığı koymaya gerek yok, sadece güncelleme yeterli.
+            }
+            repaint();
         }
     }
 
@@ -629,7 +679,8 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Sharpen",
             "Crop",
             "Resize Images",
-            "Build YOLO DataSet",};
+            "Build YOLO DataSet",
+            "Show Annotation File","Export Label Studio CSV"};
 
         ButtonGroup itemsGroup = new ButtonGroup();
         items = new JRadioButtonMenuItem[elements.length];
@@ -677,6 +728,16 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         new FrameObjectProperties(frame, selectedBBox.name, "bbox").setVisible(true);
                     } else if (activatePolygon && selectedPolygon != null) {
                         new FrameObjectProperties(frame, selectedPolygon.name, "polygon").setVisible(true);
+                    } else if (activateLine) { // LINE MODU BURAYA EKLENDİ
+                        Point clickP = constraintMousePosition(e);
+                        PascalVocLine clickedLine = getSelectedLine(clickP);
+
+                        if (clickedLine != null) {
+                            selectedLine = clickedLine;
+                            new FrameObjectProperties(frame, selectedLine.name, "line").setVisible(true);
+                            return; // İşlem tamam
+                        }
+
                     } else if (activateLaneDetection && selectedLane != null) {
                         //new FrameObjectProperties(frame, selectedLane.name, "lane").setVisible(true);
                         String laneClass = FactoryUtils.inputMessage("Set lane class index", "write numeric value from 1 to 5");
@@ -748,6 +809,33 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 }
 
                 mousePosTopLeft = constraintMousePosition(e);
+
+                if (activateLine && e.getButton() == MouseEvent.BUTTON1) {
+                    showRegion = true;
+                    // Tıklanan noktayı al
+                    Point clickPoint = constraintMousePosition(e);
+
+                    // Önce bir çizgi seçildi mi kontrol et (Düzenleme modu)
+                    isLineStartDragged = false;
+                    isLineEndDragged = false;
+                    isLineDragged = false;
+                    selectedLine = getSelectedLine(clickPoint);
+
+                    if (selectedLine != null) {
+                        // Var olan bir çizgiye tıklandı
+                        if (isLineDragged) {
+                            // Taşıma için referans noktası
+                            referenceLineDragPos = clickPoint;
+                        }
+                        // Start veya End tutulduysa flag'ler getSelectedLine içinde set edildi zaten.
+                    } else {
+                        // Boşluğa tıklandı -> Yeni çizim başlat
+                        isLinePressed = true;
+                        mousePosTopLeft = clickPoint; // Başlangıç noktası
+                        selectedLine = null; // Seçimi kaldır
+                    }
+                    repaint();
+                }
 
                 /**
                  * eğer annotation checkboxları seçilmeden resmin bir bölgesi
@@ -976,7 +1064,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                                 pol = unScaleWithZoomFactor(pol);
                                 PascalVocPolygon poly = new PascalVocPolygon(lastSelectedClassName, pol, 0, 0, lastSelectedPolygonColor);
                                 selectedPolygon = poly;
-                                listPascalVocObject.add(new PascalVocObject(selectedPolygon.name, "Unspecified", 0, 0, 0, null, selectedPolygon, null));
+                                listPascalVocObject.add(new PascalVocObject(selectedPolygon.name, "Unspecified", 0, 0, 0, null, selectedPolygon, null, null));
 
                             }
                             polygon.reset();
@@ -1050,7 +1138,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                             Rectangle r = new Rectangle(unScaleWithZoomFactor(mousePosTopLeft.x - fromLeft), unScaleWithZoomFactor(mousePosTopLeft.y - fromTop), w, h);
                             PascalVocBoundingBox bbox = new PascalVocBoundingBox(lastSelectedClassName, r, 0, 0, lastSelectedBoundingBoxColor);
                             selectedBBox = bbox;
-                            listPascalVocObject.add(new PascalVocObject(selectedBBox.name, "Unspecified", 0, 0, 0, selectedBBox, null, null));
+                            listPascalVocObject.add(new PascalVocObject(selectedBBox.name, "Unspecified", 0, 0, 0, selectedBBox, null, null, null));
                             repaint();
                             selectedBBox = null;
                         }
@@ -1070,6 +1158,56 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 //                    selectedLane=null;
 //                    repaint();
 //                    return;
+                }
+                if (activateLine && e.getButton() == MouseEvent.BUTTON1) {
+                    setDefaultCursor();
+
+                    // A) Eğer yeni bir çizgi çiziliyorsa (ve sürükleme bittiyse)
+                    if (isLinePressed) {
+                        isLinePressed = false;
+                        Point endP = constraintMousePosition(e);
+                        Point startP = mousePosTopLeft;
+
+                        // Çok kısa çizgileri yoksay (Yanlış tıklama)
+                        if (startP.distance(endP) < 5) {
+                            repaint();
+                            return;
+                        }
+
+                        // Sınıf adı belirleme (FrameObjectProperties penceresi)
+                        if (lastSelectedClassName == null || lastSelectedClassName.isEmpty()) {
+                            // Kullanıcıya sınıf seçtir
+                            new FrameObjectProperties(frame, null, "line").setVisible(true); // "bbox" tipini kullanabiliriz veya "line" diye yeni tip açabiliriz, şimdilik bbox renklerini kullansın.
+                            // Not: Burada akışı durdurup ismi almamız lazım ama Swing asenkron. 
+                            // Şimdilik "temp" bir çizgi ekleyip, pencere kapanınca güncelleme mantığı da kurabiliriz.
+                            // Basitlik adına: Eğer sınıf seçili değilse, varsayılan bir isimle ekleyelim veya son seçileni kullanalım.
+
+                            // Ancak doğru akış için FrameObjectProperties dönüşünü beklemek gerekir. 
+                            // Geçici çözüm: lastSelectedClassName yoksa varsayılan ata.
+                            lastSelectedClassName = (lastSelectedClassName == null) ? "line" : lastSelectedClassName;
+                            lastSelectedBoundingBoxColor = (lastSelectedBoundingBoxColor == null) ? Color.YELLOW : lastSelectedBoundingBoxColor;
+                        }
+
+                        // Koordinatları orijinal resim boyutuna çevir (Unscale)
+                        Point realStart = new Point(unScaleWithZoomFactorX(startP.x) - fromLeft, unScaleWithZoomFactorY(startP.y) - fromTop);
+                        Point realEnd = new Point(unScaleWithZoomFactorX(endP.x) - fromLeft, unScaleWithZoomFactorY(endP.y) - fromTop);
+
+                        // Yeni Line Objesi Oluştur
+                        PascalVocLine newLine = new PascalVocLine(lastSelectedClassName, realStart, realEnd, lastSelectedBoundingBoxColor);
+                        selectedLine = newLine;
+
+                        // Listeye Ekle
+                        listPascalVocObject.add(new PascalVocObject(newLine.name, "Unspecified", 0, 0, 0, null, null, newLine, null));
+                    }
+
+                    // B) Eğer düzenleme yapılıyorsa flagleri sıfırla
+                    if (isLineDragged || isLineStartDragged || isLineEndDragged) {
+                        isLineDragged = false;
+                        isLineStartDragged = false;
+                        isLineEndDragged = false;
+                    }
+
+                    repaint();
                 }
                 checkForTriggerEvent(e);
 
@@ -1120,6 +1258,39 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         }
                     }
                 }
+                if (activateLine) {
+                    Point p = e.getPoint();
+
+                    // 1. Durum tespiti için önce flagleri sıfırla
+                    // (Bu işlem mousePressed'i bozmaz çünkü tıklama anında tekrar hesaplanıyor)
+                    isLineStartDragged = false;
+                    isLineEndDragged = false;
+                    isLineDragged = false;
+
+                    // 2. Mouse'un altındaki çizgiyi ve konumunu (uç mu gövde mi) bul
+                    PascalVocLine hoveredLine = getSelectedLine(p);
+
+                    // 3. İmleci Ayarla
+                    if (hoveredLine != null) {
+                        if (isLineStartDragged || isLineEndDragged) {
+                            // Uç noktalardaysa: "El" işareti (veya CROSSHAIR)
+                            // Bu, noktanın tutulup uzatılabileceğini gösterir.
+                            setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
+                        } else {
+                            // Çizgi gövdesindeyse: "Taşıma" işareti
+                            setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                        }
+                    } else {
+                        // Boşluktaysa: Varsayılan
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    }
+
+                    // 4. Flagleri temizle (Sadece görsel hover yapıyoruz, sürükleme başlatmıyoruz)
+                    isLineStartDragged = false;
+                    isLineEndDragged = false;
+                    isLineDragged = false;
+                }
+
                 repaint();
             }
 
@@ -1132,6 +1303,40 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         selectedSplinePoint.setLocation(e.getPoint());
                         repaint();
                     }
+                }
+                if (activateLine && SwingUtilities.isLeftMouseButton(e)) {
+                    Point currentP = constraintMousePosition(e);
+
+                    if (selectedLine != null) {
+                        // Zoom faktörünü hesaba katarak orijinal koordinatlara çevirmemiz lazım
+                        int realX = unScaleWithZoomFactorX(currentP.x) - fromLeft;
+                        int realY = unScaleWithZoomFactorY(currentP.y) - fromTop;
+
+                        if (isLineStartDragged) {
+                            selectedLine.startPoint.setLocation(realX, realY);
+                        } else if (isLineEndDragged) {
+                            selectedLine.endPoint.setLocation(realX, realY);
+                        } else if (isLineDragged) {
+                            // Gövdeden taşıma (Delta hesapla)
+                            int dx = currentP.x - referenceLineDragPos.x;
+                            int dy = currentP.y - referenceLineDragPos.y;
+
+                            // Delta'yı unscale et (yaklaşık olarak)
+                            int realDx = (int) (dx / zoom_factor);
+                            int realDy = (int) (dy / zoom_factor);
+
+                            // Nesneyi ötele
+                            selectedLine.startPoint.translate(realDx, realDy);
+                            selectedLine.endPoint.translate(realDx, realDy);
+
+                            // Referansı güncelle
+                            referenceLineDragPos = currentP;
+                        }
+                    } else if (isLinePressed) {
+                        // Yeni çizgi çiziliyor, mousePos güncelleniyor (Hayalet çizgi için)
+                        mousePos = currentP;
+                    }
+                    repaint();
                 }
                 if (activateBoundingBox || activateCrop || activatePolygon) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
@@ -1188,7 +1393,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
     private PascalVocBoundingBox isMouseClickedOnBoundingBox() {
         PascalVocBoundingBox ret = null;
         Point relativeMousePos = new Point(mousePos.x - fromLeft, mousePos.y - fromTop);
-        //System.out.println("scaledMousePos = " + scaledMousePos);
+
         if (listPascalVocObject.size() == 0) {
             return null;
         } else {
@@ -1197,6 +1402,13 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             List<PascalVocObject> listVocObject = new ArrayList();
             for (PascalVocObject obj : listPascalVocObject) {
                 PascalVocBoundingBox bbox = obj.bndbox;
+
+                // --- KRİTİK DÜZELTME BURADA ---
+                if (bbox == null) {
+                    continue;
+                }
+                // -----------------------------
+
                 if (FactoryUtils.isPointInROI(relativeMousePos, scaleWithZoomFactor(bbox.getRectangle(5)))) {
                     if (desiredBbox == null) {
                         desiredBbox = bbox;
@@ -1210,9 +1422,6 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                         selectedPascalVocObject = obj;
                     }
                     listVocObject.add(obj);
-//                            ret = bbox;
-//                            selectedPascalVocObject = obj;
-//                            return ret;
                 }
             }
             if (selectedPascalVocObject != null) {
@@ -1610,19 +1819,25 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             Point p1 = new Point(scaleWithZoomFactorX(selectedBBox.xmin + fromLeft), scaleWithZoomFactorY(selectedBBox.ymin + fromTop));
             resizeSelectedBoundingBoxOnScreen(gr, selectedBBox, defaultStrokeWidth, p1, mousePosBottomRight, mapBBoxColor.get(selectedBBox.name));
         } else if (selectedBBox != null && isBBoxDragged && isMouseDraggedForBoundingBoxMovement) {
-            //eğer bbox tutulup hareket ettiriliyorsa
             this.setCursor(new Cursor(Cursor.MOVE_CURSOR));
             lastPositionOfDraggedBBox = calculateDraggingBBoxPosition();
-            //System.out.println(lastPositionOfDraggedBBox[0]);
             draggedSelectedBoundingBoxOnScreen(gr, selectedBBox, defaultStrokeWidth, lastPositionOfDraggedBBox[0], lastPositionOfDraggedBBox[1], Color.orange);
         } else if (selectedBBox == null && !isBBoxCancelled && isMouseDraggedForBoundingBoxMovement) {
-            //şayet herhangi bir bbox seçilmeden ekranda yeni bir bbox çiziliyorsa
             drawNewBoundingBoxOnScreen(gr, defaultStrokeWidth, mousePosTopLeft, mousePos, defaultBoundingBoxColor);
         }
 
-        //draw all bboxes including selectedbbox
+        // draw all bboxes including selectedbbox
         for (PascalVocObject obj : listPascalVocObject) {
             PascalVocBoundingBox bbox = obj.bndbox;
+
+            // --- KRİTİK DÜZELTME BURADA ---
+            // Eğer nesne bir Line veya Polygon ise bbox null gelir. 
+            // Kontrol etmezsek program burada patlar ve ekran donar/güncellenmez.
+            if (bbox == null) {
+                continue;
+            }
+            // -----------------------------
+
             Point p1 = new Point(bbox.xmin + fromLeft, bbox.ymin + fromTop);
             Point p2 = new Point(bbox.xmax + fromLeft, bbox.ymax + fromTop);
             drawBoundingBoxOnImage(gr, bbox, defaultStrokeWidth, p1, p2, mapBBoxColor.get(obj.name));
@@ -2152,6 +2367,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     FactoryUtils.deleteFile(imageFolder + "/" + FactoryUtils.getFileName(FactoryUtils.getFileNameFromPath(imagePath)) + ".txt");
                 }
             }
+
         }
     }
 
@@ -2380,6 +2596,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 //                        public void trigger() {
 //                        }
 //                    });
+                } else if (obj.getText().equals("Show Annotation File")) {
+                    openAnnotationFile(); 
+                } else if (obj.getText().equals("Export Label Studio CSV")) {
+                    String outputCsv = imageFolder + "/export_data.csv";
+                    FactoryUtils.exportToLabelStudioCSV(imageFolder, outputCsv);
+                    FactoryUtils.showMessage("CSV dosyası oluşturuldu:\n" + outputCsv);
                 } else if (activateLaneDetection && obj.getText().equals("Build JSON as TuSimple")) {
                     String str = FactoryUtils.buildJsonFileAsTuSimpleFormat(imageFolder);
                 } else if (obj.getText().equals("Command Interpreter")) {
@@ -2399,6 +2621,48 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
         }
 
+    }
+
+    /**
+     * O anki resmin annotasyon (etiket) dosyasını varsayılan editörde açar.
+     */
+    private void openAnnotationFile() {
+        // Resim yolu geçerli mi kontrol et
+        if (imagePath == null || imagePath.isEmpty() || imagePath.equals("-1")) {
+            FactoryUtils.showMessage("Henüz bir resim yüklenmedi.");
+            return;
+        }
+
+        String folder = FactoryUtils.getFolderPath(imagePath);
+        String nameWithoutExt = FactoryUtils.getFileName(imagePath);
+        File annotationFile = null;
+
+        // Seçili formata göre (XML mi YOLO mu) dosya yolunu oluştur
+        if (frame.combo_format.getSelectedIndex() == 0) {
+            // PascalVOC XML formatı
+            annotationFile = new File(folder + File.separator + nameWithoutExt + ".xml");
+        } else {
+            // YOLO TXT formatı
+            annotationFile = new File(folder + File.separator + nameWithoutExt + ".txt");
+        }
+
+        // Dosya diskte var mı?
+        if (annotationFile.exists()) {
+            try {
+                // İşletim sistemi bu işlemi destekliyor mu?
+                if (java.awt.Desktop.isDesktopSupported()) {
+                    // Dosyayı varsayılan programla (örn: Notepad++) aç
+                    java.awt.Desktop.getDesktop().open(annotationFile);
+                } else {
+                    FactoryUtils.showMessage("Bu işletim sisteminde dosya açma işlemi desteklenmiyor.");
+                }
+            } catch (java.io.IOException ex) {
+                ex.printStackTrace();
+                FactoryUtils.showMessage("Dosya açılırken hata oluştu: " + ex.getMessage());
+            }
+        } else {
+            FactoryUtils.showMessage("Annotasyon dosyası bulunamadı:\n" + annotationFile.getAbsolutePath());
+        }
     }
 
     private BufferedImage getCroppedImage() {
@@ -2460,19 +2724,20 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
         for (PascalVocObject obj : listPascalVocObject) {
             PascalVocBoundingBox bbox = obj.bndbox;
             PascalVocPolygon polygon = obj.polygonContainer;
+            PascalVocLine line = obj.lineContainer;
             List<PascalVocAttribute> attributeList = obj.attributeList;
             String name = "";
-            if (activateBoundingBox) {
+            if (activateBoundingBox && bbox != null) {
                 name = bbox.name;
-            } else if (activatePolygon) {
-                if (polygon != null) {
-                    name = polygon.name;
-                    if (bbox != null) {
-                        name = bbox.name;
-                    }
-                }
+            } else if (activatePolygon && polygon != null) {
+                name = polygon.name;
+            } else if (activateLine && line != null) { // Yeni: Line modu aktifse ismini al
+                name = line.name;
+            } else {
+                // Moddan bağımsız, nesne ne ise onun ismini koru
+                name = obj.name;
             }
-            lstObject.add(new PascalVocObject(name, "", 0, 0, 0, bbox, polygon, attributeList));
+            lstObject.add(new PascalVocObject(name, "", 0, 0, 0, bbox, polygon, line, attributeList));
         }
         String xml = FactoryUtils.serializePascalVocXML(imageFolder, fileName, imagePath, new PascalVocSource(), lstObject);
 
@@ -2524,6 +2789,136 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
     public void setActivateStatistics(boolean activateStatistics) {
         this.activateStatistics = activateStatistics;
+    }
+
+    /**
+     * Ekrana çizgileri çizen metot. paint(Graphics g) içinden çağrılacak.
+     */
+    /**
+     * Ekrana çizgileri çizen metot. paint(Graphics g) içinden çağrılacak.
+     */
+    /**
+     * Ekrana çizgileri çizen metot. paint(Graphics g) içinden çağrılacak.
+     */
+    private void paintLines(Graphics2D gr) {
+        // İSTEK 1 & 2: Daha ince (2) ve Kesikli çizgi stili
+        Stroke dashedStroke = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{15.0f, 10.0f}, 0);
+        Stroke normalStroke = new BasicStroke(1);
+
+        // 1. Mevcut (Kaydedilmiş) Çizgileri Çiz
+        for (PascalVocObject obj : listPascalVocObject) {
+            if (obj.lineContainer != null) {
+                PascalVocLine line = obj.lineContainer;
+
+                // Koordinatları zoom faktörüne göre ölçekle
+                int x1 = scaleWithZoomFactorX(line.startPoint.x + fromLeft);
+                int y1 = scaleWithZoomFactorY(line.startPoint.y + fromTop);
+                int x2 = scaleWithZoomFactorX(line.endPoint.x + fromLeft);
+                int y2 = scaleWithZoomFactorY(line.endPoint.y + fromTop);
+
+                // Ana rengi al
+                Color baseCol = (mapBBoxColor.get(obj.name) != null) ? mapBBoxColor.get(obj.name) : line.color;
+
+                // İSTEK 3: Çizgi için Şeffaf Renk (Alpha 150/255 -> Yaklaşık %60 opaklık)
+                Color transparentCol = new Color(baseCol.getRed(), baseCol.getGreen(), baseCol.getBlue(), 150);
+
+                // --- ÇİZGİ (KESİKLİ VE ŞEFFAF) ---
+                gr.setColor(transparentCol);
+                gr.setStroke(dashedStroke);
+                gr.drawLine(x1, y1, x2, y2);
+                gr.setStroke(normalStroke); // Stroke'u resetle
+
+                // --- UÇ NOKTALAR (DAİRE - İSTEK 1: DAHA BÜYÜK) ---
+                // Daireler solid (tam renk) kalsın ki tutması kolay olsun ve net görünsün
+                gr.setColor(baseCol);
+                int rCircle = 12; // Daire çapı (Eskiden 8 idi)
+                gr.fillOval(x1 - rCircle / 2, y1 - rCircle / 2, rCircle, rCircle);
+                gr.fillOval(x2 - rCircle / 2, y2 - rCircle / 2, rCircle, rCircle);
+
+                // Dairelerin etrafına ince siyah kontür (daha şık durması için)
+                gr.setColor(new Color(0, 0, 0, 100));
+                gr.drawOval(x1 - rCircle / 2, y1 - rCircle / 2, rCircle, rCircle);
+                gr.drawOval(x2 - rCircle / 2, y2 - rCircle / 2, rCircle, rCircle);
+
+                // --- ETİKET VE UZUNLUK ---
+                if (activateLabelVisibility) {
+                    double realLength = line.startPoint.distance(line.endPoint);
+                    String lengthText = String.format("%.0f px", realLength);
+                    String labelText = obj.name + " : " + lengthText;
+
+                    int midX = (x1 + x2) / 2;
+                    int midY = (y1 + y2) / 2;
+
+                    gr.setFont(new Font("SansSerif", Font.BOLD, 12));
+                    int textW = gr.getFontMetrics().stringWidth(labelText) + 8;
+                    int textH = 18;
+
+                    // Etiket arka planı
+                    gr.setColor(new Color(0, 0, 0, 160));
+                    gr.fillRoundRect(midX - textW / 2, midY - textH / 2 - 14, textW, textH, 6, 6);
+
+                    // Etiket yazısı
+                    gr.setColor(Color.WHITE);
+                    gr.drawString(labelText, midX - textW / 2 + 4, midY - 14 + 5);
+                }
+
+                // --- SEÇİM TUTAMAÇLARI ---
+                if (line.equals(selectedLine)) {
+                    int rHandle = 16; // Seçim karesi biraz daha büyük olsun
+                    gr.setColor(Color.WHITE);
+                    gr.setStroke(new BasicStroke(1));
+                    gr.drawRect(x1 - rHandle / 2, y1 - rHandle / 2, rHandle, rHandle);
+                    gr.drawRect(x2 - rHandle / 2, y2 - rHandle / 2, rHandle, rHandle);
+                }
+            }
+        }
+
+        // 2. Hayalet Çizgi (Çizim Esnası)
+        if (activateLine && isLinePressed && mousePosTopLeft != null && mousePos != null) {
+            gr.setColor(new Color(0, 255, 255, 180)); // Cyan, hafif şeffaf
+            gr.setStroke(dashedStroke);
+            gr.drawLine(mousePosTopLeft.x, mousePosTopLeft.y, mousePos.x, mousePos.y);
+            gr.setStroke(normalStroke);
+        }
+    }
+
+    /**
+     * Mouse ile bir çizgiye veya uçlarına tıklanıp tıklanmadığını kontrol eder.
+     */
+    private PascalVocLine getSelectedLine(Point mouseP) {
+        // Tolerans (piksel)
+        double tolerance = 5.0;
+
+        for (PascalVocObject obj : listPascalVocObject) {
+            if (obj.lineContainer != null) {
+                PascalVocLine line = obj.lineContainer;
+
+                // Zoomlu koordinatları al
+                int x1 = scaleWithZoomFactorX(line.startPoint.x + fromLeft);
+                int y1 = scaleWithZoomFactorY(line.startPoint.y + fromTop);
+                int x2 = scaleWithZoomFactorX(line.endPoint.x + fromLeft);
+                int y2 = scaleWithZoomFactorY(line.endPoint.y + fromTop);
+
+                // 1. Uç Nokta Kontrolü (Start)
+                if (mouseP.distance(x1, y1) <= tolerance * 2) {
+                    isLineStartDragged = true;
+                    return line;
+                }
+                // 2. Uç Nokta Kontrolü (End)
+                if (mouseP.distance(x2, y2) <= tolerance * 2) {
+                    isLineEndDragged = true;
+                    return line;
+                }
+
+                // 3. Çizgi Gövdesi Kontrolü (Line2D kütüphanesi ile uzaklık)
+                double dist = Line2D.ptSegDist(x1, y1, x2, y2, mouseP.x, mouseP.y);
+                if (dist <= tolerance) {
+                    isLineDragged = true; // Gövdeden tutuldu
+                    return line;
+                }
+            }
+        }
+        return null;
     }
 
     private void setDefaultValues() {
@@ -2614,6 +3009,26 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 rawImage = ImageProcess.clone(bf);
                 adjustImageToPanel(bf, true);
                 selectedLane = null;
+            } else if (activateLine) {
+                savePascalVocXML(); // XML olarak kaydet
+
+                if (imageIndex + 1 >= imageFiles.length) {
+                    return; // Klasör bittiyse dur
+                }
+
+                // Eğer video sequence modu kapalıysa, bir sonraki resme geçerken çizgileri temizle
+                if (!isSeqenceVideoFrame) {
+                    listPascalVocObject.clear();
+                    selectedLine = null;
+                }
+
+                // Sonraki resmi yükle
+                imageIndex++;
+                BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
+                if (bf != null) {
+                    rawImage = ImageProcess.clone(bf);
+                    adjustImageToPanel(bf, true);
+                }
             }
             frame.slider.setValue(imageIndex);
             return;
@@ -2672,6 +3087,30 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
                     rawImage = ImageProcess.clone(bf);
                     adjustImageToPanel(bf, true);
+                    e.consume();
+                }
+            } else if (activateLine) {
+                if (selectedLine != null) {
+                    // Seçili bir çizgi varsa sadece onu sil
+                    PascalVocObject temp_obj = null;
+                    for (PascalVocObject obj : listPascalVocObject) {
+                        if (obj.lineContainer != null && obj.lineContainer.equals(selectedLine)) {
+                            temp_obj = obj;
+                            break;
+                        }
+                    }
+                    if (temp_obj != null) {
+                        listPascalVocObject.remove(temp_obj);
+                    }
+                    selectedLine = null;
+                } else {
+                    // Hiçbir çizgi seçili değilse resmi diskten sil (Mevcut mantık bu şekilde)
+                    deleteCurrentImage();
+                    if (imageFiles.length > 0) {
+                        BufferedImage bf = ImageProcess.readImage(imageFiles[imageIndex]);
+                        rawImage = ImageProcess.clone(bf);
+                        adjustImageToPanel(bf, true);
+                    }
                     e.consume();
                 }
             } else {

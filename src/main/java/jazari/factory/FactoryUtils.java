@@ -183,6 +183,7 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
+import jazari.utils.pascalvoc.PascalVocLine;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -1297,7 +1298,7 @@ public final class FactoryUtils {
     public static void showMessage(String str) {
         JOptionPane.showMessageDialog(null, str);
     }
-    
+
     public static void showMessage(Component component, String str) {
         JOptionPane.showMessageDialog(component, str);
     }
@@ -6318,7 +6319,7 @@ public final class FactoryUtils {
 
         //removeDirectoryRecursively(pathTarget);
         if (FactoryUtils.isFolderExist(pathTarget)) {
-            FactoryUtils.showMessage(pathTarget+" is already exist please delete it beforehand and retry again...");
+            FactoryUtils.showMessage(pathTarget + " is already exist please delete it beforehand and retry again...");
             return;
         }
         makeDirectory(pathTarget);
@@ -7949,7 +7950,7 @@ public final class FactoryUtils {
 //                } else if (ss[1].indexOf("end") != -1) {
 //                    ss[1] = ss[1].replace("end", (max - 1) + "");
 //                }
-////                else {
+    ////                else {
 //                try {
 //                    if (ss[0].isEmpty() && ss[1].isEmpty()) {
 //                        ss[0] = "0";
@@ -8516,7 +8517,7 @@ public final class FactoryUtils {
             PascalVocBoundingBox bbox = new PascalVocBoundingBox(shp.label, poly.getBounds(), poly.getBounds().x, poly.getBounds().y, Color.yellow);
             PascalVocPolygon pvp = new PascalVocPolygon(shp.label, poly, poly.getBounds().x, poly.getBounds().y, Color.yellow);
             List<PascalVocAttribute> attributeList = null;
-            PascalVocObject pvo = new PascalVocObject(shp.label, "Unspecified", 0, 0, 0, bbox, pvp, attributeList);
+            PascalVocObject pvo = new PascalVocObject(shp.label, "Unspecified", 0, 0, 0, bbox, pvp, null, attributeList);
             lstObjects.add(pvo);
         }
         ret.lstObjects = lstObjects;
@@ -8525,164 +8526,287 @@ public final class FactoryUtils {
 
     public static AnnotationPascalVOCFormat deserializePascalVocXML(String filepath) {
         String s = FactoryUtils.readFile(filepath);
-        String folder = s.substring(s.indexOf("<folder>") + 8, s.indexOf("</folder>"));
+        if (s == null || s.isEmpty()) {
+            return new AnnotationPascalVOCFormat();
+        }
+
         AnnotationPascalVOCFormat ret = new AnnotationPascalVOCFormat();
-        ret.folder = folder;
-        String fileName = s.substring(s.indexOf("<filename>") + 10, s.indexOf("</filename>"));
-        ret.fileName = fileName;
-        if (s.indexOf("<path>") != -1) {
-            String path = s.substring(s.indexOf("<path>") + 6, s.indexOf("</path>"));
-            ret.imagePath = path;
+
+        // --- HEADER PARSING ---
+        try {
+            if (s.contains("<folder>")) {
+                ret.folder = s.substring(s.indexOf("<folder>") + 8, s.indexOf("</folder>"));
+            }
+            if (s.contains("<filename>")) {
+                ret.fileName = s.substring(s.indexOf("<filename>") + 10, s.indexOf("</filename>"));
+            }
+            if (s.contains("<path>")) {
+                ret.imagePath = s.substring(s.indexOf("<path>") + 6, s.indexOf("</path>"));
+            }
+
+            PascalVocSource source = new PascalVocSource();
+            if (s.contains("<source>")) {
+                String database = s.contains("<database>") ? s.substring(s.indexOf("<database>") + 10, s.indexOf("</database>")) : "Unknown";
+                source = new PascalVocSource(database, "Unknown", "Unknown");
+            }
+            ret.source = source;
+
+            if (s.contains("<width>") && s.contains("<height>")) {
+                int width = Integer.parseInt(s.substring(s.indexOf("<width>") + 7, s.indexOf("</width>")));
+                int height = Integer.parseInt(s.substring(s.indexOf("<height>") + 8, s.indexOf("</height>")));
+                int depth = s.contains("<depth>") ? Integer.parseInt(s.substring(s.indexOf("<depth>") + 7, s.indexOf("</depth>"))) : 3;
+                ret.size = new PascalVocSize(width, height, depth);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        PascalVocSource source = new PascalVocSource();
-        if (s.indexOf("<source>") != -1) {
-            String database = "Unknown";
-            if (s.indexOf("<database>") != -1) {
-                database = s.substring(s.indexOf("<database>") + 10, s.indexOf("</database>"));
+        List<PascalVocObject> lstObjects = new ArrayList<>();
+
+        // --- OBJECT PARSING (SPLIT YÖNTEMİ) ---
+        // XML'i nesnelere bölüyoruz. Bu yöntem senin index yönteminden çok daha güvenlidir.
+        String[] objects = s.split("<object>");
+
+        // i=1'den başlıyoruz çünkü split'in ilk parçası header bilgisidir (<annotation>...</object> öncesi)
+        for (int i = 1; i < objects.length; i++) {
+            String objStr = objects[i];
+
+            // Eğer blok kapanış tagi içermiyorsa atla (Dosya sonu vs.)
+            if (!objStr.contains("</object>")) {
+                continue;
             }
-            String annotation = "Unknown";
-            if (s.indexOf("<annotation>", s.indexOf("<source>")) != -1) {
-                annotation = s.substring(s.indexOf("<annotation>", s.indexOf("<source>")) + 12, s.indexOf("</annotation>", s.indexOf("<source>")));
-            }
-            String image = "Unknown";
-            if (s.indexOf("<image>") != -1) {
-                image = s.substring(s.indexOf("<image>") + 7, s.indexOf("</image>"));
-            }
-            source = new PascalVocSource(database, annotation, image);
-        }
-        ret.source = source;
 
-        int width = Integer.parseInt(s.substring(s.indexOf("<width>") + 7, s.indexOf("</width>")));
-        int height = Integer.parseInt(s.substring(s.indexOf("<height>") + 8, s.indexOf("</height>")));
-        int depth = 0;
-        if (s.indexOf("<depth>") != -1 && s.substring(s.indexOf("<depth>") + 7, s.indexOf("</depth>")).length() > 0) {
-            depth = Integer.parseInt(s.substring(s.indexOf("<depth>") + 7, s.indexOf("</depth>")));
-        }
-        PascalVocSize size = new PascalVocSize(width, height, depth);
-        ret.size = size;
-        List<PascalVocObject> lstObjects = new ArrayList();
-        long count = s.split("</object>").length - 1;
-        int nameIndex1 = 0;
-        int xminIndex1 = 0;
-        int yminIndex1 = 0;
-        int xmaxIndex1 = 0;
-        int ymaxIndex1 = 0;
+            // Bloğu temizle
+            objStr = objStr.substring(0, objStr.indexOf("</object>"));
 
-        int nameIndex2 = 0;
-        int xminIndex2 = 0;
-        int yminIndex2 = 0;
-        int xmaxIndex2 = 0;
-        int ymaxIndex2 = 0;
-        char[] ch = s.toCharArray();
-        int indexAttributes = 0;
-        int indexAttributesEnd = 0;
-        int indexObjectEnd = 0;
-
-        int x_temp_index1 = 0;
-        int x_index1 = 0; //for parsing polygon
-        int x_index2 = 0; //for parsing polygon
-        int y_index1 = 0; //for parsing polygon
-        int y_index2 = 0; //for parsing polygon
-
-        for (int i = 0; i < count; i++) {
-            indexAttributes = s.indexOf("<attributes>", indexAttributes + 1);
-            indexObjectEnd = s.indexOf("</object>", indexObjectEnd + 1);
-            String name = s.substring(s.indexOf("<name>", nameIndex1 + 1) + 6, s.indexOf("</name>", nameIndex2 + 1));
-            nameIndex1 = s.indexOf("<name>", indexObjectEnd) - 25;
-            nameIndex2 = s.indexOf("</name>", indexObjectEnd) - 25;
-
-            boolean isPolygonExist = (s.indexOf("<polygon>", xminIndex1 + 1) != -1) ? true : false;
-            PascalVocPolygon polygon = null;
-            if (isPolygonExist) {
-                int k = 0;
-                Polygon poly = new Polygon();
-                int temp = x_temp_index1;
-                int exit_polygon_index = s.indexOf("</polygon>", xminIndex1 + 1);
-                while (true) {
-                    if (i == 5) {
-                        int dur = 0;
-                    }
-                    k++;
-                    x_temp_index1 = s.indexOf("<x" + k + ">", x_temp_index1 + 1);
-                    if (x_temp_index1 > exit_polygon_index) {
-                        x_temp_index1 = x_index1;
-                        break;
-                    }
-
-                    if (x_temp_index1 == -1) {
-                        x_temp_index1 = x_index1;
-                        break;
-                    } else {
-                        x_index1 = x_temp_index1;
-                    }
-
-                    x_index2 = s.indexOf("</x" + k + ">", x_index2 + 1);
-
-                    int x = Math.round(Float.parseFloat(s.substring(x_index1 + ("<x" + k + ">").length(), x_index2)));
-
-                    y_index1 = s.indexOf("<y" + k + ">", y_index1 + 1);
-                    y_index2 = s.indexOf("</y" + k + ">", y_index2 + 1);
-                    int y = Math.round(Float.parseFloat(s.substring(y_index1 + ("<y" + k + ">").length(), y_index2)));
-
-                    poly.addPoint(x, y);
-                    //System.out.println(p);
+            try {
+                // Name
+                String name = "";
+                if (objStr.contains("<name>")) {
+                    name = objStr.substring(objStr.indexOf("<name>") + 6, objStr.indexOf("</name>"));
                 }
-                polygon = new PascalVocPolygon(name, poly, 0, 0, Color.yellow);
-            }
 
-            int xmin = (int) Math.round(Double.parseDouble(s.substring(s.indexOf("<xmin>", xminIndex1 + 1) + 6, s.indexOf("</xmin>", xminIndex2 + 1))));
-            xminIndex1 = s.indexOf("<xmin>", xminIndex1 + 1);
-            xminIndex2 = s.indexOf("</xmin>", xminIndex2 + 1);
+                PascalVocBoundingBox bbox = null;
+                PascalVocPolygon polygon = null;
+                PascalVocLine line = null;
 
-            int ymin = (int) Math.round(Double.parseDouble(s.substring(s.indexOf("<ymin>", yminIndex1 + 1) + 6, s.indexOf("</ymin>", yminIndex2 + 1))));
-            yminIndex1 = s.indexOf("<ymin>", yminIndex1 + 1);
-            yminIndex2 = s.indexOf("</ymin>", yminIndex2 + 1);
+                // 1. DURUM: LINE VAR MI?
+                if (objStr.contains("<line>")) {
+                    // Line bloğunu izole et
+                    String lineBlock = objStr.substring(objStr.indexOf("<line>"), objStr.indexOf("</line>"));
 
-            int xmax = (int) Math.round(Double.parseDouble(s.substring(s.indexOf("<xmax>", xmaxIndex1 + 1) + 6, s.indexOf("</xmax>", xmaxIndex2 + 1))));
-            xmaxIndex1 = s.indexOf("<xmax>", xmaxIndex1 + 1);
-            xmaxIndex2 = s.indexOf("</xmax>", xmaxIndex2 + 1);
+                    int x1 = Math.round(Float.parseFloat(lineBlock.substring(lineBlock.indexOf("<x1>") + 4, lineBlock.indexOf("</x1>"))));
+                    int y1 = Math.round(Float.parseFloat(lineBlock.substring(lineBlock.indexOf("<y1>") + 4, lineBlock.indexOf("</y1>"))));
+                    int x2 = Math.round(Float.parseFloat(lineBlock.substring(lineBlock.indexOf("<x2>") + 4, lineBlock.indexOf("</x2>"))));
+                    int y2 = Math.round(Float.parseFloat(lineBlock.substring(lineBlock.indexOf("<y2>") + 4, lineBlock.indexOf("</y2>"))));
 
-            int ymax = (int) Math.round(Double.parseDouble(s.substring(s.indexOf("<ymax>", ymaxIndex1 + 1) + 6, s.indexOf("</ymax>", ymaxIndex2 + 1))));
-            ymaxIndex1 = s.indexOf("<ymax>", ymaxIndex1 + 1);
-            ymaxIndex2 = s.indexOf("</ymax>", ymaxIndex2 + 1);
+                    // Renk bilgisi XML'de olmadığı için varsayılan atıyoruz, 
+                    // PanelPicture zaten class adına göre renk haritasından boyuyor.
+                    line = new PascalVocLine(name, new Point(x1, y1), new Point(x2, y2), Color.YELLOW);
+                } // 2. DURUM: POLYGON VAR MI?
+                else if (objStr.contains("<polygon>")) {
+                    Polygon poly = new Polygon();
+                    int k = 1;
+                    while (objStr.contains("<x" + k + ">")) {
+                        int x = Math.round(Float.parseFloat(objStr.substring(objStr.indexOf("<x" + k + ">") + ("<x" + k + ">").length(), objStr.indexOf("</x" + k + ">"))));
+                        int y = Math.round(Float.parseFloat(objStr.substring(objStr.indexOf("<y" + k + ">") + ("<y" + k + ">").length(), objStr.indexOf("</y" + k + ">"))));
+                        poly.addPoint(x, y);
+                        k++;
+                    }
+                    polygon = new PascalVocPolygon(name, poly, 0, 0, Color.YELLOW);
+                } // 3. DURUM: BNDBOX VAR MI? (Varsayılan)
+                else if (objStr.contains("<bndbox>") || objStr.contains("<xmin>")) {
+                    int xmin = (int) Math.round(Double.parseDouble(objStr.substring(objStr.indexOf("<xmin>") + 6, objStr.indexOf("</xmin>"))));
+                    int ymin = (int) Math.round(Double.parseDouble(objStr.substring(objStr.indexOf("<ymin>") + 6, objStr.indexOf("</ymin>"))));
+                    int xmax = (int) Math.round(Double.parseDouble(objStr.substring(objStr.indexOf("<xmax>") + 6, objStr.indexOf("</xmax>"))));
+                    int ymax = (int) Math.round(Double.parseDouble(objStr.substring(objStr.indexOf("<ymax>") + 6, objStr.indexOf("</ymax>"))));
 
-            PascalVocBoundingBox bbox = new PascalVocBoundingBox(name, new Rectangle(xmin, ymin, xmax - xmin, ymax - ymin), 0, 0, null);
-            List<PascalVocAttribute> attributeList = null;
-            String strAttributes = "";
-            if (indexAttributes != -1) {
-                attributeList = new ArrayList();
-                strAttributes = s.substring(indexAttributes, s.indexOf("</attributes>", indexAttributes));
-                int cntAttribute = strAttributes.split("</attribute>").length - 1;
-                int indexAttrBegin = 0;
-                int indexAttrEnd = 0;
-                for (int j = 0; j < cntAttribute; j++) {
-                    indexAttrBegin = strAttributes.indexOf("<attribute>", indexAttrBegin + 1);
-                    indexAttrEnd = strAttributes.indexOf("</attribute>", indexAttrEnd + 1);
-                    String sMid = strAttributes.substring(indexAttrBegin, indexAttrEnd);
-                    int indexNameBegin = sMid.indexOf("<name>") + 6;
-                    int indexNameEnd = sMid.indexOf("</name>");
-                    String attrName = sMid.substring(indexNameBegin, indexNameEnd);
-                    int indexValueBegin = sMid.indexOf("<value>") + 7;
-                    int indexValueEnd = sMid.indexOf("</value>");
-                    String attrValue = sMid.substring(indexValueBegin, indexValueEnd);
-                    PascalVocAttribute bbA = new PascalVocAttribute(attrName, attrValue);
-                    attributeList.add(bbA);
+                    bbox = new PascalVocBoundingBox(name, new Rectangle(xmin, ymin, xmax - xmin, ymax - ymin), 0, 0, null);
                 }
-            }
-            PascalVocObject obj = null;
-            if (isPolygonExist) {
-                obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, polygon, attributeList);
-            } else {
-                obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, attributeList);
-            }
 
-            lstObjects.add(obj);
+                // Attributes (Varsa)
+                List<PascalVocAttribute> attributeList = null;
+                if (objStr.contains("<attributes>")) {
+                    attributeList = new ArrayList<>();
+                    String attrSection = objStr.substring(objStr.indexOf("<attributes>") + 12, objStr.indexOf("</attributes>"));
+                    String[] attrs = attrSection.split("</attribute>");
+                    for (String a : attrs) {
+                        if (a.contains("<name>") && a.contains("<value>")) {
+                            String aName = a.substring(a.indexOf("<name>") + 6, a.indexOf("</name>"));
+                            String aVal = a.substring(a.indexOf("<value>") + 7, a.indexOf("</value>"));
+                            attributeList.add(new PascalVocAttribute(aName, aVal));
+                        }
+                    }
+                }
+
+                // Nesne oluşturulabildiyse listeye ekle
+                if (bbox != null || polygon != null || line != null) {
+                    lstObjects.add(new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, polygon, line, attributeList));
+                }
+
+            } catch (Exception ex) {
+                System.err.println("Error parsing object in XML: " + ex.getMessage());
+                // Hatalı objeyi atla, diğerlerini okumaya devam et
+            }
         }
+
         ret.lstObjects = lstObjects;
         return ret;
     }
 
+//    public static AnnotationPascalVOCFormat deserializePascalVocXML(String filepath) {
+//        String s = FactoryUtils.readFile(filepath);
+//        if (s == null || s.isEmpty()) {
+//            return new AnnotationPascalVOCFormat(); // Güvenlik kontrolü
+//        }
+//        AnnotationPascalVOCFormat ret = new AnnotationPascalVOCFormat();
+//
+//        // --- HEADER BİLGİLERİ ---
+//        if (s.contains("<folder>")) {
+//            ret.folder = s.substring(s.indexOf("<folder>") + 8, s.indexOf("</folder>"));
+//        }
+//        if (s.contains("<filename>")) {
+//            ret.fileName = s.substring(s.indexOf("<filename>") + 10, s.indexOf("</filename>"));
+//        }
+//        if (s.contains("<path>")) {
+//            ret.imagePath = s.substring(s.indexOf("<path>") + 6, s.indexOf("</path>"));
+//        }
+//
+//        // Source
+//        PascalVocSource source = new PascalVocSource();
+//        if (s.indexOf("<source>") != -1) {
+//            String database = "Unknown";
+//            if (s.indexOf("<database>") != -1) {
+//                database = s.substring(s.indexOf("<database>") + 10, s.indexOf("</database>"));
+//            }
+//            String annotation = "Unknown";
+//            if (s.indexOf("<annotation>", s.indexOf("<source>")) != -1) {
+//                annotation = s.substring(s.indexOf("<annotation>", s.indexOf("<source>")) + 12, s.indexOf("</annotation>", s.indexOf("<source>")));
+//            }
+//            String image = "Unknown";
+//            if (s.indexOf("<image>") != -1) {
+//                image = s.substring(s.indexOf("<image>") + 7, s.indexOf("</image>"));
+//            }
+//            source = new PascalVocSource(database, annotation, image);
+//        }
+//        ret.source = source;
+//
+//        // Size
+//        if (s.contains("<width>") && s.contains("<height>")) {
+//            int width = Integer.parseInt(s.substring(s.indexOf("<width>") + 7, s.indexOf("</width>")));
+//            int height = Integer.parseInt(s.substring(s.indexOf("<height>") + 8, s.indexOf("</height>")));
+//            int depth = 0;
+//            if (s.indexOf("<depth>") != -1 && s.substring(s.indexOf("<depth>") + 7, s.indexOf("</depth>")).length() > 0) {
+//                depth = Integer.parseInt(s.substring(s.indexOf("<depth>") + 7, s.indexOf("</depth>")));
+//            }
+//            ret.size = new PascalVocSize(width, height, depth);
+//        }
+//
+//        // --- OBJECT PARSING ---
+//        List<PascalVocObject> lstObjects = new ArrayList();
+//
+//        // XML içindeki tüm <object> bloklarını bulalım
+//        // String split yöntemiyle objeleri ayıralım, daha güvenli olur
+//        String[] objectBlocks = s.split("<object>");
+//
+//        // İlk eleman header olduğu için 1'den başlıyoruz
+//        for (int i = 1; i < objectBlocks.length; i++) {
+//            String objStr = objectBlocks[i];
+//            if (!objStr.contains("</object>")) {
+//                continue; // Hatalı blok kontrolü
+//            }
+//            // Object bloğunu temizle
+//            objStr = objStr.substring(0, objStr.indexOf("</object>"));
+//
+//            // Name
+//            String name = "";
+//            if (objStr.contains("<name>")) {
+//                name = objStr.substring(objStr.indexOf("<name>") + 6, objStr.indexOf("</name>"));
+//            }
+//
+//            // --- TİP KONTROLÜ VE PARSING ---
+//            PascalVocBoundingBox bbox = null;
+//            PascalVocPolygon polygon = null;
+//            PascalVocLine line = null;
+//
+//            // 1. POLYGON KONTROLÜ
+//            if (objStr.contains("<polygon>")) {
+//                // ... (Mevcut Polygon Parsing Kodun) ...
+//                // Senin kodundaki mantığı buraya adapte ediyorum:
+//                Polygon poly = new Polygon();
+//                int k = 0;
+//                while (true) {
+//                    k++;
+//                    String xTag = "<x" + k + ">";
+//                    String xEndTag = "</x" + k + ">";
+//                    if (!objStr.contains(xTag)) {
+//                        break;
+//                    }
+//
+//                    int x = Math.round(Float.parseFloat(objStr.substring(objStr.indexOf(xTag) + xTag.length(), objStr.indexOf(xEndTag))));
+//
+//                    String yTag = "<y" + k + ">";
+//                    String yEndTag = "</y" + k + ">";
+//                    int y = Math.round(Float.parseFloat(objStr.substring(objStr.indexOf(yTag) + yTag.length(), objStr.indexOf(yEndTag))));
+//
+//                    poly.addPoint(x, y);
+//                }
+//                polygon = new PascalVocPolygon(name, poly, 0, 0, Color.YELLOW);
+//            } // 2. LINE KONTROLÜ [YENİ]
+//            else if (objStr.contains("<line>")) {
+//                // Line bloğunu al
+//                String lineBlock = objStr.substring(objStr.indexOf("<line>") + 6, objStr.indexOf("</line>"));
+//
+//                int x1 = Math.round(Float.parseFloat(lineBlock.substring(lineBlock.indexOf("<x1>") + 4, lineBlock.indexOf("</x1>"))));
+//                int y1 = Math.round(Float.parseFloat(lineBlock.substring(lineBlock.indexOf("<y1>") + 4, lineBlock.indexOf("</y1>"))));
+//                int x2 = Math.round(Float.parseFloat(lineBlock.substring(lineBlock.indexOf("<x2>") + 4, lineBlock.indexOf("</x2>"))));
+//                int y2 = Math.round(Float.parseFloat(lineBlock.substring(lineBlock.indexOf("<y2>") + 4, lineBlock.indexOf("</y2>"))));
+//
+//                line = new PascalVocLine(name, new Point(x1, y1), new Point(x2, y2), Color.YELLOW);
+//            } // 3. BOUNDING BOX KONTROLÜ (Varsayılan)
+//            // Eğer line veya polygon değilse ve bndbox etiketleri varsa
+//            else if (objStr.contains("<bndbox>") || objStr.contains("<xmin>")) {
+//                int xmin = (int) Math.round(Double.parseDouble(objStr.substring(objStr.indexOf("<xmin>") + 6, objStr.indexOf("</xmin>"))));
+//                int ymin = (int) Math.round(Double.parseDouble(objStr.substring(objStr.indexOf("<ymin>") + 6, objStr.indexOf("</ymin>"))));
+//                int xmax = (int) Math.round(Double.parseDouble(objStr.substring(objStr.indexOf("<xmax>") + 6, objStr.indexOf("</xmax>"))));
+//                int ymax = (int) Math.round(Double.parseDouble(objStr.substring(objStr.indexOf("<ymax>") + 6, objStr.indexOf("</ymax>"))));
+//
+//                bbox = new PascalVocBoundingBox(name, new Rectangle(xmin, ymin, xmax - xmin, ymax - ymin), 0, 0, null);
+//            }
+//
+//            // Attributes Parsing (Senin kodundan)
+//            List<PascalVocAttribute> attributeList = null;
+//            if (objStr.contains("<attributes>")) {
+//                attributeList = new ArrayList();
+//                String strAttributes = objStr.substring(objStr.indexOf("<attributes>") + 12, objStr.indexOf("</attributes>"));
+//                String[] attrBlocks = strAttributes.split("</attribute>");
+//
+//                for (String attrBlock : attrBlocks) {
+//                    if (!attrBlock.contains("<attribute>")) {
+//                        continue;
+//                    }
+//                    String sMid = attrBlock.substring(attrBlock.indexOf("<attribute>") + 11);
+//
+//                    if (sMid.contains("<name>") && sMid.contains("<value>")) {
+//                        String attrName = sMid.substring(sMid.indexOf("<name>") + 6, sMid.indexOf("</name>"));
+//                        String attrValue = sMid.substring(sMid.indexOf("<value>") + 7, sMid.indexOf("</value>"));
+//                        attributeList.add(new PascalVocAttribute(attrName, attrValue));
+//                    }
+//                }
+//            }
+//
+//            // Objeyi Oluştur ve Ekle
+//            // Eğer hiçbir şey parse edilemediyse null olabilir, kontrol ekleyelim
+//            if (bbox != null || polygon != null || line != null) {
+//                // Constructor: name, pose, truncated, difficult, occluded, bndbox, polygon, line, attributes
+//                PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, polygon, line, attributeList);
+//                lstObjects.add(obj);
+//            }
+//        }
+//
+//        ret.lstObjects = lstObjects;
+//        return ret;
+//    }
     public static AnnotationPascalVOCFormat deserializeYoloTxt(
             int fromLeft,
             int fromTop,
@@ -8744,7 +8868,7 @@ public final class FactoryUtils {
 
                 PascalVocBoundingBox bbox = new PascalVocBoundingBox(name, new Rectangle(x1, y1, x2 - x1, y2 - y1), fromLeft, fromTop, null);
                 List<PascalVocAttribute> attributeList = null;
-                PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, attributeList);
+                PascalVocObject obj = new PascalVocObject(name, "Unspecified", 0, 0, 0, bbox, null, null, attributeList);
                 lstObjects.add(obj);
             } catch (Exception e) {
                 System.out.println(e.toString());
@@ -9043,7 +9167,9 @@ public final class FactoryUtils {
             int r_test
     ) {
         String[] classIndex = getClassIndexArray(mainFolderPath + "/class_labels.txt");
-        if (!prepareYoloDataSet(classIndex, targetFolderName, r_train, r_val, r_test)) return null;
+        if (!prepareYoloDataSet(classIndex, targetFolderName, r_train, r_val, r_test)) {
+            return null;
+        }
         int k = 0;
         File[] files = FactoryUtils.getFileArrayInFolderByExtension(mainFolderPath, "xml");
         files = FactoryUtils.shuffle(files, 121);
@@ -10090,6 +10216,127 @@ public final class FactoryUtils {
         public int compareTo(ProbabilityLabel other) {
             return Double.compare(this.probability, other.probability);
         }
+    }
+
+    /**
+     * Klasördeki PascalVOC XML dosyalarını okuyup, Label Studio uyumlu CSV
+     * formatına dönüştürür.
+     *
+     * @param xmlFolder XML dosyalarının olduğu klasör yolu
+     * @param outputCsvPath Oluşturulacak CSV dosyasının tam yolu (örn:
+     * C:/Data/output.csv)
+     */
+    public static void exportToLabelStudioCSV(String xmlFolder, String outputCsvPath) {
+        File folder = new File(xmlFolder);
+        // Sadece .xml dosyalarını filtrele
+        File[] xmlFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".xml"));
+
+        if (xmlFiles == null || xmlFiles.length == 0) {
+            System.out.println("Klasörde XML dosyası bulunamadı: " + xmlFolder);
+            return;
+        }
+
+        StringBuilder csvContent = new StringBuilder();
+        // CSV Başlık Satırı (Python scriptinin beklediği format)
+        csvContent.append("annotation_id,annotator,created_at,ctr_lines,id,image,lead_time,updated_at\n");
+
+        // Simülasyon için sayaçlar ve tarih
+        int globalIdCounter = 400; // Rastgele başlangıç ID'si
+        int annotIdCounter = 1;
+        String currentDate = java.time.Instant.now().toString(); // Örn: 2025-12-01T11:36:50.750752Z
+
+        for (File xmlFile : xmlFiles) {
+            try {
+                // 1. Senin XML okuma metodunu kullanarak veriyi al
+                AnnotationPascalVOCFormat ann = deserializePascalVocXML(xmlFile.getAbsolutePath());
+
+                // Resim boyutları yüzde hesabı için şart
+                // XML'de boyut yoksa varsayılan 1024 kabul edelim
+                double imgW = (ann.size != null && ann.size.width > 0) ? ann.size.width : 1024.0;
+                double imgH = (ann.size != null && ann.size.height > 0) ? ann.size.height : 1024.0;
+
+                // 2. 'ctr_lines' sütunu için JSON String'ini hazırla
+                StringBuilder jsonBuilder = new StringBuilder();
+                jsonBuilder.append("[");
+
+                List<String> jsonObjects = new ArrayList<>();
+
+                // Her bir çizgi (Line) için 2 nokta (Start ve End) oluşturacağız
+                for (PascalVocObject obj : ann.lstObjects) {
+                    if (obj.lineContainer != null) {
+                        PascalVocLine line = obj.lineContainer;
+
+                        // --- NOKTA 1 (Başlangıç) ---
+                        // Koordinatları pikselden yüzdeye (%) çeviriyoruz
+                        double x1_pct = (line.startPoint.x / imgW) * 100.0;
+                        double y1_pct = (line.startPoint.y / imgH) * 100.0;
+                        String id1 = generateRandomString(10);
+
+                        String json1 = String.format(java.util.Locale.US,
+                                "{\"original_width\":%d,\"original_height\":%d,\"image_rotation\":0,"
+                                + "\"value\":{\"x\":%.14f,\"y\":%.14f,\"width\":0.3731343283582089,\"keypointlabels\":[\"%s\"]},"
+                                + "\"id\":\"%s\",\"from_name\":\"ctr_lines\",\"to_name\":\"image\",\"type\":\"keypointlabels\",\"origin\":\"manual\"}",
+                                (int) imgW, (int) imgH, x1_pct, y1_pct, obj.name, id1);
+                        jsonObjects.add(json1);
+
+                        // --- NOKTA 2 (Bitiş) ---
+                        double x2_pct = (line.endPoint.x / imgW) * 100.0;
+                        double y2_pct = (line.endPoint.y / imgH) * 100.0;
+                        String id2 = generateRandomString(10);
+
+                        String json2 = String.format(java.util.Locale.US,
+                                "{\"original_width\":%d,\"original_height\":%d,\"image_rotation\":0,"
+                                + "\"value\":{\"x\":%.14f,\"y\":%.14f,\"width\":0.3731343283582089,\"keypointlabels\":[\"%s\"]},"
+                                + "\"id\":\"%s\",\"from_name\":\"ctr_lines\",\"to_name\":\"image\",\"type\":\"keypointlabels\",\"origin\":\"manual\"}",
+                                (int) imgW, (int) imgH, x2_pct, y2_pct, obj.name, id2);
+                        jsonObjects.add(json2);
+                    }
+                }
+
+                // JSON objelerini virgülle birleştir
+                for (int i = 0; i < jsonObjects.size(); i++) {
+                    jsonBuilder.append(jsonObjects.get(i));
+                    if (i < jsonObjects.size() - 1) {
+                        jsonBuilder.append(",");
+                    }
+                }
+                jsonBuilder.append("]");
+
+                // CSV içinde JSON kullanırken çift tırnakları (" -> "") kaçış karakteriyle değiştirmeliyiz
+                String ctrLinesJson = jsonBuilder.toString().replace("\"", "\"\"");
+
+                // 3. CSV Satırını Oluştur ve Ekle
+                // Resim yolu: Örnek CSV'deki gibi sunucu formatında yazıyoruz (/data/upload/2/...)
+                String serverImagePath = "/data/upload/2/" + ann.fileName;
+
+                csvContent.append(annotIdCounter++).append(",") // annotation_id
+                        .append("1").append(",") // annotator (Sabit 1)
+                        .append(currentDate).append(",") // created_at
+                        .append("\"").append(ctrLinesJson).append("\",") // ctr_lines (JSON verisi tırnak içinde!)
+                        .append(globalIdCounter++).append(",") // id
+                        .append(serverImagePath).append(",") // image path
+                        .append("15.5").append(",") // lead_time (Sabit)
+                        .append(currentDate).append("\n");            // updated_at
+
+            } catch (Exception e) {
+                System.err.println("Hata (" + xmlFile.getName() + "): " + e.getMessage());
+            }
+        }
+
+        // Dosyayı diske kaydet
+        writeToFile(outputCsvPath, csvContent.toString());
+        // System.out.println("CSV Export Tamamlandı: " + outputCsvPath); // PanelPicture'da mesaj verirsin
+    }
+
+    // JSON için rastgele ID üreten yardımcı (FactoryUtils içine ekle)
+    private static String generateRandomString(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
 }

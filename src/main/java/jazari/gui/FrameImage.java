@@ -46,7 +46,7 @@ public class FrameImage extends javax.swing.JFrame {
     public CMatrix cm;
     public String caption = "";
     private boolean noPaint = false;
-    public float maxHeight=730;
+    public float maxHeight = 730;
 
     /**
      * Creates new form FrameImage
@@ -128,6 +128,7 @@ public class FrameImage extends javax.swing.JFrame {
         slider = new javax.swing.JSlider();
         lbl_index = new javax.swing.JLabel();
         chk_customZoom = new javax.swing.JCheckBox();
+        chkLine = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -331,6 +332,19 @@ public class FrameImage extends javax.swing.JFrame {
 
         chk_customZoom.setText("custom zoom");
 
+        chkLine.setText("line");
+        chkLine.setToolTipText("Activate Lane Detection based on splines");
+        chkLine.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chkLineİtemStateChanged(evt);
+            }
+        });
+        chkLine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkLineActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -353,8 +367,10 @@ public class FrameImage extends javax.swing.JFrame {
                         .addComponent(lbl_zoom_factor, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chk_auto_resize)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 267, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 219, Short.MAX_VALUE)
                         .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chkLine)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chkLane)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -395,7 +411,8 @@ public class FrameImage extends javax.swing.JFrame {
                     .addComponent(btn_screen_capture)
                     .addComponent(chk_auto_resize)
                     .addComponent(combo_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(chk_customZoom))
+                    .addComponent(chk_customZoom)
+                    .addComponent(chkLine))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(slider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -465,6 +482,7 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().activateBoundingBox = chkBBox.isSelected();
         getPicturePanel().activatePolygon = chkPolygon.isSelected();
         getPicturePanel().activateLaneDetection = chkLane.isSelected();
+        getPicturePanel().activateLine=chkLine.isSelected();
         getPicturePanel().activateCrop = !(chkLane.isSelected() || chkPolygon.isSelected() || chkBBox.isSelected());
         getPicturePanel().setImage(this.img, imagePath, this.getTitle());
         getPicturePanel().requestFocus();
@@ -481,6 +499,7 @@ public class FrameImage extends javax.swing.JFrame {
             });
             chkPolygon.setSelected(false);
             chkLane.setSelected(false);
+            chkLine.setSelected(false);
         }
     }//GEN-LAST:event_chkBBoxActionPerformed
 
@@ -502,6 +521,7 @@ public class FrameImage extends javax.swing.JFrame {
     }//GEN-LAST:event_chkSequenceMouseMoved
 
     private void chkPolygonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkPolygonItemStateChanged
+        getPicturePanel().activateLine = chkLine.isSelected();
         getPicturePanel().activatePolygon = chkPolygon.isSelected();
         getPicturePanel().activateBoundingBox = chkBBox.isSelected();
         getPicturePanel().activateLaneDetection = chkLane.isSelected();
@@ -522,6 +542,7 @@ public class FrameImage extends javax.swing.JFrame {
                     });
             chkBBox.setSelected(false);
             chkLane.setSelected(false);
+            chkLine.setSelected(false);
         }
     }//GEN-LAST:event_chkPolygonActionPerformed
 
@@ -566,6 +587,7 @@ public class FrameImage extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_screen_captureActionPerformed
 
     private void chkLaneİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkLaneİtemStateChanged
+        getPicturePanel().activateLine = chkLine.isSelected();
         getPicturePanel().activateLaneDetection = chkLane.isSelected();
         getPicturePanel().activatePolygon = chkPolygon.isSelected();
         getPicturePanel().activateBoundingBox = chkBBox.isSelected();
@@ -582,6 +604,7 @@ public class FrameImage extends javax.swing.JFrame {
                     });
             chkPolygon.setSelected(false);
             chkBBox.setSelected(false);
+            chkLine.setSelected(false);
         }
     }//GEN-LAST:event_chkLaneActionPerformed
 
@@ -618,6 +641,30 @@ public class FrameImage extends javax.swing.JFrame {
         //System.out.println("caret pos slider index:"+slider.getValue());
     }//GEN-LAST:event_sliderCaretPositionChanged
 
+    private void chkLineİtemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkLineİtemStateChanged
+        getPicturePanel().activateLine = chkLine.isSelected();
+        getPicturePanel().activatePolygon = chkPolygon.isSelected();
+        getPicturePanel().activateBoundingBox = chkBBox.isSelected();
+        getPicturePanel().activateLaneDetection = chkLane.isSelected();
+        getPicturePanel().activateCrop = !(chkLine.isSelected() || chkLane.isSelected() || chkPolygon.isSelected() || chkBBox.isSelected());
+        getPicturePanel().setImage(this.img, imagePath, this.getTitle());
+        getPicturePanel().requestFocus();
+    }//GEN-LAST:event_chkLineİtemStateChanged
+
+    private void chkLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkLineActionPerformed
+        if (chkLine.isSelected()) {
+            FactoryUtils.showMessageTemp("Line Modu Aktif:\n"
+                    + "- Sol tık basılı tutup sürükleyerek çizgi çekin.\n"
+                    + "- Mevcut çizgilerin uçlarından boyutlandırın veya gövdesinden taşıyın.\n"
+                    + "- 'S' tuşu ile kaydedip ilerleyin.", 3000, () -> {
+            });
+            // Diğer checkboxları kapat
+            chkBBox.setSelected(false);
+            chkPolygon.setSelected(false);
+            chkLane.setSelected(false);
+        }
+    }//GEN-LAST:event_chkLineActionPerformed
+
     public PanelPicture getPicturePanel() {
         return ((PanelPicture) panelPicture);
     }
@@ -631,7 +678,7 @@ public class FrameImage extends javax.swing.JFrame {
     }
 
     public void setZoomFactor(double z) {
-        lbl_zoom_factor.setText(""+FactoryUtils.formatFloat((float) z, 4));
+        lbl_zoom_factor.setText("" + FactoryUtils.formatFloat((float) z, 4));
     }
 
 //    /**
@@ -678,6 +725,7 @@ public class FrameImage extends javax.swing.JFrame {
     public javax.swing.JCheckBox chkBBox;
     private javax.swing.JCheckBox chkLabelVisible;
     public javax.swing.JCheckBox chkLane;
+    public javax.swing.JCheckBox chkLine;
     public javax.swing.JCheckBox chkPolygon;
     private javax.swing.JCheckBox chkSequence;
     public javax.swing.JCheckBox chk_auto_resize;
@@ -775,6 +823,7 @@ public class FrameImage extends javax.swing.JFrame {
             }
         }
     }
+
     public void setAutoResizeFrame(boolean isAutoResize) {
         chk_auto_resize.setSelected(isAutoResize);
     }

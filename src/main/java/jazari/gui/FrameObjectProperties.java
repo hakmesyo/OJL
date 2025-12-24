@@ -338,6 +338,8 @@ public class FrameObjectProperties extends javax.swing.JFrame {
 
     private void btn_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancelActionPerformed
         frm.getPicturePanel().isBBoxCancelled = true;
+        //frm.getPicturePanel().isLineCancelled = true;
+        //frm.getPicturePanel().isPolygonCancelled = true;
         dispose();
     }//GEN-LAST:event_btn_cancelActionPerformed
 

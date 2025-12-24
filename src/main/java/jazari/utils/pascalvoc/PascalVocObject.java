@@ -20,16 +20,26 @@ public class PascalVocObject {
     public int occluded;
     public PascalVocBoundingBox bndbox;
     public PascalVocPolygon polygonContainer;
+    // Yeni eklenen Line konteyner
+    public PascalVocLine lineContainer;
     public List<PascalVocAttribute> attributeList;
 
-    public PascalVocObject(String name, String pose, int truncated, int diffucult, int occluded, PascalVocBoundingBox bndbox, PascalVocPolygon polygonContainer, List<PascalVocAttribute> attributeList) {
+    /**
+     * Ana Constructor. LineContainer da parametre olarak eklendi.
+     */
+    public PascalVocObject(String name, String pose, int truncated, int diffucult, int occluded,
+            PascalVocBoundingBox bndbox,
+            PascalVocPolygon polygonContainer,
+            PascalVocLine lineContainer, // Yeni parametre
+            List<PascalVocAttribute> attributeList) {
         this.name = name;
-        this.pose = (pose == "") ? "Unspecified" : pose;
+        this.pose = (pose == null || pose.isEmpty()) ? "Unspecified" : pose;
         this.truncated = truncated;
         this.diffucult = diffucult;
         this.occluded = occluded;
         this.bndbox = bndbox;
         this.polygonContainer = polygonContainer;
+        this.lineContainer = lineContainer;
         this.attributeList = attributeList;
     }
 
@@ -41,11 +51,21 @@ public class PascalVocObject {
                 + "\t\t<pose>" + pose + "</pose>\n"
                 + "\t\t<truncated>" + truncated + "</truncated>\n"
                 + "\t\t<difficult>" + diffucult + "</difficult>\n";
-        if(polygonContainer==null){
-            ret+=bndbox.toString();
-        }else{
-            ret+=polygonContainer.toString();
+
+        if (polygonContainer != null) {
+            ret += polygonContainer.toString();
+        } else if (lineContainer != null) {
+            // Line XML formatı için basit bir placeholder, ileride detaylandırılabilir.
+            ret += "\t\t<line>\n";
+            ret += "\t\t\t<x1>" + lineContainer.startPoint.x + "</x1>\n";
+            ret += "\t\t\t<y1>" + lineContainer.startPoint.y + "</y1>\n";
+            ret += "\t\t\t<x2>" + lineContainer.endPoint.x + "</x2>\n";
+            ret += "\t\t\t<y2>" + lineContainer.endPoint.y + "</y2>\n";
+            ret += "\t\t</line>\n";
+        } else if (bndbox != null) {
+            ret += bndbox.toString();
         }
+
         if (attributeList != null) {
             ret += "\t\t<attributes>\n";
             for (PascalVocAttribute boundingBoxAttribute : attributeList) {
@@ -58,5 +78,4 @@ public class PascalVocObject {
 
         return ret;
     }
-
 }
