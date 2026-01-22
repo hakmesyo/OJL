@@ -461,7 +461,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
 
         // --- MESAJ İÇERİĞİ ---
         // Varsayılan mesaj (Navigasyon ve Zoom)
-        String titleMsg = "Nav: [← →]  |  Zoom: [Tekerlek]  |  Pan: [Orta Tuş]";
+        String titleMsg = "Nav: [← →]  |  Zoom: [Tekerlek]  |  Pan: [Orta Tuş] | Kaydet ve İlerle: [S]";
         String subMsg = "İpucu: Filtreler, YOLO Dönüşümü ve Araçlar için SAĞ TIKLA";
 
         // Eğer BBox modu açıksa mesajı özelleştir

@@ -18,6 +18,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import jazari.gui.FlatLaf;
 import jazari.gui.FrameLLMTools;
 import jazari.gui.FrameScreenCapture;
+import jazari.gui.FrameSourceCodeCollector;
 import jazari.interpreter.EnhancedIDE;
 import jazari.llm.OllamaGemma3SwingChat;
 import jazari.llm_chat.JazariChatApp;
@@ -203,7 +204,8 @@ public class Jazo extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_llm_webActionPerformed
 
     private void btn_llm_toolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_llm_toolActionPerformed
-        new FrameLLMTools().setVisible(true);
+        //new FrameLLMTools().setVisible(true);
+        new FrameSourceCodeCollector().setVisible(true);
     }//GEN-LAST:event_btn_llm_toolActionPerformed
 
     private void btn_llm_localActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_llm_localActionPerformed

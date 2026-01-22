@@ -10156,7 +10156,11 @@ public final class FactoryUtils {
         int copiedFiles = 0;
         for (int i = 0; i < files.length; i++) {
             if (i % interval == 0) {
-                FactoryUtils.copyFile(files[i], new File(pathTo + "/" + files[i].getName()));
+                FactoryUtils.copyFile(files[i], new File(pathTo + "/" + files[i].getName())); 
+                File tempFile=new File(files[i].getParent()+"/"+getFileName(files[i].getName())+".xml");
+                if (isFileExist(tempFile)) {
+                    FactoryUtils.copyFile(tempFile, new File(pathTo + "/" + tempFile.getName()));
+                }
                 copiedFiles++;
             }
             FactoryUtils.showCircularProgressBar(i + 1, files.length);

@@ -12,8 +12,12 @@ import jazari.factory.FactoryUtils;
  */
 public class TestDataSetReduction {
     public static void main(String[] args) {
-        String path_from="C:\\Users\\cezerilab\\Desktop\\ds_yabancı_ot_saksı";
-        String path_to="C:\\Users\\cezerilab\\Desktop\\ds_yabancı_ot_saksı_reduced";
-        FactoryUtils.reduceDataSet(path_from, path_to, "jpg", false, 0.1f);
+        String path_from="C:\\Seher Master DS\\DS\\weed_ds_android";
+        String path_to="C:\\Seher Master DS\\DS\\weed_ds_android_reduced";
+//        String path_from="C:\\Seher Master DS\\DS\\weed_ds_iphone";
+//        String path_to="C:\\Seher Master DS\\DS\\weed_ds_iphone_reduced";
+        //String path_from="C:\\Users\\cezerilab\\Desktop\\ds_yabancı_ot_saksı";
+        //String path_to="C:\\Users\\cezerilab\\Desktop\\ds_yabancı_ot_saksı_reduced";
+        FactoryUtils.reduceDataSet(path_from, path_to, "jpg", true, 0.2f);
     }
 }
