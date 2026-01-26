@@ -774,13 +774,14 @@ public class FrameSourceCodeCollector extends JFrame {
                     if (shouldIncludeXRay) {
                         publish("Generating X-Ray structure...");
                         String xrayTree;
+                        boolean showMethodsInXRay = chkShowMethods.isSelected();
                         
                         if (customSelection && !filesToProcess.isEmpty()) {
                             // Custom Selection: X-Ray only for selected files
-                            xrayTree = generateSelectedFilesTree(filesToProcess, currentProjectPath, true);
+                            xrayTree = generateSelectedFilesTree(filesToProcess, currentProjectPath, showMethodsInXRay);
                         } else {
                             // Full Project or Structure Only: X-Ray entire project
-                            xrayTree = generateDirectoryTree(currentProjectPath, true);
+                            xrayTree = generateDirectoryTree(currentProjectPath, showMethodsInXRay);
                         }
                         
                         writer.write("==================== X-RAY (PROJECT STRUCTURE) ====================\n");

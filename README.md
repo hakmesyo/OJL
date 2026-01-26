@@ -21,7 +21,7 @@ OJL (Open Jazari Library) is a comprehensive framework designed for JVM language
 -- Spline Based Lane Labeling
 -- [Future Version] Automatic Labeling (SAM Based)
 
-### �引用 Academic Citation
+### 📖 Academic Citation
 
 Ataş, M. (2016). Open Cezeri Library: A novel java based matrix and computer vision framework. Computer Applications in Engineering Education, 24(5), 736-743.
 
@@ -92,10 +92,17 @@ We welcome contributions! Please read our [Contribution Guidelines](CONTRIBUTING
 
 ## 📞 Contact
 
-- **Project Owner:** Prof. Dr. Musa Ataş
-- **Email:** hakmesyo@gmail.com
+- **Project Owner:** Musa Ataş
+- **Email:** hakmesyo@gmail.com, musa.atas@siirt.edu.tr
 - **GitHub:** https://github.com/hakmesyo
 - **Project Link:** [https://github.com/hakmesyo/OJL](https://github.com/hakmesyo/OJL)
+
+## 👥 Contributors
+
+- **Contributor:** Berkkan Kaya
+- **Contribution:** macOS (Apple Silicon) & Linux platform compatibility
+- **Email:** kayaberkkan@gmail.com
+- **GitHub:** https://github.com/kayaberkkan
 
 ## 📜 License
 
