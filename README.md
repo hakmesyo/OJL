@@ -40,10 +40,10 @@ OJL (Open Jazari Library) is a comprehensive framework designed for JVM language
 
 ```xml
 <dependency>
-    <groupId>com.github.hakmesyo</groupId>
-    <artifactId>ojl</artifactId>
-    <version>1.0.0</version>
-</dependency>
+   <groupId>com.mycompany.ojl</groupId>
+   <artifactId>OJL</artifactId>
+   <version>1.0-SNAPSHOT</version>
+</dependency> 
 ```
 
 ### Gradle Dependency
