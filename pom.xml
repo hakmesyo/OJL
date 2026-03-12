@@ -233,42 +233,84 @@
             <version>0.43.1</version>
         </dependency>
 
-        <!-- PROCESSING (comprehensive) -->
+<!--         PROCESSING (comprehensive) 
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>processing-complete</artifactId>
             <version>3.3.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
             <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>core</artifactId>
             <version>3.3.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jogamp.gluegen</groupId>
             <artifactId>gluegen-rt-main</artifactId>
             <version>2.3.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>jogl</artifactId>
             <version>2.3.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>jogl-all-main</artifactId>
             <version>2.3.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>newt-main</artifactId>
             <version>2.3.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>nativewindow-main</artifactId>
             <version>2.3.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.apple</groupId>
@@ -284,17 +326,35 @@
             <groupId>org.processing</groupId>
             <artifactId>video</artifactId>
             <version>3.3.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>serial</artifactId>
             <version>3.3.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.processing</groupId>
             <artifactId>net</artifactId>
             <version>3.3.7</version>
-        </dependency>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>-->
         <dependency>
             <groupId>org.openpnp</groupId>
             <artifactId>opencv</artifactId>
@@ -456,6 +516,20 @@
     </profiles>
 
     <build>
+        
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            
+            <!--            <resource>
+                <directory>src/main/java/test</directory>
+                <targetPath>examples</targetPath>
+                <includes>
+                    <include>**/*.java</include>
+                </includes>
+            </resource>-->
+        </resources>
         <plugins>
             <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
             <plugin>

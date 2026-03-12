@@ -43,19 +43,19 @@ Ataş, M. (2016). Open Cezeri Library: A novel java based matrix and computer vi
     <artifactId>ojl</artifactId>
     <version>1.0.0</version>
 </dependency>
-Gradle Dependency
-code
-Groovy
+```
+
+### Gradle Dependency
+
+```groovy
 implementation 'com.github.hakmesyo:ojl:1.0.0'
-Lokal Geliştirme ve Entegrasyon
-Eğer kütüphaneyi yerel makinenizde derleyip kendi projelerinizde kullanmak isterseniz:
-Projeyi Klonlayın: GitHub deposunu bilgisayarınıza indirin.
-Derleme: Proje dizininde mvn clean install komutunu çalıştırın. Bu işlem, OJL'yi yerel Maven deponuza (.m2) kaydeder.
-Kullanım: Başka bir projede kullanmak için sadece pom.xml dosyanıza yukarıdaki Maven bağımlılığını eklemeniz yeterlidir. Maven, .m2 deponuzdaki yerel kopyayı otomatik olarak kullanacaktır.
-🛠 Usage Examples
-1. Data Visualization: Perlin Noise Plotting
-code
-Java
+```
+
+## 🛠 Usage Examples
+
+### 1. Data Visualization: Perlin Noise Plotting
+
+```java
 int min = -200;  
 int max = 200;  
 CMatrix cm1 = CMatrix.getInstance()  
@@ -66,9 +66,11 @@ CMatrix cm2 = CMatrix.getInstance()
         .perlinNoise(0.022f);  
 CMatrix cm = cm1.cat(1, cm2);  
 cm.plot(CMatrix.getInstance().range(min, max).toFloatArray1D());
-2. Bar Plot with Custom Attributes
-code
-Java
+```
+
+### 2. Bar Plot with Custom Attributes
+
+```java
 TFigureAttribute attr = new TFigureAttribute(
         "Lane Detection Performance Evaluation",
         new String[]{"Accuracy","Groups"},
@@ -78,20 +80,34 @@ TFigureAttribute attr = new TFigureAttribute(
 CMatrix cm = CMatrix.getInstance()
         .rand(4, 5, -150f, 151f)
         .bar(attr);
-📚 Documentation
-Comprehensive documentation available at OJL Documentation
-🤝 Contributing
-We welcome contributions! Please read our Contribution Guidelines
-📞 Contact
-Project Owner: Musa Ataş
-Email: hakmesyo@gmail.com, musa.atas@siirt.edu.tr
-GitHub: https://github.com/hakmesyo
-Project Link: https://github.com/hakmesyo/OJL
-👥 Contributors
-Contributor: Berkkan Kaya
-Contribution: macOS (Apple Silicon) & Linux platform compatibility
-Email: kayaberkkan@gmail.com
-GitHub: https://github.com/kayaberkkan
-📜 License
-Distributed under Apache 2.0 License. See LICENSE for more information.
-Note: OJL is continuously evolving. Your feedback and contributions are valuable! 🌈
+```
+
+## 📚 Documentation
+
+Comprehensive documentation available at [OJL Documentation](https://github.com/hakmesyo/OJL/wiki)
+
+## 🤝 Contributing
+
+We welcome contributions! Please read our [Contribution Guidelines](CONTRIBUTING.md)
+
+## 📞 Contact
+
+- **Project Owner:** Musa Ataş
+- **Email:** hakmesyo@gmail.com, musa.atas@siirt.edu.tr
+- **GitHub:** https://github.com/hakmesyo
+- **Project Link:** [https://github.com/hakmesyo/OJL](https://github.com/hakmesyo/OJL)
+
+## 👥 Contributors
+
+- **Contributor:** Berkkan Kaya
+- **Contribution:** macOS (Apple Silicon) & Linux platform compatibility
+- **Email:** kayaberkkan@gmail.com
+- **GitHub:** https://github.com/kayaberkkan
+
+## 📜 License
+
+Distributed under Apache 2.0 License. See `LICENSE` for more information.
+
+---
+
+**Note:** OJL is continuously evolving. Your feedback and contributions are valuable! 🌈

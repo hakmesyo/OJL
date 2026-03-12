@@ -10428,4 +10428,8 @@ public final class CMatrix implements Serializable {
 
         return CMatrix.getInstance(oneHotResult);
     }
+
+    public CMatrix solve(CMatrix cm) {        
+        return this.inv().dot(cm);
+    }
 }

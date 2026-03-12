@@ -23,14 +23,15 @@ public class TestLinear {
             {27}
         };
         
-        CMatrix cmA = CMatrix.getInstance(A);
-        CMatrix cmB = CMatrix.getInstance(B);
-        CMatrix cmX = cmA.inv().dot(cmB).println();
+        CMatrix cmA = CMatrix.getInstance(A).println();
+        CMatrix cmB = CMatrix.getInstance(B).println();
+        CMatrix cmX = cmA.clone().inv().dot(cmB).println();
+        CMatrix cmS = cmA.clone().solve(cmB).println();
         
-        float[][] f={
-            {1,-1},
-            {-1,1}
-        };
-        CMatrix cmF = CMatrix.getInstance(f).inv().println();
+//        float[][] f={
+//            {1,-1},
+//            {-1,1}
+//        };
+//        CMatrix cmF = CMatrix.getInstance(f).inv().println();
     }
 }
