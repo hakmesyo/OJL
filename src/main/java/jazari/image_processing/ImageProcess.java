@@ -30,7 +30,6 @@ import com.jhlabs.image.GrayscaleFilter;
 import com.jhlabs.image.InvertFilter;
 import com.jhlabs.image.MotionBlurOp;
 import com.jhlabs.image.PointFilter;
-import com.luciad.imageio.webp.WebPImageWriterSpi;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
@@ -1093,8 +1092,46 @@ public final class ImageProcess {
 //            return null;
 //        }
 //    }
+//    public static BufferedImage readImage(String fileName) {
+//        try {
+//            File file = new File(fileName);
+//            return ImageIO.read(file);
+//        } catch (IOException ex) {
+//            Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
+//            return null;
+//        }
+//    }
+//    public static BufferedImage readImage(String fileName) {
+//        try {
+//            File file = new File(fileName);
+//            // Plugin'lerin yüklü olduğundan emin ol
+//            ImageIO.scanForPlugins();
+//            BufferedImage img = ImageIO.read(file);
+//            if (img == null) {
+//                // WebP için özel deneme
+//                String ext = FactoryUtils.getFileExtension(fileName).toLowerCase();
+//                if (ext.equals("webp")) {
+//                    Logger.getLogger(ImageProcess.class.getName())
+//                            .log(Level.WARNING, "WebP okunamadı, desteklenmiyor olabilir: " + fileName);
+//                }
+//            }
+//            return img;
+//        } catch (IOException ex) {
+//            Logger.getLogger(ImageProcess.class.getName()).log(Level.SEVERE, null, ex);
+//            return null;
+//        }
+//    }
     public static BufferedImage readImage(String fileName) {
         try {
+            //ImageIO.scanForPlugins();
+
+            // DEBUG: Hangi formatlar destekleniyor?
+            String ext = FactoryUtils.getFileExtension(fileName).toLowerCase();
+//            if (ext.equals("webp")) {
+//                String[] readers = ImageIO.getReaderFormatNames();
+//                System.out.println("Desteklenen formatlar: " + java.util.Arrays.toString(readers));
+//            }
+
             File file = new File(fileName);
             return ImageIO.read(file);
         } catch (IOException ex) {
@@ -1274,9 +1311,7 @@ public final class ImageProcess {
 //                int y = (int) (0.33000000000000002D * (float) r + 0.56000000000000005D * (float) g + 0.11D * (float) b);
 //                fpixels[i] = y;
 
-    
-
-    ////            fpixels[i] = pixels[i];
+        ////            fpixels[i] = pixels[i];
 //            }
 //        }
 //        int k = 0;
@@ -2899,29 +2934,24 @@ public final class ImageProcess {
         File file = new File(fileName);
         String extension = FactoryUtils.getFileExtension(fileName).toLowerCase();
         boolean ret = false;
-
         try {
             // PNG'den diğer formatlara dönüşüm için
-            if ((img.getType() == BufferedImage.TYPE_INT_ARGB || img.getType() == BufferedImage.TYPE_4BYTE_ABGR) && !extension.equals("png")) {
+            if ((img.getType() == BufferedImage.TYPE_INT_ARGB || img.getType() == BufferedImage.TYPE_4BYTE_ABGR)
+                    && !extension.equals("png")) {
                 BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
                 Graphics2D g = newImage.createGraphics();
-                g.setColor(Color.WHITE); // Arka plan rengi
+                g.setColor(Color.WHITE);
                 g.fillRect(0, 0, newImage.getWidth(), newImage.getHeight());
                 g.drawImage(img, 0, 0, null);
                 g.dispose();
                 img = newImage;
             }
 
-            // WebP için özel işlem
-            if (extension.equals("webp")) {
-                // TwelveMonkeys WebP yazıcısını kaydet
-                IIORegistry registry = IIORegistry.getDefaultInstance();
-                registry.registerServiceProvider(new WebPImageWriterSpi());
-            }
+            // Plugin'lerin yüklü olduğundan emin ol (WebP dahil)
+            ImageIO.scanForPlugins();
 
             ret = ImageIO.write(img, extension, file);
 
-            // Eğer kaydetme başarısız olursa, PNG olarak kaydetmeyi dene
             if (!ret) {
                 Logger.getLogger(ImageProcess.class.getName()).log(Level.WARNING,
                         "Failed to save as " + extension + ". Attempting to save as PNG.");

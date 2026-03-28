@@ -9,6 +9,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import javax.swing.JButton;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
@@ -20,6 +21,7 @@ import jazari.gui.FlatLaf;
 import jazari.gui.FrameLLMTools;
 import jazari.gui.FrameScreenCapture;
 import jazari.gui.FrameSourceCodeCollector;
+import jazari.image_processing.ImageProcess;
 import jazari.interpreter.EnhancedIDE;
 import jazari.llm.OllamaGemma3SwingChat;
 import jazari.llm_chat.JazariChatApp;
@@ -52,9 +54,8 @@ public class Jazo extends javax.swing.JFrame {
     public Jazo() {
         initComponents();
         btn_open.setTransferHandler(new ImageTransferHandler());
-        this.setTitle("Open Jazari Library (Jazari Annotation Tool)  [21.01.2026]");
+        this.setTitle("Open Jazari Library (Jazari Annotation Tool)  [29.03.2026]");
         setLocationRelativeTo(null);
-        ImageIO.scanForPlugins();
     }
 
     /**
@@ -75,7 +76,7 @@ public class Jazo extends javax.swing.JFrame {
         btn_llm_local = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Jazari Annotation Tool Version:17.07.2025");
+        setTitle("Jazari Annotation Tool Version: 29.03.2026");
 
         btn_open.setFont(new java.awt.Font("Tahoma", 1, 36)); // NOI18N
         btn_open.setText("Open | Drag & Drop Image|Folder");
@@ -212,13 +213,14 @@ public class Jazo extends javax.swing.JFrame {
 
     private void btn_llm_localActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_llm_localActionPerformed
         new JazariChatForge().setVisible(true);
-       //new OllamaGemma3SwingChat().setVisible(true);
+        //new OllamaGemma3SwingChat().setVisible(true);
     }//GEN-LAST:event_btn_llm_localActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        ImageIO.scanForPlugins();
         //FlatDarculaLaf.setup();
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -271,9 +273,19 @@ public class Jazo extends javax.swing.JFrame {
                         } else if (support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                             List files = (List) t.getTransferData(DataFlavor.javaFileListFlavor);
                             if (files.size() > 0) {
-                                //image = ImageIO.read((File) files.get(0));
-                                CMatrix cm = CMatrix.getInstance().imread((File) files.get(0)).imshow();
-
+                                File file = (File) files.get(0);
+                                ImageIO.scanForPlugins(); // WebP ve diğer plugin'ler için
+                                BufferedImage bf = ImageProcess.readImage(file.getAbsolutePath());
+                                if (bf == null) {
+                                    FactoryUtils.showMessage(
+                                            "Bu resim formatı desteklenmiyor veya okunamadı:\n"
+                                            + file.getName()
+                                    );
+                                    return false;
+                                }
+                                CMatrix cm = CMatrix.getInstance(bf);
+                                cm.imagePath = file.getAbsolutePath();
+                                cm.imshow();
                             }
                         }
                         accept = true;

@@ -180,7 +180,7 @@ public final class CMatrix implements Serializable {
     public String name = "Matrix";
 //    private float[][] array;
     transient private BufferedImage image;
-    private String imagePath = "";
+    public String imagePath = "";
 //    private CMatrix prevMatrix;
 //    private CMatrix nextMatrix;
     public CReturn returnedValue;
