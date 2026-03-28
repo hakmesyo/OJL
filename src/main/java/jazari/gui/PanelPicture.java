@@ -680,7 +680,7 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             "Crop",
             "Resize Images",
             "Build YOLO DataSet",
-            "Show Annotation File","Export Label Studio CSV"};
+            "Show Annotation File", "Export Label Studio CSV"};
 
         ButtonGroup itemsGroup = new ButtonGroup();
         items = new JRadioButtonMenuItem[elements.length];
@@ -2378,6 +2378,10 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             // determine which menu item was selected  
             try {
                 setDefaultValues();
+                boolean savedBBox = frame.chkBBox.isSelected();
+                boolean savedPolygon = frame.chkPolygon.isSelected();
+                boolean savedLane = frame.chkLane.isSelected();
+                boolean savedLine = frame.chkLine.isSelected();
                 JRadioButtonMenuItem obj = (JRadioButtonMenuItem) e.getSource();
                 if (obj.getText().equals("Next Image")) {
                     loadNextImage();
@@ -2587,17 +2591,30 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                     activateCrop = true;
                     cropImage();
                 } else if (obj.getText().equals("Build YOLO DataSet")) {
+                    // Frame checkbox'larını geri yükle
+                    if (savedBBox) {
+                        activateBoundingBox = true;
+                        frame.chkBBox.setSelected(true);
+                    }
+                    if (savedPolygon) {
+                        activatePolygon = true;
+                        frame.chkPolygon.setSelected(true);
+                    }
+                    if (savedLane) {
+                        activateLaneDetection = true;
+                        frame.chkLane.setSelected(true);
+                    }
+                    if (savedLine) {
+                        activateLine = true;
+                        frame.chkLine.setSelected(true);
+                    }
+                    showRegion = true;
+
                     new FrameBuildYoloDataSet(frame).setVisible(true);
+                    repaint();
                     return;
-//                    String subFolder = FactoryUtils.inputMessage("set subfolder name");
-//                    String msg = FactoryUtils.convertPascalVoc2YoloFormatBatch(imageFolder, subFolder, "detection");
-//                    FactoryUtils.showMessageTemp("Pascal VOC XMLs converted to Yolo format at " + msg, 3000, new CallBackTrigger() {
-//                        @Override
-//                        public void trigger() {
-//                        }
-//                    });
                 } else if (obj.getText().equals("Show Annotation File")) {
-                    openAnnotationFile(); 
+                    openAnnotationFile();
                 } else if (obj.getText().equals("Export Label Studio CSV")) {
                     String outputCsv = imageFolder + "/export_data.csv";
                     FactoryUtils.exportToLabelStudioCSV(imageFolder, outputCsv);

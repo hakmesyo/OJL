@@ -3487,8 +3487,13 @@ public final class FactoryUtils {
     public static File[] getFileArrayInFolderForImages(String imageFolder) {
         File dir = new File(imageFolder);
         final String[] EXTENSIONS = new String[]{
-            "gif", "png", "bmp", "jpg", "PNG", "JPG", "BMP", "GIF", "jpeg", "JPEG", "tif", "TIF", "dcm", "DCM" // and other formats you need
+            "gif", "png", "bmp", "jpg", "PNG", "JPG", "BMP", "GIF",
+            "jpeg", "JPEG", "tif", "TIF", "dcm", "DCM", "webp", "WEBP"
         };
+
+//        final String[] EXTENSIONS = new String[]{
+//            "gif", "png", "bmp", "jpg", "PNG", "JPG", "BMP", "GIF", "jpeg", "JPEG", "tif", "TIF", "dcm", "DCM" // and other formats you need
+//        };
         // filter to identify images based on their extensions
         FilenameFilter IMAGE_FILTER = new FilenameFilter() {
 
@@ -10156,8 +10161,8 @@ public final class FactoryUtils {
         int copiedFiles = 0;
         for (int i = 0; i < files.length; i++) {
             if (i % interval == 0) {
-                FactoryUtils.copyFile(files[i], new File(pathTo + "/" + files[i].getName())); 
-                File tempFile=new File(files[i].getParent()+"/"+getFileName(files[i].getName())+".xml");
+                FactoryUtils.copyFile(files[i], new File(pathTo + "/" + files[i].getName()));
+                File tempFile = new File(files[i].getParent() + "/" + getFileName(files[i].getName()) + ".xml");
                 if (isFileExist(tempFile)) {
                     FactoryUtils.copyFile(tempFile, new File(pathTo + "/" + tempFile.getName()));
                 }

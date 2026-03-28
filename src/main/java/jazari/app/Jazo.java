@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jazari.gui.FlatLaf;
@@ -53,6 +54,7 @@ public class Jazo extends javax.swing.JFrame {
         btn_open.setTransferHandler(new ImageTransferHandler());
         this.setTitle("Open Jazari Library (Jazari Annotation Tool)  [21.01.2026]");
         setLocationRelativeTo(null);
+        ImageIO.scanForPlugins();
     }
 
     /**
