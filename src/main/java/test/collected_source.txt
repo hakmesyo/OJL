@@ -27,8 +27,8 @@ test/
 ├── TestAMass.java
 ├── TestAnimatedPlot.java
 ├── TestAnnotations.java
-├── TestAPIDocJS.java
 ├── TestApplyFunction.java
+├── TestAPIDocJS.java
 ├── TestARFFWeka.java
 ├── TestArrayConversion.java
 ├── TestAssert.java
@@ -117,14 +117,6 @@ test/
 ├── TestHistWithInfo.java
 ├── TestHSV.java
 ├── TestHttpServerPort.java
-├── TestImageDataGenerator.java
-├── TestImageMirrorOrFlip.java
-├── TestImageNoise.java
-├── TestImageProcessing.java
-├── TestImageReadUrl.java
-├── TestImageResize.java
-├── TestImageShow.java
-├── TestImShowRefresh.java
 ├── TestJSON.java
 ├── TestJTable.java
 ├── TestKalmanFilter.java
@@ -175,12 +167,12 @@ test/
 ├── TestRangeSqrtPlot.java
 ├── TestReadTiffImage.java
 ├── TestRegionProposal.java
-├── TestReIndexFilesBasedOnNanoTimeUniqueness.java
 ├── TestReplicateImage.java
 ├── TestResizeAdaptiveImage.java
+├── TestResizeWithAspect.java
 ├── TestResizeImage.java
 ├── TestResizeImagesInDataSet.java
-├── TestResizeWithAspect.java
+├── TestReIndexFilesBasedOnNanoTimeUniqueness.java
 ├── TestRGBHSVConversions.java
 ├── TestRGBToLAB.java
 ├── TestRotatingCube.java
@@ -190,15 +182,15 @@ test/
 ├── TestSerialization.java
 ├── TestShowMessage.java
 ├── TestShuffle.java
-├── TestShuffleImage.java
 ├── TestShufflePixelImage.java
+├── TestShuffleImage.java
 ├── TestSinc.java
 ├── TestSobelEdgeDetector.java
 ├── TestSolvingLinearEquationMatrixForm.java
 ├── TestSplineDraw.java
-├── TestSplitImageBndBox.java
 ├── TestSplitPath.java
 ├── TestSplitRange.java
+├── TestSplitImageBndBox.java
 ├── TestStreamAPI.java
 ├── TestStroke.java
 ├── TestStrToSetChars.java
@@ -223,6 +215,14 @@ test/
 ├── TestWeightCentroid.java
 ├── TestWekaInstances.java
 ├── TestXOREncryption.java
+├── TestImageDataGenerator.java
+├── TestImageMirrorOrFlip.java
+├── TestImageNoise.java
+├── TestImageProcessing.java
+├── TestImageReadUrl.java
+├── TestImageResize.java
+├── TestImageShow.java
+├── TestImShowRefresh.java
 └── UseCaseMatrixOperations.java
 
 ==================== SOURCE CODE ====================
@@ -484,6 +484,259 @@ public class ATestPanTilt {
         return new double[]{panAngle, tiltAngle};
     }
 }
+
+// ============================================================
+// FILE: collected_source.txt
+// ============================================================
+==================== X-RAY (PROJECT STRUCTURE) ====================
+test/
+├── Adata_set_organizer.java
+├── ANewJFrame.java
+├── ATest1.java
+├── ATestPanTilt.java
+├── collected_source.txt
+├── Deneme.java
+├── Deneme2.java
+├── Deneme3.java
+├── Deneme_1.java
+├── Deneme_100_exercises.java
+├── Deneme_2.java
+├── Deneme_computer_vision.java
+├── Deneme_dental.java
+├── Deneme_florosis_ds.java
+├── DenemeDataAugmentation.java
+├── DenemeMatlabFunctions.java
+├── DynamicCodeExecution.java
+├── OJLMachineLearning.java
+├── TaskList.java
+├── Test4KImage.java
+├── TestAdaptiveClaheImageEnhancement.java
+├── TestAdaptiveThreshold.java
+├── TestAlmondClassification.java
+├── TestAlphaBlendingDistributionHistogram.java
+├── TestAMass.java
+├── TestAnimatedPlot.java
+├── TestAnnotations.java
+├── TestApplyFunction.java
+├── TestAPIDocJS.java
+├── TestARFFWeka.java
+├── TestArrayConversion.java
+├── TestAssert.java
+├── TestBarPlotExample.java
+├── TestBenchMark.java
+├── TestBenchmarkCMatrix.java
+├── TestBigData.java
+├── TestBigDecimal.java
+├── TestBitPlaneSlicing.java
+├── TestBlobDetection.java
+├── TestBoundingBox.java
+├── TestBrowseFile.java
+├── TestBruteForceAttack.java
+├── TestByte.java
+├── TestCalculateFileHistogramInFolder.java
+├── TestCamera.java
+├── TestCameraObserverSarxos.java
+├── TestCezeriMLP.java
+├── TestChangeImageFileExtension.java
+├── TestChangeImageType.java
+├── TestCheckerBoard.java
+├── TestCircularProgressBar.java
+├── TestCMatrix.java
+├── TestCMatrixDirectMatrixInitialization.java
+├── TestCMatrixView.java
+├── TestColorSpace.java
+├── TestCombinationPairs.java
+├── TestCombinatorial.java
+├── TestCommandParser.java
+├── TestComPorts.java
+├── TestConcatenate.java
+├── TestConcurrencyAndParallelExecution.java
+├── TestContrastStretching.java
+├── TestConversionColorSpace.java
+├── TestConvertJsonToPascalVoc.java
+├── TestConvolution.java
+├── TestCosineTheoremWithDotProduct.java
+├── TestCovariance.java
+├── TestCropOrTileImage.java
+├── TestCrossValidationSet.java
+├── TestCSVReader.java
+├── TestDataAugment4ObjectDetection.java
+├── TestDataAugmentation.java
+├── TestDataLoding.java
+├── TestDataSetReduction.java
+├── TestDCT.java
+├── TestDeepLearning.java
+├── TestDeneme1.java
+├── TestDentalFluorisis.java
+├── TestDiagonalMatrix.java
+├── TestDicomImageReader.java
+├── TestDifferentiateLanguages.java
+├── TestDilateErodeOperations.java
+├── TestDiluteDataSet.java
+├── TestDJLText2Vec.java
+├── TestDotProduct.java
+├── TestDrawingShapes.java
+├── TestDynamicROI.java
+├── TestEdgeDetection.java
+├── TestExcelReadWrite.java
+├── TestFaceLocation.java
+├── TestFactoryMatrixClone.java
+├── TestFactoryObjectDetectionYoloV8.java
+├── TestFactorySegmentationYoloV8.java
+├── TestFactorySerialLib.java
+├── TestFactoryWebCam.java
+├── TestFFT.java
+├── TestFillNaN.java
+├── TestFilters.java
+├── TestFindBndBoxOnMaskImage.java
+├── TestFindIndexes.java
+├── TestFlatten.java
+├── TestFramePicture.java
+├── TestFrameWithFlatDark.java
+├── TestFunctionalProgramming.java
+├── TestGaussianMF.java
+├── TestGPS.java
+├── TestGpsKmlFile.java
+├── TestGpsRTK2GoogleEarthFormat.java
+├── TestHDR.java
+├── TestHeatMap.java
+├── TestHisteq.java
+├── TestHisteqClahe.java
+├── TestHistogram.java
+├── TestHistogram2.java
+├── TestHistWithInfo.java
+├── TestHSV.java
+├── TestHttpServerPort.java
+├── TestJSON.java
+├── TestJTable.java
+├── TestKalmanFilter.java
+├── TestLaserWeeding.java
+├── TestLatLongToUTM.java
+├── TestLBP.java
+├── TestLinear.java
+├── TestLoadImageFromURL.java
+├── TestMachineLearning.java
+├── TestMakeBlobs.java
+├── TestMap.java
+├── TestMatrix.java
+├── TestMatrixConcatenation.java
+├── TestMatrixEigenValueDecomposition.java
+├── TestMatrixMultiplication.java
+├── TestMatrixMultiplicationPerformance.java
+├── TestMatrixMultiplications.java
+├── TestMatrixPerformance.java
+├── TestMeshGrid.java
+├── TestMLP.java
+├── TestMultiDimensionalGaussianDistribution.java
+├── TestMxNetMnist.java
+├── TestNDArray.java
+├── TestOpenCVBlobDetection.java
+├── TestOptimizedConvolution.java
+├── TestOverlayImages.java
+├── TestPerformanceGUI.java
+├── TestPerformDataSetArff.java
+├── TestPerlinNoise.java
+├── TestPerlinNoise2D.java
+├── TestPermutaionPairs.java
+├── TestPermute.java
+├── TestPidController.java
+├── TestPlot.java
+├── TestPlotFigureAttribute.java
+├── TestPopup.java
+├── TestPopupMenu.java
+├── TestPrevNext.java
+├── TestProbabilityDensityFunction.java
+├── TestPytorchYoloV8.java
+├── TestQuantizedImage.java
+├── TestRadon.java
+├── TestRailrod.java
+├── TestRandomFunction.java
+├── TestRandomSeed.java
+├── TestRandPerm.java
+├── TestRange2D.java
+├── TestRangeSqrtPlot.java
+├── TestReadTiffImage.java
+├── TestRegionProposal.java
+├── TestReplicateImage.java
+├── TestResizeAdaptiveImage.java
+├── TestResizeWithAspect.java
+├── TestResizeImage.java
+├── TestResizeImagesInDataSet.java
+├── TestReIndexFilesBasedOnNanoTimeUniqueness.java
+├── TestRGBHSVConversions.java
+├── TestRGBToLAB.java
+├── TestRotatingCube.java
+├── TestScatter.java
+├── TestScatterBlob.java
+├── TestSensorsPC.java
+├── TestSerialization.java
+├── TestShowMessage.java
+├── TestShuffle.java
+├── TestShufflePixelImage.java
+├── TestShuffleImage.java
+├── TestSinc.java
+├── TestSobelEdgeDetector.java
+├── TestSolvingLinearEquationMatrixForm.java
+├── TestSplineDraw.java
+├── TestSplitPath.java
+├── TestSplitRange.java
+├── TestSplitImageBndBox.java
+├── TestStreamAPI.java
+├── TestStroke.java
+├── TestStrToSetChars.java
+├── TestSunCalculator.java
+├── TestSuperResolution.java
+├── TestSuperResolutionV2.java
+├── TestSVG.java
+├── TestTiffImages.java
+├── TestTileImage.java
+├── TestTimeSeries.java
+├── TestTrainValidTestFolderGenerator.java
+├── TestTwoSumInArray.java
+├── TestUUID.java
+├── TestVector.java
+├── TestVectorization.java
+├── TestVegetationAgiri.java
+├── TestVisDroneAnnotationsToPascalVoc.java
+├── TestVoteMap.java
+├── TestWebCam.java
+├── TestWebCam2.java
+├── TestWebSocket.java
+├── TestWeightCentroid.java
+├── TestWekaInstances.java
+├── TestXOREncryption.java
+├── TestImageDataGenerator.java
+├── TestImageMirrorOrFlip.java
+├── TestImageNoise.java
+├── TestImageProcessing.java
+├── TestImageReadUrl.java
+├── TestImageResize.java
+├── TestImageShow.java
+├── TestImShowRefresh.java
+└── UseCaseMatrixOperations.java
+
+==================== SOURCE CODE ====================
+
+// ============================================================
+// FILE: Adata_set_organizer.java
+// ============================================================
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package test;
+
+import java.io.File;
+import jazari.factory.FactoryUtils;
+
+/**
+ *
+ * @author cezerilab
+ */
+public class Adata_set_organizer {
+    public static void main(String[] args) {
+        String path="D:\\DATASETS\\african_wildlife";
+        File[] dirs=FactoryUtils.getDirectori
 
 // ============================================================
 // FILE: Deneme.java
@@ -1101,163 +1354,6 @@ public class Deneme3 {
 }
 
 // ============================================================
-// FILE: DenemeDataAugmentation.java
-// ============================================================
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import jazari.factory.FactoryUtils;
-import jazari.matrix.CMatrix;
-
-/**
- *
- * @author cezerilab
- */
-public class DenemeDataAugmentation {
-    public static void main(String[] args) {
-        double[] d1=new double[5];
-        double[] d2=new double[5];
-        for (int i = 0; i < 5; i++) {
-            d1[i]=Math.random();
-        }
-        for (int i = 0; i < 5; i++) {
-            d2[i]=Math.random();
-        }
-        
-        System.out.println(Arrays.toString(d1));
-        System.out.println(Arrays.toString(d2));
-        double corr=korelasyonHesapla(d1,d2);
-        System.out.println("corr = " + corr);
-        
-//        double[][] veri = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-//        double[] hedef = {10, 20, 30};
-//        
-//        for (int i = 0; i < veri[0].length; i++) {
-//            double[] ozellik = new double[veri.length];
-//            for (int j = 0; j < veri.length; j++) {
-//                ozellik[j] = veri[j][i];
-//            }
-//            double korelasyon = korelasyonHesapla(ozellik, hedef);
-//            System.out.println("Özellik " + i + " korelasyonu: " + korelasyon);
-//        }
-    }
-    
-    private static double korelasyonHesapla(double[] x, double[] y) {
-        double ortalamX = Arrays.stream(x).average().orElse(0.0);
-        double ortalamY = Arrays.stream(y).average().orElse(0.0);
-        
-        double pay = 0, paydaX = 0, paydaY = 0;
-        for (int i = 0; i < x.length; i++) {
-            pay += (x[i] - ortalamX) * (y[i] - ortalamY);
-            paydaX += Math.pow(x[i] - ortalamX, 2);
-            paydaY += Math.pow(y[i] - ortalamY, 2);
-        }
-        
-        return pay / Math.sqrt(paydaX * paydaY);
-    }
-
-//    public static void main(String[] args) {
-//        double[] d={-5000.0, -200.0, -300.0, -240.0, -210.0,-300.0, -10.0};
-//        double sum=0;
-//        for (int i = 0; i < d.length; i++) {
-//            sum+=d[i];
-//        }
-//        double mean=sum/d.length;
-//        System.out.println("mean = " + mean);
-//        
-//        double max=0;
-//        int index=0;
-//        for (int i = 0; i < d.length; i++) {
-//            if (Math.abs(mean-d[i])>max) {
-//                max=Math.abs(mean-d[i]);
-//                index=i;
-//            }
-//        }
-//        System.out.println(index+". eleman aykırıdır "+d[index]);
-//        
-//        
-//        
-//        List<Double> veriler = new ArrayList<>(List.of(1.0, 200.0, 300.0, 240.0, 210.0,300.0));
-//
-//        Collections.sort(veriler);
-//        int n = veriler.size();
-//        double q1 = veriler.get(n / (n-1));
-//        double q3 = veriler.get((n-2) * n / (n-1));
-//        double iqr = q3 - q1;
-//        double altSinir = q1 - (n-2)/2 * iqr;
-//        double ustSinir = q3 + (n-2)/2 * iqr;
-//
-//        List<Double> aykiriDegerler = new ArrayList<>();
-//        for (Double veri : veriler) {
-//            if (veri < altSinir || veri > ustSinir) {
-//                aykiriDegerler.add(veri);
-//            }
-//        }
-//
-//        System.out.println("Aykırı değerler: " + aykiriDegerler);
-    //}
-}
-
-// ============================================================
-// FILE: DenemeMatlabFunctions.java
-// ============================================================
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package test;
-
-import java.util.Arrays;
-import jazari.matrix.CMatrix;
-
-/**
- *
- * @author cezerilab
- */
-public class DenemeMatlabFunctions {
-    public static void main(String[] args) {
-//        CMatrix cm = CMatrix.getInstance()
-//                .imread("images/babun.jpg")
-//                .imshow("original babun image")
-//                .rgb2gray()
-//                .imshow()
-//                //.imwrite("images/babun_1.png")
-//                ;
-//        CMatrix cm2 = cm.clone().hist(25).println();
-        //CMatrix cm_red = CMatrix.getInstance().values(90, 150, 0).reshape(3,90,50).cmd("0", ":").println();
-//        CMatrix cm_green = cm_red.clone();
-//        CMatrix cm_blue = cm_red.clone();
-
-        CMatrix cm = CMatrix.getInstance()
-                .imread("C:\\Users\\cezerilab\\Desktop/ideal_contrast.jpg")
-                .rgb2gray()
-                .imshow()
-                
-                ;
-        int[] indexes=cm.clone().shufflePixelImage().imshow().shuffleIndexes;
-        System.out.println(Arrays.toString(indexes));
-        
-        //cm.clone().threshold(100).imshow();
-        //cm.clone().rgb2hsv().imcomplement().imshow();
-        
-//                cm.clone().getRedChannelColor().imshow();
-//                cm.clone().getGreenChannelColor().imshow();
-//                cm.clone().getBlueChannelColor().imshow();
-        
-        
-    }
-}
-
-// ============================================================
 // FILE: Deneme_1.java
 // ============================================================
 /*
@@ -1695,6 +1791,163 @@ public class Deneme_florosis_ds {
             }
         }
 
+    }
+}
+
+// ============================================================
+// FILE: DenemeDataAugmentation.java
+// ============================================================
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import jazari.factory.FactoryUtils;
+import jazari.matrix.CMatrix;
+
+/**
+ *
+ * @author cezerilab
+ */
+public class DenemeDataAugmentation {
+    public static void main(String[] args) {
+        double[] d1=new double[5];
+        double[] d2=new double[5];
+        for (int i = 0; i < 5; i++) {
+            d1[i]=Math.random();
+        }
+        for (int i = 0; i < 5; i++) {
+            d2[i]=Math.random();
+        }
+        
+        System.out.println(Arrays.toString(d1));
+        System.out.println(Arrays.toString(d2));
+        double corr=korelasyonHesapla(d1,d2);
+        System.out.println("corr = " + corr);
+        
+//        double[][] veri = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+//        double[] hedef = {10, 20, 30};
+//        
+//        for (int i = 0; i < veri[0].length; i++) {
+//            double[] ozellik = new double[veri.length];
+//            for (int j = 0; j < veri.length; j++) {
+//                ozellik[j] = veri[j][i];
+//            }
+//            double korelasyon = korelasyonHesapla(ozellik, hedef);
+//            System.out.println("Özellik " + i + " korelasyonu: " + korelasyon);
+//        }
+    }
+    
+    private static double korelasyonHesapla(double[] x, double[] y) {
+        double ortalamX = Arrays.stream(x).average().orElse(0.0);
+        double ortalamY = Arrays.stream(y).average().orElse(0.0);
+        
+        double pay = 0, paydaX = 0, paydaY = 0;
+        for (int i = 0; i < x.length; i++) {
+            pay += (x[i] - ortalamX) * (y[i] - ortalamY);
+            paydaX += Math.pow(x[i] - ortalamX, 2);
+            paydaY += Math.pow(y[i] - ortalamY, 2);
+        }
+        
+        return pay / Math.sqrt(paydaX * paydaY);
+    }
+
+//    public static void main(String[] args) {
+//        double[] d={-5000.0, -200.0, -300.0, -240.0, -210.0,-300.0, -10.0};
+//        double sum=0;
+//        for (int i = 0; i < d.length; i++) {
+//            sum+=d[i];
+//        }
+//        double mean=sum/d.length;
+//        System.out.println("mean = " + mean);
+//        
+//        double max=0;
+//        int index=0;
+//        for (int i = 0; i < d.length; i++) {
+//            if (Math.abs(mean-d[i])>max) {
+//                max=Math.abs(mean-d[i]);
+//                index=i;
+//            }
+//        }
+//        System.out.println(index+". eleman aykırıdır "+d[index]);
+//        
+//        
+//        
+//        List<Double> veriler = new ArrayList<>(List.of(1.0, 200.0, 300.0, 240.0, 210.0,300.0));
+//
+//        Collections.sort(veriler);
+//        int n = veriler.size();
+//        double q1 = veriler.get(n / (n-1));
+//        double q3 = veriler.get((n-2) * n / (n-1));
+//        double iqr = q3 - q1;
+//        double altSinir = q1 - (n-2)/2 * iqr;
+//        double ustSinir = q3 + (n-2)/2 * iqr;
+//
+//        List<Double> aykiriDegerler = new ArrayList<>();
+//        for (Double veri : veriler) {
+//            if (veri < altSinir || veri > ustSinir) {
+//                aykiriDegerler.add(veri);
+//            }
+//        }
+//
+//        System.out.println("Aykırı değerler: " + aykiriDegerler);
+    //}
+}
+
+// ============================================================
+// FILE: DenemeMatlabFunctions.java
+// ============================================================
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package test;
+
+import java.util.Arrays;
+import jazari.matrix.CMatrix;
+
+/**
+ *
+ * @author cezerilab
+ */
+public class DenemeMatlabFunctions {
+    public static void main(String[] args) {
+//        CMatrix cm = CMatrix.getInstance()
+//                .imread("images/babun.jpg")
+//                .imshow("original babun image")
+//                .rgb2gray()
+//                .imshow()
+//                //.imwrite("images/babun_1.png")
+//                ;
+//        CMatrix cm2 = cm.clone().hist(25).println();
+        //CMatrix cm_red = CMatrix.getInstance().values(90, 150, 0).reshape(3,90,50).cmd("0", ":").println();
+//        CMatrix cm_green = cm_red.clone();
+//        CMatrix cm_blue = cm_red.clone();
+
+        CMatrix cm = CMatrix.getInstance()
+                .imread("C:\\Users\\cezerilab\\Desktop/ideal_contrast.jpg")
+                .rgb2gray()
+                .imshow()
+                
+                ;
+        int[] indexes=cm.clone().shufflePixelImage().imshow().shuffleIndexes;
+        System.out.println(Arrays.toString(indexes));
+        
+        //cm.clone().threshold(100).imshow();
+        //cm.clone().rgb2hsv().imcomplement().imshow();
+        
+//                cm.clone().getRedChannelColor().imshow();
+//                cm.clone().getGreenChannelColor().imshow();
+//                cm.clone().getBlueChannelColor().imshow();
+        
+        
     }
 }
 
@@ -7520,15 +7773,16 @@ public class TestLinear {
             {27}
         };
         
-        CMatrix cmA = CMatrix.getInstance(A);
-        CMatrix cmB = CMatrix.getInstance(B);
-        CMatrix cmX = cmA.inv().dot(cmB).println();
+        CMatrix cmA = CMatrix.getInstance(A).println();
+        CMatrix cmB = CMatrix.getInstance(B).println();
+        CMatrix cmX = cmA.clone().inv().dot(cmB).println();
+        CMatrix cmS = cmA.clone().solve(cmB).println();
         
-        float[][] f={
-            {1,-1},
-            {-1,1}
-        };
-        CMatrix cmF = CMatrix.getInstance(f).inv().println();
+//        float[][] f={
+//            {1,-1},
+//            {-1,1}
+//        };
+//        CMatrix cmF = CMatrix.getInstance(f).inv().println();
     }
 }
 
