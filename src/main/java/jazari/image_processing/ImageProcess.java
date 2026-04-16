@@ -4810,6 +4810,25 @@ public final class ImageProcess {
         return data;
     }
 
+    public static float[][] addSaltAndPepper2D(float[][] data, float density) {
+        // density: 0.0 ile 1.0 arası bir değer (örneğin 0.05 = %5 gürültü)
+        int nr = data.length;
+        int nc = data[0].length;
+        java.util.Random rand = new java.util.Random();
+
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                float r = rand.nextFloat();
+                if (r < density / 2) {
+                    data[i][j] = 0;      // Salt (Tuz - Siyah) - Slaytındaki tanım
+                } else if (r < density) {
+                    data[i][j] = 255;    // Pepper (Biber - Beyaz)
+                }
+            }
+        }
+        return data;
+    }
+
 //    /**
 //     * 2D (Gray) diziye Gaussian gürültüsü ekler
 //     */
@@ -4835,11 +4854,114 @@ public final class ImageProcess {
         int nc = data[0][0].length;
         java.util.Random rand = new java.util.Random();
 
-        for (int b = 0; b < bands; b++) {
+        // Eğer 4 kanal varsa (Alpha dahil), 0. indisi atla (Alpha'yı koru)
+        // Eğer 3 kanal varsa (RGB), 0. indisten başla.
+        int startBand = (bands == 4) ? 1 : 0;
+
+        for (int b = startBand; b < bands; b++) {
             for (int i = 0; i < nr; i++) {
                 for (int j = 0; j < nc; j++) {
                     float noise = (float) (rand.nextGaussian() * sigma + mean);
-                    data[b][i][j] += noise;
+                    float val = data[b][i][j] + noise;
+
+                    // CLAMPING MUTLAKA OLMALI
+                    if (val > 255) {
+                        val = 255;
+                    }
+                    if (val < 0) {
+                        val = 0;
+                    }
+
+                    data[b][i][j] = val;
+                }
+            }
+        }
+        return data;
+    }
+
+    public static float[][][] addSaltAndPepper3D(float[][][] data, float density) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        java.util.Random rand = new java.util.Random();
+
+        int startBand = (bands == 4) ? 1 : 0;
+
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                float r = rand.nextFloat();
+
+                if (r < density) { // Gürültü eklenecek mi?
+                    // %50 ihtimalle Tuz (Siyah), %50 ihtimalle Biber (Beyaz)
+                    float noiseVal = (rand.nextFloat() < 0.5f) ? 0 : 255;
+
+                    // Tüm renk kanallarını (RGB) aynı değere set et
+                    // Böylece tam siyah veya tam beyaz noktalar oluşur
+                    for (int b = startBand; b < bands; b++) {
+                        data[b][i][j] = noiseVal;
+                    }
+                }
+            }
+        }
+        return data;
+    }
+
+    /**
+     * 2D (Gri) diziye Speckle gürültüsü ekler
+     */
+    public static float[][] addNoiseSpeckle2D(float[][] data, float sigma) {
+        int nr = data.length;
+        int nc = data[0].length;
+        java.util.Random rand = new java.util.Random();
+
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                // Ortalama 0, belirtilen sigma ile Gaussian dağılımlı n üretilir
+                float n = (float) (rand.nextGaussian() * sigma);
+
+                // Çarpımsal formül: g = f + (f * n)
+                float val = data[i][j] + (data[i][j] * n);
+
+                // Clamping (Sınırlandırma)
+                if (val > 255) {
+                    val = 255;
+                }
+                if (val < 0) {
+                    val = 0;
+                }
+
+                data[i][j] = val;
+            }
+        }
+        return data;
+    }
+
+    /**
+     * 3D (RGB) diziye Speckle gürültüsü ekler
+     */
+    public static float[][][] addNoiseSpeckle3D(float[][][] data, float sigma) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        java.util.Random rand = new java.util.Random();
+
+        // Alpha kanalını (indis 0) korumak için kontrol
+        int startBand = (bands == 4) ? 1 : 0;
+
+        for (int b = startBand; b < bands; b++) {
+            for (int i = 0; i < nr; i++) {
+                for (int j = 0; j < nc; j++) {
+                    float n = (float) (rand.nextGaussian() * sigma);
+                    float val = data[b][i][j] + (data[b][i][j] * n);
+
+                    if (val > 255) {
+                        val = 255;
+                    }
+                    if (val < 0) {
+                        val = 0;
+                    }
+
+                    data[b][i][j] = val;
                 }
             }
         }
@@ -5229,5 +5351,638 @@ public final class ImageProcess {
         faceRegions.add(new Rectangle(faceX, faceY, faceWidth, faceHeight));
 
         return mosaicRegions(image, faceRegions, blockSize);
+    }
+
+    public static float[][] filterMedian2D(float[][] data, int win) {
+        int nr = data.length;
+        int nc = data[0].length;
+        float[][] output = new float[nr][nc];
+        int edge = win / 2;
+
+        for (int i = edge; i < nr - edge; i++) {
+            for (int j = edge; j < nc - edge; j++) {
+                float[] neighborhood = new float[win * win];
+                int k = 0;
+                for (int wi = -edge; wi <= edge; wi++) {
+                    for (int wj = -edge; wj <= edge; wj++) {
+                        neighborhood[k++] = data[i + wi][j + wj];
+                    }
+                }
+                java.util.Arrays.sort(neighborhood);
+                output[i][j] = neighborhood[neighborhood.length / 2];
+            }
+        }
+        return output;
+    }
+
+    public static float[][] filterLee2D(float[][] data, int win, float noiseSigma) {
+        int nr = data.length;
+        int nc = data[0].length;
+        float[][] output = new float[nr][nc];
+        int edge = win / 2;
+        float noiseVar = noiseSigma * noiseSigma; // Gürültü varyansı
+
+        for (int i = edge; i < nr - edge; i++) {
+            for (int j = edge; j < nc - edge; j++) {
+                float sum = 0, sumSq = 0;
+                for (int wi = -edge; wi <= edge; wi++) {
+                    for (int wj = -edge; wj <= edge; wj++) {
+                        float p = data[i + wi][j + wj];
+                        sum += p;
+                        sumSq += p * p;
+                    }
+                }
+                float mean = sum / (win * win);
+                float var = (sumSq / (win * win)) - (mean * mean);
+
+                // Speckle (Çarpımsal) için Lee Katsayısı Formülü:
+                // K = var / (var + (mean^2 * noiseVar))
+                float k = var / (var + (mean * mean * noiseVar) + 0.0001f);
+
+                output[i][j] = mean + k * (data[i][j] - mean);
+            }
+        }
+        return output;
+    }
+
+    /**
+     * 2D (Gri) matris üzerine Ortalama (Mean/Box) Filtresi uygular.
+     *
+     * @param data: Giriş matrisi
+     * @param win: Pencere boyutu (örn: 3, 5, 7...)
+     * @return float[][] filtrelenmiş matris
+     */
+    public static float[][] filterMean2D(float[][] data, int win) {
+        int nr = data.length;
+        int nc = data[0].length;
+        float[][] output = new float[nr][nc];
+        int edge = win / 2; // Pencere yarıçapı
+
+        // Kenar piksellerini korumak için orijinal veriyi çıktıya kopyalayabiliriz
+        for (int i = 0; i < nr; i++) {
+            System.arraycopy(data[i], 0, output[i], 0, nc);
+        }
+
+        // Filtreleme döngüsü (kenarlardan güvenli mesafe bırakarak)
+        for (int i = edge; i < nr - edge; i++) {
+            for (int j = edge; j < nc - edge; j++) {
+                float sum = 0;
+
+                // Pencere içindeki pikselleri topla
+                for (int wi = -edge; wi <= edge; wi++) {
+                    for (int wj = -edge; wj <= edge; wj++) {
+                        sum += data[i + wi][j + wj];
+                    }
+                }
+
+                // Ortalamayı hesapla ve ata
+                output[i][j] = sum / (win * win);
+            }
+        }
+        return output;
+    }
+
+    public static float[][][] filterMean3D(float[][][] data, int win) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        float[][][] output = new float[bands][nr][nc];
+        int edge = win / 2;
+
+        // Alpha kanalını (indis 0) koru, diğer kanalları filtrele
+        int startBand = (bands == 4) ? 1 : 0;
+        if (startBand == 1) {
+            output[0] = data[0];
+        }
+
+        for (int b = startBand; b < bands; b++) {
+            for (int i = edge; i < nr - edge; i++) {
+                for (int j = edge; j < nc - edge; j++) {
+                    float sum = 0;
+                    for (int wi = -edge; wi <= edge; wi++) {
+                        for (int wj = -edge; wj <= edge; wj++) {
+                            sum += data[b][i + wi][j + wj];
+                        }
+                    }
+                    output[b][i][j] = sum / (win * win);
+                }
+            }
+        }
+        return output;
+    }
+
+    public static float[][][] filterMedian3D(float[][][] data, int win) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        float[][][] output = new float[bands][nr][nc];
+        int edge = win / 2;
+
+        int startBand = (bands == 4) ? 1 : 0;
+        if (startBand == 1) {
+            output[0] = data[0];
+        }
+
+        for (int b = startBand; b < bands; b++) {
+            for (int i = edge; i < nr - edge; i++) {
+                for (int j = edge; j < nc - edge; j++) {
+                    float[] neighborhood = new float[win * win];
+                    int k = 0;
+                    for (int wi = -edge; wi <= edge; wi++) {
+                        for (int wj = -edge; wj <= edge; wj++) {
+                            neighborhood[k++] = data[b][i + wi][j + wj];
+                        }
+                    }
+                    java.util.Arrays.sort(neighborhood);
+                    output[b][i][j] = neighborhood[neighborhood.length / 2];
+                }
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Renkli (3D) görüntüler için Adaptif Lee Filtresi. Çarpımsal Speckle
+     * gürültüsünü temizlemek için güncellenmiş formül kullanılır.
+     *
+     * @param data: Giriş görüntüsü [kanal][satır][sütun]
+     * @param win: Pencere boyutu (3, 5, 7...)
+     * @param noiseSigma: Gürültü eklerken kullanılan sigma değeri (Örn: 0.1)
+     * @return filtrelenmiş float[][][]
+     */
+    public static float[][][] filterLee3D(float[][][] data, int win, float noiseSigma) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        float[][][] output = new float[bands][nr][nc];
+        int edge = win / 2;
+        float noiseVar = noiseSigma * noiseSigma; // Gürültü varyansı (sigma^2)
+
+        // Alpha kanalını (indis 0) korumak için kontrol
+        int startBand = (bands == 4) ? 1 : 0;
+
+        // Eğer Alpha kanalı varsa, olduğu gibi çıktıya kopyala
+        if (startBand == 1) {
+            for (int i = 0; i < nr; i++) {
+                System.arraycopy(data[0][i], 0, output[0][i], 0, nc);
+            }
+        }
+
+        // Her renk kanalı için ayrı işlem yap
+        for (int b = startBand; b < bands; b++) {
+            // Kenarları orijinal haliyle kopyala (filtreleme yapılamayan kısımlar)
+            for (int i = 0; i < nr; i++) {
+                System.arraycopy(data[b][i], 0, output[b][i], 0, nc);
+            }
+
+            for (int i = edge; i < nr - edge; i++) {
+                for (int j = edge; j < nc - edge; j++) {
+
+                    // 1. Yerel İstatistikleri Hesapla (Mean ve Variance)
+                    float sum = 0, sumSq = 0;
+                    for (int wi = -edge; wi <= edge; wi++) {
+                        for (int wj = -edge; wj <= edge; wj++) {
+                            float pixel = data[b][i + wi][j + wj];
+                            sum += pixel;
+                            sumSq += pixel * pixel;
+                        }
+                    }
+
+                    int numPixels = win * win;
+                    float localMean = sum / numPixels;
+                    float localVar = (sumSq / numPixels) - (localMean * localMean);
+
+                    // 2. Lee Katsayısını Hesapla (Çarpımsal Formül)
+                    // K = var / (var + (mean^2 * noiseVar))
+                    float denominator = localVar + (localMean * localMean * noiseVar) + 0.0001f;
+                    float k = localVar / denominator;
+
+                    // 3. Yeni Piksel Değerini Hesapla
+                    float val = localMean + k * (data[b][i][j] - localMean);
+
+                    // Clamping (Sınırlandırma)
+                    if (val > 255) {
+                        val = 255;
+                    }
+                    if (val < 0) {
+                        val = 0;
+                    }
+
+                    output[b][i][j] = val;
+                }
+            }
+        }
+        return output;
+    }
+
+    public static float[][] filterGammaMap2D(float[][] data, int win, float noiseSigma) {
+        int nr = data.length;
+        int nc = data[0].length;
+        float[][] output = new float[nr][nc];
+        int edge = win / 2;
+        float noiseVar = noiseSigma * noiseSigma;
+
+        for (int i = edge; i < nr - edge; i++) {
+            for (int j = edge; j < nc - edge; j++) {
+                float sum = 0, sumSq = 0;
+                for (int wi = -edge; wi <= edge; wi++) {
+                    for (int wj = -edge; wj <= edge; wj++) {
+                        float p = data[i + wi][j + wj];
+                        sum += p;
+                        sumSq += p * p;
+                    }
+                }
+                float localMean = sum / (win * win);
+                float localVar = (sumSq / (win * win)) - (localMean * localMean);
+
+                // Varyasyon Katsayısı (Coefficient of Variation)
+                float ciSq = localVar / (localMean * localMean + 0.0001f);
+
+                // Eğer yerel varyasyon gürültü varyasyonundan küçükse ortalamayı al
+                if (ciSq < noiseVar) {
+                    output[i][j] = localMean;
+                } else {
+                    // Gamma MAP Formülü (Quadratic Solution)
+                    float alpha = (1 + noiseVar) / (ciSq - noiseVar);
+                    float y = data[i][j];
+
+                    // Formül: (alpha-1)mu + sqrt((alpha-1)^2 * mu^2 + 4*alpha*L*mu*y) / 2*alpha
+                    // (Burada L (Look) parametresini 1 varsayıyoruz)
+                    float a_1 = alpha - 1;
+                    double term1 = a_1 * localMean;
+                    double term2 = Math.sqrt(Math.pow(a_1, 2) * Math.pow(localMean, 2) + 4 * alpha * localMean * y);
+
+                    output[i][j] = (float) ((term1 + term2) / (2 * alpha));
+                }
+            }
+        }
+        return output;
+    }
+
+    public static float[][][] filterGammaMap3D(float[][][] data, int win, float noiseSigma) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        float[][][] output = new float[bands][nr][nc];
+        int startBand = (bands == 4) ? 1 : 0;
+
+        for (int b = startBand; b < bands; b++) {
+            output[b] = filterGammaMap2D(data[b], win, noiseSigma);
+        }
+        // Alpha kanalını koru
+        if (startBand == 1) {
+            output[0] = data[0];
+        }
+
+        return output;
+    }
+
+    public static float[][] filterKuan2D(float[][] data, int win, float noiseSigma) {
+        int nr = data.length;
+        int nc = data[0].length;
+        float[][] output = new float[nr][nc];
+        int edge = win / 2;
+        float noiseVar = noiseSigma * noiseSigma;
+
+        for (int i = edge; i < nr - edge; i++) {
+            for (int j = edge; j < nc - edge; j++) {
+                float sum = 0, sumSq = 0;
+                for (int wi = -edge; wi <= edge; wi++) {
+                    for (int wj = -edge; wj <= edge; wj++) {
+                        float p = data[i + wi][j + wj];
+                        sum += p;
+                        sumSq += p * p;
+                    }
+                }
+                float mean = sum / (win * win);
+                float var = (sumSq / (win * win)) - (mean * mean);
+
+                // Kuan Formülü: W = (1 - Cu^2 / Ci^2) / (1 + Cu^2)
+                // Cu = noiseSigma, Ci = sqrt(var) / mean
+                float ci = (float) Math.sqrt(var) / (mean + 0.0001f);
+                float ciSq = ci * ci;
+                float w = (ciSq - noiseVar) / (ciSq * (1 + noiseVar) + 0.0001f);
+
+                if (w < 0) {
+                    w = 0;
+                }
+                if (w > 1) {
+                    w = 1;
+                }
+
+                output[i][j] = mean + w * (data[i][j] - mean);
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Renkli (3D) görüntüler için Kuan Filtresi. Lee filtresine benzer ancak
+     * daha hassas bir istatistiksel model kullanır.
+     */
+    public static float[][][] filterKuan3D(float[][][] data, int win, float noiseSigma) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        float[][][] output = new float[bands][nr][nc];
+
+        // Alpha kanalını (indis 0) belirle
+        int startBand = (bands == 4) ? 1 : 0;
+
+        // Alpha kanalını olduğu gibi kopyala
+        if (startBand == 1) {
+            for (int i = 0; i < nr; i++) {
+                System.arraycopy(data[0][i], 0, output[0][i], 0, nc);
+            }
+        }
+
+        // Her renk kanalına 2D Kuan filtresini uygula
+        for (int b = startBand; b < bands; b++) {
+            output[b] = filterKuan2D(data[b], win, noiseSigma);
+        }
+
+        return output;
+    }
+
+    public static float[][] filterFrost2D(float[][] data, int win, float noiseSigma, float dampingFactor) {
+        int nr = data.length;
+        int nc = data[0].length;
+        float[][] output = new float[nr][nc];
+        int edge = win / 2;
+
+        for (int i = edge; i < nr - edge; i++) {
+            for (int j = edge; j < nc - edge; j++) {
+                float sumVal = 0, sumWeights = 0;
+
+                // Yerel varyasyon katsayısını hesapla
+                float localMean = 0, localSum = 0, localSumSq = 0;
+                for (int wi = -edge; wi <= edge; wi++) {
+                    for (int wj = -edge; wj <= edge; wj++) {
+                        float p = data[i + wi][j + wj];
+                        localSum += p;
+                        localSumSq += p * p;
+                    }
+                }
+                localMean = localSum / (win * win);
+                float localVar = (localSumSq / (win * win)) - (localMean * localMean);
+                float b = dampingFactor * (localVar / (localMean * localMean + 0.0001f));
+
+                // Ağırlıklı pencereleme uygula
+                for (int wi = -edge; wi <= edge; wi++) {
+                    for (int wj = -edge; wj <= edge; wj++) {
+                        float dist = (float) Math.sqrt(wi * wi + wj * wj);
+                        float weight = (float) Math.exp(-b * dist);
+                        sumVal += data[i + wi][j + wj] * weight;
+                        sumWeights += weight;
+                    }
+                }
+                output[i][j] = sumVal / sumWeights;
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Renkli (3D) görüntüler için Frost Filtresi. Üstel sönümleme kullanarak
+     * kenarları koruyan adaptif bir filtredir.
+     *
+     * @param dampingFactor: Sönümleme katsayısı (Genelde 2.0 veya 3.0
+     * kullanılır)
+     */
+    public static float[][][] filterFrost3D(float[][][] data, int win, float noiseSigma, float dampingFactor) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        float[][][] output = new float[bands][nr][nc];
+
+        int startBand = (bands == 4) ? 1 : 0;
+
+        if (startBand == 1) {
+            for (int i = 0; i < nr; i++) {
+                System.arraycopy(data[0][i], 0, output[0][i], 0, nc);
+            }
+        }
+
+        for (int b = startBand; b < bands; b++) {
+            output[b] = filterFrost2D(data[b], win, noiseSigma, dampingFactor);
+        }
+
+        return output;
+    }
+
+    // --- 1D MEAN FILTER ---
+    public static float[] filterMean1D(float[] data, int win) {
+        int n = data.length;
+        float[] output = new float[n];
+        int edge = win / 2;
+        for (int i = edge; i < n - edge; i++) {
+            float sum = 0;
+            for (int k = -edge; k <= edge; k++) {
+                sum += data[i + k];
+            }
+            output[i] = sum / win;
+        }
+        return output;
+    }
+
+    // --- 1D MEDIAN FILTER ---
+    public static float[] filterMedian1D(float[] data, int win) {
+        int n = data.length;
+        float[] output = new float[n];
+        int edge = win / 2;
+        for (int i = edge; i < n - edge; i++) {
+            float[] neighborhood = new float[win];
+            System.arraycopy(data, i - edge, neighborhood, 0, win);
+            java.util.Arrays.sort(neighborhood);
+            output[i] = neighborhood[win / 2];
+        }
+        return output;
+    }
+
+    // --- 1D LEE FILTER ---
+    public static float[] filterLee1D(float[] data, int win, float sigma) {
+        int n = data.length;
+        float[] output = new float[n];
+        int edge = win / 2;
+        float noiseVar = sigma * sigma;
+        for (int i = edge; i < n - edge; i++) {
+            float sum = 0, sumSq = 0;
+            for (int k = -edge; k <= edge; k++) {
+                float p = data[i + k];
+                sum += p;
+                sumSq += p * p;
+            }
+            float mean = sum / win;
+            float var = (sumSq / win) - (mean * mean);
+            float k = var / (var + (mean * mean * noiseVar) + 0.0001f);
+            output[i] = mean + k * (data[i] - mean);
+        }
+        return output;
+    }
+
+    // --- 1D KUAN FILTER ---
+    public static float[] filterKuan1D(float[] data, int win, float sigma) {
+        int n = data.length;
+        float[] output = new float[n];
+        int edge = win / 2;
+        float noiseVar = sigma * sigma;
+        for (int i = edge; i < n - edge; i++) {
+            float sum = 0, sumSq = 0;
+            for (int k = -edge; k <= edge; k++) {
+                float p = data[i + k];
+                sum += p;
+                sumSq += p * p;
+            }
+            float mean = sum / win;
+            float var = (sumSq / win) - (mean * mean);
+            float ciSq = var / (mean * mean + 0.0001f);
+            float w = (ciSq - noiseVar) / (ciSq * (1 + noiseVar) + 0.0001f);
+            w = Math.max(0, Math.min(1, w));
+            output[i] = mean + w * (data[i] - mean);
+        }
+        return output;
+    }
+
+    // --- 1D FROST FILTER ---
+    public static float[] filterFrost1D(float[] data, int win, float sigma, float damping) {
+        int n = data.length;
+        float[] output = new float[n];
+        int edge = win / 2;
+        for (int i = edge; i < n - edge; i++) {
+            float lSum = 0, lSumSq = 0;
+            for (int k = -edge; k <= edge; k++) {
+                lSum += data[i + k];
+                lSumSq += data[i + k] * data[i + k];
+            }
+            float lMean = lSum / win;
+            float lVar = (lSumSq / win) - (lMean * lMean);
+            float b = damping * (lVar / (lMean * lMean + 0.0001f));
+
+            float sumWVal = 0, sumW = 0;
+            for (int k = -edge; k <= edge; k++) {
+                float weight = (float) Math.exp(-b * Math.abs(k));
+                sumWVal += data[i + k] * weight;
+                sumW += weight;
+            }
+            output[i] = sumWVal / sumW;
+        }
+        return output;
+    }
+
+    // --- 1D GAMMA MAP FILTER ---
+    public static float[] filterGammaMap1D(float[] data, int win, float sigma) {
+        int n = data.length;
+        float[] output = new float[n];
+        int edge = win / 2;
+        float noiseVar = sigma * sigma;
+        for (int i = edge; i < n - edge; i++) {
+            float sum = 0, sumSq = 0;
+            for (int k = -edge; k <= edge; k++) {
+                sum += data[i + k];
+                sumSq += data[i + k] * data[i + k];
+            }
+            float lMean = sum / win;
+            float lVar = (sumSq / win) - (lMean * lMean);
+            float ciSq = lVar / (lMean * lMean + 0.0001f);
+
+            if (ciSq < noiseVar) {
+                output[i] = lMean;
+            } else {
+                float alpha = (1 + noiseVar) / (ciSq - noiseVar);
+                float a_1 = alpha - 1;
+                double t1 = a_1 * lMean;
+                double t2 = Math.sqrt(Math.pow(a_1, 2) * Math.pow(lMean, 2) + 4 * alpha * lMean * data[i]);
+                output[i] = (float) ((t1 + t2) / (2 * alpha));
+            }
+        }
+        return output;
+    }
+
+    public static float[] filterGaussian1D(float[] data, int win, float sigma) {
+        int n = data.length;
+        float[] output = new float[n];
+        int edge = win / 2;
+
+        // 1. Create 1D Gaussian Kernel
+        float[] kernel = new float[win];
+        float sum = 0;
+        for (int i = 0; i < win; i++) {
+            float x = i - edge;
+            kernel[i] = (float) Math.exp(-(x * x) / (2 * sigma * sigma));
+            sum += kernel[i];
+        }
+        for (int i = 0; i < win; i++) {
+            kernel[i] /= sum; // Normalize
+        }
+        // 2. Apply Convolution
+        for (int i = edge; i < n - edge; i++) {
+            float val = 0;
+            for (int k = -edge; k <= edge; k++) {
+                val += data[i + k] * kernel[k + edge];
+            }
+            output[i] = val;
+        }
+        return output;
+    }
+
+    public static float[][] filterGaussian2D(float[][] data, int win, float sigma) {
+        int nr = data.length;
+        int nc = data[0].length;
+        float[][] output = new float[nr][nc];
+        int edge = win / 2;
+
+        // 1. Create 2D Gaussian Kernel
+        float[][] kernel = new float[win][win];
+        float sum = 0;
+        for (int i = 0; i < win; i++) {
+            for (int j = 0; j < win; j++) {
+                float x = i - edge;
+                float y = j - edge;
+                kernel[i][j] = (float) Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
+                sum += kernel[i][j];
+            }
+        }
+        // Normalize Kernel
+        for (int i = 0; i < win; i++) {
+            for (int j = 0; j < win; j++) {
+                kernel[i][j] /= sum;
+            }
+        }
+
+        // 2. Apply 2D Convolution
+        for (int i = edge; i < nr - edge; i++) {
+            for (int j = edge; j < nc - edge; j++) {
+                float val = 0;
+                for (int wi = -edge; wi <= edge; wi++) {
+                    for (int wj = -edge; wj <= edge; wj++) {
+                        val += data[i + wi][j + wj] * kernel[wi + edge][wj + edge];
+                    }
+                }
+                output[i][j] = val;
+            }
+        }
+        return output;
+    }
+
+    public static float[][][] filterGaussian3D(float[][][] data, int win, float sigma) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        float[][][] output = new float[bands][nr][nc];
+        int startBand = (bands == 4) ? 1 : 0;
+
+        // Reusing 2D implementation for each color channel
+        for (int b = startBand; b < bands; b++) {
+            output[b] = filterGaussian2D(data[b], win, sigma);
+        }
+
+        // Preserve Alpha channel if exists
+        if (startBand == 1) {
+            for (int i = 0; i < nr; i++) {
+                System.arraycopy(data[0][i], 0, output[0][i], 0, nc);
+            }
+        }
+
+        return output;
     }
 }

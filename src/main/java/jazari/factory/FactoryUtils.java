@@ -177,7 +177,6 @@ import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import test.Deneme;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
@@ -6492,7 +6491,7 @@ public final class FactoryUtils {
         try {
             return FileUtils.readFileToString(new File(filePath), StandardCharsets.UTF_8);
         } catch (IOException ex) {
-            Logger.getLogger(Deneme.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FactoryUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -9491,7 +9490,7 @@ public final class FactoryUtils {
 
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(Deneme.class
+                    Logger.getLogger(FactoryUtils.class
                             .getName()).log(Level.SEVERE, null, ex);
                 }
             }

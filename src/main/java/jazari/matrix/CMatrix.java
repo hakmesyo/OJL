@@ -5025,7 +5025,7 @@ public final class CMatrix implements Serializable {
         } else {
             setArray(ImageProcess.addNoise3D(this.toFloatArray3D(), range));
         }
-        return this.tr();
+        return this;
     }
 
     /**
@@ -5051,8 +5051,39 @@ public final class CMatrix implements Serializable {
      *
      * @return CMatrix
      */
+    public CMatrix addNoiseSaltAndPepper(float range) {
+        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.addSaltAndPepper2D(this.toFloatArray2D(), range));
+        } else {
+            setArray(ImageProcess.addSaltAndPepper3D(this.toFloatArray3D(), range));
+        }
+        return this;
+    }
+
+    /**
+     * Matris elemanlarına Speckle (Çarpımsal) gürültü ekler. Formül: g = f + f
+     * * n
+     *
+     * @param sigma: Gürültünün standart sapması (Örn: 0.05 ile 0.2 arası etkili
+     * sonuç verir)
+     * @return CMatrix
+     */
+    public CMatrix addNoiseSpeckle(float sigma) {
+        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.addNoiseSpeckle2D(this.toFloatArray2D(), sigma));
+        } else {
+            setArray(ImageProcess.addNoiseSpeckle3D(this.toFloatArray3D(), sigma));
+        }
+        return this;
+    }
+
     public CMatrix addNoise(float range) {
-        return jitter(range);
+        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.addSaltAndPepper2D(this.toFloatArray2D(), range));
+        } else {
+            setArray(ImageProcess.addNoise3D(this.toFloatArray3D(), range));
+        }
+        return this;
     }
 
     /**
@@ -5837,104 +5868,155 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * default 3x3 median filter
+     * Applies Mean (Box) Filter to smooth the signal or image. It reduces
+     * Gaussian noise by averaging pixel values in the local neighborhood.
      *
-     * @return
+     * @param windowSize The size of the sliding window. Must be an odd integer
+     * (e.g., 3, 5, 11). Typical values: [3, 5, 7]. Large windows cause
+     * significant blurring.
+     * @return This CMatrix instance for method chaining.
      */
-    public CMatrix filterMedian() {
-        image = ImageProcess.filterMedian(image);
-        setArray(ImageProcess.imageToPixelsFloat(image));
-        return this;
-    }
-
-    public CMatrix filterMedian(int window_size) {
-        image = ImageProcess.filterMedian(image, window_size);
-        setArray(ImageProcess.imageToPixelsFloat(image));
-        return this;
-    }
-
-    /**
-     * Matlab compliant median filter default window size is 3x3
-     *
-     * @return
-     */
-    public CMatrix medfilt2() {
-        return medfilt2(3);
-    }
-
-    /**
-     * Matlab compliant median filter with a given window size for 2D image
-     * matrix
-     *
-     * @return
-     */
-    public CMatrix medfilt2(int window_size) {
-        image = ImageProcess.filterMedian(image, window_size);
-        setArray(ImageProcess.imageToPixelsFloat(image));
+    public CMatrix filterMean(int windowSize) {
+        if (this.isVector()) {
+            setArray(ImageProcess.filterMean1D(this.toFloatArray1D(), windowSize));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.filterMean2D(this.toFloatArray2D(), windowSize));
+        } else {
+            setArray(ImageProcess.filterMean3D(this.toFloatArray3D(), windowSize));
+        }
         return this;
     }
 
     /**
-     * Matlab compatible median filter default window size is 3x3
+     * Applies Median Filter to remove impulsive noise like Salt & Pepper. It is
+     * excellent at preserving edges while removing extreme outliers
+     * (black/white dots).
      *
-     * @return
+     * @param windowSize The size of the sliding window. Must be an odd integer
+     * (e.g., 3, 5). Recommended: 3 or 5. Larger windows may distort small image
+     * features.
+     * @return This CMatrix instance for method chaining.
      */
-    public CMatrix meanfilt1() {
-        return meanfilt1(3);
-    }
-
-    /**
-     * Matlab compatible median filter with a given window size for 2D image
-     * matrix
-     *
-     * @param window_size: size of the used kernel or window
-     * @return
-     */
-    public CMatrix meanfilt1(int window_size) {
-        return filterMean1D(window_size);
-    }
-
-    /**
-     * apply mean filter
-     *
-     * @param window_size
-     * @return
-     */
-    public CMatrix filterMean1D(int window_size) {
-        float[] d = FactoryMatrix.filterMean1D(array.toFloatVector(), window_size);
-        setArray(d);
+    public CMatrix filterMedian(int windowSize) {
+        if (this.isVector()) {
+            setArray(ImageProcess.filterMedian1D(this.toFloatArray1D(), windowSize));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.filterMedian2D(this.toFloatArray2D(), windowSize));
+        } else {
+            setArray(ImageProcess.filterMedian3D(this.toFloatArray3D(), windowSize));
+        }
         return this;
     }
 
     /**
-     * Matlab compatible median filter default window size is 3x3
+     * Applies Adaptive Lee Filter for Speckle (multiplicative) noise reduction.
+     * It balances smoothing in uniform areas and detail preservation near
+     * edges.
      *
-     * @return
+     * @param windowSize Sliding window size. Must be an odd integer (e.g., 3,
+     * 5, 7).
+     * @param sigma The estimated noise standard deviation. Suggested range:
+     * [0.01, 0.5]. Common value: 0.1 to 0.2.
+     * @return This CMatrix instance for method chaining.
      */
-    public CMatrix medfilt1() {
-        return medfilt1(3);
-    }
-
-    /**
-     * Matlab compatible median filter with a given window size for 2D image
-     * matrix
-     *
-     * @param window_size: size of the used kernel or window
-     * @return
-     */
-    public CMatrix medfilt1(int window_size) {
-        return filterMedian1D(window_size);
-    }
-
-    public CMatrix filterMedian1D(int window_size) {
-        float[] d = FactoryMatrix.filterMedian1D(array.toFloatVector(), window_size);
-        setArray(d);
+    public CMatrix filterLee(int windowSize, float sigma) {
+        if (this.isVector()) {
+            setArray(ImageProcess.filterLee1D(this.toFloatArray1D(), windowSize, sigma));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.filterLee2D(this.toFloatArray2D(), windowSize, sigma));
+        } else {
+            setArray(ImageProcess.filterLee3D(this.toFloatArray3D(), windowSize, sigma));
+        }
         return this;
     }
 
-    public CMatrix filterGaussian(int window_size) {
-        image = ImageProcess.filterGaussian(image, window_size);
-        setArray(ImageProcess.imageToPixelsFloat(image));
+    /**
+     * Applies Kuan Filter for Speckle noise reduction. Mathematically more
+     * rigorous than Lee filter, providing better adaptive smoothing.
+     *
+     * @param windowSize Sliding window size. Must be an odd integer (e.g., 3,
+     * 5, 7).
+     * @param sigma The noise standard deviation used when noise was added.
+     * Expected range: [0.01, 0.5].
+     * @return This CMatrix instance for method chaining.
+     */
+    public CMatrix filterKuan(int windowSize, float sigma) {
+        if (this.isVector()) {
+            setArray(ImageProcess.filterKuan1D(this.toFloatArray1D(), windowSize, sigma));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.filterKuan2D(this.toFloatArray2D(), windowSize, sigma));
+        } else {
+            setArray(ImageProcess.filterKuan3D(this.toFloatArray3D(), windowSize, sigma));
+        }
+        return this;
+    }
+
+    /**
+     * Applies Frost Filter for Speckle noise reduction. It uses an exponential
+     * kernel that adapts based on local variance and distance.
+     *
+     * @param windowSize Sliding window size. Must be an odd integer (e.g., 3,
+     * 5, 7).
+     * @param sigma Standard deviation of the multiplicative noise. Recommended
+     * range: [0.05, 0.4].
+     * @param dampingFactor Decay constant for the filter weights. Range: [1.0
+     * (smoother) to 10.0 (sharper)]. Default: 2.0 or 3.0.
+     * @return This CMatrix instance for method chaining.
+     */
+    public CMatrix filterFrost(int windowSize, float sigma, float dampingFactor) {
+        if (this.isVector()) {
+            setArray(ImageProcess.filterFrost1D(this.toFloatArray1D(), windowSize, sigma, dampingFactor));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.filterFrost2D(this.toFloatArray2D(), windowSize, sigma, dampingFactor));
+        } else {
+            setArray(ImageProcess.filterFrost3D(this.toFloatArray3D(), windowSize, sigma, dampingFactor));
+        }
+        return this;
+    }
+
+    /**
+     * Applies Gamma MAP (Maximum A Posteriori) Filter for Speckle reduction.
+     * This is an advanced statistical filter assuming Gamma distribution of the
+     * signal. Highly recommended for high-resolution Radar (SAR) or Ultrasound
+     * images.
+     *
+     * @param windowSize Sliding window size. Must be an odd integer (e.g., 3,
+     * 5, 7, 9).
+     * @param sigma Noise standard deviation. Expected range: [0.01, 0.5]. Lower
+     * values preserve more texture, higher values smooth more.
+     * @return This CMatrix instance for method chaining.
+     */
+    public CMatrix filterGammaMap(int windowSize, float sigma) {
+        if (this.isVector()) {
+            setArray(ImageProcess.filterGammaMap1D(this.toFloatArray1D(), windowSize, sigma));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.filterGammaMap2D(this.toFloatArray2D(), windowSize, sigma));
+        } else {
+            setArray(ImageProcess.filterGammaMap3D(this.toFloatArray3D(), windowSize, sigma));
+        }
+        return this;
+    }
+
+    /**
+     * Applies a Gaussian Filter (Gaussian Blur) to smooth the image or signal.
+     * Unlike the Mean filter, it uses a weighted average (bell curve) which
+     * preserves edges better and provides a more natural blur.
+     *
+     * @param windowSize The size of the sliding window. Must be an odd integer
+     * (e.g., 3, 5, 7).
+     * @param sigma The standard deviation of the Gaussian distribution.
+     * Controls the "spread" of the blur. Typical values: [0.5 to 3.0]. Higher
+     * values increase blur.
+     * @return This CMatrix instance for method chaining.
+     */
+    public CMatrix filterGaussian(int windowSize, float sigma) {
+        if (this.isVector()) {
+            setArray(ImageProcess.filterGaussian1D(this.toFloatArray1D(), windowSize, sigma));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.filterGaussian2D(this.toFloatArray2D(), windowSize, sigma));
+        } else {
+            setArray(ImageProcess.filterGaussian3D(this.toFloatArray3D(), windowSize, sigma));
+        }
         return this;
     }
 
@@ -5944,18 +6026,17 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
-    /**
-     * apply mean filter
-     *
-     * @param window_size
-     * @return
-     */
-    public CMatrix filterMean(int window_size) {
-        image = ImageProcess.filterMean(image);
-        setArray(ImageProcess.bufferedImageToArray2D(image));
-        return this;
-    }
-
+//    /**
+//     * apply mean filter
+//     *
+//     * @param window_size
+//     * @return
+//     */
+//    public CMatrix filterMean(int window_size) {
+//        image = ImageProcess.filterMean(image);
+//        setArray(ImageProcess.bufferedImageToArray2D(image));
+//        return this;
+//    }
     /**
      * apply mean filter
      *
