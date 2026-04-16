@@ -1194,36 +1194,77 @@ public final class ImageProcess {
         return ret;
     }
 
+    /**
+     * Standart dışı (Type 0) görüntüleri standart RGB formatına çevirir.
+     */
+    public static BufferedImage getStandardImage(BufferedImage img) {
+        if (img.getType() != 0 && img.getType() != BufferedImage.TYPE_CUSTOM) {
+            return img;
+        }
+        BufferedImage newImg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = newImg.createGraphics();
+        g.drawImage(img, 0, 0, null);
+        g.dispose();
+        return newImg;
+    }
+
     public static float[][][] bufferedImageToArray3D(BufferedImage img) {
-        float[][][] ret = null;
-        if (img.getColorModel().getNumComponents() == 1 && !img.getColorModel().hasAlpha()) {
-            throw new ArithmeticException("BufferedImage has not rgba channels");
-        } else if (img.getColorModel().getNumComponents() == 3 && !img.getColorModel().hasAlpha()) {
-            WritableRaster raster = img.getRaster();
-            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-            byte[] d = data.getData();
-            float[] q = FactoryUtils.byte2Float(d);
-            float[] r = new float[q.length / 3];
-            float[] g = new float[q.length / 3];
-            float[] b = new float[q.length / 3];
-            int size = r.length;
-            for (int i = 0; i < size; i++) {
-                r[i] = q[3 * i];
-                g[i] = q[3 * i + 1];
-                b[i] = q[3 * i + 2];
+        // Tipi TYPE_3BYTE_BGR yaparsak piksel verisine byte array olarak çok hızlı erişiriz
+        if (img.getType() != BufferedImage.TYPE_3BYTE_BGR) {
+            BufferedImage temp = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+            Graphics2D g = temp.createGraphics();
+            g.drawImage(img, 0, 0, null);
+            g.dispose();
+            img = temp;
+        }
+
+        int w = img.getWidth();
+        int h = img.getHeight();
+        float[][][] ret = new float[3][h][w];
+
+        byte[] pixels = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+
+        int idx = 0;
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                // TYPE_3BYTE_BGR formatında sıra B-G-R şeklindedir
+                ret[2][y][x] = pixels[idx++] & 0xFF; // Blue
+                ret[1][y][x] = pixels[idx++] & 0xFF; // Green
+                ret[0][y][x] = pixels[idx++] & 0xFF; // Red
             }
-            float[][] rr = FactoryMatrix.reshape(r, img.getHeight(), img.getWidth());
-            float[][] gg = FactoryMatrix.reshape(g, img.getHeight(), img.getWidth());
-            float[][] bb = FactoryMatrix.reshape(b, img.getHeight(), img.getWidth());
-            ret = new float[3][][];
-            ret[0] = rr;
-            ret[1] = gg;
-            ret[2] = bb;
-            return ret;
         }
         return ret;
     }
 
+//    public static float[][][] bufferedImageToArray3D(BufferedImage img) {
+//        float[][][] ret = null;
+//        if (img.getColorModel().getNumComponents() == 1 && !img.getColorModel().hasAlpha()) {
+//            throw new ArithmeticException("BufferedImage has not rgba channels");
+//        } else if (img.getColorModel().getNumComponents() == 3 && !img.getColorModel().hasAlpha()) {
+//            WritableRaster raster = img.getRaster();
+//            DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+//            byte[] d = data.getData();
+//            float[] q = FactoryUtils.byte2Float(d);
+//            float[] r = new float[q.length / 3];
+//            float[] g = new float[q.length / 3];
+//            float[] b = new float[q.length / 3];
+//            int size = r.length;
+//            for (int i = 0; i < size; i++) {
+//                r[i] = q[3 * i];
+//                g[i] = q[3 * i + 1];
+//                b[i] = q[3 * i + 2];
+//            }
+//            float[][] rr = FactoryMatrix.reshape(r, img.getHeight(), img.getWidth());
+//            float[][] gg = FactoryMatrix.reshape(g, img.getHeight(), img.getWidth());
+//            float[][] bb = FactoryMatrix.reshape(b, img.getHeight(), img.getWidth());
+//            ret = new float[3][][];
+//            ret[0] = rr;
+//            ret[1] = gg;
+//            ret[2] = bb;
+//            return ret;
+//        }
+//        return ret;
+//    }
     public static int[][] imageToPixelsInt(BufferedImage img) {
         float[][] d = imageToPixelsFloat(img);
         int[][] original = FactoryUtils.toIntArray2D(d);
@@ -3284,7 +3325,6 @@ public final class ImageProcess {
         BufferedImage dest = clone(imgx);
         avgFilter.filter(dest, imgx);
         return dest;
-//        return ImageProcess.filterMean(imgx, 3);
     }
 
     public static BufferedImage filterMotionBlur(BufferedImage imgx) {
@@ -4777,34 +4817,12 @@ public final class ImageProcess {
     public static float[][] addNoise2D(float[][] data, float range) {
         int nr = data.length;
         int nc = data[0].length;
-        for (int i = 0; i < nr; i++) {
-            for (int j = 0; j < nc; j++) {
-                float n = (float) (new Random().nextGaussian() * range);
-                data[i][j] = data[i][j] + n;
-            }
-        }
-        return data;
-    }
-
-    public static float[][] addNoiseGaussian2D(float[][] data, float mean, float sigma) {
-        int nr = data.length;
-        int nc = data[0].length;
         java.util.Random rand = new java.util.Random();
-
         for (int i = 0; i < nr; i++) {
             for (int j = 0; j < nc; j++) {
-                float noise = (float) (rand.nextGaussian() * sigma + mean);
+                float noise = (rand.nextFloat() * 2 * range) - range;
                 float val = data[i][j] + noise;
-
-                // DEĞERLERİ 0-255 ARASINDA TUT (CLAMPLING)
-                if (val > 255) {
-                    val = 255;
-                }
-                if (val < 0) {
-                    val = 0;
-                }
-
-                data[i][j] = val;
+                data[i][j] = Math.max(0, Math.min(255, val));
             }
         }
         return data;
@@ -4829,50 +4847,43 @@ public final class ImageProcess {
         return data;
     }
 
-//    /**
-//     * 2D (Gray) diziye Gaussian gürültüsü ekler
-//     */
-//    public static float[][] addNoiseGaussian2D(float[][] data, float mean, float sigma) {
-//        int nr = data.length;
-//        int nc = data[0].length;
-//        java.util.Random rand = new java.util.Random();
-//
-//        for (int i = 0; i < nr; i++) {
-//            for (int j = 0; j < nc; j++) {
-//                float noise = (float) (rand.nextGaussian() * sigma + mean);
-//                data[i][j] += noise;
-//            }
-//        }
-//        return data;
-//    }
-    /**
-     * 3D (RGB) diziye Gaussian gürültüsü ekler
-     */
+    // --- 1D GAUSSIAN NOISE ---
+    public static float[] addNoiseGaussian1D(float[] data, float mean, float sigma) {
+        java.util.Random rand = new java.util.Random();
+        for (int i = 0; i < data.length; i++) {
+            float noise = (float) (rand.nextGaussian() * sigma + mean);
+            data[i] = clamp(data[i] + noise); // CLAMPING BURADA
+        }
+        return data;
+    }
+
+    // --- 2D GAUSSIAN NOISE ---
+    public static float[][] addNoiseGaussian2D(float[][] data, float mean, float sigma) {
+        int nr = data.length;
+        int nc = data[0].length;
+        java.util.Random rand = new java.util.Random();
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                float noise = (float) (rand.nextGaussian() * sigma + mean);
+                data[i][j] = clamp(data[i][j] + noise); // CLAMPING BURADA
+            }
+        }
+        return data;
+    }
+
+    // --- 3D GAUSSIAN NOISE ---
     public static float[][][] addNoiseGaussian3D(float[][][] data, float mean, float sigma) {
-        int bands = data.length;
+        int nch = data.length;
         int nr = data[0].length;
         int nc = data[0][0].length;
         java.util.Random rand = new java.util.Random();
+        int startBand = (nch == 4) ? 1 : 0;
 
-        // Eğer 4 kanal varsa (Alpha dahil), 0. indisi atla (Alpha'yı koru)
-        // Eğer 3 kanal varsa (RGB), 0. indisten başla.
-        int startBand = (bands == 4) ? 1 : 0;
-
-        for (int b = startBand; b < bands; b++) {
-            for (int i = 0; i < nr; i++) {
-                for (int j = 0; j < nc; j++) {
+        for (int i = startBand; i < nch; i++) {
+            for (int j = 0; j < nr; j++) {
+                for (int k = 0; k < nc; k++) {
                     float noise = (float) (rand.nextGaussian() * sigma + mean);
-                    float val = data[b][i][j] + noise;
-
-                    // CLAMPING MUTLAKA OLMALI
-                    if (val > 255) {
-                        val = 255;
-                    }
-                    if (val < 0) {
-                        val = 0;
-                    }
-
-                    data[b][i][j] = val;
+                    data[i][j][k] = clamp(data[i][j][k] + noise);
                 }
             }
         }
@@ -4994,15 +5005,26 @@ public final class ImageProcess {
         return pixelsToImageColor(data);
     }
 
+    /**
+     * Adds Gaussian noise to a 3D image array (RGB or ARGB).
+     *
+     * @param data The 3D float array [channels][rows][cols]
+     * @param range The standard deviation of the noise (intensity)
+     * @return Updated 3D array with noise and clamping applied
+     */
     public static float[][][] addNoise3D(float[][][] data, float range) {
         int nch = data.length;
         int nr = data[0].length;
         int nc = data[0][0].length;
-        for (int i = 1; i < nch; i++) {  //first element is alpha so skip it
+        java.util.Random rand = new java.util.Random();
+        int startBand = (nch == 4) ? 1 : 0; // Alpha kanalı varsa atla
+
+        for (int i = startBand; i < nch; i++) {
             for (int j = 0; j < nr; j++) {
                 for (int k = 0; k < nc; k++) {
-                    float n = (float) (new Random().nextGaussian() * range);
-                    data[i][j][k] = data[i][j][k] + n;
+                    float noise = (rand.nextFloat() * 2 * range) - range;
+                    float val = data[i][j][k] + noise;
+                    data[i][j][k] = Math.max(0, Math.min(255, val));
                 }
             }
         }
@@ -5351,6 +5373,21 @@ public final class ImageProcess {
         faceRegions.add(new Rectangle(faceX, faceY, faceWidth, faceHeight));
 
         return mosaicRegions(image, faceRegions, blockSize);
+    }
+
+    /**
+     * Bilinmeyen veya hatalı imaj tiplerini (Type 0) standart tipe dönüştürür.
+     */
+    public static BufferedImage normalizeImageType(BufferedImage img) {
+        if (img.getType() != BufferedImage.TYPE_CUSTOM && img.getType() != 0) {
+            return img;
+        }
+        // Bilinmeyen tipi standart RGB'ye kopyala
+        BufferedImage newImg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics g = newImg.getGraphics();
+        g.drawImage(img, 0, 0, null);
+        g.dispose();
+        return newImg;
     }
 
     public static float[][] filterMedian2D(float[][] data, int win) {
@@ -5984,5 +6021,138 @@ public final class ImageProcess {
         }
 
         return output;
+    }
+
+    public static void saveImageWithQuality(BufferedImage img, String fullPath, float quality) {
+        try {
+            // Dosya uzantısını kontrol et, JPEG değilse standart kaydet
+            if (!fullPath.toLowerCase().endsWith(".jpg") && !fullPath.toLowerCase().endsWith(".jpeg")) {
+                saveImage(img, fullPath);
+                return;
+            }
+
+            File file = new File(fullPath);
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+            if (!writers.hasNext()) {
+                throw new IllegalStateException("No writers found");
+            }
+
+            ImageWriter writer = writers.next();
+            ImageWriteParam param = writer.getDefaultWriteParam();
+
+            // Kompresyon modunu aktif et
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(quality); // 0.0f (en düşük) ile 1.0f (en yüksek) arası
+
+            try (ImageOutputStream ios = ImageIO.createImageOutputStream(file)) {
+                writer.setOutput(ios);
+                writer.write(null, new IIOImage(img, null, null), param);
+            }
+            writer.dispose();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- 1D SALT AND PEPPER NOISE ---
+    public static float[] addSaltAndPepper1D(float[] data, float density) {
+        java.util.Random rand = new java.util.Random();
+        for (int i = 0; i < data.length; i++) {
+            if (rand.nextFloat() < density) {
+                data[i] = rand.nextBoolean() ? 255 : 0;
+            }
+        }
+        return data;
+    }
+
+    /**
+     * Adds Multiplicative Speckle Noise to a 1D signal. Formula: g = f + (f *
+     * n)
+     */
+    public static float[] addNoiseSpeckle1D(float[] data, float sigma) {
+        java.util.Random rand = new java.util.Random();
+        for (int i = 0; i < data.length; i++) {
+            // 1. Ortalama 0, belirtilen sigma ile Gaussian gürültüsü üret
+            float noise = (float) (rand.nextGaussian() * sigma);
+
+            // 2. Çarpımsal formülü uygula: g = f + (f * n)
+            float val = data[i] + (data[i] * noise);
+
+            // 3. Tek parametreli clamp metodumuzla sınırla (0-255)
+            data[i] = clamp(val);
+        }
+        return data;
+    }
+
+    // --- 1D UNIFORM NOISE (General addNoise) ---
+    public static float[] addNoise1D(float[] data, float range) {
+        java.util.Random rand = new java.util.Random();
+        for (int i = 0; i < data.length; i++) {
+            float noise = (rand.nextFloat() * 2 * range) - range;
+            data[i] = Math.max(0, Math.min(255, data[i] + noise));
+        }
+        return data;
+    }
+
+    private static float clamp(float val) {
+        return Math.max(0, Math.min(255, val));
+    }
+
+    public static float[][] filterMosaic2D(float[][] data, int grain) {
+        int nr = data.length;
+        int nc = data[0].length;
+
+        for (int i = 0; i < nr; i += grain) {
+            for (int j = 0; j < nc; j += grain) {
+                // 1. Calculate the average of the block
+                float sum = 0;
+                int count = 0;
+                for (int r = i; r < i + grain && r < nr; r++) {
+                    for (int c = j; c < j + grain && c < nc; c++) {
+                        sum += data[r][c];
+                        count++;
+                    }
+                }
+                float avg = sum / count;
+
+                // 2. Fill the block with the average
+                for (int r = i; r < i + grain && r < nr; r++) {
+                    for (int c = j; c < j + grain && c < nc; c++) {
+                        data[r][c] = avg;
+                    }
+                }
+            }
+        }
+        return data;
+    }
+
+    public static float[][][] filterMosaic3D(float[][][] data, int grain) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        int startBand = (bands == 4) ? 1 : 0;
+
+        for (int b = startBand; b < bands; b++) {
+            // Reuse 2D implementation for each channel
+            data[b] = filterMosaic2D(data[b], grain);
+        }
+        return data;
+    }
+
+    public static float[] filterMosaic1D(float[] data, int grain) {
+        int n = data.length;
+        for (int i = 0; i < n; i += grain) {
+            float sum = 0;
+            int count = 0;
+            for (int k = i; k < i + grain && k < n; k++) {
+                sum += data[k];
+                count++;
+            }
+            float avg = sum / count;
+            for (int k = i; k < i + grain && k < n; k++) {
+                data[k] = avg;
+            }
+        }
+        return data;
     }
 }

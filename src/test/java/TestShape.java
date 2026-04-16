@@ -17,7 +17,7 @@ public class TestShape {
                 .rgb2gray()
                 .shape()
                 ;
-        float[] shape=img.shapeArray();
+        int[] shape=img.shapeArray();
         CMatrix gauss=CMatrix.getInstance((int)shape[0],(int)shape[1]).addNoiseGaussian(0,12).imshow();
     }
 }

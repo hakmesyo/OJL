@@ -441,7 +441,9 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
                 paintMouseDashedLines(gr, wPanel, hPanel, colorDashedLine);
             }
 
-            paintWatermarkInfo(gr);
+            if (showInfo) {
+                paintWatermarkInfo(gr);
+            }
         }
         paintFrameRectangle(gr, wPanel, hPanel);
         paintComponents(g);
@@ -2369,6 +2371,12 @@ public class PanelPicture extends JPanel implements KeyListener, MouseWheelListe
             }
 
         }
+    }
+
+    private boolean showInfo = true;
+
+    public void setShowInfo(boolean b) {
+        this.showInfo = b;
     }
 
     private class ItemHandler implements ActionListener {

@@ -43,7 +43,7 @@ public class TestRailrod {
             BufferedImage img = ImageProcess.cropImage(cm.getImage(), new CRectangle(150, 50, 200, 200));
             cm.setImage(img)
                     .imshow()
-                    .writeImage(path + "\\" + folders[1] + "\\yeni\\" + (i + 32) + ".jpg");
+                    .imsave(path + "\\" + folders[1] + "\\yeni\\" + (i + 32) + ".jpg");
         }
     }
 

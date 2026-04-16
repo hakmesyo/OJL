@@ -12,7 +12,7 @@ import jazari.machine_learning.mlp.enums.EProblemType;
 import jazari.matrix.CMatrix;
 import java.io.File;
 
-public class OJLMachineLearning {
+public class TestMachineLearningApi {
 
     public static void main(String[] args) {
         // 1. Adım: OJL API'si ile Sahte Veri Seti Oluşturma

@@ -272,8 +272,25 @@ public final class CMatrix implements Serializable {
     }
 
     public CMatrix setImage(BufferedImage image) {
-        this.image = image;
-        this.array = Nd4j.create(ImageProcess.imageToPixelsFloat(GrayScale.luminosity(this.image)));
+        if (image == null) {
+            return this;
+        }
+
+        // Önce tipi normalize et (Type 0 hatasını önler)
+        this.image = ImageProcess.getStandardImage(image);
+
+        // Kanal sayısına göre 2D veya 3D diziye aktar
+        int numComponents = this.image.getColorModel().getNumComponents();
+
+        if (numComponents == 1) {
+            // Gri Resim: 2D dizi oluştur
+            float[][] pixels = ImageProcess.bufferedImageToArray2D(this.image);
+            this.array = Nd4j.create(pixels);
+        } else {
+            // Renkli Resim: 3D dizi oluştur [Channels, Height, Width]
+            float[][][] pixels = ImageProcess.bufferedImageToArray3D(this.image);
+            this.array = Nd4j.create(pixels);
+        }
         return this;
     }
 
@@ -1303,7 +1320,7 @@ public final class CMatrix implements Serializable {
      * @return CMatrix
      */
     public CMatrix setArray(float... d) {
-        this.array = Nd4j.create(d, new int[]{d.length, 1});
+        this.array = Nd4j.create(d, new int[]{1, d.length});
         return this;
     }
 
@@ -1384,9 +1401,6 @@ public final class CMatrix implements Serializable {
             if (this.image.getType() == 10) {
                 this.image = ImageProcess.pixelsToImageGray(d);
             }
-//            else {
-//                this.image = ImageProcess.pixelsToImageColor(d);
-//            }
         }
         return this;
     }
@@ -2552,6 +2566,44 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    /**
+     * Shows the image with a specific resize ratio. 0.5f shrinks the display by
+     * half, 2.0f doubles the display size. This does not modify the original
+     * matrix data.
+     *
+     * @param ratio scaling factor (e.g., 0.5f, 1.5f, 2.0f)
+     * @return this CMatrix instance
+     */
+    public CMatrix imshow(float ratio) {
+        return imshow("", ratio);
+    }
+
+    /**
+     * Shows the image with a title and a specific resize ratio.
+     *
+     * @param title the window title
+     * @param ratio scaling factor
+     * @return this CMatrix instance
+     */
+    public CMatrix imshow(String title, float ratio) {
+        if (image == null) {
+            image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
+        }
+
+        // Calculate new dimensions
+        int w = (int) (image.getWidth() * ratio);
+        int h = (int) (image.getHeight() * ratio);
+
+        // We use a temporary clone to show the resized version 
+        // without affecting the original matrix data
+        CMatrix temp = this.clone();
+        temp.image = ImageProcess.resizeAspectRatio(image, w, h);
+
+        FrameImage frm = new FrameImage(temp, this.imagePath, title);
+        frm.setVisible(true);
+        return this;
+    }
+
     public CMatrix imshowAutoResized(boolean isAutoResized) {
         if (image == null || image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
             image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
@@ -2630,24 +2682,31 @@ public final class CMatrix implements Serializable {
      * @return
      */
     public CMatrix imshowRefresh(String title) {
+        // 1. Resmin varlığından emin ol (Daha önce konuştuğumuz 3D/2D mantığı burada da geçerli)
         if (image == null) {
-            if (array.maxNumber().floatValue() > 0.0f) {
+            if (array.rank() == 2) {
                 image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
             } else {
                 image = ImageProcess.pixelsToImageColor(array.toFloatMatrix());
             }
         }
-//        if (image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
-//            image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
-//        } else if (image.getType() != BufferedImage.TYPE_BYTE_GRAY) {
-//            image = ImageProcess.pixelsToImageColor(array.toFloatMatrix());
-//        }
+
+        // 2. Refresh frame'i oluştur veya güncelle
         if (frameImageRefresh == null) {
             frameImageRefresh = new FrameImage();
             frameImageRefresh.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            // İsteğe bağlı: İlk açılışta autoresize'ı aktif et
+            frameImageRefresh.chk_auto_resize.setSelected(true);
         }
+
+        // 3. Resimi ve başlığı gönder
         frameImageRefresh.setImage(image, this.imagePath, title);
         frameImageRefresh.setTitle(title);
+
+        // --- KRİTİK EKLEME: Boyutlandırma ve Bilgi Ekranı Mantığını Tetikle ---
+        // Resim değiştiği için pencereye kendini resme göre tekrar uydurmasını söylüyoruz
+        frameImageRefresh.autoResizeFrame();
+
         frameImageRefresh.setVisible(true);
         return this;
     }
@@ -4337,35 +4396,65 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    /**
+     * Saves the current image to a specified file name.
+     *
+     * @param file_name The name or full path of the file (e.g., "output.png").
+     * @return This CMatrix instance.
+     */
     public CMatrix saveImage(String file_name) {
         if (image == null) {
             image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         }
         ImageProcess.saveImage(image, file_name);
+        System.out.println("[OJL INFO] Image saved successfully: " + file_name);
         return this;
     }
 
+    /**
+     * Saves the current image to a specific path and file name.
+     *
+     * @param path The directory path.
+     * @param file_name The name of the file.
+     * @return This CMatrix instance.
+     */
     public CMatrix saveImage(String path, String file_name) {
         if (image == null) {
             image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         }
-        ImageProcess.saveImage(image, path + "/" + file_name);
+        String fullPath = path + "/" + file_name;
+        ImageProcess.saveImage(image, fullPath);
+        System.out.println("[OJL INFO] Image saved successfully to: " + fullPath);
         return this;
     }
 
+    /**
+     * Saves the current image using a default name or a file chooser dialog.
+     *
+     * @return This CMatrix instance.
+     */
     public CMatrix saveImage() {
         if (image == null) {
             image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         }
         ImageProcess.saveImage(image);
+        System.out.println("[OJL INFO] Image saved successfully.");
         return this;
     }
 
+    /**
+     * Saves the current image inside a specific folder with an auto-generated
+     * name.
+     *
+     * @param folderPath The directory where the image will be stored.
+     * @return This CMatrix instance.
+     */
     public CMatrix saveImageAtFolder(String folderPath) {
         if (image == null) {
             image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
         }
         ImageProcess.saveImageAtFolder(image, folderPath);
+        System.out.println("[OJL INFO] Image saved successfully in folder: " + folderPath);
         return this;
     }
 
@@ -5029,14 +5118,18 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * Matris elemanlarına Gaussian gürültüsü ekler.
+     * Adds Additive Gaussian Noise (Normal Distribution) to the signal or
+     * image. Formula: g = f + n, where n ~ N(mean, sigma^2).
      *
-     * @param mean: gürültünün ortalaması (genelde 0)
-     * @param sigma: gürültünün standart sapması (yoğunluğu)
-     * @return CMatrix
+     * @param mean The average value of the noise (usually 0).
+     * @param sigma The standard deviation (intensity). Typical range for
+     * images: [5, 50].
+     * @return This CMatrix instance.
      */
     public CMatrix addNoiseGaussian(float mean, float sigma) {
-        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+        if (this.isVector()) {
+            setArray(ImageProcess.addNoiseGaussian1D(this.toFloatArray1D(), mean, sigma));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
             setArray(ImageProcess.addNoiseGaussian2D(this.toFloatArray2D(), mean, sigma));
         } else {
             setArray(ImageProcess.addNoiseGaussian3D(this.toFloatArray3D(), mean, sigma));
@@ -5045,31 +5138,36 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * add certain noise on all matrix elements
+     * Adds Salt and Pepper (Impulse) Noise to the signal or image. Randomly
+     * sets elements to 0 (Pepper) or 255 (Salt).
      *
-     * @param range: float noise amount range should be 0 from 50
-     *
-     * @return CMatrix
+     * @param density The probability of noise occurrence. Range: [0.0, 1.0].
+     * Typical value: 0.05 (5% noise).
+     * @return This CMatrix instance.
      */
-    public CMatrix addNoiseSaltAndPepper(float range) {
-        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
-            setArray(ImageProcess.addSaltAndPepper2D(this.toFloatArray2D(), range));
+    public CMatrix addNoiseSaltAndPepper(float density) {
+        if (this.isVector()) {
+            setArray(ImageProcess.addSaltAndPepper1D(this.toFloatArray1D(), density));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.addSaltAndPepper2D(this.toFloatArray2D(), density));
         } else {
-            setArray(ImageProcess.addSaltAndPepper3D(this.toFloatArray3D(), range));
+            setArray(ImageProcess.addSaltAndPepper3D(this.toFloatArray3D(), density));
         }
         return this;
     }
 
     /**
-     * Matris elemanlarına Speckle (Çarpımsal) gürültü ekler. Formül: g = f + f
-     * * n
+     * Adds Multiplicative Speckle Noise to the signal or image. Formula: g = f
+     * + f * n, where n is Gaussian noise.
      *
-     * @param sigma: Gürültünün standart sapması (Örn: 0.05 ile 0.2 arası etkili
-     * sonuç verir)
-     * @return CMatrix
+     * @param sigma The standard deviation of the multiplier. Typical range:
+     * [0.05, 0.3].
+     * @return This CMatrix instance.
      */
     public CMatrix addNoiseSpeckle(float sigma) {
-        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+        if (this.isVector()) {
+            setArray(ImageProcess.addNoiseSpeckle1D(this.toFloatArray1D(), sigma));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
             setArray(ImageProcess.addNoiseSpeckle2D(this.toFloatArray2D(), sigma));
         } else {
             setArray(ImageProcess.addNoiseSpeckle3D(this.toFloatArray3D(), sigma));
@@ -5077,9 +5175,19 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    /**
+     * Adds Uniform Random Noise within a specified range. Each element is
+     * shifted by a random value between [-range, +range].
+     *
+     * @param range The maximum absolute value of the random shift. Typical
+     * range for images: [1, 30].
+     * @return This CMatrix instance.
+     */
     public CMatrix addNoise(float range) {
-        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
-            setArray(ImageProcess.addSaltAndPepper2D(this.toFloatArray2D(), range));
+        if (this.isVector()) {
+            setArray(ImageProcess.addNoise1D(this.toFloatArray1D(), range));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.addNoise2D(this.toFloatArray2D(), range));
         } else {
             setArray(ImageProcess.addNoise3D(this.toFloatArray3D(), range));
         }
@@ -5218,31 +5326,40 @@ public final class CMatrix implements Serializable {
     }
 
     /**
-     * Matlab compatible command::write image file
+     * Saves image with specified JPEG quality.
      *
-     * @return CMatrix
+     * @param folder Target folder path
+     * @param fileName File name (should end with .jpg)
+     * @param quality Quality level between 0 and 100
+     * @return This CMatrix instance
      */
-    public CMatrix imwrite() {
-        return writeImage();
-    }
+    public CMatrix imsave(String folder, String fileName, int quality) {
+        if (image == null) {
+            image = ImageProcess.pixelsToImageGray(array.toFloatMatrix());
+        }
+        String fullPath = folder + "/" + fileName;
+        float q = quality / 100.0f; // 10 -> 0.1f
 
-    public CMatrix writeImage() {
-        ImageProcess.writeImage(image);
+        ImageProcess.saveImageWithQuality(image, fullPath, q);
+
+        System.out.println("[OJL INFO] Image saved with quality " + quality + "% to: " + fullPath);
         return this;
     }
 
     /**
-     * Matlab compatible command::write image file
+     * Saves the current image to the root directory with a specified JPEG
+     * quality. This is a shortcut method that uses the current working
+     * directory as the target folder.
      *
-     * @return CMatrix
+     * @param fileName The name of the file (should include .jpg or .jpeg
+     * extension).
+     * @param quality The compression quality level between 0 and 100. Lower
+     * values result in smaller files but more artifacts (e.g., 10). Higher
+     * values preserve more detail (e.g., 95).
+     * @return This CMatrix instance for method chaining.
      */
-    public CMatrix imwrite(String path) {
-        return writeImage(path);
-    }
-
-    public CMatrix writeImage(String path) {
-        ImageProcess.writeImage(image, path);
-        return this;
+    public CMatrix imsave(String fileName, int quality) {
+        return imsave(".", fileName, quality);
     }
 
     /**
@@ -5888,6 +6005,28 @@ public final class CMatrix implements Serializable {
     }
 
     /**
+     * Applies a Mosaic (Pixelation) filter to the signal or image. It divides
+     * the image into blocks and fills each block with its average value.
+     *
+     * @param grainSize The size of the mosaic blocks. Typical values: [2, 50].
+     * 1 means no effect.
+     * @return This CMatrix instance for method chaining.
+     */
+    public CMatrix filterMosaic(int grainSize) {
+        if (grainSize <= 1) {
+            return this;
+        }
+        if (this.isVector()) {
+            setArray(ImageProcess.filterMosaic1D(this.toFloatArray1D(), grainSize));
+        } else if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.filterMosaic2D(this.toFloatArray2D(), grainSize));
+        } else {
+            setArray(ImageProcess.filterMosaic3D(this.toFloatArray3D(), grainSize));
+        }
+        return this;
+    }
+
+    /**
      * Applies Median Filter to remove impulsive noise like Salt & Pepper. It is
      * excellent at preserving edges while removing extreme outliers
      * (black/white dots).
@@ -6026,48 +6165,10 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
-//    /**
-//     * apply mean filter
-//     *
-//     * @param window_size
-//     * @return
-//     */
-//    public CMatrix filterMean(int window_size) {
-//        image = ImageProcess.filterMean(image);
-//        setArray(ImageProcess.bufferedImageToArray2D(image));
-//        return this;
-//    }
-    /**
-     * apply mean filter
-     *
-     * @return
-     */
     public CMatrix filterMotionBlur() {
         image = ImageProcess.filterMotionBlur(image);
         setArray(ImageProcess.bufferedImageToArray2D(image));
         return this;
-    }
-
-    /**
-     * Matlab compatible mean filter or average filter for 2D image matrix with
-     * a given size of window
-     *
-     * @param window_size
-     * @return
-     */
-    public CMatrix filter2(int window_size) {
-        image = ImageProcess.filterMean(image, window_size);
-        setArray(ImageProcess.imageToPixelsFloat(image));
-        return this;
-    }
-
-    /**
-     * Matlab compliant mean filter or average filter for 2D image matrix
-     *
-     * @return
-     */
-    public CMatrix filter2() {
-        return filter2(3);
     }
 
     /**
@@ -9223,9 +9324,9 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
-    public float[] shapeArray() {
+    public int[] shapeArray() {
         System.out.println("Matrix Shape = " + array.shapeInfoToString());
-        return FactoryUtils.toFloatArray1D(array.shape());
+        return FactoryUtils.toIntArray1D(array.shape());
     }
 
     /**
@@ -9697,6 +9798,8 @@ public final class CMatrix implements Serializable {
         webCam = factoryWebCam.webCam;
         return this;
     }
+    
+
 
     /**
      * start camera (index=0 by default)

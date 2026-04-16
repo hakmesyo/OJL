@@ -10,7 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class TaskList {
+public class TestWindowsTaskList {
     /**
      * @param args the command line arguments
      */
@@ -23,8 +23,6 @@ public class TaskList {
             System.out.println(line);
         }
         input.close();
-        
-        CMatrix cm = CMatrix.getInstance().randn(5000,2).map(0, 100).hist(100);
     }
 
 }

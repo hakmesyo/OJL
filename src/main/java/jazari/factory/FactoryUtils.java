@@ -1746,6 +1746,14 @@ public final class FactoryUtils {
         return ret;
     }
 
+    public static int[] toIntArray1D(long[] m) {
+        int[] ret = new int[m.length];
+        for (int i = 0; i < m.length; i++) {
+            ret[i] = (((int) m[i]) & 0xFF);  //m[i]&0xFF;
+        }
+        return ret;
+    }
+
     public static int[] toIntArray1D(short[] m) {
         int[] ret = new int[m.length];
         for (int i = 0; i < m.length; i++) {
@@ -5686,6 +5694,11 @@ public final class FactoryUtils {
         return std(d);
     }
 
+    public static float getStd(float[][] d) {
+        float[] d2=toFloatArray1D(d);
+        return std(d2);
+    }
+
     public static float[][] deleteRowsFrom(float[][] dimg, int index) {
         float[][] ret = new float[index][dimg[0].length];
         for (int i = 0; i < index; i++) {
@@ -8224,8 +8237,8 @@ public final class FactoryUtils {
     public static void bekle(int milliSeconds) {
         delay(milliSeconds);
     }
-    
-    public static void waitForever(){
+
+    public static void waitForever() {
         try {
             System.err.println("Uygulama çalışıyor. Devam etmek veya durdurmak için Enter tuşuna basın...");
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

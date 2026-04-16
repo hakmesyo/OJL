@@ -48,14 +48,21 @@ public class FrameImage extends javax.swing.JFrame {
     private boolean noPaint = false;
     public float maxHeight = 730;
 
+    private static int nextOpenX = 0;
+    private static int nextOpenY = 0;
+    private static int maxRowHeight = 0;
+    private static final int SCREEN_GAP = 2; // 2 pixel gap between windows
+
     /**
      * Creates new form FrameImage
      */
     public FrameImage() {
         initComponents();
+        chk_auto_resize.setSelected(true);
         eventListener();
         setLocationRelativeTo(null);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        //setExtendedState(JFrame.MAXIMIZED_BOTH);
+        autoResizeFrame();
     }
 
     /**
@@ -67,6 +74,7 @@ public class FrameImage extends javax.swing.JFrame {
      */
     public FrameImage(CMatrix cm, String imagePath, String caption) {
         initComponents();
+        chk_auto_resize.setSelected(true);
         this.caption = caption;
         this.cm = cm;
         this.imageFolderPath = FactoryUtils.getFolderPath(imagePath);
@@ -78,8 +86,116 @@ public class FrameImage extends javax.swing.JFrame {
         eventListener();
         chkLabelVisible.setSelected(true);
         setLocationRelativeTo(null);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        //setExtendedState(JFrame.MAXIMIZED_BOTH);
+        autoResizeFrame();
     }
+    
+    public void autoResizeFrame() {
+    if (getPicturePanel().getImage() == null) return;
+
+    if (chk_auto_resize.isSelected()) {
+        int imgW = getPicturePanel().getImage().getWidth();
+        int imgH = getPicturePanel().getImage().getHeight();
+
+        int extraWidth = 40;
+        int extraHeight = 130;
+        int w = imgW + extraWidth;
+        int h = imgH + extraHeight;
+
+        // Boyutu her zaman güncelle (resim boyutuna tam yapışması için)
+        setSize(new Dimension(w, h));
+
+        // --- GÜÇLÜ VE ESNEK DİZİLİM MANTIĞI ---
+        // Sadece pencere henüz açılmadıysa veya yerleştirilmediyse konumu hesapla.
+        // Eğer zaten görünürse (Kamera akışı gibi), her karede konumu değiştirme.
+        if (!this.isVisible() || (this.getX() == 0 && this.getY() == 0)) {
+            java.awt.Rectangle screenSize = java.awt.GraphicsEnvironment
+                    .getLocalGraphicsEnvironment()
+                    .getMaximumWindowBounds();
+
+            if (nextOpenX + (w / 2) > screenSize.width) {
+                nextOpenX = 0;
+                nextOpenY += maxRowHeight + SCREEN_GAP;
+                maxRowHeight = 0;
+            }
+
+            if (nextOpenY + (h / 2) > screenSize.height) {
+                nextOpenX = 0;
+                nextOpenY = 0;
+                maxRowHeight = 0;
+            }
+
+            setLocation(nextOpenX, nextOpenY);
+            nextOpenX += w + SCREEN_GAP;
+            if (h > maxRowHeight) maxRowHeight = h;
+        }
+        // ----------------------------------------
+
+        getPicturePanel().setShowInfo(false); // Siyah bandı kapat
+    } else {
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        getPicturePanel().setShowInfo(true);
+    }
+    getPicturePanel().repaint();
+}
+
+//    public void autoResizeFrame() {
+//        if (getPicturePanel().getImage() == nulFl) {
+//            return;
+//        }
+//
+//        if (chk_auto_resize.isSelected()) {
+//            int imgW = getPicturePanel().getImage().getWidth();
+//            int imgH = getPicturePanel().getImage().getHeight();
+//
+//            int extraWidth = 40;
+//            int extraHeight = 130;
+//
+//            int w = imgW + extraWidth;
+//            int h = imgH + extraHeight;
+//
+//            setSize(new Dimension(w, h));
+//
+//            // --- AKILLI VE ESNEK DİZİLİM MANTIĞI ---
+//            java.awt.Rectangle screenSize = java.awt.GraphicsEnvironment
+//                    .getLocalGraphicsEnvironment()
+//                    .getMaximumWindowBounds();
+//
+//            // KURAL 1: Eğer pencerenin en az yarısı (w/2) ekran genişliği içindeyse o satıra koy.
+//            // Değilse alt satıra geç.
+//            if (nextOpenX + (w / 2) > screenSize.width) {
+//                nextOpenX = 0;
+//                nextOpenY += maxRowHeight + SCREEN_GAP;
+//                maxRowHeight = 0;
+//            }
+//
+//            // KURAL 2: Eğer alt satıra geçince ekranın altına çok fazla taşıyorsak (yarısından fazlası dışardaysa)
+//            // o zaman gerçekten başa (0,0) dön.
+//            if (nextOpenY + (h / 2) > screenSize.height) {
+//                nextOpenX = 0;
+//                nextOpenY = 0;
+//                maxRowHeight = 0;
+//            }
+//
+//            // Pencereyi yerleştir
+//            setLocation(nextOpenX, nextOpenY);
+//
+//            // Bir sonraki pencere için X'i güncelle
+//            nextOpenX += w + SCREEN_GAP;
+//
+//            // Bu satırdaki en yüksek pencereyi kaydet
+//            if (h > maxRowHeight) {
+//                maxRowHeight = h;
+//            }
+//            // ----------------------------------------
+//
+//            getPicturePanel().setShowInfo(false);
+//        } else {
+//            setExtendedState(JFrame.MAXIMIZED_BOTH);
+//            getPicturePanel().setShowInfo(true);
+//        }
+//        getPicturePanel().repaint();
+//    }
 
     public void setImage(BufferedImage img, String imagePath, String caption) {
         this.img = img;
@@ -482,7 +598,7 @@ public class FrameImage extends javax.swing.JFrame {
         getPicturePanel().activateBoundingBox = chkBBox.isSelected();
         getPicturePanel().activatePolygon = chkPolygon.isSelected();
         getPicturePanel().activateLaneDetection = chkLane.isSelected();
-        getPicturePanel().activateLine=chkLine.isSelected();
+        getPicturePanel().activateLine = chkLine.isSelected();
         getPicturePanel().activateCrop = !(chkLane.isSelected() || chkPolygon.isSelected() || chkBBox.isSelected());
         getPicturePanel().setImage(this.img, imagePath, this.getTitle());
         getPicturePanel().requestFocus();
@@ -657,7 +773,7 @@ public class FrameImage extends javax.swing.JFrame {
                     + "- Sol tık basılı tutup sürükleyerek çizgi çekin.\n"
                     + "- Mevcut çizgilerin uçlarından boyutlandırın veya gövdesinden taşıyın.\n"
                     + "- 'S' tuşu ile kaydedip ilerleyin.", 3000, () -> {
-            });
+                    });
             // Diğer checkboxları kapat
             chkBBox.setSelected(false);
             chkPolygon.setSelected(false);
@@ -811,19 +927,41 @@ public class FrameImage extends javax.swing.JFrame {
         }
     }
 
-    public void autoResizeFrame() {
-        if (chk_auto_resize.isSelected()) {
-            int w = getPicturePanel().getImage().getWidth();
-            int h = getPicturePanel().getImage().getHeight() + 80;
-            setSize(new Dimension(w, h));
-        } else {
-            if ((getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH) {
-                setLocationRelativeTo(null);
-                setExtendedState(JFrame.MAXIMIZED_BOTH);
-            }
-        }
-    }
-
+//    public void autoResizeFrame() {
+//        if (getPicturePanel().getImage() == null) {
+//            return;
+//        }
+//
+//        if (chk_auto_resize.isSelected()) {
+//            // İmge boyutlarını al
+//            int imgW = getPicturePanel().getImage().getWidth();
+//            int imgH = getPicturePanel().getImage().getHeight();
+//
+//            // Pencere kenarlıkları ve başlık çubuğu için gereken minimum ek alan
+//            // extraWidth: Sağ ve sol pencere çerçevesi (Genelde toplam 16px civarıdır)
+//            // extraHeight: Toolbar (üst panel) + Başlık çubuğu + Alt çerçeve
+//            int extraWidth = 40;
+//            int extraHeight = 130; // Üst paneldeki objelerin yüksekliği + çerçeve
+//
+//            int w = imgW + extraWidth;
+//            int h = imgH + extraHeight;
+//
+//            // Minimum genişlik kontrolünü tamamen kaldırdık. 
+//            // Pencere imge ne kadar darsa o kadar daralacak.
+//            setSize(new Dimension(w, h));
+//
+//            // Pencereyi ekranın ortasına konumlandır
+//            setLocationRelativeTo(null);
+//
+//            // Küçük pencerede resmin üzerine binen siyah bandı gizle
+//            getPicturePanel().setShowInfo(false);
+//        } else {
+//            // Maximize modu
+//            setExtendedState(JFrame.MAXIMIZED_BOTH);
+//            getPicturePanel().setShowInfo(true);
+//        }
+//        getPicturePanel().repaint();
+//    }
     public void setAutoResizeFrame(boolean isAutoResize) {
         chk_auto_resize.setSelected(isAutoResize);
     }
