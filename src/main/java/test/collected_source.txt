@@ -1,3 +1,11 @@
+==================== STATISTICS ====================
+Project Type:             Generic
+Files Collected:          228
+Total Lines:              12.155
+Methods/Functions:        0 (estimated)
+Generated:                2026-04-14T11:42:20.520265500
+====================================================
+
 ==================== X-RAY (PROJECT STRUCTURE) ====================
 test/
 ├── Adata_set_organizer.java
@@ -27,8 +35,8 @@ test/
 ├── TestAMass.java
 ├── TestAnimatedPlot.java
 ├── TestAnnotations.java
-├── TestApplyFunction.java
 ├── TestAPIDocJS.java
+├── TestApplyFunction.java
 ├── TestARFFWeka.java
 ├── TestArrayConversion.java
 ├── TestAssert.java
@@ -45,6 +53,7 @@ test/
 ├── TestByte.java
 ├── TestCalculateFileHistogramInFolder.java
 ├── TestCamera.java
+├── TestCameraCalibrationAxB.java
 ├── TestCameraObserverSarxos.java
 ├── TestCezeriMLP.java
 ├── TestChangeImageFileExtension.java
@@ -117,6 +126,15 @@ test/
 ├── TestHistWithInfo.java
 ├── TestHSV.java
 ├── TestHttpServerPort.java
+├── TestImageDataGenerator.java
+├── TestImageMirrorOrFlip.java
+├── TestImageNoise.java
+├── TestImageProcessing.java
+├── TestImageReadUrl.java
+├── TestImageResize.java
+├── TestImageRestorationAxB.java
+├── TestImageShow.java
+├── TestImShowRefresh.java
 ├── TestJSON.java
 ├── TestJTable.java
 ├── TestKalmanFilter.java
@@ -167,14 +185,16 @@ test/
 ├── TestRangeSqrtPlot.java
 ├── TestReadTiffImage.java
 ├── TestRegionProposal.java
+├── TestReIndexFilesBasedOnNanoTimeUniqueness.java
 ├── TestReplicateImage.java
 ├── TestResizeAdaptiveImage.java
-├── TestResizeWithAspect.java
 ├── TestResizeImage.java
 ├── TestResizeImagesInDataSet.java
-├── TestReIndexFilesBasedOnNanoTimeUniqueness.java
+├── TestResizeWithAspect.java
 ├── TestRGBHSVConversions.java
 ├── TestRGBToLAB.java
+├── TestRoboticKinematics6DofAxB.java
+├── TestRoboticKinematicsAxB.java
 ├── TestRotatingCube.java
 ├── TestScatter.java
 ├── TestScatterBlob.java
@@ -182,15 +202,15 @@ test/
 ├── TestSerialization.java
 ├── TestShowMessage.java
 ├── TestShuffle.java
-├── TestShufflePixelImage.java
 ├── TestShuffleImage.java
+├── TestShufflePixelImage.java
 ├── TestSinc.java
 ├── TestSobelEdgeDetector.java
 ├── TestSolvingLinearEquationMatrixForm.java
 ├── TestSplineDraw.java
+├── TestSplitImageBndBox.java
 ├── TestSplitPath.java
 ├── TestSplitRange.java
-├── TestSplitImageBndBox.java
 ├── TestStreamAPI.java
 ├── TestStroke.java
 ├── TestStrToSetChars.java
@@ -215,14 +235,6 @@ test/
 ├── TestWeightCentroid.java
 ├── TestWekaInstances.java
 ├── TestXOREncryption.java
-├── TestImageDataGenerator.java
-├── TestImageMirrorOrFlip.java
-├── TestImageNoise.java
-├── TestImageProcessing.java
-├── TestImageReadUrl.java
-├── TestImageResize.java
-├── TestImageShow.java
-├── TestImShowRefresh.java
 └── UseCaseMatrixOperations.java
 
 ==================== SOURCE CODE ====================
@@ -488,6 +500,14 @@ public class ATestPanTilt {
 // ============================================================
 // FILE: collected_source.txt
 // ============================================================
+==================== STATISTICS ====================
+Project Type:             Generic
+Files Collected:          228
+Total Lines:              12.155
+Methods/Functions:        0 (estimated)
+Generated:                2026-04-14T11:42:20.520265500
+====================================================
+
 ==================== X-RAY (PROJECT STRUCTURE) ====================
 test/
 ├── Adata_set_organizer.java
@@ -517,8 +537,8 @@ test/
 ├── TestAMass.java
 ├── TestAnimatedPlot.java
 ├── TestAnnotations.java
-├── TestApplyFunction.java
 ├── TestAPIDocJS.java
+├── TestApplyFunction.java
 ├── TestARFFWeka.java
 ├── TestArrayConversion.java
 ├── TestAssert.java
@@ -535,6 +555,7 @@ test/
 ├── TestByte.java
 ├── TestCalculateFileHistogramInFolder.java
 ├── TestCamera.java
+├── TestCameraCalibrationAxB.java
 ├── TestCameraObserverSarxos.java
 ├── TestCezeriMLP.java
 ├── TestChangeImageFileExtension.java
@@ -607,6 +628,15 @@ test/
 ├── TestHistWithInfo.java
 ├── TestHSV.java
 ├── TestHttpServerPort.java
+├── TestImageDataGenerator.java
+├── TestImageMirrorOrFlip.java
+├── TestImageNoise.java
+├── TestImageProcessing.java
+├── TestImageReadUrl.java
+├── TestImageResize.java
+├── TestImageRestorationAxB.java
+├── TestImageShow.java
+├── TestImShowRefresh.java
 ├── TestJSON.java
 ├── TestJTable.java
 ├── TestKalmanFilter.java
@@ -657,14 +687,16 @@ test/
 ├── TestRangeSqrtPlot.java
 ├── TestReadTiffImage.java
 ├── TestRegionProposal.java
+├── TestReIndexFilesBasedOnNanoTimeUniqueness.java
 ├── TestReplicateImage.java
 ├── TestResizeAdaptiveImage.java
-├── TestResizeWithAspect.java
 ├── TestResizeImage.java
 ├── TestResizeImagesInDataSet.java
-├── TestReIndexFilesBasedOnNanoTimeUniqueness.java
+├── TestResizeWithAspect.java
 ├── TestRGBHSVConversions.java
 ├── TestRGBToLAB.java
+├── TestRoboticKinematics6DofAxB.java
+├── TestRoboticKinematicsAxB.java
 ├── TestRotatingCube.java
 ├── TestScatter.java
 ├── TestScatterBlob.java
@@ -672,15 +704,15 @@ test/
 ├── TestSerialization.java
 ├── TestShowMessage.java
 ├── TestShuffle.java
-├── TestShufflePixelImage.java
 ├── TestShuffleImage.java
+├── TestShufflePixelImage.java
 ├── TestSinc.java
 ├── TestSobelEdgeDetector.java
 ├── TestSolvingLinearEquationMatrixForm.java
 ├── TestSplineDraw.java
+├── TestSplitImageBndBox.java
 ├── TestSplitPath.java
 ├── TestSplitRange.java
-├── TestSplitImageBndBox.java
 ├── TestStreamAPI.java
 ├── TestStroke.java
 ├── TestStrToSetChars.java
@@ -705,14 +737,6 @@ test/
 ├── TestWeightCentroid.java
 ├── TestWekaInstances.java
 ├── TestXOREncryption.java
-├── TestImageDataGenerator.java
-├── TestImageMirrorOrFlip.java
-├── TestImageNoise.java
-├── TestImageProcessing.java
-├── TestImageReadUrl.java
-├── TestImageResize.java
-├── TestImageShow.java
-├── TestImShowRefresh.java
 └── UseCaseMatrixOperations.java
 
 ==================== SOURCE CODE ====================
@@ -736,7 +760,209 @@ import jazari.factory.FactoryUtils;
 public class Adata_set_organizer {
     public static void main(String[] args) {
         String path="D:\\DATASETS\\african_wildlife";
-        File[] dirs=FactoryUtils.getDirectori
+        File[] dirs=FactoryUtils.getDirectories(path);
+        int k=0;
+        for (File dir : dirs) {
+            File[] files=FactoryUtils.getFileArrayInFolderByExtension(dir.getAbsolutePath(), "jpg");
+            for (File file : files) {
+                String fileName=FactoryUtils.getFileName(file.getName());
+                FactoryUtils.copyFile(file, new File(path+"/all/"+dir.getName()+"_"+file.getName()));
+                File txtFile=new File(file.getParent()+"/"+fileName+".txt");
+                FactoryUtils.copyFile(txtFile, new File(path+"/all/"+dir.getName()+"_"+txtFile.getName()));
+                System.out.println((k++)+".copied "+file.getName());
+            }
+        }
+        
+        
+//        //String path="C:\\Users\\cezerilab\\Downloads\\road signs.v2-release.voc\\train";
+//        String path="C:\\Users\\cezerilab\\Downloads\\peanuts.v2-release.voc\\train";
+//        File[] files=FactoryUtils.getFileArrayInFolderNoSorting(path);
+//        for (File file : files) {
+//            System.out.println("file = " + file);
+//            String ext=FactoryUtils.getFileExtension(file);
+//            System.out.println("ext = " + ext);
+//            String[] s=file.getName().split("_jpg");
+//            String newFileName=file.getParent()+"/"+s[0]+"."+ext;
+//            FactoryUtils.renameFile(file, new File(newFileName));
+//            int a=1;
+//            
+//        }
+    }
+}
+
+// ============================================================
+// FILE: ANewJFrame.java
+// ============================================================
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package test;
+
+import jazari.factory.FactoryUtils;
+import jazari.matrix.CMatrix;
+
+/**
+ *
+ * @author cezerilab
+ */
+public class ANewJFrame extends javax.swing.JFrame {
+
+    /**
+     * Creates new form ANewJFrame
+     */
+    public ANewJFrame() {
+        initComponents();
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jButton1 = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(63, 63, 63)
+                .addComponent(jButton1)
+                .addContainerGap(262, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(76, 76, 76)
+                .addComponent(jButton1)
+                .addContainerGap(201, Short.MAX_VALUE))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 1; i <= 100; i++) {
+                    FactoryUtils.showCircularProgressBar(i);
+                    FactoryUtils.sleep(10);
+                }
+            }
+        }).start();
+        CMatrix cm = CMatrix.getInstance();
+
+//        for (int i = 1; i <= 100; i++) {
+//            FactoryUtils.showCircularProgressBar(i);
+//            FactoryUtils.sleep(10);
+//        }
+
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(ANewJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(ANewJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(ANewJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(ANewJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new ANewJFrame().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
+    // End of variables declaration//GEN-END:variables
+}
+
+// ============================================================
+// FILE: ATest1.java
+// ============================================================
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package test;
+
+import jazari.matrix.CMatrix;
+import jazari.types.TMatrixOperator;
+
+/**
+ *
+ * @author cezerilab
+ */
+public class ATest1 {
+
+    public static void main(String[] args) {
+
+CMatrix cm = CMatrix.getInstance()
+                .range("0:5")
+                .transpose()
+                .replicateRow(5)
+                .dump()
+                .plot()
+                ;
+
+//        CMatrix cm = CMatrix.getInstance()
+//                .imread("images/bf.png")
+//                .imread("images/blob.jpg")
+//                .rgb2gray()
+//                //.cmd("0:2:end",":")
+//                //.imshow()
+//                .addNoisePartial(10,0.7f)
+//                .imshow()
+//                
+//                
+//                
+//                ;
+    }
+}
+
+// ============================================================
+// FILE: ATestPanTilt.java
+// ============================================================
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.
 
 // ============================================================
 // FILE: Deneme.java
@@ -1354,6 +1580,163 @@ public class Deneme3 {
 }
 
 // ============================================================
+// FILE: DenemeDataAugmentation.java
+// ============================================================
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import jazari.factory.FactoryUtils;
+import jazari.matrix.CMatrix;
+
+/**
+ *
+ * @author cezerilab
+ */
+public class DenemeDataAugmentation {
+    public static void main(String[] args) {
+        double[] d1=new double[5];
+        double[] d2=new double[5];
+        for (int i = 0; i < 5; i++) {
+            d1[i]=Math.random();
+        }
+        for (int i = 0; i < 5; i++) {
+            d2[i]=Math.random();
+        }
+        
+        System.out.println(Arrays.toString(d1));
+        System.out.println(Arrays.toString(d2));
+        double corr=korelasyonHesapla(d1,d2);
+        System.out.println("corr = " + corr);
+        
+//        double[][] veri = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+//        double[] hedef = {10, 20, 30};
+//        
+//        for (int i = 0; i < veri[0].length; i++) {
+//            double[] ozellik = new double[veri.length];
+//            for (int j = 0; j < veri.length; j++) {
+//                ozellik[j] = veri[j][i];
+//            }
+//            double korelasyon = korelasyonHesapla(ozellik, hedef);
+//            System.out.println("Özellik " + i + " korelasyonu: " + korelasyon);
+//        }
+    }
+    
+    private static double korelasyonHesapla(double[] x, double[] y) {
+        double ortalamX = Arrays.stream(x).average().orElse(0.0);
+        double ortalamY = Arrays.stream(y).average().orElse(0.0);
+        
+        double pay = 0, paydaX = 0, paydaY = 0;
+        for (int i = 0; i < x.length; i++) {
+            pay += (x[i] - ortalamX) * (y[i] - ortalamY);
+            paydaX += Math.pow(x[i] - ortalamX, 2);
+            paydaY += Math.pow(y[i] - ortalamY, 2);
+        }
+        
+        return pay / Math.sqrt(paydaX * paydaY);
+    }
+
+//    public static void main(String[] args) {
+//        double[] d={-5000.0, -200.0, -300.0, -240.0, -210.0,-300.0, -10.0};
+//        double sum=0;
+//        for (int i = 0; i < d.length; i++) {
+//            sum+=d[i];
+//        }
+//        double mean=sum/d.length;
+//        System.out.println("mean = " + mean);
+//        
+//        double max=0;
+//        int index=0;
+//        for (int i = 0; i < d.length; i++) {
+//            if (Math.abs(mean-d[i])>max) {
+//                max=Math.abs(mean-d[i]);
+//                index=i;
+//            }
+//        }
+//        System.out.println(index+". eleman aykırıdır "+d[index]);
+//        
+//        
+//        
+//        List<Double> veriler = new ArrayList<>(List.of(1.0, 200.0, 300.0, 240.0, 210.0,300.0));
+//
+//        Collections.sort(veriler);
+//        int n = veriler.size();
+//        double q1 = veriler.get(n / (n-1));
+//        double q3 = veriler.get((n-2) * n / (n-1));
+//        double iqr = q3 - q1;
+//        double altSinir = q1 - (n-2)/2 * iqr;
+//        double ustSinir = q3 + (n-2)/2 * iqr;
+//
+//        List<Double> aykiriDegerler = new ArrayList<>();
+//        for (Double veri : veriler) {
+//            if (veri < altSinir || veri > ustSinir) {
+//                aykiriDegerler.add(veri);
+//            }
+//        }
+//
+//        System.out.println("Aykırı değerler: " + aykiriDegerler);
+    //}
+}
+
+// ============================================================
+// FILE: DenemeMatlabFunctions.java
+// ============================================================
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package test;
+
+import java.util.Arrays;
+import jazari.matrix.CMatrix;
+
+/**
+ *
+ * @author cezerilab
+ */
+public class DenemeMatlabFunctions {
+    public static void main(String[] args) {
+//        CMatrix cm = CMatrix.getInstance()
+//                .imread("images/babun.jpg")
+//                .imshow("original babun image")
+//                .rgb2gray()
+//                .imshow()
+//                //.imwrite("images/babun_1.png")
+//                ;
+//        CMatrix cm2 = cm.clone().hist(25).println();
+        //CMatrix cm_red = CMatrix.getInstance().values(90, 150, 0).reshape(3,90,50).cmd("0", ":").println();
+//        CMatrix cm_green = cm_red.clone();
+//        CMatrix cm_blue = cm_red.clone();
+
+        CMatrix cm = CMatrix.getInstance()
+                .imread("C:\\Users\\cezerilab\\Desktop/ideal_contrast.jpg")
+                .rgb2gray()
+                .imshow()
+                
+                ;
+        int[] indexes=cm.clone().shufflePixelImage().imshow().shuffleIndexes;
+        System.out.println(Arrays.toString(indexes));
+        
+        //cm.clone().threshold(100).imshow();
+        //cm.clone().rgb2hsv().imcomplement().imshow();
+        
+//                cm.clone().getRedChannelColor().imshow();
+//                cm.clone().getGreenChannelColor().imshow();
+//                cm.clone().getBlueChannelColor().imshow();
+        
+        
+    }
+}
+
+// ============================================================
 // FILE: Deneme_1.java
 // ============================================================
 /*
@@ -1791,163 +2174,6 @@ public class Deneme_florosis_ds {
             }
         }
 
-    }
-}
-
-// ============================================================
-// FILE: DenemeDataAugmentation.java
-// ============================================================
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import jazari.factory.FactoryUtils;
-import jazari.matrix.CMatrix;
-
-/**
- *
- * @author cezerilab
- */
-public class DenemeDataAugmentation {
-    public static void main(String[] args) {
-        double[] d1=new double[5];
-        double[] d2=new double[5];
-        for (int i = 0; i < 5; i++) {
-            d1[i]=Math.random();
-        }
-        for (int i = 0; i < 5; i++) {
-            d2[i]=Math.random();
-        }
-        
-        System.out.println(Arrays.toString(d1));
-        System.out.println(Arrays.toString(d2));
-        double corr=korelasyonHesapla(d1,d2);
-        System.out.println("corr = " + corr);
-        
-//        double[][] veri = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-//        double[] hedef = {10, 20, 30};
-//        
-//        for (int i = 0; i < veri[0].length; i++) {
-//            double[] ozellik = new double[veri.length];
-//            for (int j = 0; j < veri.length; j++) {
-//                ozellik[j] = veri[j][i];
-//            }
-//            double korelasyon = korelasyonHesapla(ozellik, hedef);
-//            System.out.println("Özellik " + i + " korelasyonu: " + korelasyon);
-//        }
-    }
-    
-    private static double korelasyonHesapla(double[] x, double[] y) {
-        double ortalamX = Arrays.stream(x).average().orElse(0.0);
-        double ortalamY = Arrays.stream(y).average().orElse(0.0);
-        
-        double pay = 0, paydaX = 0, paydaY = 0;
-        for (int i = 0; i < x.length; i++) {
-            pay += (x[i] - ortalamX) * (y[i] - ortalamY);
-            paydaX += Math.pow(x[i] - ortalamX, 2);
-            paydaY += Math.pow(y[i] - ortalamY, 2);
-        }
-        
-        return pay / Math.sqrt(paydaX * paydaY);
-    }
-
-//    public static void main(String[] args) {
-//        double[] d={-5000.0, -200.0, -300.0, -240.0, -210.0,-300.0, -10.0};
-//        double sum=0;
-//        for (int i = 0; i < d.length; i++) {
-//            sum+=d[i];
-//        }
-//        double mean=sum/d.length;
-//        System.out.println("mean = " + mean);
-//        
-//        double max=0;
-//        int index=0;
-//        for (int i = 0; i < d.length; i++) {
-//            if (Math.abs(mean-d[i])>max) {
-//                max=Math.abs(mean-d[i]);
-//                index=i;
-//            }
-//        }
-//        System.out.println(index+". eleman aykırıdır "+d[index]);
-//        
-//        
-//        
-//        List<Double> veriler = new ArrayList<>(List.of(1.0, 200.0, 300.0, 240.0, 210.0,300.0));
-//
-//        Collections.sort(veriler);
-//        int n = veriler.size();
-//        double q1 = veriler.get(n / (n-1));
-//        double q3 = veriler.get((n-2) * n / (n-1));
-//        double iqr = q3 - q1;
-//        double altSinir = q1 - (n-2)/2 * iqr;
-//        double ustSinir = q3 + (n-2)/2 * iqr;
-//
-//        List<Double> aykiriDegerler = new ArrayList<>();
-//        for (Double veri : veriler) {
-//            if (veri < altSinir || veri > ustSinir) {
-//                aykiriDegerler.add(veri);
-//            }
-//        }
-//
-//        System.out.println("Aykırı değerler: " + aykiriDegerler);
-    //}
-}
-
-// ============================================================
-// FILE: DenemeMatlabFunctions.java
-// ============================================================
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package test;
-
-import java.util.Arrays;
-import jazari.matrix.CMatrix;
-
-/**
- *
- * @author cezerilab
- */
-public class DenemeMatlabFunctions {
-    public static void main(String[] args) {
-//        CMatrix cm = CMatrix.getInstance()
-//                .imread("images/babun.jpg")
-//                .imshow("original babun image")
-//                .rgb2gray()
-//                .imshow()
-//                //.imwrite("images/babun_1.png")
-//                ;
-//        CMatrix cm2 = cm.clone().hist(25).println();
-        //CMatrix cm_red = CMatrix.getInstance().values(90, 150, 0).reshape(3,90,50).cmd("0", ":").println();
-//        CMatrix cm_green = cm_red.clone();
-//        CMatrix cm_blue = cm_red.clone();
-
-        CMatrix cm = CMatrix.getInstance()
-                .imread("C:\\Users\\cezerilab\\Desktop/ideal_contrast.jpg")
-                .rgb2gray()
-                .imshow()
-                
-                ;
-        int[] indexes=cm.clone().shufflePixelImage().imshow().shuffleIndexes;
-        System.out.println(Arrays.toString(indexes));
-        
-        //cm.clone().threshold(100).imshow();
-        //cm.clone().rgb2hsv().imcomplement().imshow();
-        
-//                cm.clone().getRedChannelColor().imshow();
-//                cm.clone().getGreenChannelColor().imshow();
-//                cm.clone().getBlueChannelColor().imshow();
-        
-        
     }
 }
 
@@ -3443,6 +3669,88 @@ public class TestCamera {
 
     }
 
+}
+
+// ============================================================
+// FILE: TestCameraCalibrationAxB.java
+// ============================================================
+package test;
+
+import jazari.matrix.CMatrix;
+
+/**
+ * ========================================================================
+ * MÜHENDİSLİĞİN TEMEL DENKLEMİ: Ax = b
+ * UYGULAMA 1: KAMERA KALİBRASYONU (Camera Calibration)
+ * ========================================================================
+ * 
+ * 1. KAMERA KALİBRASYONU NEDİR?
+ * Kamera kalibrasyonu, 3 boyutlu (3D) gerçek dünya koordinatlarındaki bir noktanın, 
+ * 2 boyutlu (2D) kamera sensöründe (fotoğrafta) tam olarak hangi piksele düşeceğini 
+ * hesaplayan matematiksel bir modelin parametrelerini bulma işlemidir.
+ * Bu parametreler ikiye ayrılır:
+ *   - İç Parametreler (Intrinsic): Odak uzaklığı, optik merkez, lens bükülmeleri (distortion).
+ *   - Dış Parametreler (Extrinsic): Kameranın 3D dünyadaki konumu ve açısı (Rotation/Translation).
+ * 
+ * 2. NİÇİN İHTİYAÇ VARDIR VE HANGİ PROBLEMLERDE KULLANILIR?
+ * Lensler ışığı büker. Fotoğraftaki bir pikselin gerçek dünyada kaç metreye denk geldiğini 
+ * bilmek için kameranın bu bükme/izdüşüm karakteristiğini (A matrisi) çözmemiz gerekir.
+ *   - Otonom Araçlar: Öndeki aracın tam olarak kaç metre uzakta olduğunu hesaplamak (Mesafe tahmini).
+ *   - Artırılmış Gerçeklik (AR/VR): Sanal bir objenin (Pokemon veya IKEA koltuğu) gerçek zemine tam oturması.
+ *   - Endüstriyel Kalite Kontrol: Fabrika bantlarındaki ürünlerin milimetrik ölçümleri.
+ * 
+ * 3. PROJELERDE BU İHTİYAÇ SÜREKLİ OLUR MU?
+ * EVET. Kameranın lensi değiştiğinde, kamera robota/araca bir milimetre bile farklı açıyla 
+ * takıldığında kalibrasyon matrisi değişir ve Ax=b denkleminin yeniden çözülmesi gerekir. 
+ * Sadece görüntü sınıflandırma (kedi mi köpek mi?) yapılıyorsa gerekmez, ancak 
+ * uzaysal "Ölçüm" veya "Konumlandırma" varsa kalibrasyon şarttır.
+ * 
+ * 4. ÖRNEK VERİ SETLERİ VE PLATFORMLAR NELERDİR?
+ * Endüstri standardı otonom sürüş veri setleri, fotoğrafların yanında kalibrasyon matrislerini de verir.
+ *   - KITTI Vision Benchmark Suite: Otonom algoritmaların test edildiği en ünlü veri setidir.
+ *   - Cityscapes Dataset: Kalibre edilmiş stereo kamera görüntüleri sunar.
+ *   - OpenCV & MATLAB: Geliştiriciler kendi kameralarını "dama tahtası (checkerboard)" göstererek 
+ *     kalibre etmek için bu kütüphanelerdeki hazır kalibrasyon fonksiyonlarını kullanırlar.
+ * 
+ * ------------------------------------------------------------------------
+ * DENKLEM: A * x = b  =>  x = A^-1 * b
+ * A: 3D Dünya Koordinatları (Gözlemlenen dama tahtası köşeleri)
+ * b: 2D Sensör Pikselleri (Bu köşelerin fotoğrafta düştüğü yerler)
+ * x: Bulmak istediğimiz İzdüşüm/Kalibrasyon parametreleri
+ * ========================================================================
+ */
+public class TestCameraCalibrationAxB {
+
+    public static void main(String[] args) {
+        System.out.println("--- KAMERA KALİBRASYONU PARAMETRE ÇÖZÜMÜ BAŞLIYOR ---\n");
+        
+        // A Matrisi (Sistem Katsayıları): 3D Dünya Uzayından alınan referans noktalar (Örn: Dama tahtası)
+        float[][] A_DunyaKoordinatlari = {
+            {20.0f,  10.0f, -10.0f},
+            {-30.0f, -10.0f,  20.0f},
+            {-20.0f,  10.0f,  20.0f}
+        };
+        
+        // b Vektörü (Ölçülen Çıktı): Kamerada (Görüntüde) bu noktaların düştüğü piksel (u, v) değerleri
+        float[][] b_PikselDegerleri = {
+            {800},
+            {-110},
+            {-300}
+        };
+
+        // OJL kullanarak dizileri yüksek performanslı CMatrix nesnelerine dönüştürüyoruz
+        CMatrix cmA = CMatrix.getInstance(A_DunyaKoordinatlari).println("A Matrisi (3D Dünya Noktaları):");
+        CMatrix cmB = CMatrix.getInstance(b_PikselDegerleri).println("b Vektörü (2D Sensör Ölçümleri/Pikseller):");
+
+        System.out.println("Hesaplanıyor: x = A^-1 * b ...\n");
+        
+        // ÇÖZÜM: OJL'nin gücü ile tek satırda A'nın tersini alıp b ile nokta çarpımı (dot product) yapıyoruz.
+        CMatrix cmX = cmA.clone().inv().dot(cmB);
+        
+        cmX.formatFloat(3).println("x Vektörü (BULUNAN KAMERA KALİBRASYON PARAMETRELERİ):");
+        System.out.println("YORUM: Elde edilen bu 'x' parametreleri artık bu kameranın beynidir.");
+        System.out.println("Kamera yazılımına bu x değerleri yüklenerek gerçek dünya ölçümleri yapılabilir.");
+    }
 }
 
 // ============================================================
@@ -7142,6 +7450,85 @@ public class TestImageResize {
 }
 
 // ============================================================
+// FILE: TestImageRestorationAxB.java
+// ============================================================
+package test;
+
+import jazari.matrix.CMatrix;
+
+/**
+ * ========================================================================
+ * MÜHENDİSLİĞİN TEMEL DENKLEMİ: Ax = b
+ * UYGULAMA 2: GÖRÜNTÜ RESTORASYONU (Image Restoration / Deconvolution)
+ * ========================================================================
+ * 
+ * 1. GÖRÜNTÜ RESTORASYONU NEDİR?
+ * Bozulmuş, bulanıklaşmış (blur) veya gürültüye (noise) maruz kalmış bir görüntüyü, 
+ * bozulmaya sebep olan fiziksel veya optik hatayı tersine mühendislikle (matematiksel olarak) 
+ * çözerek orijinal net haline geri döndürme işlemidir. (Inverse Filtering / Ters Filtreleme)
+ * 
+ * 2. NİÇİN İHTİYAÇ VARDIR VE HANGİ PROBLEMLERDE KULLANILIR?
+ * Fiziksel dünyada kameralar titrer, atmosfer ışığı dağıtır, mikroskop lensleri kusurludur.
+ * Bu fiziksel bozulmalar "A matrisi" yani Point Spread Function (PSF) olarak modellenir.
+ *   - Astronomi: Hubble Uzay Teleskobu ilk fırlatıldığında aynasındaki milimetrik hata 
+ *     yıldızları bulanık gösteriyordu. Bilim insanları bu hatayı bir "A" matrisi olarak modelledi 
+ *     ve x=A^-1*b ile görüntüleri yazılımsal olarak netleştirdiler.
+ *   - Adli Bilişim (Forensics): Hızla kaçan bir aracın güvenlik kamerasındaki bulanık (motion blur) 
+ *     plakasının okunabilir hale getirilmesi.
+ *   - Tıbbi Görüntüleme: MR cihazlarında veya hücre mikroskoplarında optik kırılmaların 
+ *     düzeltilerek detayların ortaya çıkarılması.
+ * 
+ * 3. PROJELERDE BU İHTİYAÇ SÜREKLİ OLUR MU?
+ * Güvenlik ve savunma sanayi (uydu görüntüleri vb.), tıbbi görüntüleme analizleri ve 
+ * sinyal işleme tabanlı projelerde (örn: sismik veri netleştirme) sürekli bir ihtiyaçtır.
+ * Derin öğrenme (Deep Learning) öncesinde bu matematiksel çözüm (Deconvolution) tek yöntemdi, 
+ * bugün bile kritik kesinlik gerektiren yerlerde sinyal işlemi standartları arasındadır.
+ * 
+ * ------------------------------------------------------------------------
+ * DENKLEM: A * x = b  =>  x = A^-1 * b (veya x = A \ b)
+ * A: PSF (Point Spread Function) - Görüntüyü bozan optik karışım matrisi
+ * b: Kameradan alınan bozuk/bulanık görüntü (gözlemimiz)
+ * x: Bulmak istediğimiz NET ve ORİJİNAL piksel değerleri
+ * ========================================================================
+ */
+public class TestImageRestorationAxB {
+
+    public static void main(String[] args) {
+        System.out.println("--- GÖRÜNTÜ RESTORASYONU (TERS FİLTRELEME) BAŞLIYOR ---\n");
+        
+        // A Matrisi (Sistem Davranışı): PSF (Point Spread Function). 
+        // Sensördeki bir noktanın enerjisinin komşu piksellere nasıl dağıldığını gösteren bulanıklık modeli.
+        float[][] A_BulaniklikModeli = {
+            {0.6f, 0.3f, 0.1f}, // Gerçek değerin %60'ı kalmış, %30 ve %10'u komşulara taşmış
+            {0.2f, 0.7f, 0.1f},
+            {0.1f, 0.2f, 0.7f}
+        };
+        
+        // b Vektörü (Ölçülen Çıktı): Kameradan aldığımız, bozulmuş ve bulanıklaşmış pikseller
+        float[][] b_BozukPikseller = {
+            {120},
+            {150},
+            {180}
+        };
+
+        // OJL ile matrisleri oluşturuyoruz
+        CMatrix cmA = CMatrix.getInstance(A_BulaniklikModeli).println("A Matrisi (Bulanıklık Optik Modeli - PSF):");
+        CMatrix cmB = CMatrix.getInstance(b_BozukPikseller).println("b Vektörü (Sensördeki Bulanık/Bozuk Pikseller):");
+
+        System.out.println("Hesaplanıyor: OJL solve() metodu ile (x = A \\ b) ...\n");
+        
+        // ÇÖZÜM: OJL'nin .solve() metodu, lineer denklem sistemlerini (Ax=b) çözmek için 
+        // doğrudan A.inv().dot(b) işleminden donanımsal olarak daha optimize ve stabil çalışır.
+        CMatrix cmX = cmA.clone().solve(cmB);
+        
+        // Piksel değerleri tam sayı olacağı için .round() ile yuvarlıyoruz
+        cmX.round().println("x Vektörü (KURTARILMIŞ NET ORİJİNAL PİKSEL DEĞERLERİ):");
+        System.out.println("YORUM: Matematiksel tersine mühendislik sayesinde bulanıklık geri alındı.");
+        System.out.println("Plaka okuma, yüz netleştirme veya tıbbi analiz artık bu 'x' verisi üzerinden yapılabilir.");
+    }
+}
+
+// ============================================================
 // FILE: TestImageShow.java
 // ============================================================
 /*
@@ -10574,6 +10961,178 @@ public class TestRGBToLAB {
         Arrays.stream(lab).forEach(e->System.out.println(e+";"));
         Arrays.stream(lab).forEach(System.out::println);
         //d.forEach(System.out::println);
+    }
+}
+
+// ============================================================
+// FILE: TestRoboticKinematics6DofAxB.java
+// ============================================================
+package test;
+
+import jazari.matrix.CMatrix;
+
+/**
+ * ========================================================================
+ * MÜHENDİSLİĞİN TEMEL DENKLEMİ: Ax = b
+ * UYGULAMA 3 (GELİŞMİŞ): 6 DOF ENDÜSTRİYEL ROBOT KİNEMATİĞİ (KUKA, ABB vb.)
+ * ========================================================================
+ * 
+ * 1. 6 DOF (6 SERBESTLİK DERECESİ) NEDİR?
+ * Bir robotun uzayda herhangi bir X, Y, Z koordinatına ulaşması (Pozisyon) ve 
+ * o noktada aletini (kaynak torcu, matkap, tutucu) istediği Roll, Pitch, Yaw 
+ * (Oryantasyon/Yönelim) açılarında tutabilmesi için tam 6 bağımsız ekleme 
+ * (motora) ihtiyacı vardır. 
+ * 
+ * KUKA gibi endüstriyel robotlarda eksenler dipten uca şu şekilde sıralanır:
+ *   - Eksen 1 (Base): Gövdenin sağa-sola dönüşü (Bel)
+ *   - Eksen 2 (Shoulder): Ana kolun ileri-geri hareketi (Omuz)
+ *   - Eksen 3 (Elbow): Ön kolun bükülmesi (Dirsek)
+ *     -> (Bu ilk 3 eksen X, Y, Z pozisyonunu belirler)
+ *   - Eksen 4 (Wrist Roll): Ön kolun kendi etrafında dönmesi
+ *   - Eksen 5 (Wrist Pitch): Bileğin yukarı-aşağı bükülmesi
+ *   - Eksen 6 (Tool Roll): Tam uç noktasının kendi etrafında dönmesi (Matkap ucu gibi)
+ *     -> (Bu son 3 eksen (Spherical Wrist) aletin uzaydaki duruş açısını (Oryantasyon) belirler)
+ * 
+ * 2. DENKLEM: J * Teta = V  =>  Teta = J^-1 * V
+ *   - A (J) Matrisi: 6x6 boyutundaki "Jacobian Matrisi". 
+ *     Her bir sütun bir motoru (6 adet), her bir satır ise uzaydaki 
+ *     bir serbestlik derecesini (Vx, Vy, Vz, Wx, Wy, Wz) temsil eder.
+ *   - b (V) Vektörü: 6x1 boyutundaki Hedef Hız Vektörü.
+ *     İlk 3 eleman: Ulaşmak istediğimiz çizgisel hızlar (X, Y, Z mm/sn)
+ *     Son 3 eleman: Ulaşmak istediğimiz açısal hızlar (Roll, Pitch, Yaw rad/sn)
+ *   - x (Teta) Vektörü: 6x1 boyutunda. OJL'nin çözeceği, robotun 6 motoruna 
+ *     eşzamanlı olarak gönderilecek olan açısal hız komutları (rad/sn).
+ * ========================================================================
+ */
+public class TestRoboticKinematics6DofAxB {
+
+    public static void main(String[] args) {
+        System.out.println("--- 6 DOF ENDÜSTRİYEL ROBOT TERS KİNEMATİK (INVERSE JACOBIAN) ---");
+        System.out.println("Problem: Robot ucunun 6D (3 Çizgisel + 3 Açısal) hedef hızına ulaşması için");
+        System.out.println("         6 motorun (eklemin) dönme hızlarını eşzamanlı olarak bulma.\n");
+        
+        // A Matrisi (Jacobian Matrisi - 6x6):
+        // Satırlar: Uzaydaki 6 boyut (X, Y, Z, Roll, Pitch, Yaw)
+        // Sütunlar: 6 adet motor (Base, Shoulder, Elbow, Wrist1, Wrist2, Tool)
+        // Değerler, robotun o anki duruşuna ve kol uzunluklarına bağlı türevsel oranlardır.
+        float[][] A_Jacobian_6x6 = {
+            { 0.0f,   1.2f,   1.5f,   0.0f,   0.0f,  0.0f}, // d(X)     / d(Teta 1..6)
+            { 1.8f,   0.0f,   0.0f,   0.0f,  -0.5f,  0.0f}, // d(Y)     / d(Teta 1..6)
+            { 0.0f,  -1.5f,  -0.8f,   0.0f,   0.0f,  0.0f}, // d(Z)     / d(Teta 1..6)
+            { 0.0f,   0.0f,   0.0f,   1.0f,   0.0f,  0.7f}, // d(Roll)  / d(Teta 1..6)
+            {-1.0f,   0.0f,   0.0f,   0.0f,   1.0f,  0.0f}, // d(Pitch) / d(Teta 1..6)
+            { 0.0f,  -1.0f,  -1.0f,   0.0f,   0.0f,  1.0f}  // d(Yaw)   / d(Teta 1..6)
+        };
+        
+        // b Vektörü (Hedef Uç Hızı Vektörü - 6x1):
+        // Robotun ucunun (TCP) anlık olarak gitmesini istediğimiz uzaysal hedef hızlar.
+        float[][] b_TargetVelocity_6D = {
+            { 50.0f},  // Vx: X ekseninde 50 mm/sn çizgisel hız
+            { 0.0f},   // Vy: Y ekseninde hareket etmesin
+            {-20.0f},  // Vz: Z ekseninde (aşağı) 20 mm/sn çizgisel hız
+            { 0.1f},   // Wx (Roll): X ekseni etrafında 0.1 rad/sn dönme
+            { 0.0f},   // Wy (Pitch): Y ekseni etrafında dönmesin
+            {-0.05f}   // Wz (Yaw): Z ekseni etrafında -0.05 rad/sn dönme
+        };
+
+        // OJL ile matrisleri oluşturup ekrana yazdırıyoruz
+        CMatrix cmA = CMatrix.getInstance(A_Jacobian_6x6).println("A Matrisi (6x6 Jacobian - Anlık Geometrik/Kaldıraç Modeli):");
+        CMatrix cmB = CMatrix.getInstance(b_TargetVelocity_6D).println("b Vektörü (6x1 İstenen Uç Hızları [Vx, Vy, Vz, Wx, Wy, Wz]):");
+
+        System.out.println("Hesaplanıyor: x = A^-1 * b (Jacobian Ters Kinematik Çözümü) ...\n");
+        
+        // ÇÖZÜM: 6x6 matrisin tersini alıp 6x1 vektör ile çarpmak OJL için çok hafif bir işlemdir.
+        // Endüstriyel robotlar bu işlemi saniyede binlerce kez (1kHz - 2kHz) döngüde yaparlar.
+        CMatrix cmX = cmA.clone().inv().dot(cmB);
+        
+        cmX.formatFloat(4).println("x Vektörü (6 MOTORA EŞZAMANLI GÖNDERİLECEK AÇISAL HIZ KOMUTLARI - rad/sn):");
+        System.out.println("YORUM:");
+        System.out.println("1. Satır -> Eksen 1 (Base)     Motorunun anlık dönüş hızı");
+        System.out.println("2. Satır -> Eksen 2 (Shoulder) Motorunun anlık dönüş hızı");
+        System.out.println("3. Satır -> Eksen 3 (Elbow)    Motorunun anlık dönüş hızı");
+        System.out.println("4. Satır -> Eksen 4 (Wrist 1)  Motorunun anlık dönüş hızı");
+        System.out.println("5. Satır -> Eksen 5 (Wrist 2)  Motorunun anlık dönüş hızı");
+        System.out.println("6. Satır -> Eksen 6 (Tool)     Motorunun anlık dönüş hızı");
+        System.out.println("\nBu 6 motor aynı anda bu hızlarla dönerse, robotun kaynak ucu");
+        System.out.println("tam olarak b vektöründeki hıza (hem pozisyon hem yönelim olarak) ulaşacaktır.");
+    }
+}
+
+// ============================================================
+// FILE: TestRoboticKinematicsAxB.java
+// ============================================================
+package test;
+
+import jazari.matrix.CMatrix;
+
+/**
+ * ========================================================================
+ * MÜHENDİSLİĞİN TEMEL DENKLEMİ: Ax = b
+ * UYGULAMA 3: ROBOTİK KİNEMATİK (Ters Kinematik / Inverse Jacobian)
+ * ========================================================================
+ * 
+ * 1. ROBOTİK TERS KİNEMATİK NEDİR?
+ * Bir robot kolunun uç işlevcisinin (end-effector / tutucu el), uzayda belirli bir 
+ * X, Y, Z koordinatına veya hızına ulaşması için, robotun gövde, omuz, dirsek ve 
+ * bilek motorlarının (eklemlerinin) hangi açılarda dönmesi gerektiğini hesaplamaktır.
+ * 
+ * 2. NİÇİN İHTİYAÇ VARDIR VE HANGİ PROBLEMLERDE KULLANILIR?
+ * Robotların beyni "eklem açılarını (Radyan/Derece)" anlar ve motorları buna göre sürer.
+ * Ancak biz insanlar robota "Şu X, Y, Z koordinatındaki bardağı tut" deriz. 
+ * İnsanın anladığı Kartezyen uzay (b) ile robotun anladığı Motor uzayını (x) 
+ * birbirine bağlayan matematiksel köprü Jacobian Matrisidir (A).
+ *   - Endüstriyel Robotlar: Araba fabrikalarındaki 6 eksenli KUKA, ABB robotlarının
+ *     araba kapısına düz bir çizgi halinde kaynak yapması.
+ *   - Oyun Motorları ve Animasyon (IK - Inverse Kinematics): Unity/Unreal Engine'de 
+ *     bir karakterin yokuş çıkarken ayağının zemine tam olarak basmasını sağlamak.
+ *   - Cerrahi Robotlar: Da Vinci robotlarında doktorun konsoldaki el hızının (b), 
+ *     hastanın içindeki milimetrik robot kolların (x) hareketlerine dönüştürülmesi.
+ * 
+ * 3. PROJELERDE BU İHTİYAÇ SÜREKLİ OLUR MU?
+ * Endüstriyel otomasyon, robotik manipülasyon ve oyun geliştirmede (CGI/Animasyon) 
+ * saniyede yüzlerce kez (real-time) hesaplanan, en kritik kontrol döngüsü problemidir.
+ * Robotun ucu her hareket ettiğinde, kolların kaldıracı değiştiği için "A" (Jacobian) 
+ * matrisi sürekli güncellenir ve x = A^-1 * b sürekli yeniden çözülür.
+ * 
+ * ------------------------------------------------------------------------
+ * DENKLEM: J * Teta = V  =>  Teta = J^-1 * V  (Ax = b formatının Robotikteki hali)
+ * A (J): Jacobian Matrisi - Robotun anlık duruş geometrisi ve kaldıraç oranları.
+ * b (V): İstenen hedef hız - Robotun ucunun X,Y,Z yönünde gitmesini istediğimiz hız.
+ * x (Teta): Motorlara verilecek dönme hızları (Açısal hız komutları).
+ * ========================================================================
+ */
+public class TestRoboticKinematicsAxB {
+
+    public static void main(String[] args) {
+        System.out.println("--- ROBOTİK TERS KİNEMATİK (INVERSE JACOBIAN) HESABI BAŞLIYOR ---\n");
+        
+        // A Matrisi (Sistem Davranışı): Jacobian Matrisi. 
+        // 1. motor dönerse X,Y,Z ne kadar değişir? 2. motor dönerse ne kadar değişir? (Türevsel kaldıraç oranları)
+        float[][] A_Jacobian = {
+            { 0.5f, -0.2f,  0.0f},
+            { 0.1f,  0.8f,  0.4f},
+            {-0.3f,  0.1f,  0.6f}
+        };
+        
+        // b Vektörü (Ölçülen/İstenen Çıktı): Robotun ucunun ulaşmasını İSTEDİĞİMİZ Uzaysal Hedef Hızlar (Vx, Vy, Vz)
+        float[][] b_HedefUcHizi = {
+            { 1.5f}, // X ekseninde saniyede 1.5 birim hız
+            { 2.0f}, // Y ekseninde saniyede 2.0 birim hız
+            {-1.0f}  // Z ekseninde (aşağı doğru) saniyede 1.0 birim hız
+        };
+
+        // OJL ile matrisleri oluşturuyoruz
+        CMatrix cmA = CMatrix.getInstance(A_Jacobian).println("A Matrisi (Jacobian - Robotun Anlık Duruş Geometrisi):");
+        CMatrix cmB = CMatrix.getInstance(b_HedefUcHizi).println("b Vektörü (İstenen Uç Hızı [Vx, Vy, Vz]):");
+
+        System.out.println("Hesaplanıyor: x = A^-1 * b (Jacobian'ın Tersi * İstenen Hız) ...\n");
+        
+        // ÇÖZÜM: Robotun motorlarına gidecek komutları bulmak için matrisin tersini alıp vektörle çarpıyoruz
+        CMatrix cmX = cmA.clone().inv().dot(cmB);
+        
+        cmX.formatFloat(4).println("x Vektörü (MOTORLARA GÖNDERİLECEK AÇISAL HIZ KOMUTLARI - rad/sn):");
+        System.out.println("YORUM: 1., 2. ve 3. motorlara bu x vektöründeki hız komutları gönderildiğinde,");
+        System.out.println("robotun uç noktası uzayda tam olarak istediğimiz b vektöründeki hızda hareket edecektir.");
     }
 }
 

@@ -4786,6 +4786,66 @@ public final class ImageProcess {
         return data;
     }
 
+    public static float[][] addNoiseGaussian2D(float[][] data, float mean, float sigma) {
+        int nr = data.length;
+        int nc = data[0].length;
+        java.util.Random rand = new java.util.Random();
+
+        for (int i = 0; i < nr; i++) {
+            for (int j = 0; j < nc; j++) {
+                float noise = (float) (rand.nextGaussian() * sigma + mean);
+                float val = data[i][j] + noise;
+
+                // DEĞERLERİ 0-255 ARASINDA TUT (CLAMPLING)
+                if (val > 255) {
+                    val = 255;
+                }
+                if (val < 0) {
+                    val = 0;
+                }
+
+                data[i][j] = val;
+            }
+        }
+        return data;
+    }
+
+//    /**
+//     * 2D (Gray) diziye Gaussian gürültüsü ekler
+//     */
+//    public static float[][] addNoiseGaussian2D(float[][] data, float mean, float sigma) {
+//        int nr = data.length;
+//        int nc = data[0].length;
+//        java.util.Random rand = new java.util.Random();
+//
+//        for (int i = 0; i < nr; i++) {
+//            for (int j = 0; j < nc; j++) {
+//                float noise = (float) (rand.nextGaussian() * sigma + mean);
+//                data[i][j] += noise;
+//            }
+//        }
+//        return data;
+//    }
+    /**
+     * 3D (RGB) diziye Gaussian gürültüsü ekler
+     */
+    public static float[][][] addNoiseGaussian3D(float[][][] data, float mean, float sigma) {
+        int bands = data.length;
+        int nr = data[0].length;
+        int nc = data[0][0].length;
+        java.util.Random rand = new java.util.Random();
+
+        for (int b = 0; b < bands; b++) {
+            for (int i = 0; i < nr; i++) {
+                for (int j = 0; j < nc; j++) {
+                    float noise = (float) (rand.nextGaussian() * sigma + mean);
+                    data[b][i][j] += noise;
+                }
+            }
+        }
+        return data;
+    }
+
     public static BufferedImage addNoisePartial2D(BufferedImage image, float range, float probability) {
         float[][] data = imageToPixelsFloat(image);
         data = addNoisePartial2D(data, range, probability);

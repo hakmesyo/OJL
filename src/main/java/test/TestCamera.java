@@ -27,13 +27,33 @@ import jazari.matrix.CMatrix;
 public class TestCamera {
 
     public static void main(String[] args) {
-                CMatrix cm = CMatrix.getInstance() //                .startCamera(0, new Dimension(1280, 720),new Dimension(640,360))  
-        //                .startCamera(new Dimension(640, 480), 30)
-        //                .startCamera(0, new Dimension(1280, 720)) 
-        //                .startCamera(0, new Dimension(1920, 1080), new Dimension(640,360))               
-                        .startCamera(1, new Dimension(1280,720), 30)
-        //                .startCamera(0)               
-        ;
+        CMatrix cm=CMatrix.getInstance();
+        //cm.startCamera(0);
+        cm.startCamera(true, new CallBackCamera() {
+            @Override
+            public BufferedImage onFrame(BufferedImage image) {
+                return image;
+                //throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+        });
+        //FactoryUtils.bekleUntilPressEnter();
+        
+        
+//        CMatrix.getInstance().startCamera(0, false, new CallBackCamera() {
+//            @Override
+//            public BufferedImage onFrame(BufferedImage image) {
+//                cm.setImage(image).imshow();
+//                return image;
+//            }
+//        });
+
+//                CMatrix cm = CMatrix.getInstance() //                .startCamera(0, new Dimension(1280, 720),new Dimension(640,360))  
+//        //                .startCamera(new Dimension(640, 480), 30)
+//        //                .startCamera(0, new Dimension(1280, 720)) 
+//        //                .startCamera(0, new Dimension(1920, 1080), new Dimension(640,360))               
+//                        .startCamera(1, new Dimension(1280,720), 30)
+//        //                .startCamera(0)               
+//        ;
 //        FactoryWebCam factoryWebCam = new FactoryWebCam().openWebCam(0).startWebCAM(30);
 //        Webcam webCam = factoryWebCam.webCam;
 //        WebcamPanel panel = new WebcamPanel(webCam);
@@ -48,7 +68,6 @@ public class TestCamera {
 //        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        window.pack();
 //        window.setVisible(true);
-
 //        FactoryWebCam factoryWebCam = FactoryWebCam.getInstance().openWebCam(0);
 //        FrameBasicImage frm=new FrameBasicImage();
 //        frm.setVisible(true);
@@ -97,7 +116,6 @@ public class TestCamera {
 //        
 //        FactoryUtils.bekleUntilPressEnter();
 //        System.exit(0);
-
     }
 
 }

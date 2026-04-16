@@ -5029,6 +5029,22 @@ public final class CMatrix implements Serializable {
     }
 
     /**
+     * Matris elemanlarına Gaussian gürültüsü ekler.
+     *
+     * @param mean: gürültünün ortalaması (genelde 0)
+     * @param sigma: gürültünün standart sapması (yoğunluğu)
+     * @return CMatrix
+     */
+    public CMatrix addNoiseGaussian(float mean, float sigma) {
+        if (getImage().getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setArray(ImageProcess.addNoiseGaussian2D(this.toFloatArray2D(), mean, sigma));
+        } else {
+            setArray(ImageProcess.addNoiseGaussian3D(this.toFloatArray3D(), mean, sigma));
+        }
+        return this;
+    }
+
+    /**
      * add certain noise on all matrix elements
      *
      * @param range: float noise amount range should be 0 from 50
@@ -9126,6 +9142,11 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    public float[] shapeArray() {
+        System.out.println("Matrix Shape = " + array.shapeInfoToString());
+        return FactoryUtils.toFloatArray1D(array.shape());
+    }
+
     /**
      * give info about given matrix size (number of rows;number of columns)
      *
@@ -10429,7 +10450,7 @@ public final class CMatrix implements Serializable {
         return CMatrix.getInstance(oneHotResult);
     }
 
-    public CMatrix solve(CMatrix cm) {        
+    public CMatrix solve(CMatrix cm) {
         return this.inv().dot(cm);
     }
 }
