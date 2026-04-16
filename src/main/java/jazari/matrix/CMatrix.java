@@ -9588,6 +9588,18 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    public CMatrix waitForKey() {
+        try {
+            System.out.println("\n[OJL INFO] Camera stream is active.");
+            System.out.println("[OJL INFO] Press ENTER to terminate the application...");
+            System.in.read(); // Waits for user input
+            System.out.println("[OJL INFO] Shutting down...");
+        } catch (java.io.IOException e) {
+            System.err.println("[OJL ERROR] Error while waiting for input: " + e.getMessage());
+        }
+        return this;
+    }
+
     /**
      * start camera (index=0 by default)
      *

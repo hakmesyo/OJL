@@ -8225,6 +8225,17 @@ public final class FactoryUtils {
     public static void bekle(int milliSeconds) {
         delay(milliSeconds);
     }
+    
+    public static void waitForever(){
+        try {
+            System.err.println("Uygulama çalışıyor. Devam etmek veya durdurmak için Enter tuşuna basın...");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            reader.readLine(); // Enter'a basılana kadar bekler ve tüm satırı okur
+            System.err.println("Program sonlandırılıyor...");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void bekleUntilPressEnter() {
         try {
