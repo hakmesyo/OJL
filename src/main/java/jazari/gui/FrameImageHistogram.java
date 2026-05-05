@@ -20,20 +20,27 @@ public class FrameImageHistogram extends javax.swing.JFrame {
     private CMatrix cm;
     private boolean isSort = true;
 
-    /**
-     * Creates new form CPlot
-     */
-//    public CPlotFrame() {
-//        initComponents();
-//    }
-
     public FrameImageHistogram(CMatrix cm) {
         super(cm.name+"|Histogram");
         cm.name+="|Histogram";
         this.cm =cm;// cm.getHistogram();
         initComponents();
         cm.plotPanel=getHistogramPanel();
-//        getHistogramPanel().setMatrix(cm.getHistogram());
+    }
+    
+    public FrameImageHistogram(CMatrix cm, String title) {
+        // Bileşenleri başlat
+        initComponents();
+        
+        // Veriyi histograma dönüştür
+        this.cm = cm;
+        
+        // Parametre olarak gelen başlığı ayarla
+        this.setTitle(title);
+        
+        // Paneli güncelle
+        getHistogramPanel().setMatrix(this.cm);
+        this.cm.plotPanel = getHistogramPanel();
     }
 
 //    public FrameImageHistogram(BufferedImage img) {

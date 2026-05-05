@@ -6155,4 +6155,143 @@ public final class ImageProcess {
         }
         return data;
     }
+
+    /**
+     * Combines three 2D float arrays into a single RGB BufferedImage.
+     *
+     * @param r 2D array for the Red channel (0-255)
+     * @param g 2D array for the Green channel (0-255)
+     * @param b 2D array for the Blue channel (0-255)
+     * @return Combined RGB BufferedImage
+     */
+    public static BufferedImage combineRGB(float[][] r, float[][] g, float[][] b) {
+        int rows = r.length;
+        int cols = r[0].length;
+        BufferedImage img = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_RGB);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                int red = Math.max(0, Math.min(255, (int) r[i][j]));
+                int green = Math.max(0, Math.min(255, (int) g[i][j]));
+                int blue = Math.max(0, Math.min(255, (int) b[i][j]));
+                int rgb = (255 << 24) | (red << 16) | (green << 8) | blue;
+                img.setRGB(j, i, rgb);
+            }
+        }
+        return img;
+    }
+
+    /**
+     * Combines three 2D float arrays into a single HSV (HSB) BufferedImage with
+     * flexible ranges. Useful for demonstrating different standards (OpenCV:
+     * 180, Theory: 360, OJL: 255).
+     *
+     * @param h 2D array for the Hue channel
+     * @param s 2D array for the Saturation channel
+     * @param v 2D array for the Value channel
+     * @param hMax Maximum range for Hue (e.g., 180, 255, 360)
+     * @param sMax Maximum range for Saturation (e.g., 100, 255)
+     * @param vMax Maximum range for Value (e.g., 100, 255)
+     * @return Combined HSV-to-RGB BufferedImage
+     */
+    public static BufferedImage combineHSV(float[][] h, float[][] s, float[][] v, float hMax, float sMax, float vMax) {
+        int rows = h.length;
+        int cols = h[0].length;
+        BufferedImage img = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_RGB);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                float hn = Math.max(0, Math.min(1.0f, h[i][j] / hMax));
+                float sn = Math.max(0, Math.min(1.0f, s[i][j] / sMax));
+                float vn = Math.max(0, Math.min(1.0f, v[i][j] / vMax));
+                int rgb = Color.HSBtoRGB(hn, sn, vn);
+                img.setRGB(j, i, rgb);
+            }
+        }
+        return img;
+    }
+
+    /**
+     * Creates a color gradient image by interpolating between four corner
+     * colors. Uses Bilinear Interpolation to fill the interior space.
+     *
+     * @param rows Height of the matrix
+     * @param cols Width of the matrix
+     * @param tl Top-Left color
+     * @param tr Top-Right color
+     * @param bl Bottom-Left color
+     * @param br Bottom-Right color
+     * @return Interpolated color BufferedImage
+     */
+    public static BufferedImage createColorGradientRGB(int rows, int cols, Color tl, Color tr, Color bl, Color br) {
+        BufferedImage img = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_RGB);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                // Normalize coordinates to 0.0 - 1.0 range
+                float u = (float) j / (cols - 1);
+                float v = (float) i / (rows - 1);
+
+                // Bilinear Interpolation Formula for each channel (R, G, B)
+                // C(u,v) = (1-u)(1-v)C00 + u(1-v)C10 + (1-u)vC01 + uvC11
+                int r = (int) ((1 - u) * (1 - v) * tl.getRed() + u * (1 - v) * tr.getRed()
+                        + (1 - u) * v * bl.getRed() + u * v * br.getRed());
+
+                int g = (int) ((1 - u) * (1 - v) * tl.getGreen() + u * (1 - v) * tr.getGreen()
+                        + (1 - u) * v * bl.getGreen() + u * v * br.getGreen());
+
+                int b = (int) ((1 - u) * (1 - v) * tl.getBlue() + u * (1 - v) * tr.getBlue()
+                        + (1 - u) * v * bl.getBlue() + u * v * br.getBlue());
+
+                int rgb = (255 << 24) | (r << 16) | (g << 8) | b;
+                img.setRGB(j, i, rgb);
+            }
+        }
+        return img;
+    }
+
+    /**
+     * Creates a color gradient image by interpolating between four corner
+     * colors using the HSV (HSB) color space. This results in more vivid,
+     * rainbow-like transitions compared to RGB interpolation.
+     *
+     * @param rows Total height
+     * @param cols Total width
+     * @param tl Top-Left color
+     * @param tr Top-Right color
+     * @param bl Bottom-Left color
+     * @param br Bottom-Right color
+     * @return Interpolated color BufferedImage (HSV based)
+     */
+    public static BufferedImage createColorGradientHSV(int rows, int cols, Color tl, Color tr, Color bl, Color br) {
+        BufferedImage img = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_RGB);
+
+        // Convert corner colors from RGB to HSV
+        float[] hsvTL = Color.RGBtoHSB(tl.getRed(), tl.getGreen(), tl.getBlue(), null);
+        float[] hsvTR = Color.RGBtoHSB(tr.getRed(), tr.getGreen(), tr.getBlue(), null);
+        float[] hsvBL = Color.RGBtoHSB(bl.getRed(), bl.getGreen(), bl.getBlue(), null);
+        float[] hsvBR = Color.RGBtoHSB(br.getRed(), br.getGreen(), br.getBlue(), null);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                float u = (float) j / (cols - 1);
+                float v = (float) i / (rows - 1);
+
+                // Bilinear Interpolation for Hue, Saturation, and Value
+                float h = (1 - u) * (1 - v) * hsvTL[0] + u * (1 - v) * hsvTR[0]
+                        + (1 - u) * v * hsvBL[0] + u * v * hsvBR[0];
+
+                float s = (1 - u) * (1 - v) * hsvTL[1] + u * (1 - v) * hsvTR[1]
+                        + (1 - u) * v * hsvBL[1] + u * v * hsvBR[1];
+
+                float b = (1 - u) * (1 - v) * hsvTL[2] + u * (1 - v) * hsvTR[2]
+                        + (1 - u) * v * hsvBL[2] + u * v * hsvBR[2];
+
+                // Convert resulting HSV back to RGB
+                int rgb = Color.HSBtoRGB(h, s, b);
+                img.setRGB(j, i, rgb);
+            }
+        }
+        return img;
+    }
 }

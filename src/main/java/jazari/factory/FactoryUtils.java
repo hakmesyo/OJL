@@ -1749,7 +1749,7 @@ public final class FactoryUtils {
     public static int[] toIntArray1D(long[] m) {
         int[] ret = new int[m.length];
         for (int i = 0; i < m.length; i++) {
-            ret[i] = (((int) m[i]) & 0xFF);  //m[i]&0xFF;
+            ret[i] = (int)m[i];
         }
         return ret;
     }

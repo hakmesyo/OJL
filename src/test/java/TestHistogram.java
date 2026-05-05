@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 
-
 import java.util.Arrays;
 import jazari.matrix.CMatrix;
 
@@ -18,21 +17,44 @@ public class TestHistogram {
 //        CMatrix cm = CMatrix.getInstance().imread("images\\kaplan1.jpg").imshow("kaplan resmi").rgb2gray().imhist();
 //        CMatrix cm2 = CMatrix.getInstance().imread("images\\kaplan1.jpg").rgb2gray().matrix(":").hist();
         CMatrix cm = CMatrix.getInstance()
-                .imread("images/pullar.png")                
-//                .imshow()
-//                .imhist()
-//                .rgb2gray()
-//                .imshow()
-//                .imhist()
-//                .getHistogram()
-//                .plot()
-                
-                
+                .imread("images/pullar.png") //                .imshow()
+                //                .imhist()
+                //                .rgb2gray()
+                //                .imshow()
+                //                .imhist()
+                //                .getHistogram()
+                //                .plot()
                 ;
-        float[] h1=cm.hist(256).toFloatArray1D();
-        System.out.println("h1 = " + Arrays.toString(h1));
-        
-        
+//        float[] h1=cm.hist(256).toFloatArray1D();
+//        System.out.println("h1 = " + Arrays.toString(h1));
+//        
+
+//        CMatrix img = CMatrix.getInstance()
+//                .imread("images/bird.jpg")                
+//                .rgb2gray()
+//                .imshow();
+//
+//        img.clone().hist("Histogram");
+//        CMatrix img = CMatrix.getInstance()
+//                .imread("images/bird.jpg")
+//                .rgb2gray().imshow("Gray Original");
+//        CMatrix img1=img.clone().multiplyScalar(0.3f).imupdate()
+//                .imshow("Düşük Kontrast").hist();
+//        CMatrix img2=img1.clone().histeq().imshow("Histeq").hist();
+        CMatrix img = CMatrix.getInstance()
+                .imread("images/bird.jpg")
+                .rgb2gray();
+
+// Kontrast germe
+        img.clone().map(0, 255)
+                .imshow("Min-Max Germe");
+
+// Histogram eşitleme
+        img.clone().histeq()
+                .imshow("Histogram Eşitleme");
+
+// Fark: Germe dağılım şeklini
+// korur, HE düzleştirir
 //        CMatrix cm1 = CMatrix.getInstance().randn(200000,1).scale(1000);
 //        CMatrix cm2 = cm1.scale(0.5).addScalar(2000);
 //        CMatrix cm3 = cm2.scale(1.89).addScalar(1000);

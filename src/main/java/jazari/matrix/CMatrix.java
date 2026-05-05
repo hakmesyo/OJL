@@ -1871,6 +1871,11 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    public CMatrix ones(int ... shapes) {
+        array = Nd4j.ones(shapes);
+        return this;
+    }
+
     public CMatrix rand() {
         array = Nd4j.rand(1, 1);
         return this;
@@ -1897,8 +1902,18 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    public CMatrix rand(int ... shapes) {
+        array = Nd4j.rand(shapes);
+        return this;
+    }
+
     public CMatrix randWithSeed(int nr, int nc, int seed) {
         array = Nd4j.rand(seed, new long[]{nr, nc});
+        return this;
+    }
+    
+    public CMatrix randWithSeed(int seed,long ... shapes) {
+        array = Nd4j.rand(seed, shapes);
         return this;
     }
 
@@ -1968,6 +1983,11 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
+    public CMatrix randn(int ... shapes) {
+        array = Nd4j.randn(shapes);
+        return this;
+    }
+
     /**
      * Generates rxc matrix with normal distribution within max upper bound
      *
@@ -1978,6 +1998,11 @@ public final class CMatrix implements Serializable {
      */
     public CMatrix randn(int nr, int nc, float max) {
         array = Nd4j.randn(nr, nc).mul(max);
+        return this;
+    }
+
+    public CMatrix randn(float max, int ... shapes) {
+        array = Nd4j.randn(shapes).mul(max);
         return this;
     }
 
@@ -3006,11 +3031,22 @@ public final class CMatrix implements Serializable {
      * @return histogram of each column
      */
     public CMatrix hist() {
-        float[] d = FactoryMatrix.getHistogram(array.toFloatMatrix(), 256);
-        //setArray(d).transpose();
-        array = Nd4j.create(d, new int[]{d.length, 1});
-        //TFigureAttribute attr=null;
-        bar();
+        hist(256);
+        return this;
+    }
+    
+    public CMatrix histogram() {
+        hist(256);
+        return this;
+    }
+
+    public CMatrix hist(String title) {
+        hist(256,title);
+        return this;
+    }
+    
+    public CMatrix histogram(String title) {
+        hist(256,title);
         return this;
     }
 
@@ -3034,19 +3070,20 @@ public final class CMatrix implements Serializable {
         return this;
     }
 
-    /**
-     * calculate the histogram of the matrix for a specified number of bins as
-     * column wised
-     *
-     * @return histogram of each column
-     */
     public CMatrix hist(int nBins, String title) {
+        if (getRowNumber() == 1 && getColumnNumber() == 1) {
+            return this;
+        } else if (getRowNumber() == 1 && getColumnNumber() > 1) {
+            array = array.transpose();
+        }
         float[] d = FactoryMatrix.getHistogram(array.toFloatMatrix(), nBins);
-        array = Nd4j.create(d, new int[]{d.length, 1});
-        FrameHistogram frm = new FrameHistogram(this.clone(), this, title);
+        setArray(d);
+        FrameImageHistogram frm = new FrameImageHistogram(this,title);
+        frm.setTitle("");
         frm.setVisible(true);
         return this;
     }
+
 
     /**
      * calculate the histogram of the matrix for a specified number of bins as
@@ -9798,8 +9835,6 @@ public final class CMatrix implements Serializable {
         webCam = factoryWebCam.webCam;
         return this;
     }
-    
-
 
     /**
      * start camera (index=0 by default)
@@ -10648,5 +10683,103 @@ public final class CMatrix implements Serializable {
 
     public CMatrix solve(CMatrix cm) {
         return this.inv().dot(cm);
+    }
+
+    /**
+     * Generates a color CMatrix by combining three grayscale CMatrix objects as
+     * RGB channels.
+     *
+     * @param r CMatrix for the Red channel (expected range 0-255)
+     * @param g CMatrix for the Green channel (expected range 0-255)
+     * @param b CMatrix for the Blue channel (expected range 0-255)
+     * @return A new colorized CMatrix instance
+     */
+    public static CMatrix fromRGB(CMatrix r, CMatrix g, CMatrix b) {
+        BufferedImage combined = ImageProcess.combineRGB(r.getArray2Dfloat(), g.getArray2Dfloat(), b.getArray2Dfloat());
+        return CMatrix.getInstance(combined);
+    }
+
+    /**
+     * Generates a color CMatrix from HSV (Hue, Saturation, Value) channels
+     * using the default OJL range of 0-255 for all channels.
+     *
+     * @param h CMatrix for the Hue channel (0-255)
+     * @param s CMatrix for the Saturation channel (0-255)
+     * @param v CMatrix for the Value/Brightness channel (0-255)
+     * @return A new colorized CMatrix instance converted from HSV to RGB
+     */
+    public static CMatrix fromHSV(CMatrix h, CMatrix s, CMatrix v) {
+        return fromHSV(h, s, v, 255, 255, 255);
+    }
+
+    /**
+     * Generates a color CMatrix from HSV channels with custom maximum ranges.
+     * This is ideal for demonstrating different standards like OpenCV (H:180)
+     * or Geometry/Theory (H:360).
+     *
+     * @param h CMatrix for the Hue channel
+     * @param s CMatrix for the Saturation channel
+     * @param v CMatrix for the Value channel
+     * @param hMax Maximum value for Hue (e.g., 180 for OpenCV, 360 for degrees)
+     * @param sMax Maximum value for Saturation (e.g., 100 for percentage, 255
+     * for 8-bit)
+     * @param vMax Maximum value for Value (e.g., 100 for percentage, 255 for
+     * 8-bit)
+     * @return A new colorized CMatrix instance
+     */
+    public static CMatrix fromHSV(CMatrix h, CMatrix s, CMatrix v, float hMax, float sMax, float vMax) {
+        BufferedImage combined = ImageProcess.combineHSV(h.getArray2Dfloat(), s.getArray2Dfloat(), v.getArray2Dfloat(), hMax, sMax, vMax);
+        return CMatrix.getInstance(combined).imupdate();
+    }
+
+    /**
+     * Generates a color CMatrix using one Hue matrix and fixed Saturation and
+     * Value scalar values. Highly useful for visualizing the full color
+     * spectrum.
+     *
+     * @param h CMatrix representing the Hue distribution (0-255)
+     * @param s_scalar Constant value for Saturation (0-255)
+     * @param v_scalar Constant value for Value/Brightness (0-255)
+     * @return A new colorized CMatrix instance
+     */
+    public static CMatrix fromHSV(CMatrix h, float s_scalar, float v_scalar) {
+        CMatrix s = CMatrix.getInstance(h.getRowNumber(), h.getColumnNumber()).addScalar(s_scalar);
+        CMatrix v = CMatrix.getInstance(h.getRowNumber(), h.getColumnNumber()).addScalar(v_scalar);
+        return fromHSV(h, s, v);
+    }
+
+    /**
+     * Static factory to create a color gradient CMatrix by interpolating
+     * between four corner colors using bilinear interpolation.
+     *
+     * @param rows Total height of the resulting image
+     * @param cols Total width of the resulting image
+     * @param tl Color for the Top-Left corner
+     * @param tr Color for the Top-Right corner
+     * @param bl Color for the Bottom-Left corner
+     * @param br Color for the Bottom-Right corner
+     * @return A new CMatrix containing the smooth color gradient
+     */
+    public static CMatrix fromColorGradientRGB(int rows, int cols, Color tl, Color tr, Color bl, Color br) {
+        BufferedImage img = ImageProcess.createColorGradientRGB(rows, cols, tl, tr, bl, br);
+        return CMatrix.getInstance(img);
+    }
+
+    /**
+     * Static factory to create a color gradient CMatrix based on four corner
+     * colors using HSV interpolation. This provides a more natural color
+     * blending.
+     *
+     * @param rows Total height of the resulting image
+     * @param cols Total width of the resulting image
+     * @param tl Color for the Top-Left corner
+     * @param tr Color for the Top-Right corner
+     * @param bl Color for the Bottom-Left corner
+     * @param br Color for the Bottom-Right corner
+     * @return A new CMatrix with HSV-interpolated gradient
+     */
+    public static CMatrix fromColorGradientHSV(int rows, int cols, Color tl, Color tr, Color bl, Color br) {
+        BufferedImage img = ImageProcess.createColorGradientHSV(rows, cols, tl, tr, bl, br);
+        return CMatrix.getInstance(img);
     }
 }
