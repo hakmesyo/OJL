@@ -110,9 +110,9 @@ JAZO ships as a self-contained (fat/uber) JAR — no build step and no separate 
 1. Go to the [**Releases**](https://github.com/hakmesyo/OJL/releases) page and download the latest JAZO release asset (e.g. `v1.1`).
 2. Run it from a terminal:
    ```bash
-   java -jar jazo.jar
+   java -jar OJL-1.0-SNAPSHOT.jar
    ```
-   (replace `jazo.jar` with the exact downloaded filename)
+   
 3. Drag and drop an image or a folder onto the application window to start annotating.
 
 ### Citing JAZO
