@@ -54,7 +54,7 @@ public class Jazo extends javax.swing.JFrame {
     public Jazo() {
         initComponents();
         btn_open.setTransferHandler(new ImageTransferHandler());
-        this.setTitle("Open Jazari Library (Jazari Annotation Tool)  [29.03.2026]");
+        this.setTitle("Open Jazari Library (Jazari Annotation Tool)  [01.08.2026]");
         setLocationRelativeTo(null);
     }
 
